@@ -1,5 +1,17 @@
 const admin = require('firebase-admin');
 
+// Firebase ကို အကြိမ်ကြိမ် initialize မဖြစ်အောင် စစ်ဆေးခြင်း
+if (!admin.apps.length) {
+    admin.initializeApp({
+        credential: admin.credential.cert({
+            projectId: process.env.FIREBASE_PROJECT_ID,
+            clientEmail: process.env.FIREBASE_CLIENT_EMAIL,
+            // Vercel Environment Variables တွင် private_key တွင် \n ပါဝင်မှုကို ဖြေရှင်းရန်
+            privateKey: process.env.FIREBASE_PRIVATE_KEY ? process.env.FIREBASE_PRIVATE_KEY.replace(/\\n/g, '\n') : undefined
+        })
+    });
+}
+
 // Random user ID ဖန်တီးပေးသော function
 function generateUniqueUserId() {
     const randomStr = Math.random().toString(36).substring(2, 8).toUpperCase();
