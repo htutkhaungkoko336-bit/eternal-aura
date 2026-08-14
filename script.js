@@ -15,9 +15,9 @@ initAuth(formContent, (phone, pin) => {
         <div style="display: flex; flex-direction: column; gap: 15px; width: 100%;">
             <p style="color: #94a3b8; font-size: 14px; text-align: left; width: 100%;">Enter Your Name</p>
             <div class="input-box" style="width: 100%; background-color: #1e293b; padding: 16px 20px; border-radius: 16px; border: 1px solid #334155;">
-                <input type="text" id="username-input" placeholder="Your Name" autofocus style="width: 100%; color: white; background: transparent; border: none; font-size: 16px; outline: none;">
+                <input type="text" id="username-input" placeholder="Your Name" maxlength="20" autofocus style="width: 100%; color: white; background: transparent; border: none; font-size: 16px; outline: none;">
             </div>
-            <button class="next-btn" id="finish-btn" style="width: 100%; justify-content: center; padding: 14px 20px; margin-top: 5px; display: flex; align-items: center; gap: 8px;">
+                        <button class="next-btn" id="finish-btn" style="width: 100%; justify-content: center; padding: 14px 20px; margin-top: 5px; display: flex; align-items: center; gap: 8px;">
                 <span>Finish</span>
                 <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
                     <polyline points="20 6 9 17 4 12"></polyline>

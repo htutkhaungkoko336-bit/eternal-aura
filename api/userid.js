@@ -34,20 +34,29 @@ module.exports = async function handler(req, res) {
         const now = new Date();
         const utc = now.getTime() + (now.getTimezoneOffset() * 60000);
         const yangonTime = new Date(utc + (3600000 * 6.5));
-        const timeString = yangonTime.toISOString();
+
+        // Format: 14-8-2026
+        const dateStr = `${yangonTime.getDate()}-${yangonTime.getMonth() + 1}-${yangonTime.getFullYear()}`;
+        
+        // Format: 2:28 pm
+        let hours = yangonTime.getHours();
+        const minutes = yangonTime.getMinutes().toString().padStart(2, '0');
+        const ampm = hours >= 12 ? 'pm' : 'am';
+        hours = hours % 12 || 12; // 12-hour format
+        const timeStr = `${hours}:${minutes} ${ampm}`;
 
         const userData = {
             userId: userId,
-            name: name,         // <--- Name ထည့်သွင်းခြင်း
+            name: name,
             phone: phone,
             pin: pin,
             deviceId: deviceId,
-            time: timeString,   // <--- Yangon Time
-            updatedAt: timeString // <--- Yangon Time
+            date: dateStr,      // သိမ်းဆည်းမည့် Date
+            time: timeStr,      // သိမ်းဆည်းမည့် Time
+            createdAt: new Date().toISOString() // Sorting အတွက်မူရင်း အချိန်
         };
 
         await db.collection('users').doc(userId).set(userData);
-
         return res.status(200).json({ 
             success: true, 
             message: "User created successfully", 
