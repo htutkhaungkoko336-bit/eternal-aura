@@ -21,22 +21,29 @@ module.exports = async function handler(req, res) {
     }
 
     try {
-        const { phone, pin, deviceId } = req.body;
+        // req.body ထဲမှ name ကိုပါ ထည့်သွင်းလက်ခံခြင်း
+        const { name, phone, pin, deviceId } = req.body;
 
-        if (!phone || !pin || !deviceId) {
-            return res.status(400).json({ success: false, message: "Phone, PIN, and Device ID are required" });
+        if (!name || !phone || !pin || !deviceId) {
+            return res.status(400).json({ success: false, message: "Name, Phone, PIN, and Device ID are required" });
         }
 
         const userId = generateUniqueUserId();
-        const time = new Date().toISOString();
+
+        // မြန်မာစံတော်ချိန် (Yangon Time - UTC+6:30) သို့ ပြောင်းလဲခြင်း
+        const now = new Date();
+        const utc = now.getTime() + (now.getTimezoneOffset() * 60000);
+        const yangonTime = new Date(utc + (3600000 * 6.5));
+        const timeString = yangonTime.toISOString();
 
         const userData = {
             userId: userId,
+            name: name,         // <--- Name ထည့်သွင်းခြင်း
             phone: phone,
             pin: pin,
             deviceId: deviceId,
-            time: time,
-            updatedAt: time
+            time: timeString,   // <--- Yangon Time
+            updatedAt: timeString // <--- Yangon Time
         };
 
         await db.collection('users').doc(userId).set(userData);
