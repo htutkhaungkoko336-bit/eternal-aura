@@ -35,7 +35,6 @@ module.exports = async function handler(req, res) {
         // ၁။ ဖုန်းနံပါတ် မရှိသေးပါက (User အသစ် - Register)
         // -------------------------------------------------------------
         if (snapshot.empty) {
-            // User အသစ်အတွက် Name နဲ့ PIN မပါလာသေးရင် အချက်အလက်တောင်းရန် ပြန်မည်
             if (!name || !pin) {
                 return res.status(200).json({ 
                     requiresRegistration: true, 
@@ -62,7 +61,7 @@ module.exports = async function handler(req, res) {
                 name: name,
                 phone: phone,
                 pin: hashedPin,
-                deviceId: deviceId, // ပထမဆုံးဝင်တဲ့ Device ID ကို မှတ်မည်
+                deviceId: deviceId,
                 createdAt: createdAtStr
             };
 
@@ -81,7 +80,7 @@ module.exports = async function handler(req, res) {
         const userDoc = snapshot.docs[0];
         const userData = userDoc.data();
 
-        // Device ID တူမှသာ Page ကို တန်းရောက်ခွင့်ပေးမည်
+        // (က) Device ID တူနေပါက Password မလိုဘဲ ဝင်ခွင့်ပေးမည် (Auto Login)
         if (userData.deviceId === deviceId) {
             return res.status(200).json({ 
                 success: true, 
@@ -90,10 +89,28 @@ module.exports = async function handler(req, res) {
             });
         }
 
-        // Device ID မတူရင် (ဖုန်းမတူ/ချိန်းထားရင်) ဝင်ခွင့် လုံးဝမပေးပါ
-        return res.status(401).json({ 
-            success: false, 
-            message: "Device ID mismatch. Access denied." 
+        // (ခ) Device ID မတူတော့ပါက (ဖုန်းချိန်းထားပါက) Password (PIN) ပါ၀င်လာခြင်း ရှိမရှိ စစ်မည်
+        if (!pin) {
+            return res.status(200).json({ 
+                requiresPassword: true, 
+                message: "Device changed. Please enter PIN." 
+            });
+        }
+
+        // (ဂ) ပေးပို့လာသော PIN မှန်မမှန် စစ်ဆေးခြင်း
+        const isPasswordValid = bcrypt.compareSync(pin, userData.pin);
+
+        if (!isPasswordValid) {
+            return res.status(401).json({ success: false, message: "Incorrect PIN. Access denied." });
+        }
+
+        // PIN မှန်ကန်ပါက Device ID အသစ်သို့ Update လုပ်ပေးပြီး ဝင်ခွင့်ပေးမည်
+        await usersRef.doc(userData.userId).update({ deviceId: deviceId });
+
+        return res.status(200).json({ 
+            success: true, 
+            message: "Login successful with PIN on new device", 
+            name: userData.name 
         });
 
     } catch (error) {

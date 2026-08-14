@@ -15,7 +15,7 @@ initAuth(formContent, async (phone, pin) => {
     }
 
     try {
-        // ၁။ ဖုန်းနံပါတ်နှင့် Device ID ကို အရင်ပို့၍ စစ်ဆေးခြင်း
+        // ဖုန်းနံပါတ်၊ Device ID နှင့် PIN ကို ဆာဗာသို့ ပေးပို့စစ်ဆေးခြင်း
         const response = await fetch('/api/userid', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
@@ -24,19 +24,19 @@ initAuth(formContent, async (phone, pin) => {
 
         const data = await response.json();
 
-        // (က) Device လည်းတူ၊ ဖုန်းလည်းရှိရင် Page ကို တန်းရောက်မည် (Auto Login)
+        // (က) Device လည်းတူ (သို့) ဖုန်းနံပါတ်နှင့် PIN မှန်ကန်ပါက Page ကို တန်းရောက်မည်
         if (data.success) {
             handleLoginSuccess(data.name || "User");
             return;
         }
 
-        // (ခ) ဖုန်းရှိသော်လည်း Device ID မတူတော့၍ PIN တောင်းလာပါက
+        // (ခ) ဖုန်းနံပါတ်ရှိသော်လည်း Device ID မတူတော့၍ PIN တောင်းခံလာပါက
         if (data.requiresPassword) {
             showPinInputScreen(phone, deviceId);
             return;
         }
 
-        // (ဂ) ဖုန်းနံပါတ် လုံးဝမရှိသေး၍ Name နှင့် PIN ဖြင့် အသစ်လုပ်ရန် လိုအပ်ပါက
+        // (ဂ) ဖုန်းနံပါတ် လုံးဝမရှိသေး၍ Name နှင့် PIN ဖြင့် အသစ်စာရင်းသွင်းရန် လိုအပ်ပါက
         if (data.requiresRegistration) {
             showNameInputScreen(phone, pin, deviceId);
             return;
