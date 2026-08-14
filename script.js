@@ -138,9 +138,9 @@ function handleLoginSuccess(username) {
     formContent.style.display = 'none';
 
     document.querySelector('.container').innerHTML = `
-        <div id="app-content" style="width: 100%; flex: 1; overflow-y: auto; padding-bottom: 80px;"></div>
+        <div id="app-content" style="width: 100%; height: 100%; display: flex; flex-direction: column; overflow: hidden; padding: 0; box-sizing: border-box;"></div>
         <div style="display: flex; flex-direction: column; justify-content: flex-end; position: absolute; bottom: 0; left: 0; width: 100%; box-sizing: border-box; pointer-events: none;">
-            <div id="bottom-nav" style="display: flex; justify-content: space-around; align-items: center; background-color: #0f172a; border-top: 1px solid #1e293b; padding: 12px 0 24px 0; width: 100%; pointer-events: auto;">
+            <div id="bottom-nav" style="display: flex; justify-content: space-around; align-items: center; background-color: #0f172a; border-top: 1px solid #1e293b; padding: 10px 0 16px 0; width: 100%; pointer-events: auto;">
                 
                 <div class="nav-item" data-tab="mode" style="display: flex; flex-direction: column; align-items: center; cursor: pointer; color: #38bdf8;">
                     <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -197,7 +197,6 @@ function handleLoginSuccess(username) {
             if (tab === 'mode') {
                 renderModeScreen(appContent);
             } else {
-                // နောင်ရေးမည့် Match, Notification, Profile မျက်နှာပြင်များအတွက်
                 appContent.innerHTML = `<div style="color: white; text-align: center; margin-top: 50px;">${tab.toUpperCase()} Screen Coming Soon</div>`;
             }
         });
