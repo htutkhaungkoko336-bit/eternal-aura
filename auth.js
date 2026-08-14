@@ -100,7 +100,7 @@ export function initAuth(formContent, onComplete) {
         });
 
         const confirmBtn = document.getElementById('confirm-btn');
-        confirmBtn.addEventListener('click', () => {
+        confirmBtn.addEventListener('click', async () => {
             const pin1Arr = document.querySelectorAll('.pin-1');
             const pin2Arr = document.querySelectorAll('.pin-2');
 
@@ -120,9 +120,42 @@ export function initAuth(formContent, onComplete) {
                 return;
             }
 
-            // PIN မှန်ကန်ပါက နာမည်ထည့်မည့် အပိုင်းသို့ သွားရန် Callback ခေါ်မည်
-            if (typeof onComplete === 'function') {
-                onComplete();
+            // Device ID တစ်ခု ဖန်တီးခြင်း သို့မဟုတ် localStorage မှ ယူခြင်း
+            let deviceId = localStorage.getItem('device_id');
+            if (!deviceId) {
+                deviceId = 'dev_' + Math.random().toString(36).substring(2, 12);
+                localStorage.setItem('device_id', deviceId);
+            }
+
+            // Backend သို့ Data ပို့ခြင်း (/api/userid ကို ချိတ်ဆက်ပေးထားသည်)
+            try {
+                const response = await fetch('/api/userid', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        phone: phoneInput.value,
+                        pin: pin1,
+                        deviceId: deviceId
+                    })
+                });
+
+                const data = await response.json();
+
+                if (data.success) {
+                    console.log("Created User ID:", data.userId);
+                    
+                    // PIN မှန်ကန်ပြီး Backend တွင် Data သိမ်းပြီးပါက ဆက်လုပ်ရန် Callback ခေါ်မည်
+                    if (typeof onComplete === 'function') {
+                        onComplete(data.userId);
+                    }
+                } else {
+                    alert("စာရင်းသွင်းရာတွင် အမှားအယွင်းရှိသည်: " + data.error);
+                }
+            } catch (err) {
+                console.error("Network error:", err);
+                alert("ဆာဗာသို့ ချိတ်ဆက်၍ မရပါ။");
             }
         });
     });
