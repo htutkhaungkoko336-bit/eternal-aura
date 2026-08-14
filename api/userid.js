@@ -1,19 +1,21 @@
 const admin = require('firebase-admin');
 
-// Firebase ကို အကြိမ်ကြိမ် initialize မဖြစ်အောင် စစ်ဆေးခြင်း
+// Environment Variables များ ရှိမရှိ စစ်ဆေးပြီးမှ Initialize လုပ်ရန်
 if (!admin.apps.length) {
+    const privateKey = process.env.FIREBASE_PRIVATE_KEY 
+        ? process.env.FIREBASE_PRIVATE_KEY.replace(/\\n/g, '\n') 
+        : undefined;
+
     admin.initializeApp({
         credential: admin.credential.cert({
             projectId: process.env.FIREBASE_PROJECT_ID,
             clientEmail: process.env.FIREBASE_CLIENT_EMAIL,
-            privateKey: process.env.FIREBASE_PRIVATE_KEY ? process.env.FIREBASE_PRIVATE_KEY.replace(/\\n/g, '\n') : undefined
+            privateKey: privateKey
         })
     });
 }
 
-// Firestore database instance ကို ဒီလိုခေါ်ရပါမယ်
 const db = admin.firestore();
-
 // Random user ID ဖန်တီးပေးသော function
 function generateUniqueUserId() {
     const randomStr = Math.random().toString(36).substring(2, 8).toUpperCase();
