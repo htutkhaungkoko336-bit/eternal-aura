@@ -32,7 +32,7 @@ module.exports = async function handler(req, res) {
         const snapshot = await usersRef.where('phone', '==', phone).get();
 
         // -------------------------------------------------------------
-        // အပိုင်း (၁) - ဖုန်းနံပါတ် မရှိသေးပါက (User အသစ် - Register)
+        // ၁။ ဖုန်းနံပါတ် မရှိသေးပါက (User အသစ် - Register)
         // -------------------------------------------------------------
         if (snapshot.empty) {
             if (!name || !pin) {
@@ -75,12 +75,12 @@ module.exports = async function handler(req, res) {
         }
 
         // -------------------------------------------------------------
-        // အပိုင်း (၂) - ဖုန်းနံပါတ် ရှိပြီးသားဖြစ်ပါက (User ဟောင်း - Login)
+        // ၂။ ဖုန်းနံပါတ် ရှိပြီးသားဖြစ်ပါက (User ဟောင်း - Login)
         // -------------------------------------------------------------
         const userDoc = snapshot.docs[0];
         const userData = userDoc.data();
 
-        // Device ID တူနေရင် Password မလိုဘဲ Page ကို တန်းရောက်မည်
+        // (က) Device ID တူနေရင် Password မလိုဘဲ Page ကို တန်းရောက်မည်
         if (userData.deviceId === deviceId) {
             return res.status(200).json({ 
                 success: true, 
@@ -89,7 +89,7 @@ module.exports = async function handler(req, res) {
             });
         }
 
-        // Device ID မတူရင် Password (PIN) ပါ ထပ်တောင်းမည်
+        // (ခ) Device ID မတူတော့ရင် PIN မဖြစ်မနေ ထည့်ခိုင်းမည်
         if (!pin) {
             return res.status(200).json({ 
                 requiresPassword: true, 
@@ -97,18 +97,20 @@ module.exports = async function handler(req, res) {
             });
         }
 
-        // Password တိုက်စစ်ခြင်း
+        // (ဂ) ပေးလိုက်တဲ့ PIN ကို Database ထဲက Hash နဲ့ တိုက်စစ်ခြင်း
         const isPasswordValid = bcrypt.compareSync(pin, userData.pin);
+        
+        // PIN မှားနေရင် ဝင်ခွင့်လုံးဝမပေးဘဲ 401 Error ပြန်မည်
         if (!isPasswordValid) {
             return res.status(401).json({ success: false, message: "Incorrect PIN. Access denied." });
         }
 
-        // Password မှန်လျှင် Device ID အသစ်ကို Update လုပ်ပေးမည်
+        // PIN မှန်မှသာ Device ID အသစ်ကို Update လုပ်ပြီး Page ကို ဝင်ခွင့်ပေးမည်
         await usersRef.doc(userData.userId).update({ deviceId: deviceId });
 
         return res.status(200).json({ 
             success: true, 
-            message: "Login successful with new device", 
+            message: "Login successful with correct PIN", 
             name: userData.name 
         });
 
