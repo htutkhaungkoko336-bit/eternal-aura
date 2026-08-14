@@ -56,6 +56,10 @@ function handleModeSelection(mode) {
                                 border-color: #38bdf8 !important;
                                 box-shadow: 0 0 8px rgba(56, 189, 248, 0.4);
                             }
+                            .fee-option:hover {
+                                background-color: #334155 !important;
+                                color: #38bdf8 !important;
+                            }
                         </style>
 
                         <!-- Top Row: Square Logo Box & Squad Name Side by Side -->
@@ -119,27 +123,35 @@ function handleModeSelection(mode) {
                                 <input type="text" id="kpay-name" class="reg-input" placeholder="KPay Name" required style="width: 100%; height: 40px; padding: 0 8px; background-color: #1e293b; border: 1px solid #334155; border-radius: 6px; color: white; font-size: 12px; outline: none; box-sizing: border-box; transition: 0.2s;">
                             </div>
                             <div style="display: flex; flex-direction: column; gap: 3px; width: 50%;">
-                                <label style="color: #94a3b8; font-size: 11px; font-weight: 600;">KPay Ph Number</label>
-                                <input type="tel" id="kpay-ph" class="reg-input" placeholder="KPay Ph Number" required style="width: 100%; height: 40px; padding: 0 8px; background-color: #1e293b; border: 1px solid #334155; border-radius: 6px; color: white; font-size: 12px; outline: none; box-sizing: border-box; transition: 0.2s;">
+                                <label style="color: #94a3b8; font-size: 11px; font-weight: 600;">KPay Ph No</label>
+                                <input type="tel" id="kpay-ph" class="reg-input" placeholder="KPay Ph No" required style="width: 100%; height: 40px; padding: 0 8px; background-color: #1e293b; border: 1px solid #334155; border-radius: 6px; color: white; font-size: 12px; outline: none; box-sizing: border-box; transition: 0.2s;">
                             </div>
                         </div>
 
                         <div style="display: flex; gap: 8px;">
                             <div style="display: flex; flex-direction: column; gap: 3px; width: 50%;">
-                                <label style="color: #94a3b8; font-size: 11px; font-weight: 600;">Contact Ph Number</label>
-                                <input type="tel" id="contact-ph" class="reg-input" placeholder="Contact Ph Number" required style="width: 100%; height: 40px; padding: 0 8px; background-color: #1e293b; border: 1px solid #334155; border-radius: 6px; color: white; font-size: 12px; outline: none; box-sizing: border-box; transition: 0.2s;">
+                                <label style="color: #94a3b8; font-size: 11px; font-weight: 600;">Contact Ph</label>
+                                <input type="tel" id="contact-ph" class="reg-input" placeholder="Contact Ph" required style="width: 100%; height: 40px; padding: 0 8px; background-color: #1e293b; border: 1px solid #334155; border-radius: 6px; color: white; font-size: 12px; outline: none; box-sizing: border-box; transition: 0.2s;">
                             </div>
-                            <!-- Entry Fee Dropdown (5k, 10k, 15k, 25k, 50k) -->
-                            <div style="display: flex; flex-direction: column; gap: 3px; width: 50%;">
+                            
+                            <!-- Modern Custom Entry Fee Trigger -->
+                            <div style="display: flex; flex-direction: column; gap: 3px; width: 50%; position: relative;">
                                 <label style="color: #94a3b8; font-size: 11px; font-weight: 600;">Entry Fee</label>
-                                <select id="fee" class="reg-input" required style="width: 100%; height: 40px; padding: 0 8px; background-color: #1e293b; border: 1px solid #334155; border-radius: 6px; color: #38bdf8; font-size: 12px; font-weight: 700; outline: none; box-sizing: border-box; transition: 0.2s; cursor: pointer;">
-                                    <option value="" disabled selected>Select Fee</option>
-                                    <option value="5k">5k</option>
-                                    <option value="10k">10k</option>
-                                    <option value="15k">15k</option>
-                                    <option value="25k">25k</option>
-                                    <option value="50k">50k</option>
-                                </select>
+                                <div id="fee-dropdown-btn" class="reg-input" style="display: flex; align-items: center; justify-content: space-between; width: 100%; height: 40px; padding: 0 10px; background-color: #1e293b; border: 1px solid #334155; border-radius: 6px; color: #38bdf8; font-size: 12px; font-weight: 700; cursor: pointer; box-sizing: border-box; transition: 0.2s;">
+                                    <span id="selected-fee-text">Select Fee</span>
+                                    <span style="font-size: 10px; color: #94a3b8;">▼</span>
+                                </div>
+
+                                <!-- Custom Modern Popup Modal / Dropdown Menu -->
+                                <div id="fee-modal" style="display: none; position: absolute; bottom: 48px; left: 0; width: 100%; background-color: #0f172a; border: 1px solid #334155; border-radius: 8px; box-shadow: 0 10px 25px rgba(0,0,0,0.5); z-index: 100; overflow: hidden; animation: fadeIn 0.2s ease;">
+                                    <div style="padding: 8px 10px; font-size: 11px; font-weight: 600; color: #94a3b8; border-bottom: 1px solid #1e293b;">Select Fee</div>
+                                    <div class="fee-option" data-value="5k" style="padding: 10px 12px; font-size: 13px; color: white; cursor: pointer; transition: 0.15s;">5k</div>
+                                    <div class="fee-option" data-value="10k" style="padding: 10px 12px; font-size: 13px; color: white; cursor: pointer; transition: 0.15s;">10k</div>
+                                    <div class="fee-option" data-value="15k" style="padding: 10px 12px; font-size: 13px; color: white; cursor: pointer; transition: 0.15s;">15k</div>
+                                    <div class="fee-option" data-value="25k" style="padding: 10px 12px; font-size: 13px; color: white; cursor: pointer; transition: 0.15s;">25k</div>
+                                    <div class="fee-option" data-value="50k" style="padding: 10px 12px; font-size: 13px; color: white; cursor: pointer; transition: 0.15s;">50k</div>
+                                </div>
+                                <input type="hidden" id="fee-value" required>
                             </div>
                         </div>
 
@@ -152,7 +164,7 @@ function handleModeSelection(mode) {
                 </div>
             `;
 
-            // Logo ပုံတင်လိုက်ပါက Box ထဲတွင် ပုံပေါ်လာစေရန် JavaScript Logic
+            // Logo ပုံတင်ရန် JavaScript Logic
             const logoInput = document.getElementById('sq-logo-input');
             const logoBox = document.getElementById('logo-preview-box');
             
@@ -169,6 +181,31 @@ function handleModeSelection(mode) {
                     }
                     reader.readAsDataURL(file);
                 }
+            });
+
+            // Modern Fee Dropdown Logic
+            const feeBtn = document.getElementById('fee-dropdown-btn');
+            const feeModal = document.getElementById('fee-modal');
+            const feeText = document.getElementById('selected-fee-text');
+            const feeHiddenInput = document.getElementById('fee-value');
+
+            feeBtn.addEventListener('click', (e) => {
+                e.stopPropagation();
+                feeModal.style.display = feeModal.style.display === 'block' ? 'none' : 'block';
+            });
+
+            document.querySelectorAll('.fee-option').forEach(option => {
+                option.addEventListener('click', function() {
+                    const val = this.getAttribute('data-value');
+                    feeText.textContent = val;
+                    feeHiddenInput.value = val;
+                    feeModal.style.display = 'none';
+                });
+            });
+
+            // နေရာလပ်နှိပ်ပါက Dropdown ပိတ်သွားရန်
+            document.addEventListener('click', () => {
+                feeModal.style.display = 'none';
             });
 
             // Back ခလုတ်နှိပ်ပါက မူလ Mode မျက်နှာပြင်သို့ ပြန်သွားရန်
