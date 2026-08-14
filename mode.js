@@ -87,31 +87,31 @@ function handleModeSelection(mode) {
                             
                             <!-- Roam -->
                             <div style="display: flex; gap: 6px;">
-                                <input type="text" class="reg-input" placeholder="Roam Name" required style="width: 58%; height: 38px; padding: 0 8px; background-color: #1e293b; border: 1px solid #334155; border-radius: 6px; color: white; font-size: 12px; outline: none; box-sizing: border-box; transition: 0.2s;">
+                                <input type="text" class="reg-input" placeholder="Roamer" required style="width: 58%; height: 38px; padding: 0 8px; background-color: #1e293b; border: 1px solid #334155; border-radius: 6px; color: white; font-size: 12px; outline: none; box-sizing: border-box; transition: 0.2s;">
                                 <input type="number" class="reg-input" placeholder="ID" required style="width: 42%; height: 38px; padding: 0 8px; background-color: #1e293b; border: 1px solid #334155; border-radius: 6px; color: white; font-size: 12px; outline: none; box-sizing: border-box; transition: 0.2s;">
                             </div>
 
                             <!-- Exp -->
                             <div style="display: flex; gap: 6px;">
-                                <input type="text" class="reg-input" placeholder="Exp Name" required style="width: 58%; height: 38px; padding: 0 8px; background-color: #1e293b; border: 1px solid #334155; border-radius: 6px; color: white; font-size: 12px; outline: none; box-sizing: border-box; transition: 0.2s;">
+                                <input type="text" class="reg-input" placeholder="Exp laner" required style="width: 58%; height: 38px; padding: 0 8px; background-color: #1e293b; border: 1px solid #334155; border-radius: 6px; color: white; font-size: 12px; outline: none; box-sizing: border-box; transition: 0.2s;">
                                 <input type="number" class="reg-input" placeholder="ID" required style="width: 42%; height: 38px; padding: 0 8px; background-color: #1e293b; border: 1px solid #334155; border-radius: 6px; color: white; font-size: 12px; outline: none; box-sizing: border-box; transition: 0.2s;">
                             </div>
 
                             <!-- Gold -->
                             <div style="display: flex; gap: 6px;">
-                                <input type="text" class="reg-input" placeholder="Gold Name" required style="width: 58%; height: 38px; padding: 0 8px; background-color: #1e293b; border: 1px solid #334155; border-radius: 6px; color: white; font-size: 12px; outline: none; box-sizing: border-box; transition: 0.2s;">
+                                <input type="text" class="reg-input" placeholder="Gold laner" required style="width: 58%; height: 38px; padding: 0 8px; background-color: #1e293b; border: 1px solid #334155; border-radius: 6px; color: white; font-size: 12px; outline: none; box-sizing: border-box; transition: 0.2s;">
                                 <input type="number" class="reg-input" placeholder="ID" required style="width: 42%; height: 38px; padding: 0 8px; background-color: #1e293b; border: 1px solid #334155; border-radius: 6px; color: white; font-size: 12px; outline: none; box-sizing: border-box; transition: 0.2s;">
                             </div>
 
                             <!-- Mid -->
                             <div style="display: flex; gap: 6px;">
-                                <input type="text" class="reg-input" placeholder="Mid Name" required style="width: 58%; height: 38px; padding: 0 8px; background-color: #1e293b; border: 1px solid #334155; border-radius: 6px; color: white; font-size: 12px; outline: none; box-sizing: border-box; transition: 0.2s;">
+                                <input type="text" class="reg-input" placeholder="Mid laner" required style="width: 58%; height: 38px; padding: 0 8px; background-color: #1e293b; border: 1px solid #334155; border-radius: 6px; color: white; font-size: 12px; outline: none; box-sizing: border-box; transition: 0.2s;">
                                 <input type="number" class="reg-input" placeholder="ID" required style="width: 42%; height: 38px; padding: 0 8px; background-color: #1e293b; border: 1px solid #334155; border-radius: 6px; color: white; font-size: 12px; outline: none; box-sizing: border-box; transition: 0.2s;">
                             </div>
 
                             <!-- Jungle -->
                             <div style="display: flex; gap: 6px;">
-                                <input type="text" class="reg-input" placeholder="Jungle Name" required style="width: 58%; height: 38px; padding: 0 8px; background-color: #1e293b; border: 1px solid #334155; border-radius: 6px; color: white; font-size: 12px; outline: none; box-sizing: border-box; transition: 0.2s;">
+                                <input type="text" class="reg-input" placeholder="Jungler" required style="width: 58%; height: 38px; padding: 0 8px; background-color: #1e293b; border: 1px solid #334155; border-radius: 6px; color: white; font-size: 12px; outline: none; box-sizing: border-box; transition: 0.2s;">
                                 <input type="number" class="reg-input" placeholder="ID" required style="width: 42%; height: 38px; padding: 0 8px; background-color: #1e293b; border: 1px solid #334155; border-radius: 6px; color: white; font-size: 12px; outline: none; box-sizing: border-box; transition: 0.2s;">
                             </div>
                         </div>
@@ -123,15 +123,15 @@ function handleModeSelection(mode) {
                                 <input type="text" id="kpay-name" class="reg-input" placeholder="KPay Name" required style="width: 100%; height: 40px; padding: 0 8px; background-color: #1e293b; border: 1px solid #334155; border-radius: 6px; color: white; font-size: 12px; outline: none; box-sizing: border-box; transition: 0.2s;">
                             </div>
                             <div style="display: flex; flex-direction: column; gap: 3px; width: 50%;">
-                                <label style="color: #94a3b8; font-size: 11px; font-weight: 600;">KPay Ph No</label>
-                                <input type="tel" id="kpay-ph" class="reg-input" placeholder="KPay Ph No" required style="width: 100%; height: 40px; padding: 0 8px; background-color: #1e293b; border: 1px solid #334155; border-radius: 6px; color: white; font-size: 12px; outline: none; box-sizing: border-box; transition: 0.2s;">
+                                <label style="color: #94a3b8; font-size: 11px; font-weight: 600;">KPay Ph Number</label>
+                                <input type="tel" id="kpay-ph" class="reg-input" placeholder="KPay Ph Number" required style="width: 100%; height: 40px; padding: 0 8px; background-color: #1e293b; border: 1px solid #334155; border-radius: 6px; color: white; font-size: 12px; outline: none; box-sizing: border-box; transition: 0.2s;">
                             </div>
                         </div>
 
                         <div style="display: flex; gap: 8px;">
                             <div style="display: flex; flex-direction: column; gap: 3px; width: 50%;">
-                                <label style="color: #94a3b8; font-size: 11px; font-weight: 600;">Contact Ph</label>
-                                <input type="tel" id="contact-ph" class="reg-input" placeholder="Contact Ph" required style="width: 100%; height: 40px; padding: 0 8px; background-color: #1e293b; border: 1px solid #334155; border-radius: 6px; color: white; font-size: 12px; outline: none; box-sizing: border-box; transition: 0.2s;">
+                                <label style="color: #94a3b8; font-size: 11px; font-weight: 600;">Contact Ph Number</label>
+                                <input type="tel" id="contact-ph" class="reg-input" placeholder="Contact Ph Number" required style="width: 100%; height: 40px; padding: 0 8px; background-color: #1e293b; border: 1px solid #334155; border-radius: 6px; color: white; font-size: 12px; outline: none; box-sizing: border-box; transition: 0.2s;">
                             </div>
                             
                             <!-- Modern Custom Entry Fee Trigger -->
