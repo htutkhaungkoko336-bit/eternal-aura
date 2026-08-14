@@ -1,5 +1,4 @@
 // Mode ရွေးချယ်သည့် မျက်နှာပြင်နှင့် လုပ်ဆောင်ချက်များကို ကိုင်တွယ်ရန်
-// Mode ရွေးချယ်သည့် မျက်နှာပြင်နှင့် လုပ်ဆောင်ချက်များကို ကိုင်တွယ်ရန်
 export function renderModeScreen(container) {
     container.innerHTML = `
         <div style="display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 20px; width: 100%; padding: 20px;">
@@ -48,24 +47,7 @@ export function renderModeScreen(container) {
     });
 }
 
-function handleModeSelection(mode) {
-    console.log(`Selected Mode: ${mode}`);
-    
-    switch(mode) {
-        case '5vs5':
-            alert("You selected 5 vs 5 Mode!");
-            break;
-        case '1vs1':
-            alert("You selected 1 vs 1 Mode!");
-            break;
-        case 'tournament':
-            alert("You selected Tournament Mode!");
-            break;
-        default:
-            break;
-    }
-}
-// ရွေးချယ်လိုက်သော Mode အပေါ်မူတည်၍ ရှေ့ဆက် လုပ်ဆောင်မည့် အပိုင်း
+// ရွေးချယ်လိုက်သော Mode အပေါ်မူတည်၍ ရှေ့ဆက် လုပ်ဆောင်မည့် အပိုင်း (တစ်ခါတည်းသာ ထည့်ရန်)
 function handleModeSelection(mode) {
     console.log(`Selected Mode: ${mode}`);
     
