@@ -149,7 +149,7 @@ function showLoginPinScreen(formContent, phoneVal, deviceId, onComplete) {
             <p style="color: #94a3b8; font-size: 14px; text-align: center; width: 100%;">New Device Detected. Enter Your PIN</p>
             
             <div class="input-box" style="width: 100%; background-color: #1e293b; padding: 16px 20px; border-radius: 16px; border: 1px solid #334155;">
-                <input type="password" id="login-pin-input" placeholder="Enter 6-digit PIN" maxlength="6" inputmode="numeric" autofocus style="width: 100%; color: white; background: transparent; border: none; font-size: 16px; outline: none; text-align: center; letter-spacing: 4px;">
+                <input type="password" id="login-pin-input" placeholder="Enter 6-digit PIN" maxlength="6" inputmode="numeric" autofocus style="width: 100%; color: white; background: transparent; border: none; font-size: 16px; outline: none; text-align: center; letter-spacing: 4px;" onfocus="this.placeholder=''" onblur="this.placeholder='Enter 6-digit PIN'">
             </div>
 
             <button class="next-btn" id="verify-pin-btn" style="width: 100%; justify-content: center; padding: 14px 20px; margin-top: 5px; display: flex; align-items: center; gap: 8px;">
