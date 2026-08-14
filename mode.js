@@ -119,19 +119,27 @@ function handleModeSelection(mode) {
                                 <input type="text" id="kpay-name" class="reg-input" placeholder="KPay Name" required style="width: 100%; height: 40px; padding: 0 8px; background-color: #1e293b; border: 1px solid #334155; border-radius: 6px; color: white; font-size: 12px; outline: none; box-sizing: border-box; transition: 0.2s;">
                             </div>
                             <div style="display: flex; flex-direction: column; gap: 3px; width: 50%;">
-                                <label style="color: #94a3b8; font-size: 11px; font-weight: 600;">KPay Ph No</label>
-                                <input type="tel" id="kpay-ph" class="reg-input" placeholder="KPay Ph No" required style="width: 100%; height: 40px; padding: 0 8px; background-color: #1e293b; border: 1px solid #334155; border-radius: 6px; color: white; font-size: 12px; outline: none; box-sizing: border-box; transition: 0.2s;">
+                                <label style="color: #94a3b8; font-size: 11px; font-weight: 600;">KPay Ph Number</label>
+                                <input type="tel" id="kpay-ph" class="reg-input" placeholder="KPay Ph Number" required style="width: 100%; height: 40px; padding: 0 8px; background-color: #1e293b; border: 1px solid #334155; border-radius: 6px; color: white; font-size: 12px; outline: none; box-sizing: border-box; transition: 0.2s;">
                             </div>
                         </div>
 
                         <div style="display: flex; gap: 8px;">
                             <div style="display: flex; flex-direction: column; gap: 3px; width: 50%;">
-                                <label style="color: #94a3b8; font-size: 11px; font-weight: 600;">Contact Ph</label>
-                                <input type="tel" id="contact-ph" class="reg-input" placeholder="Contact Ph" required style="width: 100%; height: 40px; padding: 0 8px; background-color: #1e293b; border: 1px solid #334155; border-radius: 6px; color: white; font-size: 12px; outline: none; box-sizing: border-box; transition: 0.2s;">
+                                <label style="color: #94a3b8; font-size: 11px; font-weight: 600;">Contact Ph Number</label>
+                                <input type="tel" id="contact-ph" class="reg-input" placeholder="Contact Ph Number" required style="width: 100%; height: 40px; padding: 0 8px; background-color: #1e293b; border: 1px solid #334155; border-radius: 6px; color: white; font-size: 12px; outline: none; box-sizing: border-box; transition: 0.2s;">
                             </div>
+                            <!-- Entry Fee Dropdown (5k, 10k, 15k, 25k, 50k) -->
                             <div style="display: flex; flex-direction: column; gap: 3px; width: 50%;">
                                 <label style="color: #94a3b8; font-size: 11px; font-weight: 600;">Entry Fee</label>
-                                <input type="text" id="fee" value="Free" disabled style="width: 100%; height: 40px; padding: 0 8px; background-color: #0f172a; border: 1px solid #334155; border-radius: 6px; color: #38bdf8; font-size: 12px; font-weight: 700; outline: none; box-sizing: border-box; text-align: center;">
+                                <select id="fee" class="reg-input" required style="width: 100%; height: 40px; padding: 0 8px; background-color: #1e293b; border: 1px solid #334155; border-radius: 6px; color: #38bdf8; font-size: 12px; font-weight: 700; outline: none; box-sizing: border-box; transition: 0.2s; cursor: pointer;">
+                                    <option value="" disabled selected>Select Fee</option>
+                                    <option value="5k">5k</option>
+                                    <option value="10k">10k</option>
+                                    <option value="15k">15k</option>
+                                    <option value="25k">25k</option>
+                                    <option value="50k">50k</option>
+                                </select>
                             </div>
                         </div>
 
