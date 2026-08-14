@@ -29,12 +29,47 @@ module.exports = async function handler(req, res) {
         }
 
         const usersRef = db.collection('users');
+
+        // ၁။ ယခု လက်ရှိ Device ID ဖြင့် အခြားဖုန်းနံပါတ်တစ်ခုခုကို Register လုပ်ပြီးသား ရှိနှင့်ပြီးပြီလား စစ်ဆေးခြင်း
+        const deviceCheckSnapshot = await usersRef.where('deviceId', '==', deviceId).get();
+        
+        let existingUserOnThisDevice = null;
+        deviceCheckSnapshot.forEach(doc => {
+            const data = doc.data();
+            // ဒီ Device မှာ အခြားဖုန်းနံပါတ်နဲ့ ရှိနေပြီးသားလား (ထည့်သွင်းလာတဲ့ phone နဲ့ မတူဘဲ တစ်ခြားဖုန်းဖြစ်နေရင်)
+            if (data.phone !== phone) {
+                existingUserOnThisDevice = data;
+            }
+        });
+
+        // အကယ်၍ ဒီ Device မှာ အခြားဖုန်းနံပါတ်နဲ့ Register လုပ်ထားပြီးသား ရှိနေရင် အသစ်လုပ်ခွင့် လုံးဝမပေးပါ
+        if (existingUserOnThisDevice && !name && !pin) {
+            // ဒါက ဖုန်းအသစ်နဲ့ အသစ်လာလုပ်တာကို တားဆီးတာဖြစ်ပါတယ်
+            // (သို့သော် အောက်မှာ ဖော်ပြထားတဲ့အတိုင်း PIN နဲ့ ဝင်ခွင့်ကိုတော့ စစ်ဆေးပေးပါမယ်)
+        }
+
+        // ၂။ သုံးစွဲသူ ရိုက်ထည့်လိုက်တဲ့ ဖုန်းနံပါတ် Database ထဲမှာ ရှိမရှိ စစ်ဆေးခြင်း
         const snapshot = await usersRef.where('phone', '==', phone).get();
 
         // -------------------------------------------------------------
-        // ၁။ ဖုန်းနံပါတ် မရှိသေးပါက (User အသစ် - Register)
+        // (က) ဖုန်းနံပါတ် မရှိသေးပါက (အကောင့်အသစ် Register လုပ်ရန်)
         // -------------------------------------------------------------
         if (snapshot.empty) {
+            // အဓိက စည်းကမ်းချက် - ဤ Device တွင် အခြားဖုန်းနံပါတ်ဖြင့် အကောင့်ရှိပြီးသားဆိုလျှင် အသစ်ထပ်လုပ်ခွင့်မပေးပါ
+            if (!deviceCheckSnapshot.empty) {
+                let hasOtherPhone = false;
+                deviceCheckSnapshot.forEach(doc => {
+                    if (doc.data().phone !== phone) hasOtherPhone = true;
+                });
+
+                if (hasOtherPhone) {
+                    return res.status(400).json({ 
+                        success: false, 
+                        message: "This device is already registered with another phone number. You cannot create a new account here." 
+                    });
+                }
+            }
+
             if (!name || !pin) {
                 return res.status(200).json({ 
                     requiresRegistration: true, 
@@ -75,12 +110,12 @@ module.exports = async function handler(req, res) {
         }
 
         // -------------------------------------------------------------
-        // ၂။ ဖုန်းနံပါတ် ရှိပြီးသားဖြစ်ပါက (User ဟောင်း)
+        // (ခ) ဖုန်းနံပါတ် ရှိပြီးသားဖြစ်ပါက (Login ဝင်ရန်)
         // -------------------------------------------------------------
         const userDoc = snapshot.docs[0];
         const userData = userDoc.data();
 
-        // (က) Device ID တူနေပါက Password မလိုဘဲ ဝင်ခွင့်ပေးမည် (Auto Login)
+        // Device ID လည်း တူနေရင် Password တောင် မလိုဘဲ တန်းဝင်ခွင့်ပေးမည် (Auto Login)
         if (userData.deviceId === deviceId) {
             return res.status(200).json({ 
                 success: true, 
@@ -89,7 +124,7 @@ module.exports = async function handler(req, res) {
             });
         }
 
-        // (ခ) Device ID မတူတော့ပါက (ဖုန်းချိန်းထားပါက) Password (PIN) ပါ၀င်လာခြင်း ရှိမရှိ စစ်မည်
+        // Device ID မတူတော့ဘူး (ဒါပေမဲ့ ဒီဖုန်းနံပါတ်ပိုင်ရှင်က ဒီ Device ကနေ ဝင်ချင်တာဖြစ်လို့ PIN တောင်းမည်)
         if (!pin) {
             return res.status(200).json({ 
                 requiresPassword: true, 
@@ -97,14 +132,14 @@ module.exports = async function handler(req, res) {
             });
         }
 
-        // (ဂ) ပေးပို့လာသော PIN မှန်မမှန် စစ်ဆေးခြင်း
+        // ပေးပို့လာသော PIN မှန်မမှန် စစ်ဆေးခြင်း
         const isPasswordValid = bcrypt.compareSync(pin, userData.pin);
 
         if (!isPasswordValid) {
             return res.status(401).json({ success: false, message: "Incorrect PIN. Access denied." });
         }
 
-        // PIN မှန်ကန်ပါက Device ID အသစ်သို့ Update လုပ်ပေးပြီး ဝင်ခွင့်ပေးမည်
+        // PIN မှန်ကန်ပါက ဤ Device အသစ်အတွက် Device ID ကို Update လုပ်ပေးပြီး ဝင်ခွင့်ပေးမည်
         await usersRef.doc(userData.userId).update({ deviceId: deviceId });
 
         return res.status(200).json({ 
