@@ -1,68 +1,64 @@
 // Mode ရွေးချယ်သည့် မျက်နှာပြင်နှင့် လုပ်ဆောင်ချက်များကို ကိုင်တွယ်ရန်
 export function renderModeScreen(container) {
     container.innerHTML = `
-        <div style="display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 20px; width: 100%; padding: 20px;">
-            <h2 style="color: white; font-size: 22px; margin-bottom: 10px;">Select Game Mode</h2>
+        <div style="display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 16px; width: 100%; padding: 20px;">
+            <h2 style="color: white; font-size: 22px; margin-bottom: 5px;">Select Game Mode</h2>
             
-            <div style="display: flex; flex-direction: column; gap: 15px; width: 100%; max-width: 350px;">
+            <div style="display: flex; flex-direction: column; gap: 16px; width: 100%; max-width: 340px;">
                 
-                <!-- 5vs5 Mode -->
-                <button class="mode-btn" data-mode="5vs5" style="background-color: #1e293b; color: white; border: 1px solid #334155; padding: 14px 18px; border-radius: 16px; font-size: 16px; cursor: pointer; text-align: left; display: flex; justify-content: space-between; align-items: center; transition: 0.3s;">
-                    <div style="display: flex; align-items: center; gap: 12px;">
-                        <img src="5vs5modeEA.jpg" alt="5v5" style="width: 36px; height: 36px; border-radius: 8px; object-fit: cover;">
-                        <span style="font-weight: 500;">5 vs 5 Match</span>
+                <!-- 5vs5 Mode Card -->
+                <div class="mode-card" data-mode="5vs5" style="position: relative; width: 100%; height: 110px; border-radius: 16px; overflow: hidden; cursor: pointer; border: 1px solid #334155; box-shadow: 0 4px 12px rgba(0,0,0,0.3); transition: transform 0.2s;">
+                    <img src="5vs5modeEA.jpg" alt="5v5" style="position: absolute; width: 100%; height: 100%; object-fit: cover; filter: brightness(0.6);">
+                    <div style="position: absolute; bottom: 0; left: 0; width: 100%; padding: 15px; background: linear-gradient(to top, rgba(15,23,42,0.9), transparent); display: flex; justify-content: space-between; align-items: flex-end;">
+                        <span style="color: white; font-size: 18px; font-weight: bold;">5 vs 5 Match</span>
+                        <span style="color: #38bdf8; font-size: 14px; font-weight: 500;">Select &rarr;</span>
                     </div>
-                    <span style="color: #94a3b8; font-size: 14px;">Select &rarr;</span>
-                </button>
+                </div>
 
-                <!-- 1vs1 Mode -->
-                <button class="mode-btn" data-mode="1vs1" style="background-color: #1e293b; color: white; border: 1px solid #334155; padding: 14px 18px; border-radius: 16px; font-size: 16px; cursor: pointer; text-align: left; display: flex; justify-content: space-between; align-items: center; transition: 0.3s;">
-                    <div style="display: flex; align-items: center; gap: 12px;">
-                        <img src="1vs1modeEA.jpg" alt="1v1" style="width: 36px; height: 36px; border-radius: 8px; object-fit: cover;">
-                        <span style="font-weight: 500;">1 vs 1 Battle</span>
+                <!-- 1vs1 Mode Card -->
+                <div class="mode-card" data-mode="1vs1" style="position: relative; width: 100%; height: 110px; border-radius: 16px; overflow: hidden; cursor: pointer; border: 1px solid #334155; box-shadow: 0 4px 12px rgba(0,0,0,0.3); transition: transform 0.2s;">
+                    <img src="1vs1modeEA.jpg" alt="1v1" style="position: absolute; width: 100%; height: 100%; object-fit: cover; filter: brightness(0.6);">
+                    <div style="position: absolute; bottom: 0; left: 0; width: 100%; padding: 15px; background: linear-gradient(to top, rgba(15,23,42,0.9), transparent); display: flex; justify-content: space-between; align-items: flex-end;">
+                        <span style="color: white; font-size: 18px; font-weight: bold;">1 vs 1 Battle</span>
+                        <span style="color: #38bdf8; font-size: 14px; font-weight: 500;">Select &rarr;</span>
                     </div>
-                    <span style="color: #94a3b8; font-size: 14px;">Select &rarr;</span>
-                </button>
+                </div>
 
-                <!-- Tournament Mode -->
-                <button class="mode-btn" data-mode="tournament" style="background-color: #1e293b; color: white; border: 1px solid #334155; padding: 14px 18px; border-radius: 16px; font-size: 16px; cursor: pointer; text-align: left; display: flex; justify-content: space-between; align-items: center; transition: 0.3s;">
-                    <div style="display: flex; align-items: center; gap: 12px;">
-                        <img src="tournmentEA.jpg" alt="Tournament" style="width: 36px; height: 36px; border-radius: 8px; object-fit: cover;">
-                        <span style="font-weight: 500;">Tournament</span>
+                <!-- Tournament Mode Card -->
+                <div class="mode-card" data-mode="tournament" style="position: relative; width: 100%; height: 110px; border-radius: 16px; overflow: hidden; cursor: pointer; border: 1px solid #334155; box-shadow: 0 4px 12px rgba(0,0,0,0.3); transition: transform 0.2s;">
+                    <img src="tournmentEA.jpg" alt="Tournament" style="position: absolute; width: 100%; height: 100%; object-fit: cover; filter: brightness(0.6);">
+                    <div style="position: absolute; bottom: 0; left: 0; width: 100%; padding: 15px; background: linear-gradient(to top, rgba(15,23,42,0.9), transparent); display: flex; justify-content: space-between; align-items: flex-end;">
+                        <span style="color: white; font-size: 18px; font-weight: bold;">Tournament</span>
+                        <span style="color: #38bdf8; font-size: 14px; font-weight: 500;">Select &rarr;</span>
                     </div>
-                    <span style="color: #94a3b8; font-size: 14px;">Select &rarr;</span>
-                </button>
+                </div>
 
             </div>
         </div>
     `;
 
-    // ခလုတ်တစ်ခုချင်းစီအတွက် Event Listener များ ချိတ်ဆက်ခြင်း
-    const modeButtons = container.querySelectorAll('.mode-btn');
-    modeButtons.forEach(button => {
-        button.addEventListener('click', (e) => {
+    // ကတ်များကို နှိပ်သည့်အခါ လုပ်ဆောင်ချက်များ
+    const modeCards = container.querySelectorAll('.mode-card');
+    modeCards.forEach(card => {
+        card.addEventListener('click', (e) => {
             const selectedMode = e.currentTarget.getAttribute('data-mode');
             handleModeSelection(selectedMode);
         });
     });
 }
 
-// ရွေးချယ်လိုက်သော Mode အပေါ်မူတည်၍ ရှေ့ဆက် လုပ်ဆောင်မည့် အပိုင်း (တစ်ခါတည်းသာ ထည့်ရန်)
 function handleModeSelection(mode) {
     console.log(`Selected Mode: ${mode}`);
     
     switch(mode) {
         case '5vs5':
             alert("You selected 5 vs 5 Mode!");
-            // 5vs5 ဆိုင်ရာ လုပ်ဆောင်ချက် သို့မဟုတ် မျက်နှာပြင်သို့ ပို့ရန်
             break;
         case '1vs1':
             alert("You selected 1 vs 1 Mode!");
-            // 1vs1 ဆိုင်ရာ လုပ်ဆောင်ချက်သို့ ပို့ရန်
             break;
         case 'tournament':
             alert("You selected Tournament Mode!");
-            // Tournament ဆိုင်ရာ လုပ်ဆောင်ချက်သို့ ပို့ရန်
             break;
         default:
             break;
