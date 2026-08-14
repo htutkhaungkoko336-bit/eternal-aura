@@ -4,7 +4,7 @@ export function renderModeScreen(container) {
         <div style="display: flex; flex-direction: column; align-items: center; justify-content: flex-start; gap: 30px; width: 100%; height: 100%; padding: 2px 20px 10px 20px; box-sizing: border-box; overflow: hidden;">
             <h2 style="color: #f8fafc; font-size: 22px; font-weight: 800; letter-spacing: 1px; margin: 0 0 6px 0; text-transform: uppercase; background: linear-gradient(to right, #38bdf8, #818cf8); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">Eternal Aura</h2>
             
-            <div style="display: flex; flex-direction: column; gap: 12px; width: 100%; max-width: 320px;">
+            <div style="display: flex; flex-direction: column; gap: 30px; width: 100%; max-width: 320px;">
                 
                 <!-- 5vs5 Mode Card -->
                 <div class="mode-card" data-mode="5vs5" style="display: flex; flex-direction: column; align-items: center; background-color: #1e293b; border: 1px solid #334155; border-radius: 12px; overflow: hidden; cursor: pointer; padding-bottom: 6px; transition: 0.2s;">
