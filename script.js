@@ -138,7 +138,7 @@ function handleLoginSuccess(username) {
     formContent.style.display = 'none';
 
     document.querySelector('.container').innerHTML = `
-        <div id="app-content" style="width: 100%; height: 100%; display: flex; flex-direction: column; overflow: hidden; padding: 0; box-sizing: border-box;"></div>
+        <div id="app-content" style="width: 100%; height: 100%; display: flex; flex-direction: column; justify-content: center; align-items: center; overflow: hidden; padding: 0; box-sizing: border-box;"></div>
         <div style="display: flex; flex-direction: column; justify-content: flex-end; position: absolute; bottom: 0; left: 0; width: 100%; box-sizing: border-box; pointer-events: none;">
             <div id="bottom-nav" style="display: flex; justify-content: space-around; align-items: center; background-color: #0f172a; border-top: 1px solid #1e293b; padding: 10px 0 16px 0; width: 100%; pointer-events: auto;">
                 
