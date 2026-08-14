@@ -21,10 +21,11 @@ module.exports = async function handler(req, res) {
     }
 
     try {
-        const { phone, pin, deviceId } = req.body;
+        const { name, phone, pin, deviceId } = req.body;
 
-        if (!phone || !pin || !deviceId) {
-            return res.status(400).json({ success: false, message: "Phone, PIN, and Device ID are required" });
+        // name ပါ ထည့်စစ်ဆေးမည်
+        if (!name || !phone || !pin || !deviceId) {
+            return res.status(400).json({ success: false, message: "Name, Phone, PIN, and Device ID are required" });
         }
 
         const userId = generateUniqueUserId();
@@ -32,6 +33,7 @@ module.exports = async function handler(req, res) {
 
         const userData = {
             userId: userId,
+            name: name,
             phone: phone,
             pin: pin,
             deviceId: deviceId,
@@ -43,7 +45,7 @@ module.exports = async function handler(req, res) {
 
         return res.status(200).json({ 
             success: true, 
-            message: "User created successfully", 
+            message: "User registered successfully", 
             userId: userId 
         });
 

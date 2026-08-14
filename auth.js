@@ -1,15 +1,24 @@
-// auth.js - ဖုန်းနံပါတ်နှင့် PIN လက်ခံစစ်ဆေးခြင်း Module
+// auth.js - ဖုန်းနံပါတ်၊ အမည်နှင့် PIN လက်ခံစစ်ဆေးခြင်း Module
 
 export function initAuth(formContent, onComplete) {
-    // ပထမအစ Phone Number ထည့်သည့် ပုံစံကို တည်ဆောက်ခြင်း
+    // ပထမအစ Name နှင့် Phone Number ထည့်သည့် ပုံစံကို တည်ဆောက်ခြင်း
     formContent.innerHTML = `
-        <div style="display: flex; flex-direction: column; gap: 8px; width: 100%;">
-            <p style="color: #94a3b8; font-size: 14px; text-align: left; width: 100%;">Enter Phone Number</p>
-            <div class="input-box" style="width: 100%; background-color: #1e293b; padding: 16px 20px; border-radius: 16px; border: 1px solid #334155;">
-                <input type="tel" id="phone-input" placeholder="Phone Number" maxlength="11" inputmode="numeric" style="width: 100%; color: white; background: transparent; border: none; font-size: 16px; outline: none;">
+        <div style="display: flex; flex-direction: column; gap: 12px; width: 100%;">
+            <div style="display: flex; flex-direction: column; gap: 6px; width: 100%;">
+                <p style="color: #94a3b8; font-size: 14px; text-align: left; width: 100%; margin: 0;">Enter Your Name</p>
+                <div class="input-box" style="width: 100%; background-color: #1e293b; padding: 14px 20px; border-radius: 16px; border: 1px solid #334155;">
+                    <input type="text" id="name-input" placeholder="Your Name" style="width: 100%; color: white; background: transparent; border: none; font-size: 16px; outline: none;">
+                </div>
+            </div>
+
+            <div style="display: flex; flex-direction: column; gap: 6px; width: 100%;">
+                <p style="color: #94a3b8; font-size: 14px; text-align: left; width: 100%; margin: 0;">Enter Phone Number</p>
+                <div class="input-box" style="width: 100%; background-color: #1e293b; padding: 14px 20px; border-radius: 16px; border: 1px solid #334155;">
+                    <input type="tel" id="phone-input" placeholder="Phone Number" maxlength="11" inputmode="numeric" style="width: 100%; color: white; background: transparent; border: none; font-size: 16px; outline: none;">
+                </div>
             </div>
         </div>
-        <button class="next-btn" id="next-btn" style="width: 100%; justify-content: center; padding: 14px 20px; margin-top: 5px; display: flex; align-items: center; gap: 8px;">
+        <button class="next-btn" id="next-btn" style="width: 100%; justify-content: center; padding: 14px 20px; margin-top: 10px; display: flex; align-items: center; gap: 8px;">
             <span>Next</span>
             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
                 <line x1="5" y1="12" x2="19" y2="12"></line>
@@ -18,6 +27,7 @@ export function initAuth(formContent, onComplete) {
         </button>
     `;
 
+    const nameInput = document.getElementById('name-input');
     const phoneInput = document.getElementById('phone-input');
     const nextBtn = document.getElementById('next-btn');
 
@@ -26,7 +36,15 @@ export function initAuth(formContent, onComplete) {
     });
 
     nextBtn.addEventListener('click', () => {
-        if (phoneInput.value.trim() === '') {
+        const nameVal = nameInput.value.trim();
+        const phoneVal = phoneInput.value.trim();
+
+        if (!nameVal) {
+            alert("ကျေးဇူးပြု၍ အမည် (Name) ထည့်ပါ။");
+            return;
+        }
+
+        if (!phoneVal) {
             alert("ကျေးဇူးပြု၍ ဖုန်းနံပါတ် ထည့်ပါ။");
             return;
         }
@@ -121,37 +139,40 @@ export function initAuth(formContent, onComplete) {
             }
 
             // Device ID တစ်ခု ဖန်တီးခြင်း သို့မဟုတ် localStorage မှ ယူခြင်း
-            let deviceId = localStorage.getItem('device_id');
+            let deviceId = localStorage.getItem('device_id') || localStorage.getItem('deviceId');
             if (!deviceId) {
                 deviceId = 'dev_' + Math.random().toString(36).substring(2, 12);
                 localStorage.setItem('device_id', deviceId);
             }
 
-            // Backend သို့ Data ပို့ခြင်း (/api/userid ကို ချိတ်ဆက်ပေးထားသည်)
+            // Backend သို့ Name၊ Phone၊ PIN နှင့် Device ID အပါအဝင် Data အပြည့်အစုံ ပို့ခြင်း
             try {
                 const response = await fetch('/api/userid', {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json'
                     },
-                    body: JSON.stringify({
-                        phone: phoneInput.value,
-                        pin: pin1,
-                        deviceId: deviceId
+                    body: JSON.stringify({ 
+                        name: nameVal, 
+                        phone: phoneVal, 
+                        pin: pin1, 
+                        deviceId: deviceId 
                     })
                 });
 
-                const data = await response.json();
+                const result = await response.json();
 
-                if (data.success) {
-                    console.log("Created User ID:", data.userId);
-                    
-                    // PIN မှန်ကန်ပြီး Backend တွင် Data သိမ်းပြီးပါက ဆက်လုပ်ရန် Callback ခေါ်မည်
+                if (result.success) {
+                    // LocalStorage တွင် သိမ်းဆည်းခြင်း
+                    localStorage.setItem('userId', result.userId);
+                    localStorage.setItem('userName', nameVal);
+
+                    // ဆက်လက်ဆောင်ရွက်ရန် Callback ခေါ်မည်
                     if (typeof onComplete === 'function') {
-                        onComplete(data.userId);
+                        onComplete(result.userId);
                     }
                 } else {
-                    alert("စာရင်းသွင်းရာတွင် အမှားအယွင်းရှိသည်: " + data.error);
+                    alert("စာရင်းသွင်းရာတွင် အမှားအယွင်းရှိသည်: " + (result.message || result.error));
                 }
             } catch (err) {
                 console.error("Network error:", err);
