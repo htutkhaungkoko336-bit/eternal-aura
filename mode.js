@@ -47,26 +47,33 @@ function handleModeSelection(mode) {
         case '5vs5':
             appContent.innerHTML = `
                 <div style="display: flex; flex-direction: column; align-items: center; justify-content: flex-start; width: 100%; height: 100%; padding: 4px 14px 10px 14px; box-sizing: border-box; overflow-y: auto;">
-                    <h2 style="color: #f8fafc; font-size: 16px; font-weight: 800; letter-spacing: 1px; margin: 0 0 6px 0; text-transform: uppercase; background: linear-gradient(to right, #38bdf8, #818cf8); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">5 vs 5 Registration</h2>
+                    <h2 style="color: #f8fafc; font-size: 20px; font-weight: 800; letter-spacing: 1px; margin: 0 0 10px 0; text-transform: uppercase; background: linear-gradient(to right, #38bdf8, #818cf8); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">5 vs 5 Registration</h2>
                     
-                    <form id="reg-form" style="display: flex; flex-direction: column; gap: 8px; width: 100%; max-width: 340px; padding-bottom: 30px;">
+                    <form id="reg-form" style="display: flex; flex-direction: column; gap: 10px; width: 100%; max-width: 340px; padding-bottom: 30px;">
                         
-                        <!-- Top Row: Modern Logo Box & Squad Name -->
+                        <style>
+                            .reg-input:focus, .reg-logo-box:hover {
+                                border-color: #38bdf8 !important;
+                                box-shadow: 0 0 8px rgba(56, 189, 248, 0.4);
+                            }
+                        </style>
+
+                        <!-- Top Row: Square Logo Box & Squad Name -->
                         <div style="display: flex; gap: 10px; align-items: stretch;">
                             
-                            <!-- Custom Logo Box -->
-                            <div style="display: flex; flex-direction: column; gap: 2px; width: 32%;">
+                            <!-- Square Logo Box -->
+                            <div style="display: flex; flex-direction: column; gap: 3px; width: 35%;">
                                 <label style="color: #94a3b8; font-size: 11px; font-weight: 600;">Logo</label>
-                                <label for="sq-logo-input" style="display: flex; flex-direction: column; align-items: center; justify-content: center; width: 100%; height: 42px; background-color: #1e293b; border: 1.5px dashed #475569; border-radius: 8px; cursor: pointer; overflow: hidden; position: relative; transition: 0.2s;" id="logo-preview-box">
-                                    <span id="logo-text" style="color: #94a3b8; font-size: 10px; font-weight: 600;">Upload</span>
+                                <label for="sq-logo-input" class="reg-logo-box" style="display: flex; flex-direction: column; align-items: center; justify-content: center; width: 100%; height: 46px; background-color: #1e293b; border: 1.5px dashed #475569; border-radius: 8px; cursor: pointer; overflow: hidden; position: relative; transition: 0.2s;" id="logo-preview-box">
+                                    <span id="logo-text" style="color: #94a3b8; font-size: 11px; font-weight: 600;">Upload</span>
                                     <input type="file" id="sq-logo-input" accept="image/*" style="display: none;">
                                 </label>
                             </div>
 
                             <!-- Squad Name -->
-                            <div style="display: flex; flex-direction: column; gap: 2px; width: 68%;">
+                            <div style="display: flex; flex-direction: column; gap: 3px; width: 65%;">
                                 <label style="color: #94a3b8; font-size: 11px; font-weight: 600;">Squad Name</label>
-                                <input type="text" id="sq-name" placeholder="Enter Squad Name" required style="width: 100%; height: 42px; padding: 0 10px; background-color: #1e293b; border: 1px solid #334155; border-radius: 8px; color: white; font-size: 13px; outline: none; box-sizing: border-box;">
+                                <input type="text" id="sq-name" class="reg-input" placeholder="Squad Name" required style="width: 100%; height: 46px; padding: 0 10px; background-color: #1e293b; border: 1px solid #334155; border-radius: 8px; color: white; font-size: 13px; outline: none; box-sizing: border-box; transition: 0.2s;">
                             </div>
                         </div>
 
@@ -76,62 +83,62 @@ function handleModeSelection(mode) {
                             
                             <!-- Roam -->
                             <div style="display: flex; gap: 6px;">
-                                <input type="text" placeholder="Roam Name" required style="width: 55%; height: 36px; padding: 0 8px; background-color: #1e293b; border: 1px solid #334155; border-radius: 6px; color: white; font-size: 12px; outline: none; box-sizing: border-box;">
-                                <input type="text" placeholder="Roam ID" required style="width: 45%; height: 36px; padding: 0 8px; background-color: #1e293b; border: 1px solid #334155; border-radius: 6px; color: white; font-size: 12px; outline: none; box-sizing: border-box;">
+                                <input type="text" class="reg-input" placeholder="Roam Name" required style="width: 58%; height: 38px; padding: 0 8px; background-color: #1e293b; border: 1px solid #334155; border-radius: 6px; color: white; font-size: 12px; outline: none; box-sizing: border-box; transition: 0.2s;">
+                                <input type="number" class="reg-input" placeholder="ID" required style="width: 42%; height: 38px; padding: 0 8px; background-color: #1e293b; border: 1px solid #334155; border-radius: 6px; color: white; font-size: 12px; outline: none; box-sizing: border-box; transition: 0.2s;">
                             </div>
 
                             <!-- Exp -->
                             <div style="display: flex; gap: 6px;">
-                                <input type="text" placeholder="Exp Name" required style="width: 55%; height: 36px; padding: 0 8px; background-color: #1e293b; border: 1px solid #334155; border-radius: 6px; color: white; font-size: 12px; outline: none; box-sizing: border-box;">
-                                <input type="text" placeholder="Exp ID" required style="width: 45%; height: 36px; padding: 0 8px; background-color: #1e293b; border: 1px solid #334155; border-radius: 6px; color: white; font-size: 12px; outline: none; box-sizing: border-box;">
+                                <input type="text" class="reg-input" placeholder="Exp Name" required style="width: 58%; height: 38px; padding: 0 8px; background-color: #1e293b; border: 1px solid #334155; border-radius: 6px; color: white; font-size: 12px; outline: none; box-sizing: border-box; transition: 0.2s;">
+                                <input type="number" class="reg-input" placeholder="ID" required style="width: 42%; height: 38px; padding: 0 8px; background-color: #1e293b; border: 1px solid #334155; border-radius: 6px; color: white; font-size: 12px; outline: none; box-sizing: border-box; transition: 0.2s;">
                             </div>
 
                             <!-- Gold -->
                             <div style="display: flex; gap: 6px;">
-                                <input type="text" placeholder="Gold Name" required style="width: 55%; height: 36px; padding: 0 8px; background-color: #1e293b; border: 1px solid #334155; border-radius: 6px; color: white; font-size: 12px; outline: none; box-sizing: border-box;">
-                                <input type="text" placeholder="Gold ID" required style="width: 45%; height: 36px; padding: 0 8px; background-color: #1e293b; border: 1px solid #334155; border-radius: 6px; color: white; font-size: 12px; outline: none; box-sizing: border-box;">
+                                <input type="text" class="reg-input" placeholder="Gold Name" required style="width: 58%; height: 38px; padding: 0 8px; background-color: #1e293b; border: 1px solid #334155; border-radius: 6px; color: white; font-size: 12px; outline: none; box-sizing: border-box; transition: 0.2s;">
+                                <input type="number" class="reg-input" placeholder="ID" required style="width: 42%; height: 38px; padding: 0 8px; background-color: #1e293b; border: 1px solid #334155; border-radius: 6px; color: white; font-size: 12px; outline: none; box-sizing: border-box; transition: 0.2s;">
                             </div>
 
                             <!-- Mid -->
                             <div style="display: flex; gap: 6px;">
-                                <input type="text" placeholder="Mid Name" required style="width: 55%; height: 36px; padding: 0 8px; background-color: #1e293b; border: 1px solid #334155; border-radius: 6px; color: white; font-size: 12px; outline: none; box-sizing: border-box;">
-                                <input type="text" placeholder="Mid ID" required style="width: 45%; height: 36px; padding: 0 8px; background-color: #1e293b; border: 1px solid #334155; border-radius: 6px; color: white; font-size: 12px; outline: none; box-sizing: border-box;">
+                                <input type="text" class="reg-input" placeholder="Mid Name" required style="width: 58%; height: 38px; padding: 0 8px; background-color: #1e293b; border: 1px solid #334155; border-radius: 6px; color: white; font-size: 12px; outline: none; box-sizing: border-box; transition: 0.2s;">
+                                <input type="number" class="reg-input" placeholder="ID" required style="width: 42%; height: 38px; padding: 0 8px; background-color: #1e293b; border: 1px solid #334155; border-radius: 6px; color: white; font-size: 12px; outline: none; box-sizing: border-box; transition: 0.2s;">
                             </div>
 
                             <!-- Jungle -->
                             <div style="display: flex; gap: 6px;">
-                                <input type="text" placeholder="Jungle Name" required style="width: 55%; height: 36px; padding: 0 8px; background-color: #1e293b; border: 1px solid #334155; border-radius: 6px; color: white; font-size: 12px; outline: none; box-sizing: border-box;">
-                                <input type="text" placeholder="Jungle ID" required style="width: 45%; height: 36px; padding: 0 8px; background-color: #1e293b; border: 1px solid #334155; border-radius: 6px; color: white; font-size: 12px; outline: none; box-sizing: border-box;">
+                                <input type="text" class="reg-input" placeholder="Jungle Name" required style="width: 58%; height: 38px; padding: 0 8px; background-color: #1e293b; border: 1px solid #334155; border-radius: 6px; color: white; font-size: 12px; outline: none; box-sizing: border-box; transition: 0.2s;">
+                                <input type="number" class="reg-input" placeholder="ID" required style="width: 42%; height: 38px; padding: 0 8px; background-color: #1e293b; border: 1px solid #334155; border-radius: 6px; color: white; font-size: 12px; outline: none; box-sizing: border-box; transition: 0.2s;">
                             </div>
                         </div>
 
                         <!-- Payment & Contact Info -->
                         <div style="display: flex; gap: 8px;">
-                            <div style="display: flex; flex-direction: column; gap: 2px; width: 50%;">
+                            <div style="display: flex; flex-direction: column; gap: 3px; width: 50%;">
                                 <label style="color: #94a3b8; font-size: 11px; font-weight: 600;">KPay Name</label>
-                                <input type="text" id="kpay-name" placeholder="KPay Name" required style="width: 100%; height: 38px; padding: 0 8px; background-color: #1e293b; border: 1px solid #334155; border-radius: 6px; color: white; font-size: 12px; outline: none; box-sizing: border-box;">
+                                <input type="text" id="kpay-name" class="reg-input" placeholder="KPay Name" required style="width: 100%; height: 40px; padding: 0 8px; background-color: #1e293b; border: 1px solid #334155; border-radius: 6px; color: white; font-size: 12px; outline: none; box-sizing: border-box; transition: 0.2s;">
                             </div>
-                            <div style="display: flex; flex-direction: column; gap: 2px; width: 50%;">
+                            <div style="display: flex; flex-direction: column; gap: 3px; width: 50%;">
                                 <label style="color: #94a3b8; font-size: 11px; font-weight: 600;">KPay Ph No</label>
-                                <input type="tel" id="kpay-ph" placeholder="KPay Ph No" required style="width: 100%; height: 38px; padding: 0 8px; background-color: #1e293b; border: 1px solid #334155; border-radius: 6px; color: white; font-size: 12px; outline: none; box-sizing: border-box;">
+                                <input type="tel" id="kpay-ph" class="reg-input" placeholder="KPay Ph No" required style="width: 100%; height: 40px; padding: 0 8px; background-color: #1e293b; border: 1px solid #334155; border-radius: 6px; color: white; font-size: 12px; outline: none; box-sizing: border-box; transition: 0.2s;">
                             </div>
                         </div>
 
                         <div style="display: flex; gap: 8px;">
-                            <div style="display: flex; flex-direction: column; gap: 2px; width: 50%;">
+                            <div style="display: flex; flex-direction: column; gap: 3px; width: 50%;">
                                 <label style="color: #94a3b8; font-size: 11px; font-weight: 600;">Contact Ph</label>
-                                <input type="tel" id="contact-ph" placeholder="Contact Ph" required style="width: 100%; height: 38px; padding: 0 8px; background-color: #1e293b; border: 1px solid #334155; border-radius: 6px; color: white; font-size: 12px; outline: none; box-sizing: border-box;">
+                                <input type="tel" id="contact-ph" class="reg-input" placeholder="Contact Ph" required style="width: 100%; height: 40px; padding: 0 8px; background-color: #1e293b; border: 1px solid #334155; border-radius: 6px; color: white; font-size: 12px; outline: none; box-sizing: border-box; transition: 0.2s;">
                             </div>
-                            <div style="display: flex; flex-direction: column; gap: 2px; width: 50%;">
+                            <div style="display: flex; flex-direction: column; gap: 3px; width: 50%;">
                                 <label style="color: #94a3b8; font-size: 11px; font-weight: 600;">Entry Fee</label>
-                                <input type="text" id="fee" value="Free" disabled style="width: 100%; height: 38px; padding: 0 8px; background-color: #0f172a; border: 1px solid #334155; border-radius: 6px; color: #38bdf8; font-size: 12px; font-weight: 700; outline: none; box-sizing: border-box; text-align: center;">
+                                <input type="text" id="fee" value="Free" disabled style="width: 100%; height: 40px; padding: 0 8px; background-color: #0f172a; border: 1px solid #334155; border-radius: 6px; color: #38bdf8; font-size: 12px; font-weight: 700; outline: none; box-sizing: border-box; text-align: center;">
                             </div>
                         </div>
 
                         <!-- Back & Next Buttons -->
                         <div style="display: flex; gap: 8px; margin-top: 6px;">
-                            <button type="button" id="back-btn" style="width: 50%; height: 40px; background-color: #334155; color: white; border: none; border-radius: 8px; font-size: 14px; font-weight: 700; cursor: pointer;">Back</button>
-                            <button type="submit" style="width: 50%; height: 40px; background-color: #38bdf8; color: #0f172a; border: none; border-radius: 8px; font-size: 14px; font-weight: 700; cursor: pointer;">Next</button>
+                            <button type="button" id="back-btn" style="width: 50%; height: 42px; background-color: #334155; color: white; border: none; border-radius: 8px; font-size: 14px; font-weight: 700; cursor: pointer;">Back</button>
+                            <button type="submit" style="width: 50%; height: 42px; background-color: #38bdf8; color: #0f172a; border: none; border-radius: 8px; font-size: 14px; font-weight: 700; cursor: pointer;">Next</button>
                         </div>
                     </form>
                 </div>
@@ -149,6 +156,7 @@ function handleModeSelection(mode) {
                         logoBox.style.backgroundImage = `url(${event.target.result})`;
                         logoBox.style.backgroundSize = 'cover';
                         logoBox.style.backgroundPosition = 'center';
+                        logoBox.style.borderStyle = 'solid';
                         document.getElementById('logo-text').style.display = 'none';
                     }
                     reader.readAsDataURL(file);
