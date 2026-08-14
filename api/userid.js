@@ -1,5 +1,5 @@
 const { initializeApp, cert, getApps } = require('firebase-admin/app');
-const { getFirestore } = require('firebase-admin/firestore');
+const { getFirestore, FieldValue } = require('firebase-admin/firestore');
 const bcrypt = require('bcryptjs');
 
 const app = getApps().length === 0 
@@ -13,6 +13,19 @@ const db = getFirestore(app);
 function generateUniqueUserId() {
     const randomStr = Math.random().toString(36).substring(2, 8).toUpperCase();
     return `AURA-${randomStr}`;
+}
+
+// မြန်မာစံတော်ချိန် ရယူရန် Helper Function
+function getYangonTimeStr() {
+    const now = new Date();
+    const utc = now.getTime() + (now.getTimezoneOffset() * 60000);
+    const yangonTime = new Date(utc + (3600000 * 6.5));
+    const dateStr = `${yangonTime.getDate()}-${yangonTime.getMonth() + 1}-${yangonTime.getFullYear()}`;
+    let hours = yangonTime.getHours();
+    const minutes = yangonTime.getMinutes().toString().padStart(2, '0');
+    const ampm = hours >= 12 ? 'pm' : 'am';
+    hours = hours % 12 || 12;
+    return `${dateStr}     ${hours}:${minutes} ${ampm}`;
 }
 
 module.exports = async function handler(req, res) {
@@ -30,7 +43,7 @@ module.exports = async function handler(req, res) {
 
         const usersRef = db.collection('users');
 
-        // ၁။ ဤ Device တွင် အခြားဖုန်းနံပါတ်ဖြင့် အကောင့်ရှိပြီးသားလား စစ်ဆေးခြင်း (Device တစ်ခုလျှင် ဖုန်း (1) ခုသာ)
+        // ၁။ ဤ Device တွင် အခြားဖုန်းနံပါတ်ဖြင့် အကောင့်ရှိပြီးသားလား စစ်ဆေးခြင်း
         const deviceCheckSnapshot = await usersRef.where('deviceId', '==', deviceId).get();
         let hasOtherPhoneOnThisDevice = false;
         deviceCheckSnapshot.forEach(doc => {
@@ -66,24 +79,16 @@ module.exports = async function handler(req, res) {
             const salt = bcrypt.genSaltSync(10);
             const hashedPin = bcrypt.hashSync(pin, salt);
             const userId = generateUniqueUserId();
-
-            const now = new Date();
-            const utc = now.getTime() + (now.getTimezoneOffset() * 60000);
-            const yangonTime = new Date(utc + (3600000 * 6.5));
-            const dateStr = `${yangonTime.getDate()}-${yangonTime.getMonth() + 1}-${yangonTime.getFullYear()}`;
-            let hours = yangonTime.getHours();
-            const minutes = yangonTime.getMinutes().toString().padStart(2, '0');
-            const ampm = hours >= 12 ? 'pm' : 'am';
-            hours = hours % 12 || 12;
-            const createdAtStr = `${dateStr}     ${hours}:${minutes} ${ampm}`;
+            const createdAtStr = getYangonTimeStr();
 
             const newUserData = {
                 userId: userId,
                 name: name,
                 phone: phone,
                 pin: hashedPin,
-                deviceId: deviceId, // ပထမဆုံး Register လုပ်တဲ့ Original Device ID ကို အမြဲတမ်း အတည်အဖြစ် သိမ်းမည်
-                createdAt: createdAtStr
+                deviceId: deviceId, // Original Device ကို အသေ သိမ်းမည်
+                createdAt: createdAtStr,
+                recentLogins: [] // အခြား Device များမှ ဝင်ရောက်ခဲ့မှုကို သိမ်းရန် Field အသစ်
             };
 
             await usersRef.doc(userId).set(newUserData);
@@ -101,7 +106,7 @@ module.exports = async function handler(req, res) {
         const userDoc = snapshot.docs[0];
         const userData = userDoc.data();
 
-        // ပထမဆုံး Register လုပ်ထားတဲ့ Original Device နဲ့ တူမှသာ Password မလိုဘဲ တန်းဝင်ခွင့်ပေးမည်
+        // ပထမဆုံး Register လုပ်ထားတဲ့ Original Device နဲ့ တူနေရင် Password မလိုဘဲ တန်းဝင်ခွင့်ပေးမည်
         if (userData.deviceId === deviceId) {
             return res.status(200).json({ 
                 success: true, 
@@ -113,7 +118,6 @@ module.exports = async function handler(req, res) {
         // -------------------------------------------------------------
         // (ဂ) DEVICE မတူတော့ပါက (Original Device မဟုတ်တော့ပါက)
         // -------------------------------------------------------------
-        // PIN မပါသေးဘူးဆိုရင် PIN တောင်းဖို့ Front-end ကို အချက်ပြမည်
         if (!pin) {
             return res.status(200).json({ 
                 requiresPassword: true, 
@@ -128,8 +132,17 @@ module.exports = async function handler(req, res) {
             return res.status(401).json({ success: false, message: "Incorrect PIN. Access denied." });
         }
 
-        // PIN မှန်ကန်ပါက ဝင်ခွင့်ပေးမည်ဖြစ်ပြီး၊ Original Device ID ကို **လုံးဝ (လုံးဝ) မပြောင်းလဲဘဲ** အစောကအတိုင်း ဆက်ထားမည်။ 
-        // (ထို့ကြောင့် ဤ Device အသစ်ဖြင့် နောင်လာမည့်အကြိမ်များတွင်လည်း PIN ထပ်တောင်းနေဦးမည် ဖြစ်သည်)
+        // PIN မှန်ကန်ပါက Original Device ကို လုံးဝ မပြောင်းလဲဘဲ ထားမည်။
+        // သို့သော် ဝင်ရောက်လာသော Device အသစ်နှင့် အချိန်ကို သပ်သပ် Field တစ်ခု (`recentLogins`) ထဲတွင် မှတ်တမ်းတင် သိမ်းဆည်းမည်။
+        const loginRecord = {
+            deviceId: deviceId,
+            loginTime: getYangonTimeStr()
+        };
+
+        // ဒေတာဘေ့စ်ဖောင်းပွမှု မဖြစ်စေရန် မကြာသေးမီက ဝင်ထားသော Login များကို စနစ်တကျ ထည့်သွင်းမည် (သို့မဟုတ် အသစ်ကို ထိပ်ဆုံးမှ တင်မည်)
+        await usersRef.doc(userData.userId).update({
+            recentLogins: FieldValue.arrayUnion(loginRecord)
+        });
 
         return res.status(200).json({ 
             success: true, 
