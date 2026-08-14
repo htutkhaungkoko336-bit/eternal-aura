@@ -145,14 +145,14 @@ function showCreatePinScreen(formContent, phoneVal, deviceId, onComplete) {
 // (ခ) Device ပြောင်းသွားသူများအတွက် PIN တောင်းမည့် Screen (Login PIN)
 function showLoginPinScreen(formContent, phoneVal, deviceId, onComplete) {
     formContent.innerHTML = `
-        <div style="display: flex; flex-direction: column; gap: 15px; width: 100%; align-items: flex-start;">
-            <p style="color: #94a3b8; font-size: 14px; text-align: left; width: 100%;">New Device Detected. Enter Your PIN</p>
+        <div style="display: flex; flex-direction: column; gap: 15px; width: 100%; align-items: center;">
+            <p style="color: #94a3b8; font-size: 14px; text-align: center; width: 100%;">New Device Detected. Enter Your PIN</p>
             
             <div class="input-box" style="width: 100%; background-color: #1e293b; padding: 16px 20px; border-radius: 16px; border: 1px solid #334155;">
-                <input type="password" id="login-pin-input" placeholder="Enter 6-digit PIN" maxlength="6" inputmode="numeric" autofocus style="width: 100%; color: white; background: transparent; border: none; font-size: 16px; outline: none; text-align: left; letter-spacing: 4px;">
+                <input type="password" id="login-pin-input" placeholder="Enter 6-digit PIN" maxlength="6" inputmode="numeric" autofocus style="width: 100%; color: white; background: transparent; border: none; font-size: 16px; outline: none; text-align: center; letter-spacing: 4px;">
             </div>
 
-            <button class="next-btn" id="verify-pin-btn" style="width: 100%; justify-content: flex-start; padding: 14px 20px; margin-top: 5px; display: flex; align-items: center; gap: 8px;">
+            <button class="next-btn" id="verify-pin-btn" style="width: 100%; justify-content: center; padding: 14px 20px; margin-top: 5px; display: flex; align-items: center; gap: 8px;">
                 <span>Verify & Login</span>
             </button>
         </div>
