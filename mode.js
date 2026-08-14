@@ -1,27 +1,39 @@
 // Mode ရွေးချယ်သည့် မျက်နှာပြင်နှင့် လုပ်ဆောင်ချက်များကို ကိုင်တွယ်ရန်
+// Mode ရွေးချယ်သည့် မျက်နှာပြင်နှင့် လုပ်ဆောင်ချက်များကို ကိုင်တွယ်ရန်
 export function renderModeScreen(container) {
     container.innerHTML = `
         <div style="display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 20px; width: 100%; padding: 20px;">
             <h2 style="color: white; font-size: 22px; margin-bottom: 10px;">Select Game Mode</h2>
             
             <div style="display: flex; flex-direction: column; gap: 15px; width: 100%; max-width: 350px;">
+                
                 <!-- 5vs5 Mode -->
-                <button class="mode-btn" data-mode="5vs5" style="background-color: #1e293b; color: white; border: 1px solid #334155; padding: 16px 20px; border-radius: 16px; font-size: 16px; cursor: pointer; text-align: left; display: flex; justify-content: space-between; align-items: center; transition: 0.3s;">
-                    <span>⚔️ 5 vs 5 Match</span>
+                <button class="mode-btn" data-mode="5vs5" style="background-color: #1e293b; color: white; border: 1px solid #334155; padding: 14px 18px; border-radius: 16px; font-size: 16px; cursor: pointer; text-align: left; display: flex; justify-content: space-between; align-items: center; transition: 0.3s;">
+                    <div style="display: flex; align-items: center; gap: 12px;">
+                        <img src="5vs5modeEA.jpg" alt="5v5" style="width: 36px; height: 36px; border-radius: 8px; object-fit: cover;">
+                        <span style="font-weight: 500;">5 vs 5 Match</span>
+                    </div>
                     <span style="color: #94a3b8; font-size: 14px;">Select &rarr;</span>
                 </button>
 
                 <!-- 1vs1 Mode -->
-                <button class="mode-btn" data-mode="1vs1" style="background-color: #1e293b; color: white; border: 1px solid #334155; padding: 16px 20px; border-radius: 16px; font-size: 16px; cursor: pointer; text-align: left; display: flex; justify-content: space-between; align-items: center; transition: 0.3s;">
-                    <span>🛡️ 1 vs 1 Battle</span>
+                <button class="mode-btn" data-mode="1vs1" style="background-color: #1e293b; color: white; border: 1px solid #334155; padding: 14px 18px; border-radius: 16px; font-size: 16px; cursor: pointer; text-align: left; display: flex; justify-content: space-between; align-items: center; transition: 0.3s;">
+                    <div style="display: flex; align-items: center; gap: 12px;">
+                        <img src="1vs1modeEA.jpg" alt="1v1" style="width: 36px; height: 36px; border-radius: 8px; object-fit: cover;">
+                        <span style="font-weight: 500;">1 vs 1 Battle</span>
+                    </div>
                     <span style="color: #94a3b8; font-size: 14px;">Select &rarr;</span>
                 </button>
 
                 <!-- Tournament Mode -->
-                <button class="mode-btn" data-mode="tournament" style="background-color: #1e293b; color: white; border: 1px solid #334155; padding: 16px 20px; border-radius: 16px; font-size: 16px; cursor: pointer; text-align: left; display: flex; justify-content: space-between; align-items: center; transition: 0.3s;">
-                    <span>🏆 Tournament</span>
+                <button class="mode-btn" data-mode="tournament" style="background-color: #1e293b; color: white; border: 1px solid #334155; padding: 14px 18px; border-radius: 16px; font-size: 16px; cursor: pointer; text-align: left; display: flex; justify-content: space-between; align-items: center; transition: 0.3s;">
+                    <div style="display: flex; align-items: center; gap: 12px;">
+                        <img src="tournmentEA.jpg" alt="Tournament" style="width: 36px; height: 36px; border-radius: 8px; object-fit: cover;">
+                        <span style="font-weight: 500;">Tournament</span>
+                    </div>
                     <span style="color: #94a3b8; font-size: 14px;">Select &rarr;</span>
                 </button>
+
             </div>
         </div>
     `;
@@ -36,6 +48,23 @@ export function renderModeScreen(container) {
     });
 }
 
+function handleModeSelection(mode) {
+    console.log(`Selected Mode: ${mode}`);
+    
+    switch(mode) {
+        case '5vs5':
+            alert("You selected 5 vs 5 Mode!");
+            break;
+        case '1vs1':
+            alert("You selected 1 vs 1 Mode!");
+            break;
+        case 'tournament':
+            alert("You selected Tournament Mode!");
+            break;
+        default:
+            break;
+    }
+}
 // ရွေးချယ်လိုက်သော Mode အပေါ်မူတည်၍ ရှေ့ဆက် လုပ်ဆောင်မည့် အပိုင်း
 function handleModeSelection(mode) {
     console.log(`Selected Mode: ${mode}`);
