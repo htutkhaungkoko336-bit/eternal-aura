@@ -1,6 +1,10 @@
 import { initAuth } from './auth.js';
-
 const formContent = document.getElementById('form-content');
+
+import { renderModeScreen } from './mode.js';
+
+const mainContainer = document.getElementById('app-content'); // သို့မဟုတ် formContent
+renderModeScreen(mainContainer);
 
 formContent.style.display = 'flex';
 formContent.style.flexDirection = 'column';
