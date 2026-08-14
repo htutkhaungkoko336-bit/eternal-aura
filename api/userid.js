@@ -30,46 +30,32 @@ module.exports = async function handler(req, res) {
 
         const usersRef = db.collection('users');
 
-        // ၁။ ယခု လက်ရှိ Device ID ဖြင့် အခြားဖုန်းနံပါတ်တစ်ခုခုကို Register လုပ်ပြီးသား ရှိနှင့်ပြီးပြီလား စစ်ဆေးခြင်း
+        // ၁။ ဤ Device တွင် အခြားဖုန်းနံပါတ်ဖြင့် အကောင့်ရှိပြီးသားလား စစ်ဆေးခြင်း (Device တစ်ခုလျှင် ဖုန်း (1) ခုသာ)
         const deviceCheckSnapshot = await usersRef.where('deviceId', '==', deviceId).get();
-        
-        let existingUserOnThisDevice = null;
+        let hasOtherPhoneOnThisDevice = false;
         deviceCheckSnapshot.forEach(doc => {
-            const data = doc.data();
-            // ဒီ Device မှာ အခြားဖုန်းနံပါတ်နဲ့ ရှိနေပြီးသားလား (ထည့်သွင်းလာတဲ့ phone နဲ့ မတူဘဲ တစ်ခြားဖုန်းဖြစ်နေရင်)
-            if (data.phone !== phone) {
-                existingUserOnThisDevice = data;
+            if (doc.data().phone !== phone) {
+                hasOtherPhoneOnThisDevice = true;
             }
         });
 
-        // အကယ်၍ ဒီ Device မှာ အခြားဖုန်းနံပါတ်နဲ့ Register လုပ်ထားပြီးသား ရှိနေရင် အသစ်လုပ်ခွင့် လုံးဝမပေးပါ
-        if (existingUserOnThisDevice && !name && !pin) {
-            // ဒါက ဖုန်းအသစ်နဲ့ အသစ်လာလုပ်တာကို တားဆီးတာဖြစ်ပါတယ်
-            // (သို့သော် အောက်မှာ ဖော်ပြထားတဲ့အတိုင်း PIN နဲ့ ဝင်ခွင့်ကိုတော့ စစ်ဆေးပေးပါမယ်)
+        if (hasOtherPhoneOnThisDevice && !name && !pin) {
+            const phoneCheck = await usersRef.where('phone', '==', phone).get();
+            if (phoneCheck.empty) {
+                return res.status(400).json({ 
+                    success: false, 
+                    message: "This device is already bound to another phone number." 
+                });
+            }
         }
 
-        // ၂။ သုံးစွဲသူ ရိုက်ထည့်လိုက်တဲ့ ဖုန်းနံပါတ် Database ထဲမှာ ရှိမရှိ စစ်ဆေးခြင်း
+        // ၂။ ဖုန်းနံပါတ် Database ထဲတွင် ရှိမရှိ စစ်ဆေးခြင်း
         const snapshot = await usersRef.where('phone', '==', phone).get();
 
         // -------------------------------------------------------------
         // (က) ဖုန်းနံပါတ် မရှိသေးပါက (အကောင့်အသစ် Register လုပ်ရန်)
         // -------------------------------------------------------------
         if (snapshot.empty) {
-            // အဓိက စည်းကမ်းချက် - ဤ Device တွင် အခြားဖုန်းနံပါတ်ဖြင့် အကောင့်ရှိပြီးသားဆိုလျှင် အသစ်ထပ်လုပ်ခွင့်မပေးပါ
-            if (!deviceCheckSnapshot.empty) {
-                let hasOtherPhone = false;
-                deviceCheckSnapshot.forEach(doc => {
-                    if (doc.data().phone !== phone) hasOtherPhone = true;
-                });
-
-                if (hasOtherPhone) {
-                    return res.status(400).json({ 
-                        success: false, 
-                        message: "This device is already registered with another phone number. You cannot create a new account here." 
-                    });
-                }
-            }
-
             if (!name || !pin) {
                 return res.status(200).json({ 
                     requiresRegistration: true, 
@@ -96,7 +82,7 @@ module.exports = async function handler(req, res) {
                 name: name,
                 phone: phone,
                 pin: hashedPin,
-                deviceId: deviceId,
+                deviceId: deviceId, // ပထမဆုံး Register လုပ်တဲ့ Original Device ID ကို အမြဲတမ်း အတည်အဖြစ် သိမ်းမည်
                 createdAt: createdAtStr
             };
 
@@ -115,20 +101,23 @@ module.exports = async function handler(req, res) {
         const userDoc = snapshot.docs[0];
         const userData = userDoc.data();
 
-        // Device ID လည်း တူနေရင် Password တောင် မလိုဘဲ တန်းဝင်ခွင့်ပေးမည် (Auto Login)
+        // ပထမဆုံး Register လုပ်ထားတဲ့ Original Device နဲ့ တူမှသာ Password မလိုဘဲ တန်းဝင်ခွင့်ပေးမည်
         if (userData.deviceId === deviceId) {
             return res.status(200).json({ 
                 success: true, 
-                message: "Device matched. Login successful", 
+                message: "Original device matched. Login successful", 
                 name: userData.name 
             });
         }
 
-        // Device ID မတူတော့ဘူး (ဒါပေမဲ့ ဒီဖုန်းနံပါတ်ပိုင်ရှင်က ဒီ Device ကနေ ဝင်ချင်တာဖြစ်လို့ PIN တောင်းမည်)
+        // -------------------------------------------------------------
+        // (ဂ) DEVICE မတူတော့ပါက (Original Device မဟုတ်တော့ပါက)
+        // -------------------------------------------------------------
+        // PIN မပါသေးဘူးဆိုရင် PIN တောင်းဖို့ Front-end ကို အချက်ပြမည်
         if (!pin) {
             return res.status(200).json({ 
                 requiresPassword: true, 
-                message: "Device changed. Please enter PIN." 
+                message: "Different device detected. Please enter PIN." 
             });
         }
 
@@ -139,12 +128,12 @@ module.exports = async function handler(req, res) {
             return res.status(401).json({ success: false, message: "Incorrect PIN. Access denied." });
         }
 
-        // PIN မှန်ကန်ပါက ဤ Device အသစ်အတွက် Device ID ကို Update လုပ်ပေးပြီး ဝင်ခွင့်ပေးမည်
-        await usersRef.doc(userData.userId).update({ deviceId: deviceId });
+        // PIN မှန်ကန်ပါက ဝင်ခွင့်ပေးမည်ဖြစ်ပြီး၊ Original Device ID ကို **လုံးဝ (လုံးဝ) မပြောင်းလဲဘဲ** အစောကအတိုင်း ဆက်ထားမည်။ 
+        // (ထို့ကြောင့် ဤ Device အသစ်ဖြင့် နောင်လာမည့်အကြိမ်များတွင်လည်း PIN ထပ်တောင်းနေဦးမည် ဖြစ်သည်)
 
         return res.status(200).json({ 
             success: true, 
-            message: "Login successful with PIN on new device", 
+            message: "Login successful on another device with PIN", 
             name: userData.name 
         });
 
