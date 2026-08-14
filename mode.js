@@ -58,22 +58,22 @@ function handleModeSelection(mode) {
                             }
                         </style>
 
-                        <!-- Top Row: Square Logo Box & Squad Name -->
-                        <div style="display: flex; gap: 10px; align-items: stretch;">
+                        <!-- Top Row: Square Logo Box & Squad Name Side by Side -->
+                        <div style="display: flex; gap: 12px; align-items: center;">
                             
-                            <!-- Square Logo Box -->
-                            <div style="display: flex; flex-direction: column; gap: 3px; width: 35%;">
+                            <!-- Square Logo Box (Big & Square) -->
+                            <div style="display: flex; flex-direction: column; gap: 3px;">
                                 <label style="color: #94a3b8; font-size: 11px; font-weight: 600;">Logo</label>
-                                <label for="sq-logo-input" class="reg-logo-box" style="display: flex; flex-direction: column; align-items: center; justify-content: center; width: 100%; height: 46px; background-color: #1e293b; border: 1.5px dashed #475569; border-radius: 8px; cursor: pointer; overflow: hidden; position: relative; transition: 0.2s;" id="logo-preview-box">
+                                <label for="sq-logo-input" class="reg-logo-box" style="display: flex; flex-direction: column; align-items: center; justify-content: center; width: 65px; height: 65px; background-color: #1e293b; border: 1.5px dashed #475569; border-radius: 8px; cursor: pointer; overflow: hidden; position: relative; transition: 0.2s; flex-shrink: 0;" id="logo-preview-box">
                                     <span id="logo-text" style="color: #94a3b8; font-size: 11px; font-weight: 600;">Upload</span>
                                     <input type="file" id="sq-logo-input" accept="image/*" style="display: none;">
                                 </label>
                             </div>
 
                             <!-- Squad Name -->
-                            <div style="display: flex; flex-direction: column; gap: 3px; width: 65%;">
+                            <div style="display: flex; flex-direction: column; gap: 3px; flex-grow: 1; justify-content: center; height: 100%;">
                                 <label style="color: #94a3b8; font-size: 11px; font-weight: 600;">Squad Name</label>
-                                <input type="text" id="sq-name" class="reg-input" placeholder="Squad Name" required style="width: 100%; height: 46px; padding: 0 10px; background-color: #1e293b; border: 1px solid #334155; border-radius: 8px; color: white; font-size: 13px; outline: none; box-sizing: border-box; transition: 0.2s;">
+                                <input type="text" id="sq-name" class="reg-input" placeholder="Squad Name" required style="width: 100%; height: 42px; padding: 0 10px; background-color: #1e293b; border: 1px solid #334155; border-radius: 8px; color: white; font-size: 13px; outline: none; box-sizing: border-box; transition: 0.2s;">
                             </div>
                         </div>
 
