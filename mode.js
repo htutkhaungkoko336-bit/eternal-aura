@@ -41,9 +41,51 @@ export function renderModeScreen(container) {
 function handleModeSelection(mode) {
     console.log(`Selected Mode: ${mode}`);
     
+    const appContent = document.getElementById('app-content');
+
     switch(mode) {
         case '5vs5':
-            alert("You selected 5 vs 5 Mode!");
+            // 5vs5 Registration Form ကို appContent ထဲမှာ ပေါ်စေရန်
+            appContent.innerHTML = `
+                <div style="display: flex; flex-direction: column; align-items: center; justify-content: flex-start; width: 100%; height: 100%; padding: 0 20px 20px 20px; box-sizing: border-box; overflow-y: auto;">
+                    <h2 style="color: #f8fafc; font-size: 20px; font-weight: 800; letter-spacing: 1px; margin: 0 0 12px 0; text-transform: uppercase; background: linear-gradient(to right, #38bdf8, #818cf8); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">5 vs 5 Registration</h2>
+                    
+                    <form id="reg-form" style="display: flex; flex-direction: column; gap: 10px; width: 100%; max-width: 320px; padding-bottom: 20px;">
+                        
+                        <div style="display: flex; flex-direction: column; gap: 4px;">
+                            <label style="color: #94a3b8; font-size: 12px; font-weight: 600;">Squad Name</label>
+                            <input type="text" id="sq-name" placeholder="Enter Squad Name" required style="width: 100%; padding: 10px; background-color: #1e293b; border: 1px solid #334155; border-radius: 8px; color: white; font-size: 14px; outline: none; box-sizing: border-box;">
+                        </div>
+
+                        <div style="display: flex; flex-direction: column; gap: 4px;">
+                            <label style="color: #94a3b8; font-size: 12px; font-weight: 600;">Player Name</label>
+                            <input type="text" id="player-name" placeholder="Enter Player Name" required style="width: 100%; padding: 10px; background-color: #1e293b; border: 1px solid #334155; border-radius: 8px; color: white; font-size: 14px; outline: none; box-sizing: border-box;">
+                        </div>
+
+                        <div style="display: flex; flex-direction: column; gap: 4px;">
+                            <label style="color: #94a3b8; font-size: 12px; font-weight: 600;">Player ID</label>
+                            <input type="text" id="player-id" placeholder="Enter Player ID (Zone ID)" required style="width: 100%; padding: 10px; background-color: #1e293b; border: 1px solid #334155; border-radius: 8px; color: white; font-size: 14px; outline: none; box-sizing: border-box;">
+                        </div>
+
+                        <div style="display: flex; flex-direction: column; gap: 4px;">
+                            <label style="color: #94a3b8; font-size: 12px; font-weight: 600;">KPay Name</label>
+                            <input type="text" id="kpay-name" placeholder="Enter KPay Account Name" required style="width: 100%; padding: 10px; background-color: #1e293b; border: 1px solid #334155; border-radius: 8px; color: white; font-size: 14px; outline: none; box-sizing: border-box;">
+                        </div>
+
+                        <div style="display: flex; flex-direction: column; gap: 4px;">
+                            <label style="color: #94a3b8; font-size: 12px; font-weight: 600;">KPay Phone No</label>
+                            <input type="tel" id="kpay-ph" placeholder="Enter KPay Phone Number" required style="width: 100%; padding: 10px; background-color: #1e293b; border: 1px solid #334155; border-radius: 8px; color: white; font-size: 14px; outline: none; box-sizing: border-box;">
+                        </div>
+
+                        <div style="display: flex; flex-direction: column; gap: 4px;">
+                            <label style="color: #94a3b8; font-size: 12px; font-weight: 600;">Contact Phone No</label>
+                            <input type="tel" id="contact-ph" placeholder="Enter Contact Phone Number" required style="width: 100%; padding: 10px; background-color: #1e293b; border: 1px solid #334155; border-radius: 8px; color: white; font-size: 14px; outline: none; box-sizing: border-box;">
+                        </div>
+
+                        <button type="submit" style="width: 100%; padding: 12px; margin-top: 6px; background-color: #38bdf8; color: #0f172a; border: none; border-radius: 8px; font-size: 15px; font-weight: 700; cursor: pointer;">Submit Registration</button>
+                    </form>
+                </div>
+            `;
             break;
         case '1vs1':
             alert("You selected 1 vs 1 Mode!");
