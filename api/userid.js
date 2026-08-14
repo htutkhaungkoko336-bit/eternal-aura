@@ -1,30 +1,34 @@
-const admin = require('firebase-admin');
+const { initializeApp, cert, getApps } = require('firebase-admin/app');
+const { getFirestore } = require('firebase-admin/firestore');
 
-// Environment Variables များ ရှိမရှိ စစ်ဆေးပြီးမှ Initialize လုပ်ရန်
-if (!admin.apps.length) {
-    const privateKey = process.env.FIREBASE_PRIVATE_KEY 
-        ? process.env.FIREBASE_PRIVATE_KEY.replace(/\\n/g, '\n') 
-        : undefined;
+// Firebase ကို တစ်ကြိမ်သာ Initialize လုပ်ရန်
+const app = getApps().length === 0 
+  ? initializeApp({
+      credential: cert(JSON.parse(process.env.FIREBASE_SERVICE_ACCOUNT))
+    }) 
+  : getApps()[0];
 
-    admin.initializeApp({
-        credential: admin.credential.cert({
-            projectId: process.env.FIREBASE_PROJECT_ID,
-            clientEmail: process.env.FIREBASE_CLIENT_EMAIL,
-            privateKey: privateKey
-        })
-    });
-}
+const db = getFirestore(app);
 
-const db = admin.firestore();
-// Random user ID ဖန်တီးပေးသော function
+// Random User ID ဖန်တီးပေးသော function (ဥပမာ - AURA-X8K2M9)
 function generateUniqueUserId() {
     const randomStr = Math.random().toString(36).substring(2, 8).toUpperCase();
     return `AURA-${randomStr}`;
 }
 
-// User အချက်အလက်များကို Firestore သို့ သိမ်းဆည်းပေးသော function
-async function createUser(phone, pin, deviceId) {
+module.exports = async function handler(req, res) {
+    if (req.method !== 'POST') {
+        res.setHeader('Allow', ['POST']);
+        return res.status(405).json({ success: false, message: `Method ${req.method} not allowed` });
+    }
+
     try {
+        const { phone, pin, deviceId } = req.body;
+
+        if (!phone || !pin || !deviceId) {
+            return res.status(400).json({ success: false, message: "Phone, PIN, and Device ID are required" });
+        }
+
         const userId = generateUniqueUserId();
         const time = new Date().toISOString();
 
@@ -33,42 +37,21 @@ async function createUser(phone, pin, deviceId) {
             phone: phone,
             pin: pin,
             deviceId: deviceId,
-            time: time
+            time: time,
+            updatedAt: time
         };
 
-        // 'users' collection ထဲတွင် userId ကို Document ID အဖြစ် သိမ်းမည်
+        // Firestore ရှိ 'users' collection ထဲတွင် userId ကို Document ID အဖြစ် သိမ်းမည်
         await db.collection('users').doc(userId).set(userData);
 
-        return { success: true, userId: userId };
+        return res.status(200).json({ 
+            success: true, 
+            message: "User created successfully", 
+            userId: userId 
+        });
+
     } catch (error) {
-        console.error("Error creating user:", error);
-        return { success: false, error: error.message };
-    }
-}
-
-// Vercel Serverless Function Endpoint
-module.exports = async (req, res) => {
-    if (req.method !== 'POST') {
-        return res.status(405).json({ success: false, error: 'Method not allowed' });
-    }
-
-    try {
-        const { phone, pin, deviceId } = req.body;
-
-        if (!phone || !pin || !deviceId) {
-            return res.status(400).json({ success: false, error: 'Missing required fields' });
-        }
-
-        // User အသစ်ဆောက်ပြီး Firestore ထဲ သိမ်းမည်
-        const result = await createUser(phone, pin, deviceId);
-
-        if (result.success) {
-            return res.status(200).json({ success: true, userId: result.userId });
-        } else {
-            return res.status(500).json({ success: false, error: result.error });
-        }
-    } catch (error) {
-        console.error('Server error:', error);
-        return res.status(500).json({ success: false, error: 'Internal server error' });
+        console.error("Error creating user ID:", error);
+        return res.status(500).json({ success: false, message: "Server Error" });
     }
 };
