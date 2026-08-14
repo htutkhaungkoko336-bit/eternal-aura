@@ -6,11 +6,13 @@ if (!admin.apps.length) {
         credential: admin.credential.cert({
             projectId: process.env.FIREBASE_PROJECT_ID,
             clientEmail: process.env.FIREBASE_CLIENT_EMAIL,
-            // Vercel Environment Variables တွင် private_key တွင် \n ပါဝင်မှုကို ဖြေရှင်းရန်
             privateKey: process.env.FIREBASE_PRIVATE_KEY ? process.env.FIREBASE_PRIVATE_KEY.replace(/\\n/g, '\n') : undefined
         })
     });
 }
+
+// Firestore database instance ကို ဒီလိုခေါ်ရပါမယ်
+const db = admin.firestore();
 
 // Random user ID ဖန်တီးပေးသော function
 function generateUniqueUserId() {
@@ -21,7 +23,6 @@ function generateUniqueUserId() {
 // User အချက်အလက်များကို Firestore သို့ သိမ်းဆည်းပေးသော function
 async function createUser(phone, pin, deviceId) {
     try {
-        const db = admin.firestore();
         const userId = generateUniqueUserId();
         const time = new Date().toISOString();
 
