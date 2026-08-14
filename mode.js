@@ -1,30 +1,32 @@
 // Mode ရွေးချယ်သည့် မျက်နှာပြင်နှင့် လုပ်ဆောင်ချက်များကို ကိုင်တွယ်ရန်
 export function renderModeScreen(container) {
     container.innerHTML = `
-        <div style="display: flex; flex-direction: column; align-items: center; justify-content: flex-start; gap: 14px; width: 100%; height: 100%; padding: 15px 20px; box-sizing: border-box; overflow: hidden;">
-            <h2 style="color: white; font-size: 20px; margin: 0 0 5px 0;">Select Game Mode</h2>
+        <div style="display: flex; flex-direction: column; align-items: center; justify-content: space-between; width: 100%; height: 100%; padding: 10px 20px; box-sizing: border-box; overflow: hidden;">
+            <h2 style="color: white; font-size: 18px; margin: 0;">Select Game Mode</h2>
             
-            <div style="display: flex; flex-direction: column; gap: 10px; width: 100%; max-width: 320px;">
+            <div style="display: flex; flex-direction: column; gap: 8px; width: 100%; max-width: 320px;">
                 
                 <!-- 5vs5 Mode Card -->
-                <div class="mode-card" data-mode="5vs5" style="display: flex; flex-direction: column; align-items: center; background-color: #1e293b; border: 1px solid #334155; border-radius: 14px; overflow: hidden; cursor: pointer; padding-bottom: 8px; transition: 0.2s;">
-                    <img src="5vs5modeEA.jpg" alt="5v5" style="width: 100%; height: 98px; object-fit: cover;">
-                    <span style="color: white; font-size: 14px; font-weight: 600; margin-top: 6px;">5 vs 5 Match</span>
+                <div class="mode-card" data-mode="5vs5" style="display: flex; flex-direction: column; align-items: center; background-color: #1e293b; border: 1px solid #334155; border-radius: 12px; overflow: hidden; cursor: pointer; padding-bottom: 6px; transition: 0.2s;">
+                    <img src="5vs5modeEA.jpg" alt="5v5" style="width: 100%; height: 78px; object-fit: cover;">
+                    <span style="color: white; font-size: 13px; font-weight: 600; margin-top: 4px;">5 vs 5 Match</span>
                 </div>
 
                 <!-- 1vs1 Mode Card -->
-                <div class="mode-card" data-mode="1vs1" style="display: flex; flex-direction: column; align-items: center; background-color: #1e293b; border: 1px solid #334155; border-radius: 14px; overflow: hidden; cursor: pointer; padding-bottom: 8px; transition: 0.2s;">
-                    <img src="1vs1modeEA.jpg" alt="1v1" style="width: 100%; height: 98px; object-fit: cover;">
-                    <span style="color: white; font-size: 14px; font-weight: 600; margin-top: 6px;">1 vs 1 Battle</span>
+                <div class="mode-card" data-mode="1vs1" style="display: flex; flex-direction: column; align-items: center; background-color: #1e293b; border: 1px solid #334155; border-radius: 12px; overflow: hidden; cursor: pointer; padding-bottom: 6px; transition: 0.2s;">
+                    <img src="1vs1modeEA.jpg" alt="1v1" style="width: 100%; height: 78px; object-fit: cover;">
+                    <span style="color: white; font-size: 13px; font-weight: 600; margin-top: 4px;">1 vs 1 Battle</span>
                 </div>
 
                 <!-- Tournament Mode Card -->
-                <div class="mode-card" data-mode="tournament" style="display: flex; flex-direction: column; align-items: center; background-color: #1e293b; border: 1px solid #334155; border-radius: 14px; overflow: hidden; cursor: pointer; padding-bottom: 8px; transition: 0.2s;">
-                    <img src="tournmentEA.jpg" alt="Tournament" style="width: 100%; height: 98px; object-fit: cover;">
-                    <span style="color: white; font-size: 14px; font-weight: 600; margin-top: 6px;">Tournament</span>
+                <div class="mode-card" data-mode="tournament" style="display: flex; flex-direction: column; align-items: center; background-color: #1e293b; border: 1px solid #334155; border-radius: 12px; overflow: hidden; cursor: pointer; padding-bottom: 6px; transition: 0.2s;">
+                    <img src="tournmentEA.jpg" alt="Tournament" style="width: 100%; height: 78px; object-fit: cover;">
+                    <span style="color: white; font-size: 13px; font-weight: 600; margin-top: 4px;">Tournament</span>
                 </div>
 
             </div>
+
+            <div></div> <!-- အောက်ဘက် space ကို ညီစေရန် -->
         </div>
     `;
 
