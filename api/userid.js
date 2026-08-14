@@ -1,7 +1,6 @@
 const { initializeApp, cert, getApps } = require('firebase-admin/app');
 const { getFirestore } = require('firebase-admin/firestore');
 
-// Firebase ကို တစ်ကြိမ်သာ Initialize လုပ်ရန်
 const app = getApps().length === 0 
   ? initializeApp({
       credential: cert(JSON.parse(process.env.FIREBASE_SERVICE_ACCOUNT))
@@ -10,7 +9,6 @@ const app = getApps().length === 0
 
 const db = getFirestore(app);
 
-// Random User ID ဖန်တီးပေးသော function (ဥပမာ - AURA-X8K2M9)
 function generateUniqueUserId() {
     const randomStr = Math.random().toString(36).substring(2, 8).toUpperCase();
     return `AURA-${randomStr}`;
@@ -41,7 +39,6 @@ module.exports = async function handler(req, res) {
             updatedAt: time
         };
 
-        // Firestore ရှိ 'users' collection ထဲတွင် userId ကို Document ID အဖြစ် သိမ်းမည်
         await db.collection('users').doc(userId).set(userData);
 
         return res.status(200).json({ 
