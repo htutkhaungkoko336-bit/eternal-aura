@@ -19,18 +19,27 @@ body {
     font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
     display: flex;
     justify-content: center;
-    align-items: flex-start;
+    align-items: center; /* flex-start အစား center သို့မဟုတ် stretch ထားပါ */
     min-height: 100vh;
-    padding-top: 200px;
+    padding-top: 0px; /* အပေါ်ကွက်လပ်ကြီး ပပျောက်စေရန် 0 သို့ပြောင်းပါ */
+    margin: 0;
+    box-sizing: border-box;
 }
 
 .container {
-    text-align: center;
-    width: 90%;
+    position: relative;
+    width: 100%;
     max-width: 420px;
-    padding: 20px;
+    height: 100vh; /* ဖုန်းမျက်နှာပြင် အပြည့်ယူစေရန် */
+    max-height: 750px;
+    background-color: var(--bg-color);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 10px 20px;
+    box-sizing: border-box;
+    overflow: hidden;
 }
-
 .logo-img {
     width: 120px;
     height: 120px;
