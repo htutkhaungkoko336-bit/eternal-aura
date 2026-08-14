@@ -1,12 +1,11 @@
 // auth.js - ဖုန်းနံပါတ်နှင့် PIN လက်ခံစစ်ဆေးခြင်း Module
 
 export function initAuth(formContent, onComplete) {
-    // ပထမအစ Phone Number ထည့်သည့် ပုံစံကို တည်ဆောက်ခြင်း
     formContent.innerHTML = `
         <div style="display: flex; flex-direction: column; gap: 8px; width: 100%;">
             <p style="color: #94a3b8; font-size: 14px; text-align: left; width: 100%;">Enter Phone Number</p>
             <div class="input-box" style="width: 100%; background-color: #1e293b; padding: 16px 20px; border-radius: 16px; border: 1px solid #334155;">
-                <input type="tel" id="phone-input" placeholder="Phone Number" maxlength="11" inputmode="numeric" style="width: 100%; color: white; background: transparent; border: none; font-size: 16px; outline: none;">
+                <input type="tel" id="phone-input" placeholder="Phone Number" maxlength="11" inputmode="numeric" style="width: 100%; color: white; background: transparent; border: none; font-size: 16px; outline: none;" autofocus>
             </div>
         </div>
         <button class="next-btn" id="next-btn" style="width: 100%; justify-content: center; padding: 14px 20px; margin-top: 5px; display: flex; align-items: center; gap: 8px;">
@@ -26,7 +25,8 @@ export function initAuth(formContent, onComplete) {
     });
 
     nextBtn.addEventListener('click', () => {
-        if (phoneInput.value.trim() === '') {
+        const phoneVal = phoneInput.value.trim();
+        if (phoneVal === '') {
             alert("ကျေးဇူးပြု၍ ဖုန်းနံပါတ် ထည့်ပါ။");
             return;
         }
@@ -100,7 +100,7 @@ export function initAuth(formContent, onComplete) {
         });
 
         const confirmBtn = document.getElementById('confirm-btn');
-        confirmBtn.addEventListener('click', async () => {
+        confirmBtn.addEventListener('click', () => {
             const pin1Arr = document.querySelectorAll('.pin-1');
             const pin2Arr = document.querySelectorAll('.pin-2');
 
@@ -120,42 +120,9 @@ export function initAuth(formContent, onComplete) {
                 return;
             }
 
-            // Device ID တစ်ခု ဖန်တီးခြင်း သို့မဟုတ် localStorage မှ ယူခြင်း
-            let deviceId = localStorage.getItem('device_id');
-            if (!deviceId) {
-                deviceId = 'dev_' + Math.random().toString(36).substring(2, 12);
-                localStorage.setItem('device_id', deviceId);
-            }
-
-            // Backend သို့ Data ပို့ခြင်း (/api/userid ကို ချိတ်ဆက်ပေးထားသည်)
-            try {
-                const response = await fetch('/api/userid', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json'
-                    },
-                    body: JSON.stringify({
-                        phone: phoneInput.value,
-                        pin: pin1,
-                        deviceId: deviceId
-                    })
-                });
-
-                const data = await response.json();
-
-                if (data.success) {
-                    console.log("Created User ID:", data.userId);
-                    
-                    // PIN မှန်ကန်ပြီး Backend တွင် Data သိမ်းပြီးပါက ဆက်လုပ်ရန် Callback ခေါ်မည်
-                    if (typeof onComplete === 'function') {
-                        onComplete(data.userId);
-                    }
-                } else {
-                    alert("စာရင်းသွင်းရာတွင် အမှားအယွင်းရှိသည်: " + data.error);
-                }
-            } catch (err) {
-                console.error("Network error:", err);
-                alert("ဆာဗာသို့ ချိတ်ဆက်၍ မရပါ။");
+            // PIN မှန်ကန်ပါက ဖုန်းနံပါတ်နှင့် PIN ကို callback မှတစ်ဆင့် script.js သို့ ပို့ပေးမည်
+            if (typeof onComplete === 'function') {
+                onComplete(phoneVal, pin1);
             }
         });
     });
