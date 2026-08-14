@@ -1,6 +1,8 @@
 import { initAuth } from './auth.js';
+import { renderModeScreen } from './mode.js';
 
 const formContent = document.getElementById('form-content');
+const mainContainer = document.getElementById('app-content'); 
 
 formContent.style.display = 'flex';
 formContent.style.flexDirection = 'column';
@@ -15,7 +17,6 @@ initAuth(formContent, async (phone, pin) => {
     }
 
     try {
-        // ဖုန်းနံပါတ်၊ Device ID နှင့် PIN ကို ဆာဗာသို့ ပေးပို့စစ်ဆေးခြင်း
         const response = await fetch('/api/userid', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
@@ -24,19 +25,16 @@ initAuth(formContent, async (phone, pin) => {
 
         const data = await response.json();
 
-        // (က) Device လည်းတူ (သို့) ဖုန်းနံပါတ်နှင့် PIN မှန်ကန်ပါက Page ကို တန်းရောက်မည်
         if (data.success) {
             handleLoginSuccess(data.name || "User");
             return;
         }
 
-        // (ခ) ဖုန်းနံပါတ်ရှိသော်လည်း Device ID မတူတော့၍ PIN တောင်းခံလာပါက
         if (data.requiresPassword) {
             showPinInputScreen(phone, deviceId);
             return;
         }
 
-        // (ဂ) ဖုန်းနံပါတ် လုံးဝမရှိသေး၍ Name နှင့် PIN ဖြင့် အသစ်စာရင်းသွင်းရန် လိုအပ်ပါက
         if (data.requiresRegistration) {
             showNameInputScreen(phone, pin, deviceId);
             return;
@@ -132,11 +130,16 @@ function showPinInputScreen(phone, deviceId) {
     });
 }
 
-// C. အောင်မြင်သွားပါက အိုင်ကွန်များအပြည့်အစုံပါသော Home Screen / Bottom Nav ကို ပြသရန်
+// C. အောင်မြင်သွားပါက Home Screen နှင့် Mode Screen ကိုပါ ပူးတွဲပြသရန်
 function handleLoginSuccess(username) {
     localStorage.setItem('userName', username);
+    
+    // Login Form ကို ဖျောက်ပြီး Main Container ထဲမှာ Mode Screen နဲ့ Bottom Nav ပေါ်လာစေရန်
+    formContent.style.display = 'none';
+
     document.querySelector('.container').innerHTML = `
-        <div style="display: flex; flex-direction: column; justify-content: flex-end; position: absolute; bottom: 0; left: 0; width: 100%; height: 100%; box-sizing: border-box; pointer-events: none;">
+        <div id="app-content" style="width: 100%; flex: 1; overflow-y: auto; padding-bottom: 80px;"></div>
+        <div style="display: flex; flex-direction: column; justify-content: flex-end; position: absolute; bottom: 0; left: 0; width: 100%; box-sizing: border-box; pointer-events: none;">
             <div id="bottom-nav" style="display: flex; justify-content: space-around; align-items: center; background-color: #0f172a; border-top: 1px solid #1e293b; padding: 12px 0 24px 0; width: 100%; pointer-events: auto;">
                 
                 <div class="nav-item" data-tab="mode" style="display: flex; flex-direction: column; align-items: center; cursor: pointer; color: #38bdf8;">
@@ -179,11 +182,24 @@ function handleLoginSuccess(username) {
         </div>
     `;
 
+    // Login အောင်မြင်တာနဲ့ Mode Screen ကို အလိုအလျောက် စတင်ပြသမည်
+    const appContent = document.getElementById('app-content');
+    renderModeScreen(appContent);
+
+    // Bottom Nav များကို နှိပ်သည့်အခါ အရောင်ပြောင်းရန်
     const navItems = document.querySelectorAll('.nav-item');
     navItems.forEach(item => {
         item.addEventListener('click', function() {
             navItems.forEach(nav => nav.style.color = '#94a3b8');
             this.style.color = '#38bdf8';
+            
+            const tab = this.getAttribute('data-tab');
+            if (tab === 'mode') {
+                renderModeScreen(appContent);
+            } else {
+                // နောင်ရေးမည့် Match, Notification, Profile မျက်နှာပြင်များအတွက်
+                appContent.innerHTML = `<div style="color: white; text-align: center; margin-top: 50px;">${tab.toUpperCase()} Screen Coming Soon</div>`;
+            }
         });
     });
 }
