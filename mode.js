@@ -1,36 +1,27 @@
 // Mode ရွေးချယ်သည့် မျက်နှာပြင်နှင့် လုပ်ဆောင်ချက်များကို ကိုင်တွယ်ရန်
 export function renderModeScreen(container) {
     container.innerHTML = `
-        <div style="display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 16px; width: 100%; padding: 20px;">
-            <h2 style="color: white; font-size: 22px; margin-bottom: 5px;">Select Game Mode</h2>
+        <div style="display: flex; flex-direction: column; align-items: center; justify-content: space-evenly; width: 100%; height: 100%; padding: 10px 20px; box-sizing: border-box; overflow: hidden;">
+            <h2 style="color: white; font-size: 20px; margin: 0;">Select Game Mode</h2>
             
-            <div style="display: flex; flex-direction: column; gap: 16px; width: 100%; max-width: 340px;">
+            <div style="display: flex; flex-direction: column; gap: 12px; width: 100%; max-width: 320px;">
                 
                 <!-- 5vs5 Mode Card -->
-                <div class="mode-card" data-mode="5vs5" style="position: relative; width: 100%; height: 110px; border-radius: 16px; overflow: hidden; cursor: pointer; border: 1px solid #334155; box-shadow: 0 4px 12px rgba(0,0,0,0.3); transition: transform 0.2s;">
-                    <img src="5vs5modeEA.jpg" alt="5v5" style="position: absolute; width: 100%; height: 100%; object-fit: cover; filter: brightness(0.6);">
-                    <div style="position: absolute; bottom: 0; left: 0; width: 100%; padding: 15px; background: linear-gradient(to top, rgba(15,23,42,0.9), transparent); display: flex; justify-content: space-between; align-items: flex-end;">
-                        <span style="color: white; font-size: 18px; font-weight: bold;">5 vs 5 Match</span>
-                        <span style="color: #38bdf8; font-size: 14px; font-weight: 500;">Select &rarr;</span>
-                    </div>
+                <div class="mode-card" data-mode="5vs5" style="display: flex; flex-direction: column; align-items: center; background-color: #1e293b; border: 1px solid #334155; border-radius: 14px; overflow: hidden; cursor: pointer; padding-bottom: 10px; transition: 0.2s;">
+                    <img src="5vs5modeEA.jpg" alt="5v5" style="width: 100%; height: 85px; object-fit: cover;">
+                    <span style="color: white; font-size: 15px; font-weight: 600; margin-top: 8px;">5 vs 5 Match</span>
                 </div>
 
                 <!-- 1vs1 Mode Card -->
-                <div class="mode-card" data-mode="1vs1" style="position: relative; width: 100%; height: 110px; border-radius: 16px; overflow: hidden; cursor: pointer; border: 1px solid #334155; box-shadow: 0 4px 12px rgba(0,0,0,0.3); transition: transform 0.2s;">
-                    <img src="1vs1modeEA.jpg" alt="1v1" style="position: absolute; width: 100%; height: 100%; object-fit: cover; filter: brightness(0.6);">
-                    <div style="position: absolute; bottom: 0; left: 0; width: 100%; padding: 15px; background: linear-gradient(to top, rgba(15,23,42,0.9), transparent); display: flex; justify-content: space-between; align-items: flex-end;">
-                        <span style="color: white; font-size: 18px; font-weight: bold;">1 vs 1 Battle</span>
-                        <span style="color: #38bdf8; font-size: 14px; font-weight: 500;">Select &rarr;</span>
-                    </div>
+                <div class="mode-card" data-mode="1vs1" style="display: flex; flex-direction: column; align-items: center; background-color: #1e293b; border: 1px solid #334155; border-radius: 14px; overflow: hidden; cursor: pointer; padding-bottom: 10px; transition: 0.2s;">
+                    <img src="1vs1modeEA.jpg" alt="1v1" style="width: 100%; height: 85px; object-fit: cover;">
+                    <span style="color: white; font-size: 15px; font-weight: 600; margin-top: 8px;">1 vs 1 Battle</span>
                 </div>
 
                 <!-- Tournament Mode Card -->
-                <div class="mode-card" data-mode="tournament" style="position: relative; width: 100%; height: 110px; border-radius: 16px; overflow: hidden; cursor: pointer; border: 1px solid #334155; box-shadow: 0 4px 12px rgba(0,0,0,0.3); transition: transform 0.2s;">
-                    <img src="tournmentEA.jpg" alt="Tournament" style="position: absolute; width: 100%; height: 100%; object-fit: cover; filter: brightness(0.6);">
-                    <div style="position: absolute; bottom: 0; left: 0; width: 100%; padding: 15px; background: linear-gradient(to top, rgba(15,23,42,0.9), transparent); display: flex; justify-content: space-between; align-items: flex-end;">
-                        <span style="color: white; font-size: 18px; font-weight: bold;">Tournament</span>
-                        <span style="color: #38bdf8; font-size: 14px; font-weight: 500;">Select &rarr;</span>
-                    </div>
+                <div class="mode-card" data-mode="tournament" style="display: flex; flex-direction: column; align-items: center; background-color: #1e293b; border: 1px solid #334155; border-radius: 14px; overflow: hidden; cursor: pointer; padding-bottom: 10px; transition: 0.2s;">
+                    <img src="tournmentEA.jpg" alt="Tournament" style="width: 100%; height: 85px; object-fit: cover;">
+                    <span style="color: white; font-size: 15px; font-weight: 600; margin-top: 8px;">Tournament</span>
                 </div>
 
             </div>
