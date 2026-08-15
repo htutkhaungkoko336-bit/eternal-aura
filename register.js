@@ -34,37 +34,37 @@ export function renderRegisterForm(appContent, savedData = {}) {
                     </div>
                 </div>
 
-                <!-- Players Lineup -->
+                <!-- Players Lineup (Roles in Uppercase) -->
                 <div style="display: flex; flex-direction: column; gap: 6px; border-top: 1px solid #334155; border-bottom: 1px solid #334155; padding: 8px 0;">
                     <span style="color: #38bdf8; font-size: 12px; font-weight: 700;">Player Lineup (Name & ID)</span>
                     
-                    <!-- Roamer -->
+                    <!-- ROAMER -->
                     <div style="display: flex; gap: 6px;">
-                        <input type="text" id="roamer-name" class="reg-input" placeholder="roamer" value="${savedData.roamerName || ''}" required style="width: 58%; height: 38px; padding: 0 8px; background-color: #1e293b; border: 1px solid #334155; border-radius: 6px; color: white; font-size: 12px; outline: none; box-sizing: border-box;">
+                        <input type="text" id="roamer-name" class="reg-input" placeholder="ROAMER" value="${savedData.roamerName || ''}" required style="width: 58%; height: 38px; padding: 0 8px; background-color: #1e293b; border: 1px solid #334155; border-radius: 6px; color: white; font-size: 12px; outline: none; box-sizing: border-box;">
                         <input type="number" id="roamer-id" class="reg-input" placeholder="ID" value="${savedData.roamerId || ''}" required style="width: 42%; height: 38px; padding: 0 8px; background-color: #1e293b; border: 1px solid #334155; border-radius: 6px; color: white; font-size: 12px; outline: none; box-sizing: border-box;">
                     </div>
 
-                    <!-- Exp Laner -->
+                    <!-- EXP LANER -->
                     <div style="display: flex; gap: 6px;">
-                        <input type="text" id="exp-laner-name" class="reg-input" placeholder="exp-laner" value="${savedData.expLanerName || ''}" required style="width: 58%; height: 38px; padding: 0 8px; background-color: #1e293b; border: 1px solid #334155; border-radius: 6px; color: white; font-size: 12px; outline: none; box-sizing: border-box;">
+                        <input type="text" id="exp-laner-name" class="reg-input" placeholder="EXP LANER" value="${savedData.expLanerName || ''}" required style="width: 58%; height: 38px; padding: 0 8px; background-color: #1e293b; border: 1px solid #334155; border-radius: 6px; color: white; font-size: 12px; outline: none; box-sizing: border-box;">
                         <input type="number" id="exp-laner-id" class="reg-input" placeholder="ID" value="${savedData.expLanerId || ''}" required style="width: 42%; height: 38px; padding: 0 8px; background-color: #1e293b; border: 1px solid #334155; border-radius: 6px; color: white; font-size: 12px; outline: none; box-sizing: border-box;">
                     </div>
 
-                    <!-- Gold Laner -->
+                    <!-- GOLD LANER -->
                     <div style="display: flex; gap: 6px;">
-                        <input type="text" id="gold-laner-name" class="reg-input" placeholder="gold-laner" value="${savedData.goldLanerName || ''}" required style="width: 58%; height: 38px; padding: 0 8px; background-color: #1e293b; border: 1px solid #334155; border-radius: 6px; color: white; font-size: 12px; outline: none; box-sizing: border-box;">
+                        <input type="text" id="gold-laner-name" class="reg-input" placeholder="GOLD LANER" value="${savedData.goldLanerName || ''}" required style="width: 58%; height: 38px; padding: 0 8px; background-color: #1e293b; border: 1px solid #334155; border-radius: 6px; color: white; font-size: 12px; outline: none; box-sizing: border-box;">
                         <input type="number" id="gold-laner-id" class="reg-input" placeholder="ID" value="${savedData.goldLanerId || ''}" required style="width: 42%; height: 38px; padding: 0 8px; background-color: #1e293b; border: 1px solid #334155; border-radius: 6px; color: white; font-size: 12px; outline: none; box-sizing: border-box;">
                     </div>
 
-                    <!-- Mid Laner -->
+                    <!-- MID LANER -->
                     <div style="display: flex; gap: 6px;">
-                        <input type="text" id="mid-laner-name" class="reg-input" placeholder="mid-laner" value="${savedData.midLanerName || ''}" required style="width: 58%; height: 38px; padding: 0 8px; background-color: #1e293b; border: 1px solid #334155; border-radius: 6px; color: white; font-size: 12px; outline: none; box-sizing: border-box;">
+                        <input type="text" id="mid-laner-name" class="reg-input" placeholder="MID LANER" value="${savedData.midLanerName || ''}" required style="width: 58%; height: 38px; padding: 0 8px; background-color: #1e293b; border: 1px solid #334155; border-radius: 6px; color: white; font-size: 12px; outline: none; box-sizing: border-box;">
                         <input type="number" id="mid-laner-id" class="reg-input" placeholder="ID" value="${savedData.midLanerId || ''}" required style="width: 42%; height: 38px; padding: 0 8px; background-color: #1e293b; border: 1px solid #334155; border-radius: 6px; color: white; font-size: 12px; outline: none; box-sizing: border-box;">
                     </div>
 
-                    <!-- Jungler -->
+                    <!-- JUNGLER -->
                     <div style="display: flex; gap: 6px;">
-                        <input type="text" id="jungler-name" class="reg-input" placeholder="jungler" value="${savedData.junglerName || ''}" required style="width: 58%; height: 38px; padding: 0 8px; background-color: #1e293b; border: 1px solid #334155; border-radius: 6px; color: white; font-size: 12px; outline: none; box-sizing: border-box;">
+                        <input type="text" id="jungler-name" class="reg-input" placeholder="JUNGLER" value="${savedData.junglerName || ''}" required style="width: 58%; height: 38px; padding: 0 8px; background-color: #1e293b; border: 1px solid #334155; border-radius: 6px; color: white; font-size: 12px; outline: none; box-sizing: border-box;">
                         <input type="number" id="jungler-id" class="reg-input" placeholder="ID" value="${savedData.junglerId || ''}" required style="width: 42%; height: 38px; padding: 0 8px; background-color: #1e293b; border: 1px solid #334155; border-radius: 6px; color: white; font-size: 12px; outline: none; box-sizing: border-box;">
                     </div>
                 </div>
@@ -87,7 +87,7 @@ export function renderRegisterForm(appContent, savedData = {}) {
                         <input type="tel" id="contact-phone-number" class="reg-input" placeholder="09..." value="${savedData.contactPhoneNumber || ''}" required style="width: 100%; height: 40px; padding: 0 8px; background-color: #1e293b; border: 1px solid #334155; border-radius: 6px; color: white; font-size: 12px; outline: none; box-sizing: border-box;">
                     </div>
                     
-                    <!-- Entry Fee (5k, 10k, 15k, 25k, 50k) -->
+                    <!-- Entry Fee -->
                     <div style="display: flex; flex-direction: column; gap: 3px; width: 50%; position: relative;">
                         <label style="color: #94a3b8; font-size: 11px; font-weight: 600;">Entry Fee</label>
                         <div id="fee-dropdown-btn" class="reg-input" style="display: flex; align-items: center; justify-content: space-between; width: 100%; height: 40px; padding: 0 10px; background-color: #1e293b; border: 1px solid #334155; border-radius: 6px; color: #38bdf8; font-size: 12px; font-weight: 700; cursor: pointer; box-sizing: border-box;">
