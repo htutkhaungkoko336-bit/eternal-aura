@@ -24,25 +24,28 @@ export function renderPaymentPage(appContent, formData) {
     let amountColor = "";
 
     if (baseNum === 5000) {
+        // 5k: Bronze / Clean Warm Vibe
         prizeBg = "linear-gradient(135deg, #1c1917 0%, #292524 50%, #44403c 100%)";
         prizeBorder = "#d97706";
         prizeShadow = "0 0 12px rgba(217, 119, 6, 0.3)";
         titleColor = "#fde68a";
         amountColor = "#fbbf24";
     } else if (baseNum === 10000) {
-        // 10k: Royal Cyan & Electric Blue (အစိမ်းရောင်အစား အပြာရောင် လန်းဆန်းသည့် Theme သို့ ပြောင်းထားသည်)
+        // 10k: Royal Cyan & Electric Blue
         prizeBg = "linear-gradient(135deg, #0c4a6e 0%, #0369a1 50%, #0284c7 100%)";
         prizeBorder = "#38bdf8";
         prizeShadow = "0 0 20px rgba(56, 189, 248, 0.45), inset 0 0 10px rgba(125, 211, 252, 0.3)";
         titleColor = "#e0f2fe";
         amountColor = "#38bdf8";
     } else if (baseNum === 15000) {
-        prizeBg = "linear-gradient(135deg, #082f49 0%, #0369a1 50%, #0284c7 100%)";
-        prizeBorder = "#38bdf8";
-        prizeShadow = "0 0 16px rgba(56, 189, 248, 0.4)";
-        titleColor = "#bae6fd";
-        amountColor = "#7dd3fc";
+        // 15k: Sunset Orange / Vibrant Amber (အစိမ်းရောင်အစား လိမ္မော်ရောင် တောက်ပသည့် Theme သို့ ပြောင်းထားသည်)
+        prizeBg = "linear-gradient(135deg, #431407 0%, #7c2d12 50%, #c2410c 100%)";
+        prizeBorder = "#fb923c";
+        prizeShadow = "0 0 18px rgba(251, 146, 60, 0.45)";
+        titleColor = "#ffedd5";
+        amountColor = "#fdba74";
     } else if (baseNum === 25000) {
+        // 25k: Royal Purple / Neon VIP
         prizeBg = "linear-gradient(135deg, #1e1b4b 0%, #312e81 50%, #4338ca 100%)";
         prizeBorder = "#a855f7";
         prizeShadow = "0 0 18px rgba(168, 85, 247, 0.45)";
