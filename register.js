@@ -87,7 +87,7 @@ export function renderRegisterForm(appContent, savedData = {}) {
                         <input type="tel" id="contact-phone-number" class="reg-input" placeholder="09..." value="${savedData.contactPhoneNumber || ''}" required style="width: 100%; height: 40px; padding: 0 8px; background-color: #1e293b; border: 1px solid #334155; border-radius: 6px; color: white; font-size: 12px; outline: none; box-sizing: border-box;">
                     </div>
                     
-                    <!-- Entry Fee -->
+                    <!-- Entry Fee (5k, 10k, 15k, 25k, 50k) -->
                     <div style="display: flex; flex-direction: column; gap: 3px; width: 50%; position: relative;">
                         <label style="color: #94a3b8; font-size: 11px; font-weight: 600;">Entry Fee</label>
                         <div id="fee-dropdown-btn" class="reg-input" style="display: flex; align-items: center; justify-content: space-between; width: 100%; height: 40px; padding: 0 10px; background-color: #1e293b; border: 1px solid #334155; border-radius: 6px; color: #38bdf8; font-size: 12px; font-weight: 700; cursor: pointer; box-sizing: border-box;">
@@ -97,9 +97,11 @@ export function renderRegisterForm(appContent, savedData = {}) {
 
                         <div id="fee-modal" style="display: none; position: absolute; bottom: 50px; left: 0; width: 100%; background-color: #0f172a; border: 1px solid #334155; border-radius: 8px; box-shadow: 0 10px 25px rgba(0,0,0,0.5); z-index: 100; overflow: hidden;">
                             <div style="padding: 8px 10px; font-size: 11px; font-weight: 600; color: #94a3b8; border-bottom: 1px solid #1e293b;">Select Fee</div>
-                            <div class="fee-option" data-value="25k" style="padding: 10px 12px; font-size: 13px; color: white; cursor: pointer;">25k</div>
-                            <div class="fee-option" data-value="50k" style="padding: 10px 12px; font-size: 13px; color: white; cursor: pointer;">50k</div>
-                            <div class="fee-option" data-value="100k" style="padding: 10px 12px; font-size: 13px; color: white; cursor: pointer;">100k</div>
+                            <div class="fee-option" data-value="5k" style="padding: 8px 12px; font-size: 12px; color: white; cursor: pointer;">5k</div>
+                            <div class="fee-option" data-value="10k" style="padding: 8px 12px; font-size: 12px; color: white; cursor: pointer;">10k</div>
+                            <div class="fee-option" data-value="15k" style="padding: 8px 12px; font-size: 12px; color: white; cursor: pointer;">15k</div>
+                            <div class="fee-option" data-value="25k" style="padding: 8px 12px; font-size: 12px; color: white; cursor: pointer;">25k</div>
+                            <div class="fee-option" data-value="50k" style="padding: 8px 12px; font-size: 12px; color: white; cursor: pointer;">50k</div>
                         </div>
                         <input type="hidden" id="fee-value" value="${savedData.fee || ''}" required>
                     </div>
