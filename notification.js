@@ -5,12 +5,11 @@ export function addNotification(title, message) {
     const now = new Date();
     const dateStr = now.toISOString().split('T')[0];
     
-    // 12-hour format (AM/PM) အဖြစ် ပြောင်းလဲခြင်း (ဥပမာ - 4:05 PM)
     let hours = now.getHours();
     const minutes = now.getMinutes().toString().padStart(2, '0');
     const ampm = hours >= 12 ? 'PM' : 'AM';
     hours = hours % 12;
-    hours = hours ? hours : 12; // the hour '0' should be '12'
+    hours = hours ? hours : 12;
     const timeStr = `${hours}:${minutes} ${ampm}`;
 
     const newNoti = { title, message, dateStr, timeStr };
@@ -19,22 +18,32 @@ export function addNotification(title, message) {
     notifications.unshift(newNoti);
     localStorage.setItem('app_notifications', JSON.stringify(notifications));
 
+    let unreadCount = parseInt(localStorage.getItem('app_unread_count') || '0', 10);
+    unreadCount += 1;
+    localStorage.setItem('app_unread_count', unreadCount.toString());
+    updateNotificationBadge();
+
     const listContainer = document.getElementById('notification-list-container');
     if (listContainer) {
         renderNotificationCards(listContainer, notifications);
     }
 }
 
+// Notification Screen ကို ဝင်ရောက်ကြည့်ရှုသည့်အခါ Badge ကို ရှင်းလင်းပေးရန်
 export function renderNotificationScreen(container) {
-    // ရှင်းလင်းပြတ်သားတဲ့ Flex Layout (Header က အသေ၊ အောက်က Card List က လွတ်လွတ်လပ်လပ် Scroll ဆွဲလို့ရမယ်)
+    localStorage.setItem('app_unread_count', '0');
+    updateNotificationBadge();
+
     container.innerHTML = `
         <div style="width: 100%; height: 100%; display: flex; flex-direction: column; background-color: #0b0f19; box-sizing: border-box; overflow: hidden;">
             
-            <!-- Header (အပေါ်ဆုံးတွင် အသေထားရှိမည် - Gradient ၂ ရောင်စပ်ဘောင်နှင့် အလယ်တည့်တည့်) -->
-            <div style="flex-shrink: 0; background-color: #0b0f19; padding: 20px 20px 15px 20px; box-sizing: border-box; border-bottom: 1px solid #1e293b; z-index: 10; display: flex; justify-content: center; align-items: center;">
-                <div style="border: 2px solid transparent; border-image: linear-gradient(135deg, #38bdf8, #818cf8) 1; padding: 10px 20px; background: rgba(56, 189, 248, 0.05); box-shadow: 0 0 15px rgba(56, 189, 248, 0.2); text-align: center;">
-                    <h2 style="font-size: 18px; font-weight: 800; background: linear-gradient(135deg, #38bdf8, #c084fc); -webkit-background-clip: text; -webkit-text-fill-color: transparent; letter-spacing: 1.5px; margin: 0;">
-                        SYSTEM NOTIFICATIONS
+            <!-- Modern Tech Header -->
+            <div style="flex-shrink: 0; background-color: #0b0f19; padding: 22px 20px 16px 20px; box-sizing: border-box; border-bottom: 1px solid #1e293b; z-index: 10; display: flex; justify-content: center; align-items: center;">
+                <div style="position: relative; padding: 12px 28px; background: linear-gradient(135deg, rgba(56, 189, 248, 0.1), rgba(129, 140, 248, 0.1)); border: 1px solid #38bdf8; clip-path: polygon(10px 0%, 100% 0%, calc(100% - 10px) 100%, 0% 100%); box-shadow: 0 0 20px rgba(56, 189, 248, 0.25); text-align: center;">
+                    <div style="position: absolute; top: 0; left: 0; width: 6px; height: 6px; background: #38bdf8;"></div>
+                    <div style="position: absolute; bottom: 0; right: 0; width: 6px; height: 6px; background: #818cf8;"></div>
+                    <h2 style="font-size: 17px; font-weight: 800; background: linear-gradient(135deg, #38bdf8, #818cf8); -webkit-background-clip: text; -webkit-text-fill-color: transparent; letter-spacing: 2px; margin: 0; text-transform: uppercase;">
+                        System Notifications
                     </h2>
                 </div>
             </div>
@@ -51,7 +60,35 @@ export function renderNotificationScreen(container) {
     renderNotificationCards(listContainer, notifications);
 }
 
-// Card များကို HTML ထဲ ထည့်သွင်းပေးသည့် Helper Function (Clear ပါဝင်သည် - Blue Theme)
+// Notification Bell လေးရဲ့ အပေါ်တည့်တည့်တွင် Badge (1, 2, 3...) ပြသရန် Function
+export function updateNotificationBadge() {
+    const unreadCount = parseInt(localStorage.getItem('app_unread_count') || '0', 10);
+    
+    // Notification Nav Button ကို ရှာဖွေခြင်း (သင့် app ထဲက Notification button ရဲ့ selector အမှန်)
+    const notiNavBtn = document.querySelector('a[href*="notification"], button[data-target="notification"], .notification-nav-icon, nav button:nth-child(3), nav a:nth-child(3)'); 
+    
+    if (notiNavBtn) {
+        notiNavBtn.style.position = 'relative';
+        let badgeEl = document.getElementById('notification-badge');
+        
+        if (!badgeEl) {
+            badgeEl = document.createElement('span');
+            badgeEl.id = 'notification-badge';
+            // Notification Bell ရဲ့ အပေါ်တည့်တည့်သို့ အနေအထား အတိအကျ ချိန်ညှိထားသည်
+            badgeEl.style.cssText = 'position: absolute; top: -5px; right: 50%; transform: translateX(50%); background: #ef4444; color: white; font-size: 10px; font-weight: 800; padding: 1px 6px; border-radius: 10px; box-shadow: 0 0 8px rgba(239, 68, 68, 0.8); z-index: 20; display: none;';
+            notiNavBtn.appendChild(badgeEl);
+        }
+
+        if (unreadCount > 0) {
+            badgeEl.textContent = unreadCount;
+            badgeEl.style.display = 'inline-block';
+        } else {
+            badgeEl.style.display = 'none';
+        }
+    }
+}
+
+// Card များကို HTML ထဲ ထည့်သွင်းပေးသည့် Helper Function
 function renderNotificationCards(container, notifications) {
     if (notifications.length === 0) {
         container.innerHTML = `<p style="color: #64748b; font-size: 13px; text-align: center; margin-top: 30px;">No new notifications.</p>`;
@@ -62,7 +99,6 @@ function renderNotificationCards(container, notifications) {
     notifications.forEach((noti, index) => {
         const card = document.createElement('div');
         card.className = 'cyber-noti-card';
-        // Card အောက်ခြေ Padding ကို 24px အထိ တိုးမြှင့်ပေးထားသည်
         card.style.cssText = 'background: linear-gradient(135deg, #1e1b4b 0%, #0f172a 100%); border: 1px solid #38bdf8; border-radius: 8px; padding: 16px 16px 24px 16px; box-shadow: 0 0 15px rgba(56, 189, 248, 0.15); position: relative; transition: all 0.3s ease; flex-shrink: 0;';
         
         card.innerHTML = `
@@ -90,7 +126,6 @@ function renderNotificationCards(container, notifications) {
             </div>
         `;
 
-        // Card ကို နှိပ်ရင် အောက်သို့ ဆင်းပြီး ဖြန့်ထွက်ရန် (max-height ကို 1200px အထိ ပေး၍ စာသားအပြည့်အစုံ လွတ်လွတ်လပ်လပ်ပေါ်စေရန်)
         const headerEl = card.querySelector('.noti-header');
         headerEl.addEventListener('click', (e) => {
             if (e.target.closest('.delete-btn')) return;
@@ -108,7 +143,6 @@ function renderNotificationCards(container, notifications) {
             }
         });
 
-        // Delete လုပ်သည့် Function (CLEAR ခလုတ် - Blue Hover Effect)
         const deleteBtn = card.querySelector('.delete-btn');
         deleteBtn.addEventListener('mouseenter', () => {
             deleteBtn.style.backgroundColor = '#38bdf8';
@@ -129,3 +163,7 @@ function renderNotificationCards(container, notifications) {
         container.appendChild(card);
     });
 }
+
+document.addEventListener('DOMContentLoaded', () => {
+    updateNotificationBadge();
+});
