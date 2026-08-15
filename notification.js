@@ -27,7 +27,7 @@ export function addNotification(title, message) {
 
 export function renderNotificationScreen(container) {
     container.innerHTML = `
-        <div style="width: 100%; height: 100%; display: flex; flex-direction: column; justify-content: flex-start; padding: 20px; padding-bottom: 80px; box-sizing: border-box; overflow-y: auto; background-color: #0b0f19;">
+        <div style="width: 100%; min-height: 100%; display: flex; flex-direction: column; justify-content: flex-start; padding: 20px; padding-bottom: 30px; box-sizing: border-box; background-color: #0b0f19;">
             
             <!-- Header -->
             <div style="margin-bottom: 20px; display: flex; justify-content: space-between; align-items: center;">
