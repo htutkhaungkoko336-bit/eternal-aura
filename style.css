@@ -36,11 +36,10 @@ body {
     display: flex;
     flex-direction: column;
     align-items: center;
-    justify-content: center; /* အဖွင့်မျက်နှာပြင် အလယ်ကျပြီး လှပစေရန် center ပြန်ထားပါ */
-    padding: 0px;
+    justify-content: center; /* Login မျက်နှာပြင် အလယ်ကျစေရန် center ပြန်ထားပါ */
+    padding: 20px;
     box-sizing: border-box;
     overflow: hidden;
-    box-shadow: 0 0 20px rgba(0,0,0,0.5);
 }
 .logo-img {
     width: 120px;
