@@ -15,11 +15,12 @@ if (formContent) {
     formContent.style.width = '100%';
 }
 
-// App စတင်ဖွင့်သည်နှင့် လုပ်ဆောင်ရမည့် စနစ်များ
 document.addEventListener('DOMContentLoaded', () => {
     // လိုအပ်ပါက Authentication ကို စတင်ရန်
-    if (typeof initAuth === 'function') {
-        initAuth();
+    if (typeof initAuth === 'function' && formContent) {
+        initAuth(formContent, async (phone, pin) => {
+            // ... (လက်ရှိ ရေးထားပြီးသား login logic များ) ...
+        });
     }
 
     // Mode မျက်နှာပြင်ကို စတင်ပြသရန်
@@ -27,7 +28,6 @@ document.addEventListener('DOMContentLoaded', () => {
         renderModeScreen(appContent);
     }
 });
-
 initAuth(formContent, async (phone, pin) => {
     let deviceId = localStorage.getItem('device_id');
     if (!deviceId) {
