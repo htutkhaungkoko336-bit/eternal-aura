@@ -33,7 +33,7 @@ export function renderNotificationScreen(container) {
             <!-- Header -->
             <div style="margin-bottom: 20px; display: flex; justify-content: space-between; align-items: center;">
                 <div>
-                    <h2 style="font-size: 22px; font-weight: 800; background: linear-gradient(90deg, #38bdf8, #c084fc, #f43f5e); -webkit-background-clip: text; -webkit-text-fill-color: transparent; letter-spacing: 1px; margin: 0;">
+                    <h2 style="font-size: 22px; font-weight: 800; background: linear-gradient(90deg, #38bdf8, #818cf8, #c084fc); -webkit-background-clip: text; -webkit-text-fill-color: transparent; letter-spacing: 1px; margin: 0;">
                         SYSTEM NOTIFICATIONS
                     </h2>
                     <p style="color: #64748b; font-size: 12px; margin-top: 4px;">SECURE CYBER COMMUNICATIONS</p>
@@ -52,7 +52,7 @@ export function renderNotificationScreen(container) {
     renderNotificationCards(listContainer, notifications);
 }
 
-// Card များကို HTML ထဲ ထည့်သွင်းပေးသည့် Helper Function (Delete ပါဝင်သည်)
+// Card များကို HTML ထဲ ထည့်သွင်းပေးသည့် Helper Function (Clear ပါဝင်သည် - Blue Theme)
 function renderNotificationCards(container, notifications) {
     if (notifications.length === 0) {
         container.innerHTML = `<p style="color: #64748b; font-size: 13px; text-align: center; margin-top: 30px;">No new notifications.</p>`;
@@ -67,7 +67,7 @@ function renderNotificationCards(container, notifications) {
         
         card.innerHTML = `
             <div style="position: absolute; top: 0; left: 0; width: 6px; height: 6px; background-color: #38bdf8;"></div>
-            <div style="position: absolute; bottom: 0; right: 0; width: 6px; height: 6px; background-color: #f43f5e;"></div>
+            <div style="position: absolute; bottom: 0; right: 0; width: 6px; height: 6px; background-color: #38bdf8;"></div>
 
             <div class="noti-header" style="display: flex; justify-content: space-between; align-items: flex-start; width: 100%; cursor: pointer;">
                 <div style="flex-grow: 1;">
@@ -78,7 +78,7 @@ function renderNotificationCards(container, notifications) {
                     <p style="color: #94a3b8; font-size: 11px; margin: 6px 0 0 16px; font-family: monospace;">📅 ${noti.dateStr} | 🕒 ${noti.timeStr}</p>
                 </div>
                 <div style="display: flex; align-items: center; gap: 10px;">
-                    <button class="delete-btn" title="Delete Notification" style="background: transparent; border: none; color: #f43f5e; cursor: pointer; font-size: 14px; padding: 4px 8px; border-radius: 4px; transition: background 0.2s;">🗑️</button>
+                    <button class="delete-btn" title="Clear Notification" style="background: rgba(56, 189, 248, 0.1); border: 1px solid #38bdf8; color: #38bdf8; cursor: pointer; font-size: 10px; font-weight: 700; padding: 4px 10px; border-radius: 4px; transition: all 0.2s; letter-spacing: 0.5px;">CLEAR</button>
                     <span class="toggle-icon" style="color: #38bdf8; font-size: 14px; font-weight: bold; transition: transform 0.3s;">▼</span>
                 </div>
             </div>
@@ -90,7 +90,7 @@ function renderNotificationCards(container, notifications) {
             </div>
         `;
 
-        // Card ကို နှိပ်ရင် အောက်သို့ ဆင်းပြီး ဖြန့်ထွက်ရန် (Delete ခလုတ်ကို နှိပ်လျှင် မပါစေရန်)
+        // Card ကို နှိပ်ရင် အောက်သို့ ဆင်းပြီး ဖြန့်ထွက်ရန် (Clear ခလုတ်ကို နှိပ်လျှင် မပါစေရန်)
         const headerEl = card.querySelector('.noti-header');
         headerEl.addEventListener('click', (e) => {
             if (e.target.closest('.delete-btn')) return;
@@ -106,8 +106,17 @@ function renderNotificationCards(container, notifications) {
             }
         });
 
-        // Delete လုပ်သည့် Function
+        // Delete လုပ်သည့် Function (CLEAR ခလုတ် - Blue Hover Effect)
         const deleteBtn = card.querySelector('.delete-btn');
+        deleteBtn.addEventListener('mouseenter', () => {
+            deleteBtn.style.backgroundColor = '#38bdf8';
+            deleteBtn.style.color = '#0b0f19';
+        });
+        deleteBtn.addEventListener('mouseleave', () => {
+            deleteBtn.style.backgroundColor = 'rgba(56, 189, 248, 0.1)';
+            deleteBtn.style.color = '#38bdf8';
+        });
+
         deleteBtn.addEventListener('click', () => {
             let currentNotis = JSON.parse(localStorage.getItem('app_notifications')) || [];
             currentNotis.splice(index, 1);
