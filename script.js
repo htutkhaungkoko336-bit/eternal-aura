@@ -1,7 +1,13 @@
 // main.js
 import { initAuth } from './auth.js';
 import { renderModeScreen } from './mode.js';
-import { renderNotificationScreen, addNotification } from './notification.js';
+import { addNotification } from './notification.js';
+
+// Payment အောင်မြင်သွားတဲ့အခါ (သို့) Payload တည်ဆောက်ပြီးသွားတဲ့အခါ:
+addNotification(
+    "Payment Verification", 
+    "⚡ <strong>Status:</strong> Your payment submission has been received.<br>🛡️ Tournament registration payload is being processed by the system."
+);
 // DOM Elements များကို ရယူခြင်း
 const formContent = document.getElementById('form-content');
 const appContent = document.getElementById('app-content'); 
