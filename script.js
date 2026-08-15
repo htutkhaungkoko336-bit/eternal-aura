@@ -19,51 +19,48 @@ document.addEventListener('DOMContentLoaded', () => {
     // လိုအပ်ပါက Authentication ကို စတင်ရန်
     if (typeof initAuth === 'function' && formContent) {
         initAuth(formContent, async (phone, pin) => {
-            // ... (လက်ရှိ ရေးထားပြီးသား login logic များ) ...
+            let deviceId = localStorage.getItem('device_id');
+            if (!deviceId) {
+                deviceId = 'dev_' + Math.random().toString(36).substring(2, 12);
+                localStorage.setItem('device_id', deviceId);
+            }
+
+            try {
+                const response = await fetch('/api/userid', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ phone: phone, pin: pin, deviceId: deviceId })
+                });
+
+                const data = await response.json();
+
+                if (data.success) {
+                    handleLoginSuccess(data.name || "User");
+                    return;
+                }
+
+                if (data.requiresPassword) {
+                    showPinInputScreen(phone, deviceId);
+                    return;
+                }
+
+                if (data.requiresRegistration) {
+                    showNameInputScreen(phone, pin, deviceId);
+                    return;
+                }
+
+                alert("အမှားအယွင်းရှိသည်: " + (data.message || "Unknown error"));
+
+            } catch (err) {
+                console.error("Network error:", err);
+                alert("ဆာဗာသို့ ချိတ်ဆက်၍ မရပါ။");
+            }
         });
     }
 
     // Mode မျက်နှာပြင်ကို စတင်ပြသရန်
     if (appContent) {
         renderModeScreen(appContent);
-    }
-});
-initAuth(formContent, async (phone, pin) => {
-    let deviceId = localStorage.getItem('device_id');
-    if (!deviceId) {
-        deviceId = 'dev_' + Math.random().toString(36).substring(2, 12);
-        localStorage.setItem('device_id', deviceId);
-    }
-
-    try {
-        const response = await fetch('/api/userid', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ phone: phone, pin: pin, deviceId: deviceId })
-        });
-
-        const data = await response.json();
-
-        if (data.success) {
-            handleLoginSuccess(data.name || "User");
-            return;
-        }
-
-        if (data.requiresPassword) {
-            showPinInputScreen(phone, deviceId);
-            return;
-        }
-
-        if (data.requiresRegistration) {
-            showNameInputScreen(phone, pin, deviceId);
-            return;
-        }
-
-        alert("အမှားအယွင်းရှိသည်: " + (data.message || "Unknown error"));
-
-    } catch (err) {
-        console.error("Network error:", err);
-        alert("ဆာဗာသို့ ချိတ်ဆက်၍ မရပါ။");
     }
 });
 
