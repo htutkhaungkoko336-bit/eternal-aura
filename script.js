@@ -1,13 +1,8 @@
 // main.js
 import { initAuth } from './auth.js';
 import { renderModeScreen } from './mode.js';
-import { addNotification,renderNotificationScreen } from './notification.js';
+import { addNotification, renderNotificationScreen } from './notification.js';
 
-// Payment အောင်မြင်သွားတဲ့အခါ (သို့) Payload တည်ဆောက်ပြီးသွားတဲ့အခါ:
-addNotification(
-    "Tournament Registration Submitted",
-    `🛡️ <strong>${selectedMode} Mode</strong> အတွက် <strong>Fee ${feeAmount}</strong> ဖြင့် <strong>${boType}</strong> အတွက် registration တင်ထားပါသည်။ Admin မှ စစ်ဆေးပြီးလျှင် noti ပြန်တက်မည်။`
-);
 // DOM Elements များကို ရယူခြင်း
 const formContent = document.getElementById('form-content');
 const appContent = document.getElementById('app-content'); 
