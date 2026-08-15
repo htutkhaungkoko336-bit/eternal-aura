@@ -13,7 +13,6 @@ export function renderPaymentPage(appContent, formData) {
     let totalNum = baseNum + commissionNum;
     let totalStr = totalNum.toLocaleString() + 'Ks';
     
-    // Fee အလိုက် Winner Prize နှင့် Theme/Background ဒီဇိုင်း ၅ မျိုး သတ်မှတ်ခြင်း
     let winnerPriceNum = baseNum * 2;
     let winnerPriceStr = winnerPriceNum.toLocaleString() + 'Ks';
     let matchFormat = (baseNum <= 15000) ? "BO1" : "BO3";
@@ -31,11 +30,12 @@ export function renderPaymentPage(appContent, formData) {
         titleColor = "#fde68a";
         amountColor = "#fbbf24";
     } else if (baseNum === 10000) {
-        prizeBg = "linear-gradient(135deg, #022c22 0%, #064e3b 50%, #065f46 100%)";
-        prizeBorder = "#34d399";
-        prizeShadow = "0 0 14px rgba(52, 211, 153, 0.35)";
-        titleColor = "#a7f3d0";
-        amountColor = "#6ee7b7";
+        // 10k: Royal Cyan & Electric Blue (အစိမ်းရောင်အစား အပြာရောင် လန်းဆန်းသည့် Theme သို့ ပြောင်းထားသည်)
+        prizeBg = "linear-gradient(135deg, #0c4a6e 0%, #0369a1 50%, #0284c7 100%)";
+        prizeBorder = "#38bdf8";
+        prizeShadow = "0 0 20px rgba(56, 189, 248, 0.45), inset 0 0 10px rgba(125, 211, 252, 0.3)";
+        titleColor = "#e0f2fe";
+        amountColor = "#38bdf8";
     } else if (baseNum === 15000) {
         prizeBg = "linear-gradient(135deg, #082f49 0%, #0369a1 50%, #0284c7 100%)";
         prizeBorder = "#38bdf8";
@@ -49,18 +49,19 @@ export function renderPaymentPage(appContent, formData) {
         titleColor = "#e9d5ff";
         amountColor = "#facc15";
     } else {
-        prizeBg = "linear-gradient(135deg, #450a0a 0%, #7f1d1d 50%, #991b1b 100%)";
-        prizeBorder = "#f87171";
-        prizeShadow = "0 0 22px rgba(248, 113, 113, 0.6), inset 0 0 12px rgba(252, 211, 77, 0.3)";
-        titleColor = "#fecaca";
-        amountColor = "#fef08a";
+        // 50k: Supreme Ultra Gold & Platinum
+        prizeBg = "linear-gradient(135deg, #3f2f04 0%, #714f09 50%, #b45309 100%)";
+        prizeBorder = "#fbbf24";
+        prizeShadow = "0 0 25px rgba(251, 191, 36, 0.5), inset 0 0 15px rgba(254, 240, 138, 0.4)";
+        titleColor = "#fef08a";
+        amountColor = "#fde047";
     }
 
     appContent.innerHTML = `
         <div style="display: flex; flex-direction: column; align-items: center; justify-content: flex-start; width: 100%; height: 100%; padding: 4px 12px 15px 12px; box-sizing: border-box; overflow-y: auto; position: relative;">
             <h2 style="color: #f8fafc; font-size: 18px; font-weight: 800; letter-spacing: 1px; margin: 0 0 6px 0; text-transform: uppercase; background: linear-gradient(to right, #38bdf8, #818cf8); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">Payment Details</h2>
             
-            <div style="display: flex; flex-direction: column; gap: 8px; width: 100%; max-width: 340px; padding-bottom: 25px;">
+            <div style="display: flex; flex-direction: column; gap: 10px; width: 100%; max-width: 340px; padding-bottom: 25px;">
                 
                 <!-- Fee Breakdown Box -->
                 <div style="background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%); border: 1px solid #334155; border-radius: 8px; padding: 8px 12px; display: flex; flex-direction: column; gap: 3px; box-shadow: 0 4px 10px rgba(0,0,0,0.3);">
@@ -85,48 +86,48 @@ export function renderPaymentPage(appContent, formData) {
                 </div>
 
                 <!-- Main Container for QR & Payment Slip -->
-                <div style="background-color: #0f172a; border: 1.5px solid #334155; border-radius: 10px; padding: 10px; display: flex; flex-direction: column; gap: 8px;">
+                <div style="background-color: #0f172a; border: 1.5px solid #334155; border-radius: 10px; padding: 12px; display: flex; flex-direction: column; gap: 10px;">
                     
-                    <!-- QR Code & Payment Slip -->
-                    <div style="display: flex; gap: 8px; width: 100%;">
+                    <!-- QR Code & Payment Slip Boxes -->
+                    <div style="display: flex; gap: 10px; width: 100%;">
                         
-                        <!-- QR Code Box (နှိပ်လျှင် ကြီးလာစေရန် cursor pointer ထည့်ထားသည်) -->
-                        <div style="flex: 1; display: flex; flex-direction: column; align-items: center; background-color: #1e293b; border: 1px solid #475569; border-radius: 8px; padding: 8px; box-sizing: border-box;">
-                            <span style="color: #f8fafc; font-size: 10.5px; font-weight: 700; margin-bottom: 4px;">QR Code</span>
-                            <div id="qr-container-box" style="width: 100px; height: 85px; background-color: white; border-radius: 6px; display: flex; align-items: center; justify-content: center; overflow: hidden; cursor: pointer; position: relative;" title="နှိပ်၍ ပုံအကြီးကြည့်ရန်">
+                        <!-- QR Code Box -->
+                        <div style="flex: 1; display: flex; flex-direction: column; align-items: center; background-color: #1e293b; border: 1px solid #475569; border-radius: 8px; padding: 10px; box-sizing: border-box;">
+                            <span style="color: #f8fafc; font-size: 11px; font-weight: 700; margin-bottom: 6px;">QR Code</span>
+                            <div id="qr-container-box" style="width: 115px; height: 105px; background-color: white; border-radius: 6px; display: flex; align-items: center; justify-content: center; overflow: hidden; cursor: pointer; position: relative;" title="နှိပ်၍ ပုံအကြီးကြည့်ရန်">
                                 <img id="qr-img-element" src="QR.jpg" alt="QR" style="width: 100%; height: 100%; object-fit: cover;" onerror="this.style.display='none'; this.nextElementSibling.style.display='block';">
-                                <span style="display: none; color: #0f172a; font-size: 9px; font-weight: 700; text-align: center;">[ QR ]</span>
+                                <span style="display: none; color: #0f172a; font-size: 10px; font-weight: 700; text-align: center;">[ QR ]</span>
                             </div>
-                            <span style="color: #38bdf8; font-size: 9.5px; font-weight: 700; margin-top: 4px; text-align: center;">09403633531</span>
-                            <span style="color: #94a3b8; font-size: 8.5px; font-weight: 600; text-align: center;">Htut Khaung Ko Ko</span>
+                            <span style="color: #38bdf8; font-size: 10px; font-weight: 700; margin-top: 6px; text-align: center;">09403633531</span>
+                            <span style="color: #94a3b8; font-size: 9px; font-weight: 600; text-align: center;">Htut Khaung Ko Ko</span>
                         </div>
 
                         <!-- Payment Slip Box -->
-                        <div style="flex: 1; display: flex; flex-direction: column; align-items: center; background-color: #1e293b; border: 1px solid #475569; border-radius: 8px; padding: 8px; box-sizing: border-box;">
-                            <span style="color: #f8fafc; font-size: 10.5px; font-weight: 700; margin-bottom: 4px;">Payment Slip</span>
+                        <div style="flex: 1; display: flex; flex-direction: column; align-items: center; background-color: #1e293b; border: 1px solid #475569; border-radius: 8px; padding: 10px; box-sizing: border-box;">
+                            <span style="color: #f8fafc; font-size: 11px; font-weight: 700; margin-bottom: 6px;">Payment Slip</span>
                             
-                            <label for="ss-file-input" style="width: 100px; height: 85px; background-color: #0f172a; border: 1.5px dashed #475569; border-radius: 6px; cursor: pointer; display: flex; align-items: center; justify-content: center; overflow: hidden; position: relative;" id="ss-preview-box">
-                                <span id="ss-text" style="color: #38bdf8; font-size: 10px; font-weight: 600; text-align: center; padding: 0 4px;">Upload SS</span>
+                            <label for="ss-file-input" style="width: 115px; height: 105px; background-color: #0f172a; border: 1.5px dashed #475569; border-radius: 6px; cursor: pointer; display: flex; align-items: center; justify-content: center; overflow: hidden; position: relative;" id="ss-preview-box">
+                                <span id="ss-text" style="color: #38bdf8; font-size: 11px; font-weight: 600; text-align: center; padding: 0 4px;">Upload SS</span>
                                 <input type="file" id="ss-file-input" accept="image/*" style="display: none;">
                             </label>
 
-                            <span style="color: #94a3b8; font-size: 9px; margin-top: 13px; text-align: center;">Required</span>
+                            <span style="color: #94a3b8; font-size: 9.5px; margin-top: 15px; text-align: center;">Required</span>
                         </div>
                     </div>
 
-                    <!-- 5 vs 5 Mode Checkbox (BO3 ကို အနီရောင်အစား ခမ်းနားသော အပြာ/အစိမ်းရောင် လန်းဆန်းသည့် Theme သို့ပြောင်းထားသည်) -->
-                    <div style="display: flex; align-items: center; justify-content: space-between; background-color: #1e293b; padding: 7px 10px; border-radius: 6px; border: 1px solid #475569;">
-                        <div style="display: flex; align-items: center; gap: 8px;">
-                            <input type="checkbox" id="mode-checkbox" data-game-mode="5vs5" style="width: 15px; height: 15px; accent-color: #38bdf8; cursor: pointer;">
-                            <label for="mode-checkbox" style="color: #f8fafc; font-size: 11.5px; font-weight: 600; cursor: pointer;">5 vs 5 Mode</label>
+                    <!-- 5 vs 5 Mode Checkbox -->
+                    <div style="display: flex; align-items: center; justify-content: space-between; background-color: #1e293b; padding: 10px 12px; border-radius: 8px; border: 1px solid #475569;">
+                        <div style="display: flex; align-items: center; gap: 10px;">
+                            <input type="checkbox" id="mode-checkbox" data-game-mode="5vs5" style="width: 17px; height: 17px; accent-color: #38bdf8; cursor: pointer;">
+                            <label for="mode-checkbox" style="color: #f8fafc; font-size: 12.5px; font-weight: 700; cursor: pointer;">5 vs 5 Mode</label>
                         </div>
-                        <span style="background: ${matchFormat === 'BO1' ? '#0ea5e9' : 'linear-gradient(135deg, #6366f1, #a855f7)'}; color: white; font-size: 9.5px; font-weight: 800; padding: 2px 8px; border-radius: 4px; box-shadow: ${matchFormat === 'BO3' ? '0 0 8px rgba(168, 85, 247, 0.4)' : 'none'};">${matchFormat} Match</span>
+                        <span style="background: ${matchFormat === 'BO1' ? '#0ea5e9' : 'linear-gradient(135deg, #6366f1, #a855f7)'}; color: white; font-size: 10.5px; font-weight: 800; padding: 3px 10px; border-radius: 5px; box-shadow: ${matchFormat === 'BO3' ? '0 0 10px rgba(168, 85, 247, 0.4)' : 'none'};">${matchFormat} Match</span>
                     </div>
 
                     <!-- Buttons -->
-                    <div style="display: flex; gap: 8px;">
-                        <button type="button" id="pay-back-btn" style="width: 50%; height: 38px; background-color: #334155; color: white; border: none; border-radius: 6px; font-size: 12.5px; font-weight: 700; cursor: pointer;">Back</button>
-                        <button type="button" id="confirm-btn" disabled style="width: 50%; height: 38px; background: linear-gradient(135deg, #0ea5e9, #6366f1); color: white; border: none; border-radius: 6px; font-size: 12.5px; font-weight: 700; cursor: not-allowed; opacity: 0.4; transition: 0.2s; box-shadow: 0 0 10px rgba(14, 165, 233, 0.3);">Confirm</button>
+                    <div style="display: flex; gap: 8px; margin-top: 4px;">
+                        <button type="button" id="pay-back-btn" style="width: 50%; height: 40px; background-color: #334155; color: white; border: none; border-radius: 7px; font-size: 13px; font-weight: 700; cursor: pointer;">Back</button>
+                        <button type="button" id="confirm-btn" disabled style="width: 50%; height: 40px; background: linear-gradient(135deg, #0ea5e9, #6366f1); color: white; border: none; border-radius: 7px; font-size: 13px; font-weight: 700; cursor: not-allowed; opacity: 0.4; transition: 0.2s; box-shadow: 0 0 10px rgba(14, 165, 233, 0.3);">Confirm</button>
                     </div>
 
                 </div>
@@ -134,7 +135,7 @@ export function renderPaymentPage(appContent, formData) {
             </div>
         </div>
 
-        <!-- QR Zoom Modal (QR ကို နှိပ်လိုက်ပါက ပေါ်လာမည့် ပုံအကြီးပြတင်းပေါက်) -->
+        <!-- QR Zoom Modal -->
         <div id="qr-modal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background-color: rgba(0, 0, 0, 0.85); z-index: 9999; align-items: center; justify-content: center; backdrop-filter: blur(4px);">
             <div style="position: relative; max-width: 90%; max-height: 90%; display: flex; flex-direction: column; align-items: center;">
                 <button id="close-qr-modal" style="position: absolute; top: -35px; right: 0; background: none; border: none; color: white; font-size: 24px; font-weight: bold; cursor: pointer;">&times;</button>
@@ -144,7 +145,6 @@ export function renderPaymentPage(appContent, formData) {
         </div>
     `;
 
-    // QR Zoom Modal Logic
     const qrContainerBox = document.getElementById('qr-container-box');
     const qrModal = document.getElementById('qr-modal');
     const closeQrModal = document.getElementById('close-qr-modal');
@@ -196,7 +196,6 @@ export function renderPaymentPage(appContent, formData) {
                 ssBox.style.borderColor = '#38bdf8';
                 ssText.style.display = 'none';
                 ssUploaded = true;
-                updateConfirmButtonText(); // updated
                 updateConfirmButtonState();
             }
             reader.readAsDataURL(file);
