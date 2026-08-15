@@ -89,24 +89,22 @@ function renderNotificationCards(container, notifications) {
             </div>
         `;
 
-        // Card ကို နှိပ်ရင် အောက်သို့ ဆင်းပြီး ဖြန့်ထွက်ရန် (စာသားအပြည့်အစုံပေါ်စေရန် တိကျစွာ တွက်ချက်ပေးမည်)
+        // Card ကို နှိပ်ရင် အောက်သို့ ဆင်းပြီး ဖြန့်ထွက်ရန် (max-height 500px သုံး၍ မြန်မာစာသား အပြည့်အစုံပေါ်စေရန်)
         const headerEl = card.querySelector('.noti-header');
         headerEl.addEventListener('click', (e) => {
             if (e.target.closest('.delete-btn')) return;
             const body = card.querySelector('.noti-body');
             const icon = card.querySelector('.toggle-icon');
             
-            if (body.style.maxHeight && body.style.maxHeight !== '0px') {
+            // ဖွင့်ထားပြီးသားလား စစ်ဆေးခြင်း
+            const isOpen = body.style.maxHeight && body.style.maxHeight !== '0px';
+            
+            if (isOpen) {
                 body.style.maxHeight = '0px';
                 icon.style.transform = 'rotate(0deg)';
             } else {
-                body.style.maxHeight = body.scrollHeight + 20 + 'px';
+                body.style.maxHeight = '500px'; 
                 icon.style.transform = 'rotate(180deg)';
-                
-                // စာသားအပြည့်အစုံပေါ်ပြီးနောက် Scroll container ပါ လိုက်လံ ညှိပေးရန်
-                setTimeout(() => {
-                    body.style.maxHeight = body.scrollHeight + 'px';
-                }, 300);
             }
         });
 
