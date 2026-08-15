@@ -25,14 +25,14 @@ export function addNotification(title, message) {
     }
 }
 
-// Notification Screen ကို Render လုပ်ရန်
 export function renderNotificationScreen(container) {
     container.innerHTML = `
-        <div style="width: 100%; height: 120%; display: flex; flex-direction: column; justify-content: flex-start; padding: 20px; box-sizing: border-box; overflow-y: auto; background-color: #0b0f19;">                
+        <div style="width: 100%; height: 100%; display: flex; flex-direction: column; justify-content: flex-start; padding: 20px; padding-bottom: 80px; box-sizing: border-box; overflow-y: auto; background-color: #0b0f19;">
+            
             <!-- Header -->
             <div style="margin-bottom: 20px; display: flex; justify-content: space-between; align-items: center;">
                 <div>
-                    <h2 style="font-size: 22px; font-weight: 800; background: linear-gradient(90deg, #38bdf8, #818cf8, #c084fc); -webkit-background-clip: text; -webkit-text-fill-color: transparent; letter-spacing: 1px; margin: 0;">
+                    <h2 style="font-size: 22px; font-weight: 800; color: #38bdf8; letter-spacing: 1px; margin: 0;">
                         SYSTEM NOTIFICATIONS
                     </h2>
                     <p style="color: #64748b; font-size: 12px; margin-top: 4px;">SECURE CYBER COMMUNICATIONS</p>
@@ -50,7 +50,6 @@ export function renderNotificationScreen(container) {
     
     renderNotificationCards(listContainer, notifications);
 }
-
 // Card များကို HTML ထဲ ထည့်သွင်းပေးသည့် Helper Function (Clear ပါဝင်သည် - Blue Theme)
 function renderNotificationCards(container, notifications) {
     if (notifications.length === 0) {
