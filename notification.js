@@ -30,6 +30,7 @@ export function addNotification(title, message) {
 }
 
 // Notification Screen ကို ဝင်ရောက်ကြည့်ရှုသည့်အခါ Badge ကို ရှင်းလင်းပေးရန်
+// Notification Screen ကို ဝင်ရောက်ကြည့်ရှုသည့်အခါ Badge ကို ရှင်းလင်းပေးရန်
 export function renderNotificationScreen(container) {
     localStorage.setItem('app_unread_count', '0');
     updateNotificationBadge();
@@ -37,12 +38,12 @@ export function renderNotificationScreen(container) {
     container.innerHTML = `
         <div style="width: 100%; height: 100%; display: flex; flex-direction: column; background-color: #0b0f19; box-sizing: border-box; overflow: hidden;">
             
-            <!-- Modern Tech Header -->
+            <!-- Modern Tech Header (လေးထောင့်ဘောင်ထူထူနှင့် စာလုံးပိုကြီးသော ပုံစံ) -->
             <div style="flex-shrink: 0; background-color: #0b0f19; padding: 22px 20px 16px 20px; box-sizing: border-box; border-bottom: 1px solid #1e293b; z-index: 10; display: flex; justify-content: center; align-items: center;">
-                <div style="position: relative; padding: 12px 28px; background: linear-gradient(135deg, rgba(56, 189, 248, 0.1), rgba(129, 140, 248, 0.1)); border: 1px solid #38bdf8; clip-path: polygon(10px 0%, 100% 0%, calc(100% - 10px) 100%, 0% 100%); box-shadow: 0 0 20px rgba(56, 189, 248, 0.25); text-align: center;">
-                    <div style="position: absolute; top: 0; left: 0; width: 6px; height: 6px; background: #38bdf8;"></div>
-                    <div style="position: absolute; bottom: 0; right: 0; width: 6px; height: 6px; background: #818cf8;"></div>
-                    <h2 style="font-size: 17px; font-weight: 800; background: linear-gradient(135deg, #38bdf8, #818cf8); -webkit-background-clip: text; -webkit-text-fill-color: transparent; letter-spacing: 2px; margin: 0; text-transform: uppercase;">
+                <div style="position: relative; padding: 16px 32px; background: linear-gradient(135deg, rgba(56, 189, 248, 0.12), rgba(129, 140, 248, 0.12)); border: 2.5px solid #38bdf8; box-shadow: 0 0 25px rgba(56, 189, 248, 0.3); text-align: center; border-radius: 4px;">
+                    <div style="position: absolute; top: -3px; left: -3px; width: 8px; height: 8px; background: #38bdf8;"></div>
+                    <div style="position: absolute; bottom: -3px; right: -3px; width: 8px; height: 8px; background: #818cf8;"></div>
+                    <h2 style="font-size: 20px; font-weight: 900; background: linear-gradient(135deg, #38bdf8, #818cf8); -webkit-background-clip: text; -webkit-text-fill-color: transparent; letter-spacing: 2.5px; margin: 0; text-transform: uppercase;">
                         System Notifications
                     </h2>
                 </div>
@@ -59,7 +60,6 @@ export function renderNotificationScreen(container) {
     
     renderNotificationCards(listContainer, notifications);
 }
-
 // Notification Bell လေးရဲ့ အပေါ်တည့်တည့်တွင် Badge (1, 2, 3...) ပြသရန် Function
 export function updateNotificationBadge() {
     const unreadCount = parseInt(localStorage.getItem('app_unread_count') || '0', 10);
