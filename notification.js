@@ -28,7 +28,7 @@ export function addNotification(title, message) {
 // Notification Screen ကို Render လုပ်ရန်
 export function renderNotificationScreen(container) {
     container.innerHTML = `
-        <div style="width: 100%; height: 85%; display: flex; flex-direction: column; justify-content: flex-start; padding: 20px; box-sizing: border-box; overflow-y: auto; background-color: #0b0f19;">                
+        <div style="width: 100%; height: 120%; display: flex; flex-direction: column; justify-content: flex-start; padding: 20px; box-sizing: border-box; overflow-y: auto; background-color: #0b0f19;">                
             <!-- Header -->
             <div style="margin-bottom: 20px; display: flex; justify-content: space-between; align-items: center;">
                 <div>
