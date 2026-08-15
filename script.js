@@ -1,6 +1,7 @@
 // main.js
 import { initAuth } from './auth.js';
 import { renderModeScreen } from './mode.js';
+import { renderNotificationScreen } from './notification.js';
 
 // DOM Elements များကို ရယူခြင်း
 const formContent = document.getElementById('form-content');
@@ -212,10 +213,11 @@ function handleLoginSuccess(username) {
             
             const tab = this.getAttribute('data-tab');
             if (tab === 'mode') {
-                renderModeScreen(appContent);
+                if (dynamicAppContent) renderModeScreen(dynamicAppContent);
+            } else if (tab === 'notification') {
+                if (dynamicAppContent) renderNotificationScreen(dynamicAppContent);
             } else {
-                appContent.innerHTML = `<div style="color: white; text-align: center; margin-top: 50px;">${tab.toUpperCase()} Screen Coming Soon</div>`;
-            }
-        });
+                if (dynamicAppContent) dynamicAppContent.innerHTML = `<div style="color: white; text-align: center; margin-top: 50px;">${tab.toUpperCase()} Screen Coming Soon</div>`;
+            }        });
     });
 }
