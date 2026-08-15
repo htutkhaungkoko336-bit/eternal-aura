@@ -3,7 +3,7 @@ import { renderRegisterForm } from './register.js';
 import { renderModeScreen } from './mode.js';
 
 export function renderPaymentPage(appContent, formData) {
-    // တွက်ချက်မှုများ ပြုလုပ်ခြင်း
+    // 1. Fee Breakdown တွက်ချက်ခြင်း
     let rawFee = formData.fee.toLowerCase().trim();
     let baseNum = parseInt(rawFee.replace('k', '')) * 1000;
     if (isNaN(baseNum)) baseNum = 25000;
@@ -14,15 +14,11 @@ export function renderPaymentPage(appContent, formData) {
     let totalNum = baseNum + commissionNum;
     let totalStr = totalNum.toLocaleString() + 'Ks';
     
-    // Amount များလေ Winner Price ပိုမိုကြီးမားပြီး လန်းလေဖြစ်စေရန် တွက်ချက်ခြင်း
-    let multiplier = 2;
-    if (baseNum >= 50000) multiplier = 2.4;
-    else if (baseNum >= 25000) multiplier = 2.2;
-    
-    let winnerPriceNum = baseNum * multiplier;
+    // 2. Winner Price ကို Entry Fee ပေါ်မူတည်၍ တိကျမှန်ကန်စွာ သတ်မှတ်ခြင်း (Fee အပါ မတွက်တော့ပါ)
+    let winnerPriceNum = baseNum * 2; // ဥပမာ - 25k လျှင် 50k၊ 50k လျှင် 100k
     let winnerPriceStr = winnerPriceNum.toLocaleString() + 'Ks';
 
-    // BO1 သို့မဟုတ် BO3 သတ်မှတ်ချက် (5k, 10k, 15k ဆိုရင် BO1၊ ကျန်တာ BO3)
+    // 3. Match Format (5k, 10k, 15k = BO1 | 25k, 50k = BO3)
     let matchFormat = (baseNum <= 15000) ? "BO1" : "BO3";
     let badgeColor = (matchFormat === "BO1") ? "#38bdf8" : "#f43f5e";
 
@@ -32,7 +28,7 @@ export function renderPaymentPage(appContent, formData) {
             
             <div style="display: flex; flex-direction: column; gap: 8px; width: 100%; max-width: 340px; padding-bottom: 25px;">
                 
-                <!-- 1. Fee Breakdown Box (အပေါ်ဆုံး) -->
+                <!-- Fee Breakdown Box -->
                 <div style="background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%); border: 1px solid #334155; border-radius: 8px; padding: 8px 12px; display: flex; flex-direction: column; gap: 3px; box-shadow: 0 4px 10px rgba(0,0,0,0.3);">
                     <div style="display: flex; justify-content: space-between; font-size: 11.5px; color: #94a3b8;">
                         <span>Select Fee :</span>
@@ -48,7 +44,7 @@ export function renderPaymentPage(appContent, formData) {
                     </div>
                 </div>
 
-                <!-- 2. Cyberpunk / Sci-Fi Winner Prize Box (လန်းဆန်းကြီးမားသောဒီဇိုင်း) -->
+                <!-- Cyberpunk Winner Prize Box -->
                 <div style="position: relative; background: linear-gradient(135deg, #090d16 0%, #171033 50%, #1e1b4b 100%); border: 1.5px solid #a855f7; border-radius: 10px; padding: 10px; text-align: center; box-shadow: 0 0 18px rgba(168, 85, 247, 0.4), inset 0 0 10px rgba(168, 85, 247, 0.15);">
                     <div style="position: absolute; top: 6px; right: 10px; background-color: ${badgeColor}; color: white; font-size: 9.5px; font-weight: 900; padding: 2px 6px; border-radius: 4px; letter-spacing: 0.5px; box-shadow: 0 0 6px ${badgeColor};">${matchFormat}</div>
                     
@@ -56,29 +52,32 @@ export function renderPaymentPage(appContent, formData) {
                     <span style="display: block; color: #facc15; font-size: 24px; font-weight: 900; text-shadow: 0 0 12px rgba(250, 204, 21, 0.7), 0 2px 4px rgba(0,0,0,0.8);">${winnerPriceStr}</span>
                 </div>
 
-                <!-- 3. Outer Container for QR & Payment Slip (Sketch ပုံစံအတိုင်း အကွက်ကြီးတစ်ခုအတွင်း ထည့်သွင်းခြင်း) -->
+                <!-- Main Container for QR & Payment Slip -->
                 <div style="background-color: #0f172a; border: 1.5px solid #334155; border-radius: 10px; padding: 10px; display: flex; flex-direction: column; gap: 8px;">
                     
-                    <!-- QR Code နှင့် Payment Slip ဘေးချင်းယှဉ် Layout -->
+                    <!-- QR Code & Payment Slip (ဘေးချင်းယှဉ်၊ ပုံစံတူ ဘောင်များ) -->
                     <div style="display: flex; gap: 8px; width: 100%;">
                         
-                        <!-- QR Code Box (ဘယ်ဘက်) -->
-                        <div style="flex: 1; display: flex; flex-direction: column; align-items: center; background-color: #1e293b; border: 1px solid #475569; border-radius: 8px; padding: 8px;">
-                            <span style="color: #f8fafc; font-size: 10.5px; font-weight: 700; margin-bottom: 4px;">QR Code</span>
-                            <div style="width: 85px; height: 85px; background-color: white; border-radius: 6px; display: flex; align-items: center; justify-content: center; overflow: hidden;">
+                        <!-- QR Code Box -->
+                        <div style="flex: 1; display: flex; flex-direction: column; align-items: center; background-color: #1e293b; border: 1px solid #475569; border-radius: 8px; padding: 8px; box-sizing: border-box;">
+                            <span style="color: #f8fafc; font-size: 10.5px; font-weight: 700; margin-bottom: 6px;">QR Code</span>
+                            <div style="width: 100px; height: 95px; background-color: white; border-radius: 6px; display: flex; align-items: center; justify-content: center; overflow: hidden;">
                                 <img src="qr-placeholder.png" alt="QR" style="width: 100%; height: 100%; object-fit: cover;" onerror="this.style.display='none'; this.nextElementSibling.style.display='block';">
                                 <span style="display: none; color: #0f172a; font-size: 9px; font-weight: 700; text-align: center;">[ QR ]</span>
                             </div>
-                            <span style="color: #94a3b8; font-size: 9px; margin-top: 3px; text-align: center;">09987654321</span>
+                            <span style="color: #94a3b8; font-size: 9px; margin-top: 5px; text-align: center;">09987654321</span>
                         </div>
 
-                        <!-- Payment Slip Box (ညာဘက် ဒေါင်လိုက် Layout) -->
-                        <div style="flex: 1; display: flex; flex-direction: column; gap: 3px;">
-                            <label style="color: #f8fafc; font-size: 10.5px; font-weight: 700;">Payment Slip</label>
-                            <label for="ss-file-input" style="display: flex; flex-direction: column; align-items: center; justify-content: center; width: 100%; height: 108px; background-color: #1e293b; border: 1.5px dashed #475569; border-radius: 8px; cursor: pointer; color: #38bdf8; font-size: 11px; font-weight: 600; overflow: hidden; position: relative;" id="ss-preview-box">
-                                <span id="ss-text" style="text-align: center; padding: 0 4px;">📷 Upload SS</span>
+                        <!-- Payment Slip Box (QR နဲ့ အရွယ်အစား တူညီစေရန် ပြင်ဆင်ထားသည်) -->
+                        <div style="flex: 1; display: flex; flex-direction: column; align-items: center; background-color: #1e293b; border: 1px solid #475569; border-radius: 8px; padding: 8px; box-sizing: border-box;">
+                            <span style="color: #f8fafc; font-size: 10.5px; font-weight: 700; margin-bottom: 6px;">Payment Slip</span>
+                            
+                            <label for="ss-file-input" style="width: 100px; height: 95px; background-color: #0f172a; border: 1.5px dashed #475569; border-radius: 6px; cursor: pointer; display: flex; align-items: center; justify-content: center; overflow: hidden; position: relative;" id="ss-preview-box">
+                                <span id="ss-text" style="color: #38bdf8; font-size: 10px; font-weight: 600; text-align: center; padding: 0 4px;">Upload SS</span>
                                 <input type="file" id="ss-file-input" accept="image/*" style="display: none;">
                             </label>
+
+                            <span style="color: #94a3b8; font-size: 9px; margin-top: 5px; text-align: center;">Required</span>
                         </div>
                     </div>
 
@@ -88,7 +87,7 @@ export function renderPaymentPage(appContent, formData) {
                         <label for="mode-checkbox" style="color: #f8fafc; font-size: 11.5px; font-weight: 600; cursor: pointer;">5 vs 5 Mode</label>
                     </div>
 
-                    <!-- Buttons (Back & Confirm) -->
+                    <!-- Buttons -->
                     <div style="display: flex; gap: 8px;">
                         <button type="button" id="pay-back-btn" style="width: 50%; height: 38px; background-color: #334155; color: white; border: none; border-radius: 6px; font-size: 12.5px; font-weight: 700; cursor: pointer;">Back</button>
                         <button type="button" id="confirm-btn" disabled style="width: 50%; height: 38px; background: linear-gradient(135deg, #0ea5e9, #6366f1); color: white; border: none; border-radius: 6px; font-size: 12.5px; font-weight: 700; cursor: not-allowed; opacity: 0.4; transition: 0.2s; box-shadow: 0 0 10px rgba(14, 165, 233, 0.3);">Confirm</button>
@@ -125,8 +124,9 @@ export function renderPaymentPage(appContent, formData) {
         if (file) {
             const reader = new FileReader();
             reader.onload = function(event) {
+                // User တင်လိုက်သော ပုံသည် ဘောင်အတွင်း အပြည့် (cover) ဖြစ်စေရန်
                 ssBox.style.backgroundImage = `url(${event.target.result})`;
-                ssBox.style.backgroundSize = 'contain';
+                ssBox.style.backgroundSize = 'cover';
                 ssBox.style.backgroundPosition = 'center';
                 ssBox.style.backgroundRepeat = 'no-repeat';
                 ssBox.style.borderStyle = 'solid';
@@ -150,7 +150,6 @@ export function renderPaymentPage(appContent, formData) {
     confirmBtn.addEventListener('click', () => {
         if (confirmBtn.disabled) return;
 
-        // Backend Payload (selectedGameMode, matchFormat, winnerPrice အားလုံးပါဝင်သည်)
         const finalPayload = {
             ...formData,
             totalFee: totalStr,
