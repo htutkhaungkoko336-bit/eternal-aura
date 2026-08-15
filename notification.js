@@ -27,20 +27,18 @@ export function addNotification(title, message) {
 
 export function renderNotificationScreen(container) {
     container.innerHTML = `
-        <div style="width: 100%; min-height: 100%; display: flex; flex-direction: column; justify-content: flex-start; padding: 20px; padding-bottom: 30px; box-sizing: border-box; background-color: #0b0f19;">
+        <div style="width: 100%; height: 100%; display: flex; flex-direction: column; position: relative; box-sizing: border-box; background-color: #0b0f19; overflow: hidden;">
             
-            <!-- Header -->
-            <div style="margin-bottom: 20px; display: flex; justify-content: space-between; align-items: center;">
-                <div>
-                    <h2 style="font-size: 22px; font-weight: 800; color: #38bdf8; letter-spacing: 1px; margin: 0;">
-                        SYSTEM NOTIFICATIONS
-                    </h2>
-                    <p style="color: #64748b; font-size: 12px; margin-top: 4px;">SECURE CYBER COMMUNICATIONS</p>
-                </div>
+            <!-- Header (အပေါ်ဆုံးတွင် အသေထားရှိမည် - Sticky Header) -->
+            <div style="position: sticky; top: 0; z-index: 10; background-color: #0b0f19; padding: 20px 20px 15px 20px; box-sizing: border-box; border-bottom: 1px solid #1e293b;">
+                <h2 style="font-size: 22px; font-weight: 800; color: #38bdf8; letter-spacing: 1px; margin: 0;">
+                    SYSTEM NOTIFICATIONS
+                </h2>
+                <p style="color: #64748b; font-size: 12px; margin-top: 4px;">SECURE CYBER COMMUNICATIONS</p>
             </div>
 
-            <!-- Notifications List Container -->
-            <div id="notification-list-container" style="display: flex; flex-direction: column; gap: 15px; width: 100%;">
+            <!-- Notifications List Container (ဒီနေရာလေးပဲ Scroller ဖြစ်မည်) -->
+            <div id="notification-list-container" style="display: flex; flex-direction: column; gap: 15px; width: 100%; padding: 15px 20px 30px 20px; box-sizing: border-box; overflow-y: auto; flex-grow: 1;">
             </div>
         </div>
     `;
