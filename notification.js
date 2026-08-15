@@ -39,7 +39,7 @@ export function renderNotificationScreen(container) {
                 </div>
             </div>
 
-            <!-- Notifications List Container (အောက်ဆုံးမှ မြန်မာစာသားများ အပြည့်အစုံပေါ်စေရန် padding-bottom ပိုမိုတိုးမြှင့်ထားသည်) -->
+            <!-- Notifications List Container -->
             <div id="notification-list-container" style="display: flex; flex-direction: column; gap: 15px; width: 100%; padding: 15px 20px 120px 20px; box-sizing: border-box; overflow-y: auto; flex-grow: 1; min-height: 0;">
             </div>
         </div>
@@ -62,8 +62,8 @@ function renderNotificationCards(container, notifications) {
     notifications.forEach((noti, index) => {
         const card = document.createElement('div');
         card.className = 'cyber-noti-card';
-        // overflow: hidden ကို ဖြုတ်ပေးလိုက်ခြင်းဖြင့် အထဲကစာသားများ လုံးဝ ဖြတ်ညှပ်မခံရတော့ပါ
-        card.style.cssText = 'background: linear-gradient(135deg, #1e1b4b 0%, #0f172a 100%); border: 1px solid #38bdf8; border-radius: 8px; padding: 16px; box-shadow: 0 0 15px rgba(56, 189, 248, 0.15); position: relative; transition: all 0.3s ease; flex-shrink: 0;';
+        // Card အောက်ခြေ Padding ကို 24px အထိ တိုးမြှင့်ပေးထားသည်
+        card.style.cssText = 'background: linear-gradient(135deg, #1e1b4b 0%, #0f172a 100%); border: 1px solid #38bdf8; border-radius: 8px; padding: 16px 16px 24px 16px; box-shadow: 0 0 15px rgba(56, 189, 248, 0.15); position: relative; transition: all 0.3s ease; flex-shrink: 0;';
         
         card.innerHTML = `
             <div style="position: absolute; top: 0; left: 0; width: 6px; height: 6px; background-color: #38bdf8;"></div>
@@ -84,13 +84,13 @@ function renderNotificationCards(container, notifications) {
             </div>
 
             <div class="noti-body" style="max-height: 0; overflow: hidden; transition: max-height 0.3s ease, margin-top 0.3s ease; border-top: 1px solid transparent;">
-                <div style="padding-top: 12px; margin-top: 10px; border-top: 1px dashed #334155; color: #cbd5e1; font-size: 13px; line-height: 1.5;">
+                <div style="padding-top: 12px; margin-top: 10px; border-top: 1px dashed #334155; color: #cbd5e1; font-size: 13px; line-height: 1.6; padding-bottom: 5px;">
                     <p style="margin: 0;">${noti.message}</p>
                 </div>
             </div>
         `;
 
-        // Card ကို နှိပ်ရင် အောက်သို့ ဆင်းပြီး ဖြန့်ထွက်ရန် (max-height ကို 1000px အထိ ပေးထား၍ စာသားအပြည့်အစုံပေါ်စေမည်)
+        // Card ကို နှိပ်ရင် အောက်သို့ ဆင်းပြီး ဖြန့်ထွက်ရန် (max-height ကို 1200px အထိ ပေး၍ စာသားအပြည့်အစုံ လွတ်လွတ်လပ်လပ်ပေါ်စေရန်)
         const headerEl = card.querySelector('.noti-header');
         headerEl.addEventListener('click', (e) => {
             if (e.target.closest('.delete-btn')) return;
@@ -103,7 +103,7 @@ function renderNotificationCards(container, notifications) {
                 body.style.maxHeight = '0px';
                 icon.style.transform = 'rotate(0deg)';
             } else {
-                body.style.maxHeight = '1000px'; 
+                body.style.maxHeight = '1200px'; 
                 icon.style.transform = 'rotate(180deg)';
             }
         });
