@@ -26,8 +26,9 @@ export function addNotification(title, message) {
 }
 
 export function renderNotificationScreen(container) {
+    // ရှင်းလင်းပြတ်သားတဲ့ Flex Layout (Header က အသေ၊ အောက်က Card List က လွတ်လွတ်လပ်လပ် Scroll ဆွဲလို့ရမယ်)
     container.innerHTML = `
-        <div style="width: 100%; height: 100%; display: flex; flex-direction: column; box-sizing: border-box; background-color: #0b0f19; overflow: hidden;">
+        <div style="width: 100%; height: 100%; display: flex; flex-direction: column; background-color: #0b0f19; box-sizing: border-box; overflow: hidden;">
             
             <!-- Header (အပေါ်ဆုံးတွင် အသေထားရှိမည်) -->
             <div style="flex-shrink: 0; background-color: #0b0f19; padding: 20px 20px 15px 20px; box-sizing: border-box; border-bottom: 1px solid #1e293b; z-index: 10;">
@@ -37,7 +38,7 @@ export function renderNotificationScreen(container) {
                 <p style="color: #64748b; font-size: 12px; margin-top: 4px;">SECURE CYBER COMMUNICATIONS</p>
             </div>
 
-            <!-- Notifications List Container (ဒီနေရာလေးမှာ min-height: 0 နဲ့ overflow-y: auto သုံးမှ ဖိမညှပ်ဘဲ Scroll လို့ရမှာပါ) -->
+            <!-- Notifications List Container (ဒီနေရာကသာ Scroller ဖြစ်ရပါမယ်) -->
             <div id="notification-list-container" style="display: flex; flex-direction: column; gap: 15px; width: 100%; padding: 15px 20px 30px 20px; box-sizing: border-box; overflow-y: auto; flex-grow: 1; min-height: 0;">
             </div>
         </div>
@@ -48,6 +49,7 @@ export function renderNotificationScreen(container) {
     
     renderNotificationCards(listContainer, notifications);
 }
+
 // Card များကို HTML ထဲ ထည့်သွင်းပေးသည့် Helper Function (Clear ပါဝင်သည် - Blue Theme)
 function renderNotificationCards(container, notifications) {
     if (notifications.length === 0) {
@@ -59,7 +61,7 @@ function renderNotificationCards(container, notifications) {
     notifications.forEach((noti, index) => {
         const card = document.createElement('div');
         card.className = 'cyber-noti-card';
-        card.style.cssText = 'background: linear-gradient(135deg, #1e1b4b 0%, #0f172a 100%); border: 1px solid #38bdf8; border-radius: 8px; padding: 16px; box-shadow: 0 0 15px rgba(56, 189, 248, 0.15); position: relative; overflow: hidden; transition: all 0.3s ease;';
+        card.style.cssText = 'background: linear-gradient(135deg, #1e1b4b 0%, #0f172a 100%); border: 1px solid #38bdf8; border-radius: 8px; padding: 16px; box-shadow: 0 0 15px rgba(56, 189, 248, 0.15); position: relative; overflow: hidden; transition: all 0.3s ease; flex-shrink: 0;';
         
         card.innerHTML = `
             <div style="position: absolute; top: 0; left: 0; width: 6px; height: 6px; background-color: #38bdf8;"></div>
