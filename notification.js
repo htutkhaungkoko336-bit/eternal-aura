@@ -40,7 +40,7 @@ export function renderNotificationScreen(container) {
             </div>
 
             <!-- Notifications List Container (အောက်ဆုံးမှ မြန်မာစာသားများ အပြည့်အစုံပေါ်စေရန် padding-bottom ပိုမိုတိုးမြှင့်ထားသည်) -->
-            <div id="notification-list-container" style="display: flex; flex-direction: column; gap: 15px; width: 100%; padding: 15px 20px 100px 20px; box-sizing: border-box; overflow-y: auto; flex-grow: 1; min-height: 0;">
+            <div id="notification-list-container" style="display: flex; flex-direction: column; gap: 15px; width: 100%; padding: 15px 20px 120px 20px; box-sizing: border-box; overflow-y: auto; flex-grow: 1; min-height: 0;">
             </div>
         </div>
     `;
@@ -62,7 +62,8 @@ function renderNotificationCards(container, notifications) {
     notifications.forEach((noti, index) => {
         const card = document.createElement('div');
         card.className = 'cyber-noti-card';
-        card.style.cssText = 'background: linear-gradient(135deg, #1e1b4b 0%, #0f172a 100%); border: 1px solid #38bdf8; border-radius: 8px; padding: 16px; box-shadow: 0 0 15px rgba(56, 189, 248, 0.15); position: relative; overflow: hidden; transition: all 0.3s ease; flex-shrink: 0;';
+        // overflow: hidden ကို ဖြုတ်ပေးလိုက်ခြင်းဖြင့် အထဲကစာသားများ လုံးဝ ဖြတ်ညှပ်မခံရတော့ပါ
+        card.style.cssText = 'background: linear-gradient(135deg, #1e1b4b 0%, #0f172a 100%); border: 1px solid #38bdf8; border-radius: 8px; padding: 16px; box-shadow: 0 0 15px rgba(56, 189, 248, 0.15); position: relative; transition: all 0.3s ease; flex-shrink: 0;';
         
         card.innerHTML = `
             <div style="position: absolute; top: 0; left: 0; width: 6px; height: 6px; background-color: #38bdf8;"></div>
@@ -89,21 +90,20 @@ function renderNotificationCards(container, notifications) {
             </div>
         `;
 
-        // Card ကို နှိပ်ရင် အောက်သို့ ဆင်းပြီး ဖြန့်ထွက်ရန် (max-height 500px သုံး၍ မြန်မာစာသား အပြည့်အစုံပေါ်စေရန်)
+        // Card ကို နှိပ်ရင် အောက်သို့ ဆင်းပြီး ဖြန့်ထွက်ရန် (max-height ကို 1000px အထိ ပေးထား၍ စာသားအပြည့်အစုံပေါ်စေမည်)
         const headerEl = card.querySelector('.noti-header');
         headerEl.addEventListener('click', (e) => {
             if (e.target.closest('.delete-btn')) return;
             const body = card.querySelector('.noti-body');
             const icon = card.querySelector('.toggle-icon');
             
-            // ဖွင့်ထားပြီးသားလား စစ်ဆေးခြင်း
             const isOpen = body.style.maxHeight && body.style.maxHeight !== '0px';
             
             if (isOpen) {
                 body.style.maxHeight = '0px';
                 icon.style.transform = 'rotate(0deg)';
             } else {
-                body.style.maxHeight = '500px'; 
+                body.style.maxHeight = '1000px'; 
                 icon.style.transform = 'rotate(180deg)';
             }
         });
