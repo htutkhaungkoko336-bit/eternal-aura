@@ -1,14 +1,31 @@
+// main.js
 import { initAuth } from './auth.js';
 import { renderModeScreen } from './mode.js';
 
+// DOM Elements များကို ရယူခြင်း
 const formContent = document.getElementById('form-content');
-const mainContainer = document.getElementById('app-content'); 
+const appContent = document.getElementById('app-content'); 
 
-formContent.style.display = 'flex';
-formContent.style.flexDirection = 'column';
-formContent.style.gap = '15px';
-formContent.style.width = '100%';
+// Form Content အတွက် styling များကို သတ်မှတ်ခြင်း
+if (formContent) {
+    formContent.style.display = 'flex';
+    formContent.style.flexDirection = 'column';
+    formContent.style.gap = '15px';
+    formContent.style.width = '100%';
+}
 
+// App စတင်ဖွင့်သည်နှင့် လုပ်ဆောင်ရမည့် စနစ်များ
+document.addEventListener('DOMContentLoaded', () => {
+    // လိုအပ်ပါက Authentication ကို စတင်ရန်
+    if (typeof initAuth === 'function') {
+        initAuth();
+    }
+
+    // Mode မျက်နှာပြင်ကို စတင်ပြသရန်
+    if (appContent) {
+        renderModeScreen(appContent);
+    }
+});
 initAuth(formContent, async (phone, pin) => {
     let deviceId = localStorage.getItem('device_id');
     if (!deviceId) {
