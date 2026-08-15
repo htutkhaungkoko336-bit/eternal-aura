@@ -1,7 +1,7 @@
 // main.js
 import { initAuth } from './auth.js';
 import { renderModeScreen } from './mode.js';
-import { addNotification } from './notification.js';
+import { addNotification,renderNotificationScreen } from './notification.js';
 
 // Payment အောင်မြင်သွားတဲ့အခါ (သို့) Payload တည်ဆောက်ပြီးသွားတဲ့အခါ:
 addNotification(
