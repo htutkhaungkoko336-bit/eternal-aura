@@ -27,6 +27,7 @@ document.addEventListener('DOMContentLoaded', () => {
         renderModeScreen(appContent);
     }
 });
+
 initAuth(formContent, async (phone, pin) => {
     let deviceId = localStorage.getItem('device_id');
     if (!deviceId) {
@@ -201,10 +202,12 @@ function handleLoginSuccess(username) {
     `;
 
     // Login အောင်မြင်တာနဲ့ Mode Screen ကို အလိုအလျောက် စတင်ပြသမည်
-    const appContent = document.getElementById('app-content');
-    renderModeScreen(appContent);
+    const dynamicAppContent = document.getElementById('app-content');
+    if (dynamicAppContent) {
+        renderModeScreen(dynamicAppContent);
+    }
 
-    // Bottom Nav များကို နှိပ်သည့်အခါ အရောင်ပြောင်းရန်
+    // Bottom Nav များကို နှိပ်သည့်အခါ အရောင်ပြောင်းရန်နှင့် Screen အလိုက်ပြသရန်
     const navItems = document.querySelectorAll('.nav-item');
     navItems.forEach(item => {
         item.addEventListener('click', function() {
@@ -212,12 +215,17 @@ function handleLoginSuccess(username) {
             this.style.color = '#38bdf8';
             
             const tab = this.getAttribute('data-tab');
+            const targetContent = document.getElementById('app-content');
+            
+            if (!targetContent) return;
+
             if (tab === 'mode') {
-                if (dynamicAppContent) renderModeScreen(dynamicAppContent);
+                renderModeScreen(targetContent);
             } else if (tab === 'notification') {
-                if (dynamicAppContent) renderNotificationScreen(dynamicAppContent);
+                renderNotificationScreen(targetContent);
             } else {
-                if (dynamicAppContent) dynamicAppContent.innerHTML = `<div style="color: white; text-align: center; margin-top: 50px;">${tab.toUpperCase()} Screen Coming Soon</div>`;
-            }        });
+                targetContent.innerHTML = `<div style="color: white; text-align: center; margin-top: 50px; font-weight: 600;">${tab.toUpperCase()} Screen Coming Soon</div>`;
+            }
+        });
     });
 }
