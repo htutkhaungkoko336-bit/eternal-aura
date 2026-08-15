@@ -30,17 +30,17 @@ export function renderNotificationScreen(container) {
     container.innerHTML = `
         <div style="width: 100%; height: 100%; display: flex; flex-direction: column; background-color: #0b0f19; box-sizing: border-box; overflow: hidden;">
             
-            <!-- Header (အပေါ်ဆုံးတွင် အသေထားရှိမည် - လေးထောင့်ဘောင်အလန်းစားနှင့် အလယ်တည့်တည့်) -->
+            <!-- Header (အပေါ်ဆုံးတွင် အသေထားရှိမည် - Gradient ၂ ရောင်စပ်ဘောင်နှင့် အလယ်တည့်တည့်) -->
             <div style="flex-shrink: 0; background-color: #0b0f19; padding: 20px 20px 15px 20px; box-sizing: border-box; border-bottom: 1px solid #1e293b; z-index: 10; display: flex; justify-content: center; align-items: center;">
-                <div style="border: 2px solid #38bdf8; padding: 10px 20px; border-radius: 6px; background: rgba(56, 189, 248, 0.05); box-shadow: 0 0 12px rgba(56, 189, 248, 0.2); text-align: center;">
-                    <h2 style="font-size: 18px; font-weight: 800; color: #38bdf8; letter-spacing: 1.5px; margin: 0;">
+                <div style="border: 2px solid transparent; border-image: linear-gradient(135deg, #38bdf8, #818cf8) 1; padding: 10px 20px; background: rgba(56, 189, 248, 0.05); box-shadow: 0 0 15px rgba(56, 189, 248, 0.2); text-align: center;">
+                    <h2 style="font-size: 18px; font-weight: 800; background: linear-gradient(135deg, #38bdf8, #c084fc); -webkit-background-clip: text; -webkit-text-fill-color: transparent; letter-spacing: 1.5px; margin: 0;">
                         SYSTEM NOTIFICATIONS
                     </h2>
                 </div>
             </div>
 
-            <!-- Notifications List Container (အောက်ဆုံးမှ မြန်မာစာသားများ အပြည့်အစုံပေါ်စေရန် padding-bottom တိုးပေးထားသည်) -->
-            <div id="notification-list-container" style="display: flex; flex-direction: column; gap: 15px; width: 100%; padding: 15px 20px 70px 20px; box-sizing: border-box; overflow-y: auto; flex-grow: 1; min-height: 0;">
+            <!-- Notifications List Container (အောက်ဆုံးမှ မြန်မာစာသားများ အပြည့်အစုံပေါ်စေရန် padding-bottom ပိုမိုတိုးမြှင့်ထားသည်) -->
+            <div id="notification-list-container" style="display: flex; flex-direction: column; gap: 15px; width: 100%; padding: 15px 20px 100px 20px; box-sizing: border-box; overflow-y: auto; flex-grow: 1; min-height: 0;">
             </div>
         </div>
     `;
@@ -89,7 +89,7 @@ function renderNotificationCards(container, notifications) {
             </div>
         `;
 
-        // Card ကို နှိပ်ရင် အောက်သို့ ဆင်းပြီး ဖြန့်ထွက်ရန် (Clear ခလုတ်ကို နှိပ်လျှင် မပါစေရန်)
+        // Card ကို နှိပ်ရင် အောက်သို့ ဆင်းပြီး ဖြန့်ထွက်ရန် (စာသားအပြည့်အစုံပေါ်စေရန် တိကျစွာ တွက်ချက်ပေးမည်)
         const headerEl = card.querySelector('.noti-header');
         headerEl.addEventListener('click', (e) => {
             if (e.target.closest('.delete-btn')) return;
@@ -100,8 +100,13 @@ function renderNotificationCards(container, notifications) {
                 body.style.maxHeight = '0px';
                 icon.style.transform = 'rotate(0deg)';
             } else {
-                body.style.maxHeight = body.scrollHeight + 'px';
+                body.style.maxHeight = body.scrollHeight + 20 + 'px';
                 icon.style.transform = 'rotate(180deg)';
+                
+                // စာသားအပြည့်အစုံပေါ်ပြီးနောက် Scroll container ပါ လိုက်လံ ညှိပေးရန်
+                setTimeout(() => {
+                    body.style.maxHeight = body.scrollHeight + 'px';
+                }, 300);
             }
         });
 
