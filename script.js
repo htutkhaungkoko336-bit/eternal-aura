@@ -224,4 +224,9 @@ document.querySelector('.container').innerHTML = `
             }
         });
     });
+
+    // Login ဝင်ပြီးတာနဲ့ Badge ပေါ်လာစေရန် ချက်ချင်းစစ်ဆေးပေးခြင်း
+    if (typeof updateNotificationBadge === 'function') {
+        updateNotificationBadge();
+    }
 }

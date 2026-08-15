@@ -64,8 +64,8 @@ export function renderNotificationScreen(container) {
 export function updateNotificationBadge() {
     const unreadCount = parseInt(localStorage.getItem('app_unread_count') || '0', 10);
     
-    // Notification Nav Button ကို ရှာဖွေခြင်း (သင့် app ထဲက Notification button ရဲ့ selector အမှန်)
-    const notiNavBtn = document.querySelector('a[href*="notification"], button[data-target="notification"], .notification-nav-icon, nav button:nth-child(3), nav a:nth-child(3)'); 
+    // Bottom Nav ထဲက Notification Nav Item (data-tab="notification") ကို တိုက်ရိုက်ရှာဖွေခြင်း
+    const notiNavBtn = document.querySelector('.nav-item[data-tab="notification"]'); 
     
     if (notiNavBtn) {
         notiNavBtn.style.position = 'relative';
@@ -87,7 +87,6 @@ export function updateNotificationBadge() {
         }
     }
 }
-
 // Card များကို HTML ထဲ ထည့်သွင်းပေးသည့် Helper Function
 function renderNotificationCards(container, notifications) {
     if (notifications.length === 0) {
