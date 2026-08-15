@@ -30,16 +30,17 @@ export function renderNotificationScreen(container) {
     container.innerHTML = `
         <div style="width: 100%; height: 100%; display: flex; flex-direction: column; background-color: #0b0f19; box-sizing: border-box; overflow: hidden;">
             
-            <!-- Header (အပေါ်ဆုံးတွင် အသေထားရှိမည်) -->
-            <div style="flex-shrink: 0; background-color: #0b0f19; padding: 20px 20px 15px 20px; box-sizing: border-box; border-bottom: 1px solid #1e293b; z-index: 10;">
-                <h2 style="font-size: 22px; font-weight: 800; color: #38bdf8; letter-spacing: 1px; margin: 0;">
-                    SYSTEM NOTIFICATIONS
-                </h2>
-                <p style="color: #64748b; font-size: 12px; margin-top: 4px;">SECURE CYBER COMMUNICATIONS</p>
+            <!-- Header (အပေါ်ဆုံးတွင် အသေထားရှိမည် - လေးထောင့်ဘောင်အလန်းစားနှင့် အလယ်တည့်တည့်) -->
+            <div style="flex-shrink: 0; background-color: #0b0f19; padding: 20px 20px 15px 20px; box-sizing: border-box; border-bottom: 1px solid #1e293b; z-index: 10; display: flex; justify-content: center; align-items: center;">
+                <div style="border: 2px solid #38bdf8; padding: 10px 20px; border-radius: 6px; background: rgba(56, 189, 248, 0.05); box-shadow: 0 0 12px rgba(56, 189, 248, 0.2); text-align: center;">
+                    <h2 style="font-size: 18px; font-weight: 800; color: #38bdf8; letter-spacing: 1.5px; margin: 0;">
+                        SYSTEM NOTIFICATIONS
+                    </h2>
+                </div>
             </div>
 
-            <!-- Notifications List Container (ဒီနေရာကသာ Scroller ဖြစ်ရပါမယ်) -->
-            <div id="notification-list-container" style="display: flex; flex-direction: column; gap: 15px; width: 100%; padding: 15px 20px 30px 20px; box-sizing: border-box; overflow-y: auto; flex-grow: 1; min-height: 0;">
+            <!-- Notifications List Container (အောက်ဆုံးမှ မြန်မာစာသားများ အပြည့်အစုံပေါ်စေရန် padding-bottom တိုးပေးထားသည်) -->
+            <div id="notification-list-container" style="display: flex; flex-direction: column; gap: 15px; width: 100%; padding: 15px 20px 70px 20px; box-sizing: border-box; overflow-y: auto; flex-grow: 1; min-height: 0;">
             </div>
         </div>
     `;
