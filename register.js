@@ -94,17 +94,12 @@ export function renderRegisterForm(appContent, savedData = {}) {
                             <span id="selected-fee-text">${savedData.fee || 'Select Fee'}</span>
                             <span style="font-size: 10px; color: #94a3b8;">▼</span>
                         </div>
-                        <div id="fee-calc-hint" style="font-size: 10.5px; color: #10b981; margin-top: 2px; font-weight: 600; display: ${savedData.totalVal ? 'block' : 'none'};">
-                            Total: ${savedData.totalVal || ''} (10% အပါ)
-                        </div>
 
-                        <div id="fee-modal" style="display: none; position: absolute; bottom: 60px; left: 0; width: 100%; background-color: #0f172a; border: 1px solid #334155; border-radius: 8px; box-shadow: 0 10px 25px rgba(0,0,0,0.5); z-index: 100; overflow: hidden;">
+                        <div id="fee-modal" style="display: none; position: absolute; bottom: 50px; left: 0; width: 100%; background-color: #0f172a; border: 1px solid #334155; border-radius: 8px; box-shadow: 0 10px 25px rgba(0,0,0,0.5); z-index: 100; overflow: hidden;">
                             <div style="padding: 8px 10px; font-size: 11px; font-weight: 600; color: #94a3b8; border-bottom: 1px solid #1e293b;">Select Fee</div>
-                            <div class="fee-option" data-value="5k" style="padding: 10px 12px; font-size: 13px; color: white; cursor: pointer;">5k</div>
-                            <div class="fee-option" data-value="10k" style="padding: 10px 12px; font-size: 13px; color: white; cursor: pointer;">10k</div>
-                            <div class="fee-option" data-value="15k" style="padding: 10px 12px; font-size: 13px; color: white; cursor: pointer;">15k</div>
                             <div class="fee-option" data-value="25k" style="padding: 10px 12px; font-size: 13px; color: white; cursor: pointer;">25k</div>
                             <div class="fee-option" data-value="50k" style="padding: 10px 12px; font-size: 13px; color: white; cursor: pointer;">50k</div>
+                            <div class="fee-option" data-value="100k" style="padding: 10px 12px; font-size: 13px; color: white; cursor: pointer;">100k</div>
                         </div>
                         <input type="hidden" id="fee-value" value="${savedData.fee || ''}" required>
                     </div>
@@ -151,8 +146,6 @@ export function renderRegisterForm(appContent, savedData = {}) {
     const feeModal = document.getElementById('fee-modal');
     const feeText = document.getElementById('selected-fee-text');
     const feeHiddenInput = document.getElementById('fee-value');
-    const feeCalcHint = document.getElementById('fee-calc-hint');
-    let calculatedTotalVal = savedData.totalVal || '';
 
     feeBtn.addEventListener('click', (e) => {
         e.stopPropagation();
@@ -164,14 +157,6 @@ export function renderRegisterForm(appContent, savedData = {}) {
             const val = this.getAttribute('data-value');
             feeText.textContent = val;
             feeHiddenInput.value = val;
-            
-            let baseNum = parseInt(val.replace('k', '')) * 1000;
-            let totalWithCommission = baseNum + (baseNum * 0.1);
-            calculatedTotalVal = (totalWithCommission / 1000) + 'k';
-            
-            feeCalcHint.textContent = `Total: ${calculatedTotalVal} (10% အပါ)`;
-            feeCalcHint.style.display = 'block';
-
             feeModal.style.display = 'none';
         });
     });
@@ -209,11 +194,9 @@ export function renderRegisterForm(appContent, savedData = {}) {
             kpayName: document.getElementById('kpay-name').value,
             kpayPhoneNumber: document.getElementById('kpay-phone-number').value,
             contactPhoneNumber: document.getElementById('contact-phone-number').value,
-            fee: feeHiddenInput.value,
-            totalVal: calculatedTotalVal
+            fee: feeHiddenInput.value
         };
 
-        // Payment Page သို့ Import လုပ်ပြီး ခေါ်သုံးမည်
         import('./payment.js').then(module => {
             module.renderPaymentPage(appContent, formData);
         });
