@@ -25,10 +25,9 @@ export function addNotification(title, message) {
     }
 }
 
-// Notification Screen ကို Render လုပ်ရန်
 export function renderNotificationScreen(container) {
     container.innerHTML = `
-        <div style="width: 100%; height: 100%; display: flex; flex-direction: column; padding: 20px; box-sizing: border-box; overflow-y: auto; background-color: #0b0f19;">
+        <div style="width: 100%; height: 100%; display: flex; flex-direction: column; padding: 20px 20px 90px 20px; box-sizing: border-box; overflow-y: auto; background-color: #0b0f19;">
             
             <!-- Header -->
             <div style="margin-bottom: 20px; display: flex; justify-content: space-between; align-items: center;">
@@ -51,7 +50,6 @@ export function renderNotificationScreen(container) {
     
     renderNotificationCards(listContainer, notifications);
 }
-
 // Card များကို HTML ထဲ ထည့်သွင်းပေးသည့် Helper Function (Clear ပါဝင်သည် - Blue Theme)
 function renderNotificationCards(container, notifications) {
     if (notifications.length === 0) {

@@ -30,14 +30,13 @@ body {
     position: relative;
     width: 100%;
     max-width: 420px;
-    height: 100vh;
-    max-height: 750px;
+    height: 100vh; /* ဖုန်း screen အပြည့်ယူရန် */
     background-color: var(--bg-color);
     display: flex;
     flex-direction: column;
     align-items: center;
-    justify-content: center; /* Login မျက်နှာပြင် အလယ်ကျစေရန် center ပြန်ထားပါ */
-    padding: 20px;
+    justify-content: flex-start; /* အပေါ်ကနေ စီသွားရန် */
+    padding: 20px 20px 80px 20px; /* အောက်ခြေမှာ Bottom Nav နဲ့ မတိုက်မိစေရန် padding-bottom ပိုပေးထားပါ */
     box-sizing: border-box;
     overflow: hidden;
 }
