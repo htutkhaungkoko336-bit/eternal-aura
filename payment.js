@@ -13,7 +13,7 @@ export function renderPaymentPage(appContent, formData) {
     let totalNum = baseNum + commissionNum;
     let totalStr = totalNum.toLocaleString() + 'Ks';
     
-    // Fee အလိုက် Winner Prize နှင့် Theme/Background ဒီဇိုင်း ၅ မျိုး သတ်မှတ်ခြင်း (ပိုများလေ ပိုလန်းလေ)
+    // Fee အလိုက် Winner Prize နှင့် Theme/Background ဒီဇိုင်း ၅ မျိုး သတ်မှတ်ခြင်း
     let winnerPriceNum = baseNum * 2;
     let winnerPriceStr = winnerPriceNum.toLocaleString() + 'Ks';
     let matchFormat = (baseNum <= 15000) ? "BO1" : "BO3";
@@ -25,35 +25,30 @@ export function renderPaymentPage(appContent, formData) {
     let amountColor = "";
 
     if (baseNum === 5000) {
-        // 5k: Bronze / Clean Vibe
         prizeBg = "linear-gradient(135deg, #1c1917 0%, #292524 50%, #44403c 100%)";
         prizeBorder = "#d97706";
         prizeShadow = "0 0 12px rgba(217, 119, 6, 0.3)";
         titleColor = "#fde68a";
         amountColor = "#fbbf24";
     } else if (baseNum === 10000) {
-        // 10k: Emerald / Cyber Green
         prizeBg = "linear-gradient(135deg, #022c22 0%, #064e3b 50%, #065f46 100%)";
         prizeBorder = "#34d399";
         prizeShadow = "0 0 14px rgba(52, 211, 153, 0.35)";
         titleColor = "#a7f3d0";
         amountColor = "#6ee7b7";
     } else if (baseNum === 15000) {
-        // 15k: Ocean Blue / Electric
         prizeBg = "linear-gradient(135deg, #082f49 0%, #0369a1 50%, #0284c7 100%)";
         prizeBorder = "#38bdf8";
         prizeShadow = "0 0 16px rgba(56, 189, 248, 0.4)";
         titleColor = "#bae6fd";
         amountColor = "#7dd3fc";
     } else if (baseNum === 25000) {
-        // 25k: Royal Purple / Neon VIP
         prizeBg = "linear-gradient(135deg, #1e1b4b 0%, #312e81 50%, #4338ca 100%)";
         prizeBorder = "#a855f7";
         prizeShadow = "0 0 18px rgba(168, 85, 247, 0.45)";
         titleColor = "#e9d5ff";
         amountColor = "#facc15";
     } else {
-        // 50k: Supreme Fire / Ultra Gold & Crimson
         prizeBg = "linear-gradient(135deg, #450a0a 0%, #7f1d1d 50%, #991b1b 100%)";
         prizeBorder = "#f87171";
         prizeShadow = "0 0 22px rgba(248, 113, 113, 0.6), inset 0 0 12px rgba(252, 211, 77, 0.3)";
@@ -62,7 +57,7 @@ export function renderPaymentPage(appContent, formData) {
     }
 
     appContent.innerHTML = `
-        <div style="display: flex; flex-direction: column; align-items: center; justify-content: flex-start; width: 100%; height: 100%; padding: 4px 12px 15px 12px; box-sizing: border-box; overflow-y: auto;">
+        <div style="display: flex; flex-direction: column; align-items: center; justify-content: flex-start; width: 100%; height: 100%; padding: 4px 12px 15px 12px; box-sizing: border-box; overflow-y: auto; position: relative;">
             <h2 style="color: #f8fafc; font-size: 18px; font-weight: 800; letter-spacing: 1px; margin: 0 0 6px 0; text-transform: uppercase; background: linear-gradient(to right, #38bdf8, #818cf8); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">Payment Details</h2>
             
             <div style="display: flex; flex-direction: column; gap: 8px; width: 100%; max-width: 340px; padding-bottom: 25px;">
@@ -83,7 +78,7 @@ export function renderPaymentPage(appContent, formData) {
                     </div>
                 </div>
 
-                <!-- Winner Prize Box (Fee အလိုက် ဒီဇိုင်းနှင့် အရောင် ၅ မျိုးပြောင်းလဲမှု) -->
+                <!-- Winner Prize Box -->
                 <div style="position: relative; background: ${prizeBg}; border: 1.5px solid ${prizeBorder}; border-radius: 10px; padding: 10px; text-align: center; box-shadow: ${prizeShadow};">
                     <span style="display: block; color: ${titleColor}; font-size: 11px; font-weight: 800; text-transform: uppercase; letter-spacing: 1.5px; margin-bottom: 2px; text-shadow: 0 0 8px rgba(255,255,255,0.4);">⚡ WINNER PRIZE ⚡</span>
                     <span style="display: block; color: ${amountColor}; font-size: 24px; font-weight: 900; text-shadow: 0 0 12px rgba(0,0,0,0.8);">${winnerPriceStr}</span>
@@ -92,21 +87,21 @@ export function renderPaymentPage(appContent, formData) {
                 <!-- Main Container for QR & Payment Slip -->
                 <div style="background-color: #0f172a; border: 1.5px solid #334155; border-radius: 10px; padding: 10px; display: flex; flex-direction: column; gap: 8px;">
                     
-                    <!-- QR Code & Payment Slip (ဘေးချင်းယှဉ်) -->
+                    <!-- QR Code & Payment Slip -->
                     <div style="display: flex; gap: 8px; width: 100%;">
                         
-                        <!-- QR Code Box (အမည်နှင့် ဖုန်းနံပါတ် အပေါ်အောက် တိကျစွာပါဝင်ခြင်း) -->
+                        <!-- QR Code Box (နှိပ်လျှင် ကြီးလာစေရန် cursor pointer ထည့်ထားသည်) -->
                         <div style="flex: 1; display: flex; flex-direction: column; align-items: center; background-color: #1e293b; border: 1px solid #475569; border-radius: 8px; padding: 8px; box-sizing: border-box;">
                             <span style="color: #f8fafc; font-size: 10.5px; font-weight: 700; margin-bottom: 4px;">QR Code</span>
-                            <div style="width: 100px; height: 85px; background-color: white; border-radius: 6px; display: flex; align-items: center; justify-content: center; overflow: hidden;">
-                                <img src="QR.jpg" alt="QR" style="width: 100%; height: 100%; object-fit: cover;" onerror="this.style.display='none'; this.nextElementSibling.style.display='block';">
+                            <div id="qr-container-box" style="width: 100px; height: 85px; background-color: white; border-radius: 6px; display: flex; align-items: center; justify-content: center; overflow: hidden; cursor: pointer; position: relative;" title="နှိပ်၍ ပုံအကြီးကြည့်ရန်">
+                                <img id="qr-img-element" src="QR.jpg" alt="QR" style="width: 100%; height: 100%; object-fit: cover;" onerror="this.style.display='none'; this.nextElementSibling.style.display='block';">
                                 <span style="display: none; color: #0f172a; font-size: 9px; font-weight: 700; text-align: center;">[ QR ]</span>
                             </div>
                             <span style="color: #38bdf8; font-size: 9.5px; font-weight: 700; margin-top: 4px; text-align: center;">09403633531</span>
                             <span style="color: #94a3b8; font-size: 8.5px; font-weight: 600; text-align: center;">Htut Khaung Ko Ko</span>
                         </div>
 
-                        <!-- Payment Slip Box (QR နှင့် အရွယ်အစားတူညီပြီး SS တင်လျှင် အပြည့်ပေါ်စေရန်) -->
+                        <!-- Payment Slip Box -->
                         <div style="flex: 1; display: flex; flex-direction: column; align-items: center; background-color: #1e293b; border: 1px solid #475569; border-radius: 8px; padding: 8px; box-sizing: border-box;">
                             <span style="color: #f8fafc; font-size: 10.5px; font-weight: 700; margin-bottom: 4px;">Payment Slip</span>
                             
@@ -119,13 +114,13 @@ export function renderPaymentPage(appContent, formData) {
                         </div>
                     </div>
 
-                    <!-- 5 vs 5 Mode Checkbox (BO များကို ဘေးနားတွင် ရှင်းလင်းစွာပြသခြင်း) -->
+                    <!-- 5 vs 5 Mode Checkbox (BO3 ကို အနီရောင်အစား ခမ်းနားသော အပြာ/အစိမ်းရောင် လန်းဆန်းသည့် Theme သို့ပြောင်းထားသည်) -->
                     <div style="display: flex; align-items: center; justify-content: space-between; background-color: #1e293b; padding: 7px 10px; border-radius: 6px; border: 1px solid #475569;">
                         <div style="display: flex; align-items: center; gap: 8px;">
                             <input type="checkbox" id="mode-checkbox" data-game-mode="5vs5" style="width: 15px; height: 15px; accent-color: #38bdf8; cursor: pointer;">
                             <label for="mode-checkbox" style="color: #f8fafc; font-size: 11.5px; font-weight: 600; cursor: pointer;">5 vs 5 Mode</label>
                         </div>
-                        <span style="background-color: ${matchFormat === 'BO1' ? '#0ea5e9' : '#f43f5e'}; color: white; font-size: 9.5px; font-weight: 800; padding: 2px 6px; border-radius: 4px;">${matchFormat} Match</span>
+                        <span style="background: ${matchFormat === 'BO1' ? '#0ea5e9' : 'linear-gradient(135deg, #6366f1, #a855f7)'}; color: white; font-size: 9.5px; font-weight: 800; padding: 2px 8px; border-radius: 4px; box-shadow: ${matchFormat === 'BO3' ? '0 0 8px rgba(168, 85, 247, 0.4)' : 'none'};">${matchFormat} Match</span>
                     </div>
 
                     <!-- Buttons -->
@@ -138,7 +133,35 @@ export function renderPaymentPage(appContent, formData) {
 
             </div>
         </div>
+
+        <!-- QR Zoom Modal (QR ကို နှိပ်လိုက်ပါက ပေါ်လာမည့် ပုံအကြီးပြတင်းပေါက်) -->
+        <div id="qr-modal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background-color: rgba(0, 0, 0, 0.85); z-index: 9999; align-items: center; justify-content: center; backdrop-filter: blur(4px);">
+            <div style="position: relative; max-width: 90%; max-height: 90%; display: flex; flex-direction: column; align-items: center;">
+                <button id="close-qr-modal" style="position: absolute; top: -35px; right: 0; background: none; border: none; color: white; font-size: 24px; font-weight: bold; cursor: pointer;">&times;</button>
+                <img id="modal-qr-img" src="QR.jpg" alt="Zoomed QR" style="max-width: 280px; max-height: 280px; border-radius: 8px; border: 2px solid #38bdf8; background: white; object-fit: contain;">
+                <span style="color: #38bdf8; font-size: 12px; font-weight: 700; margin-top: 10px;">09403633531 (Htut Khaung Ko Ko)</span>
+            </div>
+        </div>
     `;
+
+    // QR Zoom Modal Logic
+    const qrContainerBox = document.getElementById('qr-container-box');
+    const qrModal = document.getElementById('qr-modal');
+    const closeQrModal = document.getElementById('close-qr-modal');
+
+    qrContainerBox.addEventListener('click', () => {
+        qrModal.style.display = 'flex';
+    });
+
+    closeQrModal.addEventListener('click', () => {
+        qrModal.style.display = 'none';
+    });
+
+    qrModal.addEventListener('click', (e) => {
+        if (e.target === qrModal) {
+            qrModal.style.display = 'none';
+        }
+    });
 
     const ssInput = document.getElementById('ss-file-input');
     const ssBox = document.getElementById('ss-preview-box');
@@ -173,6 +196,7 @@ export function renderPaymentPage(appContent, formData) {
                 ssBox.style.borderColor = '#38bdf8';
                 ssText.style.display = 'none';
                 ssUploaded = true;
+                updateConfirmButtonText(); // updated
                 updateConfirmButtonState();
             }
             reader.readAsDataURL(file);
