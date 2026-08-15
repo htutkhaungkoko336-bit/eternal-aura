@@ -1,78 +1,96 @@
 // notification.js
 
-// Notification အသစ်တစ်ခုကို ထည့်သွင်းပေးမည့် Function
-export function addNotification(notificationData) {
-    let notifications = JSON.parse(localStorage.getItem('app_notifications')) || [];
-    
-    // အသစ်ပါလာမည့် Noti အချက်အလက်
-    const newNoti = {
-        id: Date.now(),
-        title: notificationData.title || "Registration Pending",
-        fee: notificationData.fee,
-        mode: notificationData.mode,
-        bo: notificationData.bo,
-        message: `${notificationData.mode}အတွက် Fee ${notificationData.fee} ဖြင့် ${notificationData.bo} အတွက် registration တင်ထားပါသည်။ Admin မှ စစ်ဆေးပြီးလျှင် noti ပြန်တက်မည်။`,
-        date: new Date().toLocaleDateString(),
-        read: false
-    };
-
-    notifications.unshift(newNoti); // အသစ်ကို ထိပ်ဆုံးကနေ ထည့်မည်
-    localStorage.setItem('app_notifications', JSON.stringify(notifications));
-}
-
-// Notification Screen ကို Render လုပ်ရန်
 export function renderNotificationScreen(container) {
-    let notifications = JSON.parse(localStorage.getItem('app_notifications')) || [];
-
     container.innerHTML = `
-        <div style="width: 100%; height: 100%; display: flex; flex-direction: column; background-color: #0f172a; color: white; padding: 20px; box-sizing: border-box; overflow-y: auto;">
-            <h2 style="font-size: 18px; margin-bottom: 20px; border-bottom: 1px solid #1e293b; padding-bottom: 10px;">Notifications</h2>
+        <div style="width: 100%; height: 100%; display: flex; flex-direction: column; padding: 20px; box-sizing: border-box; overflow-y: auto; background-color: #0b0f19;">
             
-            <div id="noti-list" style="display: flex; flex-direction: column; gap: 12px; width: 100%;">
-                ${notifications.length === 0 ? `
-                    <div style="text-align: center; color: #64748b; margin-top: 50px;">Notification တစ်စုံတစ်ရာ မရှိသေးပါ။</div>
-                ` : notifications.map(noti => `
-                    <div class="noti-item" data-id="${noti.id}" style="background-color: #1e293b; border: 1px solid ${noti.read ? '#334155' : '#38bdf8'}; padding: 14px; border-radius: 12px; cursor: pointer; transition: 0.2s;">
-                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
-                            <span style="font-weight: bold; font-size: 14px; color: ${noti.read ? '#cbd5e1' : '#38bdf8'};">${noti.title}</span>
-                            <span style="font-size: 10px; color: #64748b;">${noti.date}</span>
+            <!-- Header -->
+            <div style="margin-bottom: 20px;">
+                <h2 style="font-size: 22px; font-weight: 800; background: linear-gradient(90deg, #38bdf8, #c084fc, #f43f5e); -webkit-background-clip: text; -webkit-text-fill-color: transparent; letter-spacing: 1px; margin: 0;">
+                    SYSTEM NOTIFICATIONS
+                </h2>
+                <p style="color: #64748b; font-size: 12px; margin-top: 4px;">SECURE CYBER COMMUNICATIONS</p>
+            </div>
+
+            <!-- Notifications List Container -->
+            <div style="display: flex; flex-direction: column; gap: 15px; width: 100%;">
+
+                <!-- Cyber Notification Card 1 -->
+                <div class="cyber-noti-card" style="background: linear-gradient(135deg, #1e1b4b 0%, #0f172a 100%); border: 1px solid #38bdf8; border-radius: 8px; padding: 16px; box-shadow: 0 0 15px rgba(56, 189, 248, 0.15); position: relative; overflow: hidden; cursor: pointer; transition: all 0.3s ease;">
+                    
+                    <!-- Cyber corner accent lines -->
+                    <div style="position: absolute; top: 0; left: 0; width: 6px; height: 6px; background-color: #38bdf8;"></div>
+                    <div style="position: absolute; bottom: 0; right: 0; width: 6px; height: 6px; background-color: #f43f5e;"></div>
+
+                    <!-- Visible Header (Always shown) -->
+                    <div class="noti-header" style="display: flex; justify-content: space-between; align-items: flex-start; width: 100%;">
+                        <div>
+                            <div style="display: flex; align-items: center; gap: 8px;">
+                                <span style="display: inline-block; width: 8px; height: 8px; background-color: #38bdf8; border-radius: 50%; box-shadow: 0 0 8px #38bdf8;"></span>
+                                <h3 style="color: #f8fafc; font-size: 15px; font-weight: 700; margin: 0; letter-spacing: 0.5px;">Registration Submitted</h3>
+                            </div>
+                            <p style="color: #94a3b8; font-size: 11px; margin: 6px 0 0 16px; font-family: monospace;">📅 2026-08-15 | 🕒 15:30</p>
                         </div>
-                        <p style="font-size: 12px; color: #94a3b8; margin: 0;">
-                            ${noti.mode} • Fee: ${noti.fee} • ${noti.bo}
-                        </p>
-                        
-                        <!-- နှိပ်မှ မြင်ရမည့် အသေးစိတ် Message -->
-                        <div class="noti-details" style="display: none; margin-top: 10px; padding-top: 10px; border-top: 1px dashed #334155; font-size: 12px; color: #e2e8f0; line-height: 1.4;">
-                            ${noti.message}
+                        <span class="toggle-icon" style="color: #38bdf8; font-size: 14px; font-weight: bold; transition: transform 0.3s;">▼</span>
+                    </div>
+
+                    <!-- Hidden Body (Expands on click) -->
+                    <div class="noti-body" style="max-height: 0; overflow: hidden; transition: max-height 0.3s ease, margin-top 0.3s ease; border-top: 1px solid transparent;">
+                        <div style="padding-top: 12px; margin-top: 10px; border-top: 1px dashed #334155; color: #cbd5e1; font-size: 13px; line-height: 1.5;">
+                            <p style="margin: 0 0 8px 0;">⚡ <strong style="color: #38bdf8;">Status:</strong> Your profile registration payload has been successfully encrypted and dispatched to the mainframe.</p>
+                            <p style="margin: 0;">🛡️ System verification in progress. Access protocols will be unlocked shortly.</p>
                         </div>
                     </div>
-                `).join('')}
+
+                </div>
+
+                <!-- Cyber Notification Card 2 (Example 2) -->
+                <div class="cyber-noti-card" style="background: linear-gradient(135deg, #1e1b4b 0%, #0f172a 100%); border: 1px solid #c084fc; border-radius: 8px; padding: 16px; box-shadow: 0 0 15px rgba(192, 132, 252, 0.15); position: relative; overflow: hidden; cursor: pointer; transition: all 0.3s ease;">
+                    
+                    <div style="position: absolute; top: 0; left: 0; width: 6px; height: 6px; background-color: #c084fc;"></div>
+                    <div style="position: absolute; bottom: 0; right: 0; width: 6px; height: 6px; background-color: #38bdf8;"></div>
+
+                    <div class="noti-header" style="display: flex; justify-content: space-between; align-items: flex-start; width: 100%;">
+                        <div>
+                            <div style="display: flex; align-items: center; gap: 8px;">
+                                <span style="display: inline-block; width: 8px; height: 8px; background-color: #c084fc; border-radius: 50%; box-shadow: 0 0 8px #c084fc;"></span>
+                                <h3 style="color: #f8fafc; font-size: 15px; font-weight: 700; margin: 0; letter-spacing: 0.5px;">Registration Submitted</h3>
+                            </div>
+                            <p style="color: #94a3b8; font-size: 11px; margin: 6px 0 0 16px; font-family: monospace;">📅 2026-08-14 | 🕒 20:15</p>
+                        </div>
+                        <span class="toggle-icon" style="color: #c084fc; font-size: 14px; font-weight: bold; transition: transform 0.3s;">▼</span>
+                    </div>
+
+                    <div class="noti-body" style="max-height: 0; overflow: hidden; transition: max-height 0.3s ease, margin-top 0.3s ease; border-top: 1px solid transparent;">
+                        <div style="padding-top: 12px; margin-top: 10px; border-top: 1px dashed #334155; color: #cbd5e1; font-size: 13px; line-height: 1.5;">
+                            <p style="margin: 0 0 8px 0;">🌌 <strong style="color: #c084fc;">Node Connected:</strong> Second device handshake established successfully.</p>
+                            <p style="margin: 0;">🚀 Ready for grid deployment and tournament sync.</p>
+                        </div>
+                    </div>
+
+                </div>
+
             </div>
         </div>
     `;
 
-    // Notification တစ်ခုချင်းစီကို နှိပ်တဲ့အခါ အသေးစိတ်စာသား ပေါ်လာစေရန်နဲ့ Read ဖြစ်သွားစေရန်
-    const notiItems = container.querySelectorAll('.noti-item');
-    notiItems.forEach(item => {
-        item.addEventListener('click', () => {
-            const details = item.querySelector('.noti-details');
-            const id = item.getAttribute('data-id');
+    // Add Toggle Interaction Logic
+    const cards = container.querySelectorAll('.cyber-noti-card');
+    cards.forEach(card => {
+        card.addEventListener('click', () => {
+            const body = card.querySelector('.noti-body');
+            const icon = card.querySelector('.toggle-icon');
             
-            // Toggle view details
-            if (details.style.display === 'none') {
-                details.style.display = 'block';
-                item.style.borderColor = '#334155';
-                
-                // Read status update
-                notifications = notifications.map(n => {
-                    if (n.id == id) n.read = true;
-                    return n;
-                });
-                localStorage.setItem('app_notifications', JSON.stringify(notifications));
-                const titleSpan = item.querySelector('span');
-                if(titleSpan) titleSpan.style.color = '#cbd5e1';
+            if (body.style.maxHeight && body.style.maxHeight !== '0px') {
+                body.style.maxHeight = '0px';
+                icon.style.transform = 'rotate(0deg)';
+                card.style.boxShadow = card.style.borderColor.includes('38bdf8') 
+                    ? '0 0 15px rgba(56, 189, 248, 0.15)' 
+                    : '0 0 15px rgba(192, 132, 252, 0.15)';
             } else {
-                details.style.display = 'none';
+                body.style.maxHeight = body.scrollHeight + 'px';
+                icon.style.transform = 'rotate(180deg)';
+                card.style.boxShadow = '0 0 25px rgba(56, 189, 248, 0.4)';
             }
         });
     });
