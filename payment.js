@@ -209,7 +209,7 @@ export function renderPaymentPage(appContent, formData) {
         renderRegisterForm(appContent, formData);
     });
 
-    // Confirm ခလုတ်ကို နှိပ်လိုက်သည့်အခါ Notification ဖန်တီးပြီး မူလ Mode screen သို့ ပြန်သွားရန်
+// Confirm ခလုတ်ကို နှိပ်လိုက်သည့်အခါ Notification ဖန်တီးပြီး မူလ Mode screen သို့ ပြန်သွားရန်
     confirmBtn.addEventListener('click', () => {
         if (confirmBtn.disabled) return;
 
@@ -223,14 +223,11 @@ export function renderPaymentPage(appContent, formData) {
 
         console.log("Backend Payload Ready:", finalPayload);
 
-        // Notification အသစ်ကို LocalStorage သို့ ထည့်သွင်းခြင်း
-        const registrationData = {
-            title: "Tournament Registration Submitted",
-            fee: totalStr,
-            mode: "5 vs 5 Mode",
-            bo: matchFormat
-        };
-        addNotification(registrationData);
+        // Notification title နှင့် message ကို သီးသန့် string ပုံစံဖြင့် ပေးပို့ခြင်း
+        const notiTitle = "Tournament Registration Submitted";
+        const notiMessage = `5vs5 mode fee ${totalStr} ${matchFormat} အတွက် registration တင်ထားပါသည်။ Admin မှ စစ်ဆေးပြီးလျှင် noti ပြန်တက်မည်။`;
+        
+        addNotification(notiTitle, notiMessage);
 
         alert("Registration တင်ခြင်းအောင်မြင်ပါသည်။ Notification တွင် စစ်ဆေးနိုင်ပါသည်။");
         renderModeScreen(appContent);
