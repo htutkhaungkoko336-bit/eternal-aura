@@ -1,3 +1,6 @@
+// notification.js
+
+// Notification အသစ်တစ်ခုကို သိမ်းဆည်းပြီး Render လုပ်ရန်
 export function addNotification(title, message) {
     const now = new Date();
     
@@ -15,6 +18,8 @@ export function addNotification(title, message) {
     const timeStr = `${hours}:${minutes} ${ampm}`;
 
     const newNoti = { title, message, dateStr, timeStr };
+
+    let notifications = JSON.parse(localStorage.getItem('app_notifications')) || [];
     notifications.unshift(newNoti);
     localStorage.setItem('app_notifications', JSON.stringify(notifications));
 
@@ -37,7 +42,7 @@ export function renderNotificationScreen(container) {
     container.innerHTML = `
         <div style="width: 100%; height: 100%; display: flex; flex-direction: column; background-color: #0b0f19; box-sizing: border-box; overflow: hidden;">
             
-            <!-- Modern Tech Header (နေရာအလွန်အကျွံမယူစေရန် ဘောင်နှင့် စာသားအရွယ်အစားကို သင့်တော်ရုံ လျှော့ချထားသည်) -->
+            <!-- Modern Tech Header -->
             <div style="flex-shrink: 0; background-color: #0b0f19; padding: 12px 16px 10px 16px; box-sizing: border-box; border-bottom: 1px solid #1e293b; z-index: 10; display: flex; justify-content: center; align-items: center;">
                 <div style="position: relative; padding: 8px 20px; background: linear-gradient(135deg, rgba(56, 189, 248, 0.1), rgba(129, 140, 248, 0.1)); border: 2px solid #38bdf8; box-shadow: 0 0 15px rgba(56, 189, 248, 0.2); text-align: center; border-radius: 4px;">
                     <div style="position: absolute; top: -2px; left: -2px; width: 6px; height: 6px; background: #38bdf8;"></div>
@@ -59,11 +64,11 @@ export function renderNotificationScreen(container) {
     
     renderNotificationCards(listContainer, notifications);
 }
-// Notification Bell လေးရဲ့ အပေါ်တည့်တည့်တွင် Badge (1, 2, 3...) ပြသရန် Function
+
+// Notification Bell လေးရဲ့ အပေါ်တည့်တည့်တွင် Badge ပြသရန် Function
 export function updateNotificationBadge() {
     const unreadCount = parseInt(localStorage.getItem('app_unread_count') || '0', 10);
     
-    // Bottom Nav ထဲက Notification Nav Item (data-tab="notification") ကို တိုက်ရိုက်ရှာဖွေခြင်း
     const notiNavBtn = document.querySelector('.nav-item[data-tab="notification"]'); 
     
     if (notiNavBtn) {
@@ -73,7 +78,6 @@ export function updateNotificationBadge() {
         if (!badgeEl) {
             badgeEl = document.createElement('span');
             badgeEl.id = 'notification-badge';
-            // Notification Bell ရဲ့ အပေါ်တည့်တည့်သို့ အနေအထား အတိအကျ ချိန်ညှိထားသည်
             badgeEl.style.cssText = 'position: absolute; top: -5px; right: 50%; transform: translateX(50%); background: #ef4444; color: white; font-size: 10px; font-weight: 800; padding: 1px 6px; border-radius: 10px; box-shadow: 0 0 8px rgba(239, 68, 68, 0.8); z-index: 20; display: none;';
             notiNavBtn.appendChild(badgeEl);
         }
@@ -86,6 +90,7 @@ export function updateNotificationBadge() {
         }
     }
 }
+
 // Card များကို HTML ထဲ ထည့်သွင်းပေးသည့် Helper Function
 function renderNotificationCards(container, notifications) {
     if (notifications.length === 0) {
@@ -109,7 +114,8 @@ function renderNotificationCards(container, notifications) {
                         <span style="display: inline-block; width: 8px; height: 8px; background-color: #38bdf8; border-radius: 50%; box-shadow: 0 0 8px #38bdf8;"></span>
                         <h3 style="color: #f8fafc; font-size: 15px; font-weight: 700; margin: 0; letter-spacing: 0.5px;">${noti.title}</h3>
                     </div>
-                    <p style="color: #94a3b8; font-size: 11px; margin: 6px 0 0 16px; font-family: monospace;">📅 ${noti.dateStr} | 🕒 ${noti.timeStr}</p>
+                    <!-- ရိုးရိုးရှင်းရှင်းနှင့် သပ်ရပ်သော နေ့စွဲနှင့် အချိန်ဖော်ပြချက် -->
+                    <p style="color: #94a3b8; font-size: 11px; margin: 6px 0 0 16px; font-family: monospace; letter-spacing: 0.5px;">${noti.dateStr} &nbsp;&bull;&nbsp; ${noti.timeStr}</p>
                 </div>
                 <div style="display: flex; align-items: center; gap: 10px;">
                     <button class="delete-btn" title="Clear Notification" style="background: rgba(56, 189, 248, 0.1); border: 1px solid #38bdf8; color: #38bdf8; cursor: pointer; font-size: 10px; font-weight: 700; padding: 4px 10px; border-radius: 4px; transition: all 0.2s; letter-spacing: 0.5px;">CLEAR</button>
