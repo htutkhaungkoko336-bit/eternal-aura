@@ -253,7 +253,7 @@ export function renderPaymentPage(appContent, formData) {
             ssBase64: base64SS
         };
         renderRegisterForm(appContent, updatedDataForBack);
-    });
+    });  
 
     confirmBtn.addEventListener('click', () => {
         if (confirmBtn.disabled) return;
