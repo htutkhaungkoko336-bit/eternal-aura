@@ -58,11 +58,12 @@ h1 {
 
 .form-group {
     display: flex;
+    flex-direction: column; /* အစကတည်းက အပေါ်အောက် အတိအကျ ဖြစ်နေစေရန် ဤနေရာတွင် ထည့်ပေးပါ */
     gap: 12px;
     align-items: center;
-    margin-top: 0px; /* လိုအပ်သလို အတက်အကျ ချိန်နိုင်ပါသည် (ဥပမာ 30px သို့မဟုတ် 50px) */
+    width: 100%; /* container အပြည့် ယူထားရန် */
+    margin-top: 0px; 
 }
-/* Ph no box ကို ပိုရှည်စေရန် flex အချိုးနှင့် padding ကို ချိန်ညှိထားသည် */
 .input-box {
     flex: 1.3; /* ခလုတ်ထက် အနည်းငယ် ပိုကျယ်စေရန် */
     background-color: var(--input-bg);
