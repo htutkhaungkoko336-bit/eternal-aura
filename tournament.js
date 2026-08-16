@@ -1,6 +1,5 @@
 // tournament.js
-import { renderTournamentRegForm } from './register.js';
-
+import { renderRegisterForm } from './register.js';
 let tournamentData = {
     groups: [
         { 
@@ -107,15 +106,15 @@ export function renderTournamentScreen(container) {
         showAdminEditor(container);
     });
 
-    container.querySelectorAll('.group-slot').forEach(el => {
+container.querySelectorAll('.group-slot').forEach(el => {
         el.addEventListener('click', (e) => {
             const groupId = parseInt(e.currentTarget.getAttribute('data-group'));
             const slotIndex = parseInt(e.currentTarget.getAttribute('data-slot'));
             const group = tournamentData.groups.find(g => g.id === groupId);
             
             if (group.slots[slotIndex].status === 'available') {
-                // register.js ထဲရှိ Form ဆီသို့ ပို့ပေးခြင်း
-                renderTournamentRegForm(container, group, slotIndex, renderTournamentScreen);
+                // ဒီနေရာမှာ renderTournamentRegForm အစား renderRegisterForm ကို ခေါ်ပါ
+                renderRegisterForm(container, { sqName: group.slots[slotIndex].team || '' });
             } else {
                 alert("ဒီ Slot ကို ဝယ်ယူပြီးပါပြီ။");
             }
