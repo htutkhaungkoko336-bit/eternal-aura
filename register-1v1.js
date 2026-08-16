@@ -4,11 +4,11 @@ export function renderRegister1v1Form(appContent, savedData = {}) {
     appContent.innerHTML = `
         <div style="display: flex; flex-direction: column; align-items: center; justify-content: flex-start; width: 100%; height: 100%; padding: 4px 14px 10px 14px; box-sizing: border-box; overflow-y: auto;">
             
-            <!-- System Notification style border box for Header with exact corner accent color match -->
+            <!-- Header box with exact blue matching corner cut accents -->
             <div style="position: relative; border: 2px solid #38bdf8; border-radius: 4px; padding: 8px 16px; margin-bottom: 12px; background-color: rgba(15, 23, 42, 0.8); text-align: center; width: 100%; max-width: 340px; box-sizing: border-box; box-shadow: 0 0 10px rgba(56, 189, 248, 0.3);">
-                <!-- Corner cut style accents matching System Notifications (fixed background color to blend properly) -->
-                <div style="position: absolute; top: -3px; left: -3px; width: 8px; height: 8px; background-color: #0b0f19; border-right: 2px solid #38bdf8; border-bottom: 2px solid #38bdf8;"></div>
-                <div style="position: absolute; bottom: -3px; right: -3px; width: 8px; height: 8px; background-color: #0b0f19; border-left: 2px solid #38bdf8; border-top: 2px solid #38bdf8;"></div>
+                <!-- Corner cut accents using the same blue accent color (#38bdf8) -->
+                <div style="position: absolute; top: -3px; left: -3px; width: 6px; height: 6px; background-color: #38bdf8;"></div>
+                <div style="position: absolute; bottom: -3px; right: -3px; width: 6px; height: 6px; background-color: #38bdf8;"></div>
                 
                 <h2 style="color: #f8fafc; font-size: 16px; font-weight: 800; letter-spacing: 1px; margin: 0; text-transform: uppercase; background: linear-gradient(to right, #38bdf8, #818cf8); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">1 vs 1 Registration</h2>
             </div>
@@ -35,7 +35,7 @@ export function renderRegister1v1Form(appContent, savedData = {}) {
                     </label>
                 </div>
 
-                <!-- Game Name (Wide) & ID (Compact) Side by Side -->
+                <!-- Game Name & ID Side by Side -->
                 <div style="display: flex; gap: 8px; width: 100%;">
                     <div style="display: flex; flex-direction: column; gap: 3px; flex-grow: 1;">
                         <label style="color: #94a3b8; font-size: 11px; font-weight: 600;">Game Name</label>
