@@ -1,12 +1,12 @@
 // register.js
 
+// ၁။ ပုံမှန် ၅ ယောက်စာရင်းသွင်းခြင်း Form
 export function renderRegisterForm(appContent, savedData = {}) {
     appContent.innerHTML = `
         <div style="display: flex; flex-direction: column; align-items: center; justify-content: flex-start; width: 100%; height: 100%; padding: 4px 14px 10px 14px; box-sizing: border-box; overflow-y: auto;">
             
             <!-- 5 vs 5 Header Box with Corner Accents -->
             <div style="position: relative; border: 2px solid #38bdf8; border-radius: 4px; padding: 8px 16px; margin-bottom: 12px; background-color: rgba(15, 23, 42, 0.8); text-align: center; width: 100%; max-width: 340px; box-sizing: border-box; box-shadow: 0 0 10px rgba(56, 189, 248, 0.3);">
-                <!-- Corner cut accents using the same blue accent color (#38bdf8) -->
                 <div style="position: absolute; top: -3px; left: -3px; width: 6px; height: 6px; background-color: #38bdf8;"></div>
                 <div style="position: absolute; bottom: -3px; right: -3px; width: 6px; height: 6px; background-color: #38bdf8;"></div>
                 
@@ -42,7 +42,7 @@ export function renderRegisterForm(appContent, savedData = {}) {
                     </div>
                 </div>
 
-                <!-- Players Lineup (Roles in Uppercase) -->
+                <!-- Players Lineup -->
                 <div style="display: flex; flex-direction: column; gap: 6px; border-top: 1px solid #334155; border-bottom: 1px solid #334155; padding: 8px 0;">
                     <span style="color: #38bdf8; font-size: 12px; font-weight: 700;">Player Lineup (Name & ID)</span>
                     
@@ -216,5 +216,41 @@ export function renderRegisterForm(appContent, savedData = {}) {
         import('./mode.js').then(module => {
             module.renderModeScreen(appContent);
         });
+    });
+}
+
+// ၂. Tournament Bracket Slot နှိပ်ပါက ပေါ်လာမည့် Team Name ထည့်သွင်းသည့် Form
+export function renderTournamentRegForm(container, group, slotIndex, goBackCallback) {
+    const slot = group.slots[slotIndex];
+    
+    container.innerHTML = `
+        <div style="padding: 20px; color: white; display: flex; flex-direction: column; align-items: center; width: 100%; box-sizing: border-box;">
+            <div style="width: 100%; max-width: 320px; background: #1e293b; padding: 20px; border-radius: 12px; border: 1px solid #38bdf8;">
+                <button id="back-to-brackets" style="background: none; border: none; color: #38bdf8; margin-bottom: 10px; cursor: pointer; padding: 0;">← Back</button>
+                <h3 style="margin: 0 0 5px 0; color: #38bdf8; font-size: 14px;">Register ${group.name} - ${slot.label}</h3>
+                <p style="font-size: 10px; color: #94a3b8; margin: 0 0 12px 0;">${group.date} - ${group.time}</p>
+                
+                <label style="font-size: 10px; color: #cbd5e1;">Team Name</label>
+                <input type="text" id="tour-team-name" placeholder="Enter Team Name" style="width: 100%; padding: 8px; background: #0f172a; border: 1px solid #475569; border-radius: 6px; color: white; margin: 5px 0 12px 0; box-sizing: border-box;">
+                
+                <button id="submit-tour-reg" style="width: 100%; padding: 10px; background: #38bdf8; border: none; border-radius: 6px; font-weight: bold; color: #0f172a; cursor: pointer;">Confirm Registration</button>
+            </div>
+        </div>
+    `;
+
+    document.getElementById('back-to-brackets').addEventListener('click', () => {
+        goBackCallback(container);
+    });
+
+    document.getElementById('submit-tour-reg').addEventListener('click', () => {
+        const teamName = document.getElementById('tour-team-name').value.trim();
+        if (teamName) {
+            slot.status = 'pending';
+            slot.team = teamName;
+            alert("Registration Submitted Successfully!");
+            goBackCallback(container);
+        } else {
+            alert("ကျေးဇူးပြု၍ Team Name ထည့်ပါ။");
+        }
     });
 }

@@ -1,5 +1,5 @@
 // tournament.js
-import { renderModeScreen } from './mode.js';
+import { renderTournamentRegForm } from './register.js';
 
 let tournamentData = {
     groups: [
@@ -31,7 +31,7 @@ export function renderTournamentScreen(container) {
     container.innerHTML = `
         <div style="padding: 10px; color: white; display: flex; flex-direction: column; align-items: center; width: 100%; height: 100%; box-sizing: border-box; overflow-y: auto;">
             
-            <!-- Header (Back ခလုတ်ဖြုတ်ပြီး Admin Toggle သီးသန့်ထားရှိသည်) -->
+            <!-- Header -->
             <div style="display: flex; justify-content: space-between; align-items: center; width: 100%; max-width: 380px; margin-bottom: 10px;">
                 <h2 style="color: #38bdf8; margin: 0; font-size: 13px; text-transform: uppercase; letter-spacing: 1px;">Tournament Brackets</h2>
                 <button id="toggle-admin" style="background: #334155; border: 1px solid #38bdf8; color: #38bdf8; padding: 3px 8px; border-radius: 4px; font-size: 10px; cursor: pointer;">Admin Edit</button>
@@ -40,7 +40,7 @@ export function renderTournamentScreen(container) {
             <!-- Main Vertical Tree Container -->
             <div style="display: flex; flex-direction: column; align-items: center; gap: 12px; width: 100%; max-width: 380px; padding-bottom: 20px;">
                 
-                <!-- TOP GROUPS (Group 1 & Group 2) -->
+                <!-- TOP GROUPS -->
                 <div style="display: flex; justify-content: space-between; width: 100%; gap: 8px;">
                     ${renderGroupCard(tournamentData.groups[0])}
                     ${renderGroupCard(tournamentData.groups[1])}
@@ -62,7 +62,7 @@ export function renderTournamentScreen(container) {
                     </div>
                 </div>
 
-                <!-- CHAMPION BOX (စာသားကြီးကြီး၊ Date/Time နှင့် BO5) -->
+                <!-- CHAMPION BOX -->
                 <div style="background: linear-gradient(to bottom, #0f172a, #1e293b); border: 2px solid #facc15; padding: 12px; border-radius: 12px; width: 95%; text-align: center; box-shadow: 0 0 15px rgba(250, 204, 21, 0.25);">
                     <span style="font-size: 13px; color: #facc15; font-weight: bold; text-transform: uppercase; letter-spacing: 1.5px;">👑 CHAMPION 👑</span>
                     <div style="font-size: 8px; color: #fbbf24; margin-top: 2px; margin-bottom: 8px;">${tournamentData.champion.date} | ${tournamentData.champion.time}</div>
@@ -92,7 +92,7 @@ export function renderTournamentScreen(container) {
                     </div>
                 </div>
 
-                <!-- BOTTOM GROUPS (Group 3 & Group 4) -->
+                <!-- BOTTOM GROUPS -->
                 <div style="display: flex; justify-content: space-between; width: 100%; gap: 8px;">
                     ${renderGroupCard(tournamentData.groups[2])}
                     ${renderGroupCard(tournamentData.groups[3])}
@@ -112,8 +112,10 @@ export function renderTournamentScreen(container) {
             const groupId = parseInt(e.currentTarget.getAttribute('data-group'));
             const slotIndex = parseInt(e.currentTarget.getAttribute('data-slot'));
             const group = tournamentData.groups.find(g => g.id === groupId);
+            
             if (group.slots[slotIndex].status === 'available') {
-                showTournamentRegForm(container, groupId, slotIndex);
+                // register.js ထဲရှိ Form ဆီသို့ ပို့ပေးခြင်း
+                renderTournamentRegForm(container, group, slotIndex, renderTournamentScreen);
             } else {
                 alert("ဒီ Slot ကို ဝယ်ယူပြီးပါပြီ။");
             }
@@ -153,7 +155,7 @@ function renderGroupCard(group) {
     `;
 }
 
-// Admin Editor Panel (Group တွေ၊ Semis တွေနဲ့ Champion ရဲ့ Date/Time များကို အကုန်ပြင်လို့ရအောင် လုပ်ပေးထားသည်)
+// Admin Editor Panel
 function showAdminEditor(container) {
     const allEditableItems = [
         ...tournamentData.groups,
@@ -210,39 +212,5 @@ function showAdminEditor(container) {
 
         alert("ချိန်ညှိမှုများကို အောင်မြင်စွာ သိမ်းဆည်းပြီးပါပြီ။");
         renderTournamentScreen(container);
-    });
-}
-
-// Registration Form
-function showTournamentRegForm(container, groupId, slotIndex) {
-    const group = tournamentData.groups.find(g => g.id === groupId);
-    const slot = group.slots[slotIndex];
-    
-    container.innerHTML = `
-        <div style="padding: 20px; color: white; display: flex; flex-direction: column; align-items: center; width: 100%;">
-            <button id="back-to-brackets" style="background: none; border: none; color: #38bdf8; margin-bottom: 10px; cursor: pointer;">← Back</button>
-            <div style="width: 100%; max-width: 320px; background: #1e293b; padding: 20px; border-radius: 12px; border: 1px solid #38bdf8;">
-                <h3 style="margin: 0 0 5px 0; color: #38bdf8; font-size: 14px;">Register ${group.name} - ${slot.label}</h3>
-                <p style="font-size: 10px; color: #94a3b8; margin: 0 0 10px 0;">${group.date} - ${group.time}</p>
-                
-                <label style="font-size: 10px; color: #cbd5e1;">Team Name</label>
-                <input type="text" id="tour-team-name" placeholder="Enter Team Name" style="width: 100%; padding: 8px; background: #0f172a; border: 1px solid #475569; border-radius: 6px; color: white; margin: 5px 0 12px 0; box-sizing: border-box;">
-                
-                <button id="submit-tour-reg" style="width: 100%; padding: 10px; background: #38bdf8; border: none; border-radius: 6px; font-weight: bold; color: #0f172a; cursor: pointer;">Confirm Registration</button>
-            </div>
-        </div>
-    `;
-
-    document.getElementById('back-to-brackets').addEventListener('click', () => renderTournamentScreen(container));
-    document.getElementById('submit-tour-reg').addEventListener('click', () => {
-        const name = document.getElementById('tour-team-name').value.trim();
-        if (name) {
-            slot.status = 'pending';
-            slot.team = name;
-            alert("Registration Submitted Successfully!");
-            renderTournamentScreen(container);
-        } else {
-            alert("ကျေးဇူးပြု၍ Team Name ထည့်ပါ။");
-        }
     });
 }
