@@ -7,6 +7,10 @@ let tournamentData = {
         { id: 2, name: "Group 2", date: "16.8.2026", time: "7:00 PM", slots: [{ team: null, status: "available" }, { team: null, status: "available" }] },
         { id: 3, name: "Group 3", date: "16.8.2026", time: "8:00 PM", slots: [{ team: null, status: "available" }, { team: null, status: "available" }] },
         { id: 4, name: "Group 4", date: "16.8.2026", time: "9:00 PM", slots: [{ team: null, status: "available" }, { team: null, status: "available" }] }
+    ],
+    semis: [
+        { name: "SEMI 1", date: "16.8.2026", time: "10:00 PM", team1: "Group 1 Winner", team2: "Group 2 Winner" },
+        { name: "SEMI 2", date: "16.8.2026", time: "10:30 PM", team1: "Group 3 Winner", team2: "Group 4 Winner" }
     ]
 };
 
@@ -22,7 +26,7 @@ export function renderTournamentScreen(container) {
             </div>
 
             <!-- Main Vertical Tree Container -->
-            <div style="display: flex; flex-direction: column; align-items: center; gap: 10px; width: 100%; max-width: 380px; padding-bottom: 20px;">
+            <div style="display: flex; flex-direction: column; align-items: center; gap: 12px; width: 100%; max-width: 380px; padding-bottom: 20px;">
                 
                 <!-- TOP GROUPS (Group 1 & Group 2) -->
                 <div style="display: flex; justify-content: space-between; width: 100%; gap: 8px;">
@@ -30,33 +34,39 @@ export function renderTournamentScreen(container) {
                     ${renderGroupCard(tournamentData.groups[1])}
                 </div>
 
-                <!-- SEMI FINAL 1 -->
-                <div style="background: rgba(30, 41, 59, 0.9); border: 1px solid #38bdf8; padding: 6px 10px; border-radius: 8px; width: 85%; text-align: center; box-shadow: 0 0 10px rgba(56, 189, 248, 0.2);">
-                    <span style="font-size: 9px; color: #38bdf8; font-weight: bold; display: block; margin-bottom: 3px;">SEMI 1 (Group 1 Winner vs Group 2 Winner)</span>
-                    <div style="display: flex; justify-content: space-around; font-size: 9px; color: #cbd5e1;">
-                        <span style="background: #0f172a; padding: 2px 6px; border-radius: 4px;">${tournamentData.groups[0].slots[0].team || 'Group 1 W'}</span>
-                        <span style="color: #f97316; font-weight: bold;">VS</span>
-                        <span style="background: #0f172a; padding: 2px 6px; border-radius: 4px;">${tournamentData.groups[1].slots[0].team || 'Group 2 W'}</span>
+                <!-- SEMI FINAL 1 (Height ပိုပေးထားပြီး Winner စာသားအပြည့်အစုံဖြင့်) -->
+                <div style="background: rgba(30, 41, 59, 0.9); border: 1px solid #38bdf8; padding: 10px 12px; border-radius: 8px; width: 90%; text-align: center; box-shadow: 0 0 10px rgba(56, 189, 248, 0.2);">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px; border-bottom: 1px solid #334155; padding-bottom: 4px;">
+                        <span style="font-size: 10px; color: #38bdf8; font-weight: bold;">SEMI 1 BO3</span>
+                        <span style="font-size: 8px; color: #94a3b8;">${tournamentData.semis[0].date} ${tournamentData.semis[0].time}</span>
+                    </div>
+                    <div style="display: flex; justify-content: space-around; align-items: center; font-size: 9px; color: #cbd5e1; padding: 4px 0;">
+                        <span style="background: #0f172a; border: 1px solid #475569; padding: 5px 8px; border-radius: 6px; flex: 1;">${tournamentData.groups[0].slots[0].team || tournamentData.semis[0].team1}</span>
+                        <span style="color: #f97316; font-weight: bold; padding: 0 8px;">VS</span>
+                        <span style="background: #0f172a; border: 1px solid #475569; padding: 5px 8px; border-radius: 6px; flex: 1;">${tournamentData.groups[1].slots[0].team || tournamentData.semis[0].team2}</span>
                     </div>
                 </div>
 
                 <!-- CHAMPION BOX -->
-                <div style="background: linear-gradient(to bottom, #0f172a, #1e293b); border: 2px solid #facc15; padding: 10px; border-radius: 12px; width: 95%; text-align: center; box-shadow: 0 0 15px rgba(250, 204, 21, 0.25);">
+                <div style="background: linear-gradient(to bottom, #0f172a, #1e293b); border: 2px solid #facc15; padding: 12px; border-radius: 12px; width: 95%; text-align: center; box-shadow: 0 0 15px rgba(250, 204, 21, 0.25);">
                     <span style="font-size: 11px; color: #facc15; font-weight: bold; text-transform: uppercase; letter-spacing: 1px;">👑 Champion</span>
-                    <div style="margin-top: 6px; display: flex; justify-content: space-between; gap: 8px;">
-                        <div style="flex:1; background: #1e293b; border: 1px solid #475569; padding: 6px; border-radius: 6px; font-size: 9px; color: #f8fafc; font-weight: bold;">Finalist 1</div>
+                    <div style="margin-top: 8px; display: flex; justify-content: space-between; gap: 8px;">
+                        <div style="flex:1; background: #1e293b; border: 1px solid #475569; padding: 8px; border-radius: 6px; font-size: 9px; color: #f8fafc; font-weight: bold;">Finalist 1</div>
                         <span style="align-self: center; font-size: 10px; color: #f97316; font-weight: bold;">VS</span>
-                        <div style="flex:1; background: #1e293b; border: 1px solid #475569; padding: 6px; border-radius: 6px; font-size: 9px; color: #f8fafc; font-weight: bold;">Finalist 2</div>
+                        <div style="flex:1; background: #1e293b; border: 1px solid #475569; padding: 8px; border-radius: 6px; font-size: 9px; color: #f8fafc; font-weight: bold;">Finalist 2</div>
                     </div>
                 </div>
 
-                <!-- SEMI FINAL 2 -->
-                <div style="background: rgba(30, 41, 59, 0.9); border: 1px solid #38bdf8; padding: 6px 10px; border-radius: 8px; width: 85%; text-align: center; box-shadow: 0 0 10px rgba(56, 189, 248, 0.2);">
-                    <span style="font-size: 9px; color: #38bdf8; font-weight: bold; display: block; margin-bottom: 3px;">SEMI 2 (Group 3 Winner vs Group 4 Winner)</span>
-                    <div style="display: flex; justify-content: space-around; font-size: 9px; color: #cbd5e1;">
-                        <span style="background: #0f172a; padding: 2px 6px; border-radius: 4px;">${tournamentData.groups[2].slots[0].team || 'Group 3 W'}</span>
-                        <span style="color: #f97316; font-weight: bold;">VS</span>
-                        <span style="background: #0f172a; padding: 2px 6px; border-radius: 4px;">${tournamentData.groups[3].slots[0].team || 'Group 4 W'}</span>
+                <!-- SEMI FINAL 2 (Height ပိုပေးထားပြီး Winner စာသားအပြည့်အစုံဖြင့်) -->
+                <div style="background: rgba(30, 41, 59, 0.9); border: 1px solid #38bdf8; padding: 10px 12px; border-radius: 8px; width: 90%; text-align: center; box-shadow: 0 0 10px rgba(56, 189, 248, 0.2);">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px; border-bottom: 1px solid #334155; padding-bottom: 4px;">
+                        <span style="font-size: 10px; color: #38bdf8; font-weight: bold;">SEMI 2 BO3</span>
+                        <span style="font-size: 8px; color: #94a3b8;">${tournamentData.semis[1].date} ${tournamentData.semis[1].time}</span>
+                    </div>
+                    <div style="display: flex; justify-content: space-around; align-items: center; font-size: 9px; color: #cbd5e1; padding: 4px 0;">
+                        <span style="background: #0f172a; border: 1px solid #475569; padding: 5px 8px; border-radius: 6px; flex: 1;">${tournamentData.groups[2].slots[0].team || tournamentData.semis[1].team1}</span>
+                        <span style="color: #f97316; font-weight: bold; padding: 0 8px;">VS</span>
+                        <span style="background: #0f172a; border: 1px solid #475569; padding: 5px 8px; border-radius: 6px; flex: 1;">${tournamentData.groups[3].slots[0].team || tournamentData.semis[1].team2}</span>
                     </div>
                 </div>
 
@@ -91,31 +101,31 @@ export function renderTournamentScreen(container) {
     });
 }
 
-// Group Card UI (Time ပြန်ထည့်ပေးပြီး အပြာရောင် Theme ကို ပြန်လည်အသုံးပြုထားသည်)
+// Group Card UI (Slot Height ပိုမိုကျယ်ဝန်းစေရန် padding မြှင့်ထားသည်)
 function renderGroupCard(group) {
     return `
-        <div style="background: #1e293b; border: 1px solid #334155; padding: 8px; border-radius: 10px; width: 48%; box-sizing: border-box; box-shadow: 0 4px 6px rgba(0,0,0,0.3);">
-            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px; border-bottom: 1px solid #334155; padding-bottom: 4px;">
-                <span style="font-size: 10px; color: #38bdf8; font-weight: bold; text-transform: uppercase;">${group.name} <span style="font-size: 8px; color: #f97316;">(BO3)</span></span>
+        <div style="background: #1e293b; border: 1px solid #334155; padding: 10px; border-radius: 10px; width: 48%; box-sizing: border-box; box-shadow: 0 4px 6px rgba(0,0,0,0.3);">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; border-bottom: 1px solid #334155; padding-bottom: 4px;">
+                <span style="font-size: 10px; color: #38bdf8; font-weight: bold; text-transform: uppercase;">${group.name} <span style="font-size: 8px; color: #cbd5e1;">BO3</span></span>
                 <span style="font-size: 8px; color: #94a3b8;">${group.date} ${group.time}</span>
             </div>
-            <div style="display: flex; flex-direction: column; gap: 4px;">
-                <!-- Slot 1 -->
+            <div style="display: flex; flex-direction: column; gap: 6px;">
+                <!-- Slot 1 (Height ပိုကျယ်စေရန် padding 8px ထားရှိသည်) -->
                 <div class="group-slot" data-group="${group.id}" data-slot="0"
-                     style="background: ${group.slots[0].status === 'available' ? '#0f172a' : '#334155'}; border: 1px solid ${group.slots[0].status === 'available' ? '#38bdf8' : '#ef4444'}; padding: 5px; border-radius: 6px; text-align: center; cursor: pointer;">
+                     style="background: ${group.slots[0].status === 'available' ? '#0f172a' : '#334155'}; border: 1px solid ${group.slots[0].status === 'available' ? '#38bdf8' : '#ef4444'}; padding: 8px 5px; border-radius: 6px; text-align: center; cursor: pointer;">
                     <span style="font-size: 9px; color: ${group.slots[0].team ? '#fff' : '#38bdf8'}; font-weight: bold; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; display: block;">
                         ${group.slots[0].team || 'Slot 1'}
                     </span>
                 </div>
 
-                <!-- VS (အရောင်ပြောင်းထားသည် - #f97316) -->
-                <div style="text-align: center; font-size: 8px; color: #f97316; font-weight: bold; padding: 1px 0;">
+                <!-- VS -->
+                <div style="text-align: center; font-size: 8px; color: #f97316; font-weight: bold; padding: 2px 0;">
                     VS
                 </div>
 
-                <!-- Slot 2 -->
+                <!-- Slot 2 (Height ပိုကျယ်စေရန် padding 8px ထားရှိသည်) -->
                 <div class="group-slot" data-group="${group.id}" data-slot="1"
-                     style="background: ${group.slots[1].status === 'available' ? '#0f172a' : '#334155'}; border: 1px solid ${group.slots[1].status === 'available' ? '#38bdf8' : '#ef4444'}; padding: 5px; border-radius: 6px; text-align: center; cursor: pointer;">
+                     style="background: ${group.slots[1].status === 'available' ? '#0f172a' : '#334155'}; border: 1px solid ${group.slots[1].status === 'available' ? '#38bdf8' : '#ef4444'}; padding: 8px 5px; border-radius: 6px; text-align: center; cursor: pointer;">
                     <span style="font-size: 9px; color: ${group.slots[1].team ? '#fff' : '#38bdf8'}; font-weight: bold; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; display: block;">
                         ${group.slots[1].team || 'Slot 2'}
                     </span>
