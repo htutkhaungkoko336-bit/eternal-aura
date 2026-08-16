@@ -225,7 +225,7 @@ export function renderPaymentPage(appContent, formData) {
 
         // Notification title နှင့် message ကို သီးသန့် string ပုံစံဖြင့် ပေးပို့ခြင်း
         const notiTitle = "Tournament Registration Submitted";
-        const notiMessage = `5vs5 mode fee ${totalStr} ${matchFormat} အတွက် registration တင်ထားပါသည်။ Admin မှ စစ်ဆေးပြီးလျှင် noti ပြန်တက်မည်။`;
+        const notiMessage = `5vs5 mode fee ${totalStr} ${matchFormat} အတွက် register တင်ထားပါသည်။ Admin မှ စစ်ဆေးပြီးလျှင် noti ပြန်တက်မည်။`;
         
         addNotification(notiTitle, notiMessage);
 
