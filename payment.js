@@ -14,11 +14,13 @@ export function renderPaymentPage(appContent, formData) {
     let totalNum = baseNum + commissionNum;
     let totalStr = totalNum.toLocaleString() + 'Ks';
     
-    // Tournament ဟုတ်မဟုတ် စစ်ဆေးခြင်း (formData ထဲမှာ isTournament ပါလာလျှင် သို့မဟုတ် mode က tournament ဖြစ်နေလျှင်)
-    let isTournament = formData.isTournament || (formData.mode && formData.mode.toLowerCase().includes('slot'));
+    // Tournament ဟုတ်မဟုတ် အသေအချာ စစ်ဆေးခြင်း (formData ထဲမှာ isTournament ပါလျှင် သို့မဟုတ် mode/gameMode/slot ထဲတွင် slot သို့မဟုတ် tournament ပါလျှင်)
+    let checkText = JSON.stringify(formData).toLowerCase();
+    let isTournament = formData.isTournament === true || checkText.includes('slot') || checkText.includes('tournament');
 
     let winnerPriceStr = "";
-    let matchFormatOrSlot = "";
+    let displayModeText = "";
+    let badgeText = "";
     let prizeBg = "";
     let prizeBorder = "";
     let prizeShadow = "";
@@ -26,23 +28,28 @@ export function renderPaymentPage(appContent, formData) {
     let amountColor = "";
 
     if (isTournament) {
-        // Tournament အတွက် သီးသန့် သတ်မှတ်ချက်များ
+        // Tournament အတွက် သီးသန့်
         winnerPriceStr = "400,000Ks";
-        matchFormatOrSlot = formData.mode || formData.gameMode || formData.slot || 'Slot 1';
         
+        // Slot နံပါတ်ကို ရှာယူခြင်း (ဥပ- Slot 1, Slot 2 ...)
+        let rawSlot = formData.mode || formData.gameMode || formData.slot || formData.selectedSlot || 'Slot 1';
+        displayModeText = rawSlot.toString().toLowerCase().includes('slot') ? rawSlot : `Slot ${rawSlot}`;
+        badgeText = "Tournament";
+
         prizeBg = "linear-gradient(135deg, #3f2f04 0%, #714f09 50%, #b45309 100%)";
         prizeBorder = "#fbbf24";
         prizeShadow = "0 0 25px rgba(251, 191, 36, 0.5), inset 0 0 15px rgba(254, 240, 138, 0.4)";
         titleColor = "#fef08a";
         amountColor = "#fde047";
     } else {
-        // ပုံမှန် 5vs5 / 1vs1 အတွက် မူလအတိုင်း
+        // ပုံမှန် 5vs5 / 1vs1 အတွက်
         let winnerPriceNum = baseNum * 2;
         winnerPriceStr = winnerPriceNum.toLocaleString() + 'Ks';
         
         let currentMode = formData.mode || formData.gameMode || '5vs5';
-        matchFormatOrSlot = currentMode.toLowerCase().includes('1vs1') ? '1vs1' : '5vs5';
-        
+        displayModeText = currentMode.toLowerCase().includes('1vs1') ? '1vs1 Mode' : '5vs5 Mode';
+        badgeText = (baseNum <= 15000) ? "BO1" : "BO3";
+
         if (baseNum === 5000) {
             prizeBg = "linear-gradient(135deg, #1c1917 0%, #292524 50%, #44403c 100%)";
             prizeBorder = "#d97706";
@@ -75,9 +82,6 @@ export function renderPaymentPage(appContent, formData) {
             amountColor = "#fde047";
         }
     }
-
-    // Match format (BO1/BO3) ကို ပုံမှန်အတွက်သာ သုံးရန်
-    let matchFormat = (baseNum <= 15000) ? "BO1" : "BO3";
 
     appContent.innerHTML = `
         <div style="display: flex; flex-direction: column; align-items: center; justify-content: flex-start; width: 100%; height: 100%; padding: 4px 12px 15px 12px; box-sizing: border-box; overflow-y: auto; position: relative;">
@@ -140,10 +144,10 @@ export function renderPaymentPage(appContent, formData) {
                     <!-- Mode / Slot Checkbox Section -->
                     <div style="display: flex; align-items: center; justify-content: space-between; background-color: #1e293b; padding: 10px 12px; border-radius: 8px; border: 1px solid #475569;">
                         <div style="display: flex; align-items: center; gap: 10px;">
-                            <input type="checkbox" id="mode-checkbox" data-game-mode="${matchFormatOrSlot}" style="width: 17px; height: 17px; accent-color: #38bdf8; cursor: pointer;">
-                            <label for="mode-checkbox" style="color: #f8fafc; font-size: 12.5px; font-weight: 700; cursor: pointer;">${isTournament ? 'Confirm ' + matchFormatOrSlot : matchFormatOrSlot + ' Mode'}</label>
+                            <input type="checkbox" id="mode-checkbox" data-game-mode="${displayModeText}" style="width: 17px; height: 17px; accent-color: #38bdf8; cursor: pointer;">
+                            <label for="mode-checkbox" style="color: #f8fafc; font-size: 12.5px; font-weight: 700; cursor: pointer;">Confirm ${displayModeText}</label>
                         </div>
-                        <span style="background: ${isTournament ? 'linear-gradient(135deg, #0ea5e9, #6366f1)' : (matchFormat === 'BO1' ? '#0ea5e9' : 'linear-gradient(135deg, #6366f1, #a855f7)')}; color: white; font-size: 10.5px; font-weight: 800; padding: 3px 10px; border-radius: 5px;">${isTournament ? 'Tournament' : matchFormat}</span>
+                        <span style="background: ${isTournament ? 'linear-gradient(135deg, #0ea5e9, #6366f1)' : '#334155'}; color: white; font-size: 10.5px; font-weight: 800; padding: 3px 10px; border-radius: 5px;">${badgeText}</span>
                     </div>
 
                     <!-- Buttons -->
@@ -259,14 +263,14 @@ export function renderPaymentPage(appContent, formData) {
             ssBase64: base64SS,
             totalFee: totalStr,
             winnerPrice: winnerPriceStr,
-            matchFormat: isTournament ? 'Tournament' : matchFormat,
-            selectedGameMode: matchFormatOrSlot
+            matchFormat: badgeText,
+            selectedGameMode: displayModeText
         };
 
         console.log("Backend Payload Ready:", finalPayload);
 
-        const notiTitle = `${matchFormatOrSlot} Registration Submitted`;
-        const notiMessage = `${matchFormatOrSlot} fee ${totalStr} အတွက် register တင်ထားပါသည်။ Admin မှ စစ်ဆေးပြီးလျှင် noti ပြန်တက်မည်။`;
+        const notiTitle = `${displayModeText} Registration Submitted`;
+        const notiMessage = `${displayModeText} fee ${totalStr} အတွက် register တင်ထားပါသည်။ Admin မှ စစ်ဆေးပြီးလျှင် noti ပြန်တက်မည်။`;
         
         addNotification(notiTitle, notiMessage);
 
