@@ -12,6 +12,7 @@ export function renderRegisterForm(appContent, savedData = {}) {
                 <div style="position: absolute; bottom: -3px; right: -3px; width: 6px; height: 6px; background-color: #38bdf8;"></div>
                 
                 <h2 style="color: #f8fafc; font-size: 16px; font-weight: 800; letter-spacing: 1px; margin: 0; text-transform: uppercase; background: linear-gradient(to right, #38bdf8, #818cf8); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">Tournament Registration</h2>
+                ${savedData.selectedSlot ? `<div style="font-size: 10px; color: #38bdf8; margin-top: 2px; font-weight: bold;">Selected: ${savedData.selectedSlot}</div>` : ''}
             </div>
             
             <form id="reg-form" style="display: flex; flex-direction: column; gap: 10px; width: 100%; max-width: 340px; padding-bottom: 30px;">
@@ -92,13 +93,13 @@ export function renderRegisterForm(appContent, savedData = {}) {
                         <input type="tel" inputmode="numeric" pattern="[0-9]*" id="contact-phone-number" class="reg-input" placeholder="09..." value="${savedData.contactPhoneNumber || ''}" required style="width: 100%; height: 40px; padding: 0 8px; background-color: #1e293b; border: 1px solid #334155; border-radius: 6px; color: white; font-size: 12px; outline: none; box-sizing: border-box;" oninput="this.value = this.value.replace(/[^0-9]/g, '')">
                     </div>
                     
-                    <!-- Entry Fee (Fixed at 50k) -->
+                    <!-- Entry Fee (Changed to 50,000ks) -->
                     <div style="display: flex; flex-direction: column; gap: 3px; width: 50%;">
                         <label style="color: #94a3b8; font-size: 11px; font-weight: 600;">Entry Fee</label>
                         <div style="display: flex; align-items: center; justify-content: center; width: 100%; height: 40px; padding: 0 10px; background-color: #1e293b; border: 1px solid #334155; border-radius: 6px; color: #38bdf8; font-size: 12px; font-weight: 700; box-sizing: border-box;">
-                            <span>50k</span>
+                            <span>50,000ks</span>
                         </div>
-                        <input type="hidden" id="fee-value" value="50k">
+                        <input type="hidden" id="fee-value" value="50,000ks">
                     </div>
                 </div>
 
@@ -163,7 +164,8 @@ export function renderRegisterForm(appContent, savedData = {}) {
             kpayName: document.getElementById('kpay-name').value,
             kpayPhoneNumber: document.getElementById('kpay-phone-number').value,
             contactPhoneNumber: document.getElementById('contact-phone-number').value,
-            fee: "50k"
+            fee: "50,000ks",
+            selectedSlot: savedData.selectedSlot || "Slot 1" // ဘယ် Slot ကနေလာတယ်ဆိုတာကိုပါ Payment ဆီ ပို့ပေးမည်
         };
 
         import('./payment.js').then(module => {

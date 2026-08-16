@@ -5,7 +5,7 @@ import { addNotification } from './notification.js'; // Notification module က�
 
 export function renderPaymentPage(appContent, formData) {
     let rawFee = formData.fee.toLowerCase().trim();
-    let baseNum = parseInt(rawFee.replace('k', '')) * 1000;
+    let baseNum = parseInt(rawFee.replace('k', '').replace('ks', '').replace(',', '')) * 1000;
     if (isNaN(baseNum)) baseNum = 25000;
 
     let selectFeeStr = baseNum.toLocaleString() + 'Ks';
@@ -172,7 +172,20 @@ export function renderPaymentPage(appContent, formData) {
     const modeCheckbox = document.getElementById('mode-checkbox');
     const confirmBtn = document.getElementById('confirm-btn');
     
+    //ကယ်လာတဲ့ data ထဲမှာ SS ပုံပါပြီးသားဆိုရင် ပြန်ပေါ်နေစေရန်
+    let base64SS = formData.ssBase64 || null;
     let ssUploaded = false;
+
+    if (base64SS) {
+        ssBox.style.backgroundImage = `url(${base64SS})`;
+        ssBox.style.backgroundSize = 'cover';
+        ssBox.style.backgroundPosition = 'center';
+        ssBox.style.backgroundRepeat = 'no-repeat';
+        ssBox.style.borderStyle = 'solid';
+        ssBox.style.borderColor = '#38bdf8';
+        ssText.style.display = 'none';
+        ssUploaded = true;
+    }
 
     function updateConfirmButtonState() {
         if (ssUploaded && modeCheckbox.checked) {
@@ -185,13 +198,17 @@ export function renderPaymentPage(appContent, formData) {
             confirmBtn.style.cursor = 'not-allowed';
         }
     }
+    
+    // မူလက checkbox မပါသေးရင် check ထားဖို့လိုလျှင် ဒီမှာစစ်နိုင်ပါတယ်
+    updateConfirmButtonState();
 
     ssInput.addEventListener('change', function(e) {
         const file = e.target.files[0];
         if (file) {
             const reader = new FileReader();
             reader.onload = function(event) {
-                ssBox.style.backgroundImage = `url(${event.target.result})`;
+                base64SS = event.target.result;
+                ssBox.style.backgroundImage = `url(${base64SS})`;
                 ssBox.style.backgroundSize = 'cover';
                 ssBox.style.backgroundPosition = 'center';
                 ssBox.style.backgroundRepeat = 'no-repeat';
@@ -209,8 +226,13 @@ export function renderPaymentPage(appContent, formData) {
         updateConfirmButtonState();
     });
 
+    // Back ခလုတ်နှိပ်တဲ့အခါ SS ပုံပါ formData ထဲ ထည့်ပေးလိုက်ခြင်း
     document.getElementById('pay-back-btn').addEventListener('click', () => {
-        renderRegisterForm(appContent, formData);
+        const updatedDataForBack = {
+            ...formData,
+            ssBase64: base64SS
+        };
+        renderRegisterForm(appContent, updatedDataForBack);
     });
 
     // Confirm ခလုတ်ကို နှိပ်လိုက်သည့်အခါ Mode ပေါ်မူတည်၍ Notification တည်ဆောက်ခြင်း
@@ -219,6 +241,7 @@ export function renderPaymentPage(appContent, formData) {
 
         const finalPayload = {
             ...formData,
+            ssBase64: base64SS,
             totalFee: totalStr,
             winnerPrice: winnerPriceStr,
             matchFormat: matchFormat,

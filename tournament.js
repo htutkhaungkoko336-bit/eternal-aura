@@ -28,45 +28,14 @@ let tournamentData = {
     champion: { name: "CHAMPION", date: "17.8.2026", time: "8:00 PM" }
 };
 
-// ၁။ ပထမဦးဆုံး ပေါ်လာမည့် Tournament Banner / Home Screen
-export function renderTournamentWelcomeScreen(appContent) {
-    appContent.innerHTML = `
-        <div style="display: flex; flex-direction: column; align-items: center; justify-content: flex-start; width: 100%; height: 100%; padding: 20px 14px; box-sizing: border-box; background-color: #0f172a; overflow-y: auto;">
-            
-            <!-- Tournament Banner / Header -->
-            <div style="border: 2px solid #38bdf8; border-radius: 8px; padding: 16px; margin-bottom: 20px; background-color: rgba(30, 41, 59, 0.9); text-align: center; width: 100%; max-width: 340px; box-sizing: border-box; box-shadow: 0 0 15px rgba(56, 189, 248, 0.3);">
-                <h2 style="color: #f8fafc; font-size: 18px; font-weight: 800; letter-spacing: 1px; margin: 0 0 8px 0; text-transform: uppercase; background: linear-gradient(to right, #38bdf8, #818cf8); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">Eternal Aura Tournament</h2>
-                <p style="color: #94a3b8; font-size: 12px; margin: 0; line-height: 1.5;">မိုဘိုင်းဒဏ္ဍာရီ (Mobile Legends) ပြိုင်ပွဲကြီးသို့ ကြိုဆိုပါတယ်။ အနိုင်ရရှိဖို့ သင့်အဖွဲ့နဲ့အတူ ယှဉ်ပြိုင်လိုက်ပါ။</p>
-            </div>
-
-            <!-- Action Buttons -->
-            <div style="display: flex; flex-direction: column; gap: 12px; width: 100%; max-width: 340px;">
-                <button id="start-reg-btn" style="width: 100%; height: 48px; background-color: #38bdf8; color: #0f172a; border: none; border-radius: 8px; font-size: 15px; font-weight: 700; cursor: pointer; box-shadow: 0 4px 12px rgba(56, 189, 248, 0.3); transition: 0.2s;">စာရင်းပေးသွင်းမည် (Register)</button>
-                <button id="view-bracket-btn" style="width: 100%; height: 42px; background-color: #1e293b; color: #38bdf8; border: 1px solid #38bdf8; border-radius: 8px; font-size: 14px; font-weight: 700; cursor: pointer;">ပြိုင်ပွဲဇယားကြည့်ရန် (Brackets)</button>
-            </div>
-        </div>
-    `;
-
-    // စာရင်းပေးသွင်းရန် ခလုတ်နှိပ်လျှင်
-    document.getElementById('start-reg-btn').addEventListener('click', () => {
-        renderRegisterForm(appContent);
-    });
-
-    // ပြိုင်ပွဲဇယားကြည့်ရန် ခလုတ်နှိပ်လျှင်
-    document.getElementById('view-bracket-btn').addEventListener('click', () => {
-        renderTournamentScreen(appContent);
-    });
-}
-
-// ၂။ Tournament Brackets ပြိုင်ပွဲဇယား Screen
+// အက်ပ်စဖွင့်ချင်း (သို့မဟုတ် Home နှိပ်လျှင်) Tournament Brackets ကို တန်းပြရန်
 export function renderTournamentScreen(container) {
     container.innerHTML = `
         <div style="padding: 10px; color: white; display: flex; flex-direction: column; align-items: center; width: 100%; height: 100%; box-sizing: border-box; overflow-y: auto; background-color: #0f172a;">
             
             <!-- Header -->
             <div style="display: flex; justify-content: space-between; align-items: center; width: 100%; max-width: 380px; margin-bottom: 10px;">
-                <button id="back-to-home" style="background: none; border: none; color: #38bdf8; cursor: pointer; font-size: 12px; font-weight: bold;">← Home</button>
-                <h2 style="color: #38bdf8; margin: 0; font-size: 13px; text-transform: uppercase; letter-spacing: 1px;">Tournament Brackets</h2>
+                <h2 style="color: #38bdf8; margin: 0; font-size: 13px; text-transform: uppercase; letter-spacing: 1px;">TOURNAMENT BRACKETS</h2>
                 <button id="toggle-admin" style="background: #334155; border: 1px solid #38bdf8; color: #38bdf8; padding: 3px 8px; border-radius: 4px; font-size: 10px; cursor: pointer;">Admin Edit</button>
             </div>
 
@@ -95,10 +64,20 @@ export function renderTournamentScreen(container) {
                     </div>
                 </div>
 
-                <!-- CHAMPION BOX -->
-                <div style="background: linear-gradient(to bottom, #0f172a, #1e293b); border: 2px solid #facc15; padding: 12px; border-radius: 12px; width: 95%; text-align: center; box-shadow: 0 0 15px rgba(250, 204, 21, 0.25);">
-                    <span style="font-size: 13px; color: #facc15; font-weight: bold; text-transform: uppercase; letter-spacing: 1.5px;">👑 CHAMPION 👑</span>
-                    <div style="font-size: 8px; color: #fbbf24; margin-top: 2px; margin-bottom: 8px;">${tournamentData.champion.date} | ${tournamentData.champion.time}</div>
+                <!-- CHAMPION BOX (ဆုငွေ ၄ သိန်းနှင့် ဖလားပုံများဖြင့် ပိုလန်းသော Design) -->
+                <div style="background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%); border: 2px solid #facc15; padding: 14px; border-radius: 12px; width: 95%; text-align: center; box-shadow: 0 0 20px rgba(250, 204, 21, 0.4); position: relative; overflow: hidden;">
+                    <div style="position: absolute; top: -10px; left: -10px; font-size: 24px; opacity: 0.15;">🏆</div>
+                    <div style="position: absolute; bottom: -10px; right: -10px; font-size: 24px; opacity: 0.15;">🏆</div>
+                    
+                    <div style="display: flex; justify-content: center; align-items: center; gap: 6px; margin-bottom: 4px;">
+                        <span style="font-size: 14px;">🏆</span>
+                        <span style="font-size: 12px; color: #facc15; font-weight: 900; text-transform: uppercase; letter-spacing: 2px;">CHAMPION PRIZE</span>
+                        <span style="font-size: 14px;">🏆</span>
+                    </div>
+                    
+                    <div style="font-size: 18px; color: #fef08a; font-weight: 900; margin: 4px 0 6px 0; text-shadow: 0 0 10px rgba(250,204,21,0.6);">400,000 Ks</div>
+                    <div style="font-size: 8px; color: #94a3b8; margin-bottom: 10px;">${tournamentData.champion.date} | ${tournamentData.champion.time}</div>
+                    
                     <div style="display: flex; justify-content: space-between; align-items: center; gap: 8px;">
                         <div style="flex:1; background: #1e293b; border: 1px solid #475569; padding: 8px; border-radius: 6px; font-size: 9px; color: #f8fafc; font-weight: bold;">Semi 1 Winner</div>
                         <div style="display: flex; flex-direction: column; align-items: center;">
@@ -135,25 +114,23 @@ export function renderTournamentScreen(container) {
         </div>
     `;
 
-    // Events
-    document.getElementById('back-to-home').addEventListener('click', () => {
-        renderTournamentWelcomeScreen(container);
-    });
-
     document.getElementById('toggle-admin').addEventListener('click', () => {
         showAdminEditor(container);
     });
 
+    // Slot တစ်ခုချင်းစီကို နှိပ်၍ စာရင်းပေးသွင်းခြင်း (ဘယ် Slot ကနေ ဝင်တယ်ဆိုတာပါ ပို့ပေးမည်)
     container.querySelectorAll('.group-slot').forEach(el => {
         el.addEventListener('click', (e) => {
             const groupId = parseInt(e.currentTarget.getAttribute('data-group'));
             const slotIndex = parseInt(e.currentTarget.getAttribute('data-slot'));
             const group = tournamentData.groups.find(g => g.id === groupId);
-            
+            const selectedSlotLabel = group.slots[slotIndex].label; // ဥပမာ - "Slot 1", "Slot 2"
+
             if (group.slots[slotIndex].status === 'available') {
-                renderRegisterForm(container, { sqName: group.slots[slotIndex].team || '' });
+                // Register Form သို့ Slot အချက်အလက် (ဥပမာ: "Slot 1") ပါ ပို့ပေးမည်
+                renderRegisterForm(container, { selectedSlot: selectedSlotLabel });
             } else {
-                alert("ဒီ Slot ကို ဝယ်ယူပြီးပါပြီ။");
+                alert("ဒီ Slot ကို အဖွဲ့တစ်ဖွဲ့မှ ယူပြီးပါပြီ။");
             }
         });
     });
@@ -239,14 +216,14 @@ function showAdminEditor(container) {
         tournamentData.semis.forEach((semi, idx) => {
             const mappedIdx = tournamentData.groups.length + idx;
             semi.date = document.getElementById(`date-${mappedIdx}`).value.trim() || semi.date;
-            semi.time = document.getElementById(`time-${mappedIdx}`).value.trim() || semi.time;
+            semi.time = document.getElementById(`date-${mappedIdx}`).value.trim() || semi.time;
         });
 
         const champIdx = tournamentData.groups.length + tournamentData.semis.length;
         tournamentData.champion.date = document.getElementById(`date-${champIdx}`).value.trim() || tournamentData.champion.date;
-        tournamentData.champion.time = document.getElementById(`time-${champIdx}`).value.trim() || tournamentData.champion.time;
+        tournamentData.champion.time = document.getElementById(`date-${champIdx}`).value.trim() || tournamentData.champion.time;
 
-        alert("ချိန်ညှိမှုများကို အောင်မြင်စွာ သိမ်းဆည်းပြီးပါပြီ။");
+        alert("ပြောင်းလဲမှုများကို သိမ်းဆည်းပြီးပါပြီ။");
         renderTournamentScreen(container);
     });
 }
