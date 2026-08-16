@@ -30,7 +30,6 @@ export function addNotification(title, message) {
 }
 
 // Notification Screen ကို ဝင်ရောက်ကြည့်ရှုသည့်အခါ Badge ကို ရှင်းလင်းပေးရန်
-// Notification Screen ကို ဝင်ရောက်ကြည့်ရှုသည့်အခါ Badge ကို ရှင်းလင်းပေးရန်
 export function renderNotificationScreen(container) {
     localStorage.setItem('app_unread_count', '0');
     updateNotificationBadge();
@@ -38,12 +37,12 @@ export function renderNotificationScreen(container) {
     container.innerHTML = `
         <div style="width: 100%; height: 100%; display: flex; flex-direction: column; background-color: #0b0f19; box-sizing: border-box; overflow: hidden;">
             
-            <!-- Modern Tech Header (လေးထောင့်ဘောင်ထူထူနှင့် စာလုံးပိုကြီးသော ပုံစံ) -->
-            <div style="flex-shrink: 0; background-color: #0b0f19; padding: 22px 20px 16px 20px; box-sizing: border-box; border-bottom: 1px solid #1e293b; z-index: 10; display: flex; justify-content: center; align-items: center;">
-                <div style="position: relative; padding: 16px 32px; background: linear-gradient(135deg, rgba(56, 189, 248, 0.12), rgba(129, 140, 248, 0.12)); border: 2.5px solid #38bdf8; box-shadow: 0 0 25px rgba(56, 189, 248, 0.3); text-align: center; border-radius: 4px;">
-                    <div style="position: absolute; top: -3px; left: -3px; width: 8px; height: 8px; background: #38bdf8;"></div>
-                    <div style="position: absolute; bottom: -3px; right: -3px; width: 8px; height: 8px; background: #818cf8;"></div>
-                    <h2 style="font-size: 20px; font-weight: 900; background: linear-gradient(135deg, #38bdf8, #818cf8); -webkit-background-clip: text; -webkit-text-fill-color: transparent; letter-spacing: 2.5px; margin: 0; text-transform: uppercase;">
+            <!-- Modern Tech Header (နေရာအလွန်အကျွံမယူစေရန် ဘောင်နှင့် စာသားအရွယ်အစားကို သင့်တော်ရုံ လျှော့ချထားသည်) -->
+            <div style="flex-shrink: 0; background-color: #0b0f19; padding: 12px 16px 10px 16px; box-sizing: border-box; border-bottom: 1px solid #1e293b; z-index: 10; display: flex; justify-content: center; align-items: center;">
+                <div style="position: relative; padding: 8px 20px; background: linear-gradient(135deg, rgba(56, 189, 248, 0.1), rgba(129, 140, 248, 0.1)); border: 2px solid #38bdf8; box-shadow: 0 0 15px rgba(56, 189, 248, 0.2); text-align: center; border-radius: 4px;">
+                    <div style="position: absolute; top: -2px; left: -2px; width: 6px; height: 6px; background: #38bdf8;"></div>
+                    <div style="position: absolute; bottom: -2px; right: -2px; width: 6px; height: 6px; background: #818cf8;"></div>
+                    <h2 style="font-size: 15px; font-weight: 800; background: linear-gradient(135deg, #38bdf8, #818cf8); -webkit-background-clip: text; -webkit-text-fill-color: transparent; letter-spacing: 1.5px; margin: 0; text-transform: uppercase;">
                         System Notifications
                     </h2>
                 </div>
