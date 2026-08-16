@@ -3,7 +3,15 @@
 export function renderRegisterForm(appContent, savedData = {}) {
     appContent.innerHTML = `
         <div style="display: flex; flex-direction: column; align-items: center; justify-content: flex-start; width: 100%; height: 100%; padding: 4px 14px 10px 14px; box-sizing: border-box; overflow-y: auto;">
-            <h2 style="color: #f8fafc; font-size: 20px; font-weight: 800; letter-spacing: 1px; margin: 0 0 10px 0; text-transform: uppercase; background: linear-gradient(to right, #38bdf8, #818cf8); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">5 vs 5 Registration</h2>
+            
+            <!-- 5 vs 5 Header Box with Corner Accents -->
+            <div style="position: relative; border: 2px solid #38bdf8; border-radius: 4px; padding: 8px 16px; margin-bottom: 12px; background-color: rgba(15, 23, 42, 0.8); text-align: center; width: 100%; max-width: 340px; box-sizing: border-box; box-shadow: 0 0 10px rgba(56, 189, 248, 0.3);">
+                <!-- Corner cut accents using the same blue accent color (#38bdf8) -->
+                <div style="position: absolute; top: -3px; left: -3px; width: 6px; height: 6px; background-color: #38bdf8;"></div>
+                <div style="position: absolute; bottom: -3px; right: -3px; width: 6px; height: 6px; background-color: #38bdf8;"></div>
+                
+                <h2 style="color: #f8fafc; font-size: 16px; font-weight: 800; letter-spacing: 1px; margin: 0; text-transform: uppercase; background: linear-gradient(to right, #38bdf8, #818cf8); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">5 vs 5 Registration</h2>
+            </div>
             
             <form id="reg-form" style="display: flex; flex-direction: column; gap: 10px; width: 100%; max-width: 340px; padding-bottom: 30px;">
                 
@@ -77,14 +85,14 @@ export function renderRegisterForm(appContent, savedData = {}) {
                     </div>
                     <div style="display: flex; flex-direction: column; gap: 3px; width: 50%;">
                         <label style="color: #94a3b8; font-size: 11px; font-weight: 600;">KPay Phone Number</label>
-                        <input type="tel" id="kpay-phone-number" class="reg-input" placeholder="09..." value="${savedData.kpayPhoneNumber || ''}" required style="width: 100%; height: 40px; padding: 0 8px; background-color: #1e293b; border: 1px solid #334155; border-radius: 6px; color: white; font-size: 12px; outline: none; box-sizing: border-box;">
+                        <input type="tel" inputmode="numeric" pattern="[0-9]*" id="kpay-phone-number" class="reg-input" placeholder="09..." value="${savedData.kpayPhoneNumber || ''}" required style="width: 100%; height: 40px; padding: 0 8px; background-color: #1e293b; border: 1px solid #334155; border-radius: 6px; color: white; font-size: 12px; outline: none; box-sizing: border-box;" oninput="this.value = this.value.replace(/[^0-9]/g, '')">
                     </div>
                 </div>
 
                 <div style="display: flex; gap: 8px;">
                     <div style="display: flex; flex-direction: column; gap: 3px; width: 50%;">
                         <label style="color: #94a3b8; font-size: 11px; font-weight: 600;">Contact Phone Number</label>
-                        <input type="tel" id="contact-phone-number" class="reg-input" placeholder="09..." value="${savedData.contactPhoneNumber || ''}" required style="width: 100%; height: 40px; padding: 0 8px; background-color: #1e293b; border: 1px solid #334155; border-radius: 6px; color: white; font-size: 12px; outline: none; box-sizing: border-box;">
+                        <input type="tel" inputmode="numeric" pattern="[0-9]*" id="contact-phone-number" class="reg-input" placeholder="09..." value="${savedData.contactPhoneNumber || ''}" required style="width: 100%; height: 40px; padding: 0 8px; background-color: #1e293b; border: 1px solid #334155; border-radius: 6px; color: white; font-size: 12px; outline: none; box-sizing: border-box;" oninput="this.value = this.value.replace(/[^0-9]/g, '')">
                     </div>
                     
                     <!-- Entry Fee -->
@@ -171,12 +179,12 @@ export function renderRegisterForm(appContent, savedData = {}) {
         e.preventDefault();
         
         if (!base64Logo) {
-            alert("ကျေးဇူးပြု၍ သင့်အဖွဲ့၏ Logo ပုံကို တင်ပေးပါရှင့်။");
+            alert("ကျေးဇူးပြု၍ သင့်အဖွဲ့၏ Logo ပုံကို တင်ပေးပါရှင့်။");
             return;
         }
 
         if (!feeHiddenInput.value) {
-            alert("ကျေးဇူးပြု၍ Entry Fee တစ်ခု ရွေးချယ်ပေးပါရှင့်။");
+            alert("ကျေးဇူးပြု၍ Entry Fee တစ်ခု ရွေးချယ်ပေးပါရှင့်။");
             return;
         }
 
