@@ -3,10 +3,22 @@ import { renderModeScreen } from './mode.js';
 
 let tournamentData = {
     groups: [
-        { id: 1, name: "Group 1", date: "16.8.2026", time: "6:00 PM", slots: [{ team: null, status: "available" }, { team: null, status: "available" }] },
-        { id: 2, name: "Group 2", date: "16.8.2026", time: "7:00 PM", slots: [{ team: null, status: "available" }, { team: null, status: "available" }] },
-        { id: 3, name: "Group 3", date: "16.8.2026", time: "8:00 PM", slots: [{ team: null, status: "available" }, { team: null, status: "available" }] },
-        { id: 4, name: "Group 4", date: "16.8.2026", time: "9:00 PM", slots: [{ team: null, status: "available" }, { team: null, status: "available" }] }
+        { 
+            id: 1, name: "Group 1", date: "16.8.2026", time: "6:00 PM", 
+            slots: [{ team: null, status: "available", label: "Slot 1" }, { team: null, status: "available", label: "Slot 2" }] 
+        },
+        { 
+            id: 2, name: "Group 2", date: "16.8.2026", time: "7:00 PM", 
+            slots: [{ team: null, status: "available", label: "Slot 3" }, { team: null, status: "available", label: "Slot 4" }] 
+        },
+        { 
+            id: 3, name: "Group 3", date: "16.8.2026", time: "8:00 PM", 
+            slots: [{ team: null, status: "available", label: "Slot 5" }, { team: null, status: "available", label: "Slot 6" }] 
+        },
+        { 
+            id: 4, name: "Group 4", date: "16.8.2026", time: "9:00 PM", 
+            slots: [{ team: null, status: "available", label: "Slot 7" }, { team: null, status: "available", label: "Slot 8" }] 
+        }
     ],
     semis: [
         { name: "SEMI 1", date: "16.8.2026", time: "10:00 PM", team1: "Group 1 Winner", team2: "Group 2 Winner" },
@@ -50,16 +62,16 @@ export function renderTournamentScreen(container) {
                     </div>
                 </div>
 
-                <!-- CHAMPION BOX -->
-                <div style="background: linear-gradient(to bottom, #0f172a, #1e293b); border: 2px solid #facc15; padding: 12px; border-radius: 12px; width: 95%; text-align: center; box-shadow: 0 0 15px rgba(250, 204, 21, 0.25);">
-                    <span style="font-size: 11px; color: #facc15; font-weight: bold; text-transform: uppercase; letter-spacing: 1px;">👑 Champion</span>
-                    <div style="margin-top: 8px; display: flex; justify-content: space-between; align-items: center; gap: 8px;">
-                        <div style="flex:1; background: #1e293b; border: 1px solid #475569; padding: 8px; border-radius: 6px; font-size: 9px; color: #f8fafc; font-weight: bold;">Finalist 1</div>
+                <!-- CHAMPION BOX (စာသားကြီးကြီးနှင့် BO5) -->
+                <div style="background: linear-gradient(to bottom, #0f172a, #1e293b); border: 2px solid #facc15; padding: 14px; border-radius: 12px; width: 95%; text-align: center; box-shadow: 0 0 15px rgba(250, 204, 21, 0.25);">
+                    <span style="font-size: 13px; color: #facc15; font-weight: bold; text-transform: uppercase; letter-spacing: 1.5px;">👑 CHAMPION 👑</span>
+                    <div style="margin-top: 10px; display: flex; justify-content: space-between; align-items: center; gap: 8px;">
+                        <div style="flex:1; background: #1e293b; border: 1px solid #475569; padding: 8px; border-radius: 6px; font-size: 9px; color: #f8fafc; font-weight: bold;">Semi 1 Winner</div>
                         <div style="display: flex; flex-direction: column; align-items: center;">
-                            <span style="color: #f97316; font-weight: bold; font-size: 9px;">VS</span>
-                            <span style="color: #ffffff; font-weight: bold; font-size: 7px;">BO3</span>
+                            <span style="color: #f97316; font-weight: bold; font-size: 10px;">VS</span>
+                            <span style="color: #ffffff; font-weight: bold; font-size: 8px;">BO5</span>
                         </div>
-                        <div style="flex:1; background: #1e293b; border: 1px solid #475569; padding: 8px; border-radius: 6px; font-size: 9px; color: #f8fafc; font-weight: bold;">Finalist 2</div>
+                        <div style="flex:1; background: #1e293b; border: 1px solid #475569; padding: 8px; border-radius: 6px; font-size: 9px; color: #f8fafc; font-weight: bold;">Semi 2 Winner</div>
                     </div>
                 </div>
 
@@ -110,7 +122,7 @@ export function renderTournamentScreen(container) {
     });
 }
 
-// Group Card UI (Group တစ်ခုချင်းစီတွင် Slot ၂ ခုစီပါရှိပြီး စုစုပေါင်း Slot ၈ ခု ဖြစ်စေသည်)
+// Group Card UI (Group အလိုက် သတ်မှတ်ထားသော Slot နံပါတ်များဖြင့်)
 function renderGroupCard(group) {
     return `
         <div style="background: #1e293b; border: 1px solid #334155; padding: 10px; border-radius: 10px; width: 48%; box-sizing: border-box; box-shadow: 0 4px 6px rgba(0,0,0,0.3);">
@@ -119,25 +131,25 @@ function renderGroupCard(group) {
                 <span style="font-size: 8px; color: #94a3b8;">${group.date} ${group.time}</span>
             </div>
             <div style="display: flex; flex-direction: column; gap: 6px;">
-                <!-- Slot 1 -->
+                <!-- Slot 1 (or 3, 5, 7) -->
                 <div class="group-slot" data-group="${group.id}" data-slot="0"
                      style="background: ${group.slots[0].status === 'available' ? '#0f172a' : '#334155'}; border: 1px solid ${group.slots[0].status === 'available' ? '#38bdf8' : '#ef4444'}; padding: 8px 5px; border-radius: 6px; text-align: center; cursor: pointer;">
                     <span style="font-size: 9px; color: ${group.slots[0].team ? '#fff' : '#38bdf8'}; font-weight: bold; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; display: block;">
-                        ${group.slots[0].team || 'Slot 1'}
+                        ${group.slots[0].team || group.slots[0].label}
                     </span>
                 </div>
 
-                <!-- VS နှင့် BO3 (အောက်တွင် အဖြူရောင်ဖြင့် BO3) -->
+                <!-- VS နှင့် BO3 -->
                 <div style="display: flex; flex-direction: column; align-items: center; padding: 2px 0;">
                     <span style="font-size: 9px; color: #f97316; font-weight: bold; line-height: 1;">VS</span>
                     <span style="font-size: 7px; color: #ffffff; font-weight: bold; line-height: 1; margin-top: 2px;">BO3</span>
                 </div>
 
-                <!-- Slot 2 -->
+                <!-- Slot 2 (or 4, 6, 8) -->
                 <div class="group-slot" data-group="${group.id}" data-slot="1"
                      style="background: ${group.slots[1].status === 'available' ? '#0f172a' : '#334155'}; border: 1px solid ${group.slots[1].status === 'available' ? '#38bdf8' : '#ef4444'}; padding: 8px 5px; border-radius: 6px; text-align: center; cursor: pointer;">
                     <span style="font-size: 9px; color: ${group.slots[1].team ? '#fff' : '#38bdf8'}; font-weight: bold; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; display: block;">
-                        ${group.slots[1].team || 'Slot 2'}
+                        ${group.slots[1].team || group.slots[1].label}
                     </span>
                 </div>
             </div>
@@ -199,7 +211,7 @@ function showTournamentRegForm(container, groupId, slotIndex) {
         <div style="padding: 20px; color: white; display: flex; flex-direction: column; align-items: center; width: 100%;">
             <button id="back-to-brackets" style="background: none; border: none; color: #38bdf8; margin-bottom: 10px; cursor: pointer;">← Back</button>
             <div style="width: 100%; max-width: 320px; background: #1e293b; padding: 20px; border-radius: 12px; border: 1px solid #38bdf8;">
-                <h3 style="margin: 0 0 5px 0; color: #38bdf8; font-size: 14px;">Register ${group.name} - Slot ${slotIndex + 1}</h3>
+                <h3 style="margin: 0 0 5px 0; color: #38bdf8; font-size: 14px;">Register ${group.name} - ${slot.label}</h3>
                 <p style="font-size: 10px; color: #94a3b8; margin: 0 0 10px 0;">${group.date} - ${group.time}</p>
                 
                 <label style="font-size: 10px; color: #cbd5e1;">Team Name</label>
