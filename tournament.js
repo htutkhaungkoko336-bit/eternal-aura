@@ -1,5 +1,7 @@
 // tournament.js
-import { renderRegisterForm } from './register.js';
+
+import { renderRegisterForm } from './tournamentRegistration.js';
+
 let tournamentData = {
     groups: [
         { 
@@ -26,12 +28,44 @@ let tournamentData = {
     champion: { name: "CHAMPION", date: "17.8.2026", time: "8:00 PM" }
 };
 
+// ၁။ ပထမဦးဆုံး ပေါ်လာမည့် Tournament Banner / Home Screen
+export function renderTournamentWelcomeScreen(appContent) {
+    appContent.innerHTML = `
+        <div style="display: flex; flex-direction: column; align-items: center; justify-content: flex-start; width: 100%; height: 100%; padding: 20px 14px; box-sizing: border-box; background-color: #0f172a; overflow-y: auto;">
+            
+            <!-- Tournament Banner / Header -->
+            <div style="border: 2px solid #38bdf8; border-radius: 8px; padding: 16px; margin-bottom: 20px; background-color: rgba(30, 41, 59, 0.9); text-align: center; width: 100%; max-width: 340px; box-sizing: border-box; box-shadow: 0 0 15px rgba(56, 189, 248, 0.3);">
+                <h2 style="color: #f8fafc; font-size: 18px; font-weight: 800; letter-spacing: 1px; margin: 0 0 8px 0; text-transform: uppercase; background: linear-gradient(to right, #38bdf8, #818cf8); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">Eternal Aura Tournament</h2>
+                <p style="color: #94a3b8; font-size: 12px; margin: 0; line-height: 1.5;">မိုဘိုင်းဒဏ္ဍာရီ (Mobile Legends) ပြိုင်ပွဲကြီးသို့ ကြိုဆိုပါတယ်။ အနိုင်ရရှိဖို့ သင့်အဖွဲ့နဲ့အတူ ယှဉ်ပြိုင်လိုက်ပါ။</p>
+            </div>
+
+            <!-- Action Buttons -->
+            <div style="display: flex; flex-direction: column; gap: 12px; width: 100%; max-width: 340px;">
+                <button id="start-reg-btn" style="width: 100%; height: 48px; background-color: #38bdf8; color: #0f172a; border: none; border-radius: 8px; font-size: 15px; font-weight: 700; cursor: pointer; box-shadow: 0 4px 12px rgba(56, 189, 248, 0.3); transition: 0.2s;">စာရင်းပေးသွင်းမည် (Register)</button>
+                <button id="view-bracket-btn" style="width: 100%; height: 42px; background-color: #1e293b; color: #38bdf8; border: 1px solid #38bdf8; border-radius: 8px; font-size: 14px; font-weight: 700; cursor: pointer;">ပြိုင်ပွဲဇယားကြည့်ရန် (Brackets)</button>
+            </div>
+        </div>
+    `;
+
+    // စာရင်းပေးသွင်းရန် ခလုတ်နှိပ်လျှင်
+    document.getElementById('start-reg-btn').addEventListener('click', () => {
+        renderRegisterForm(appContent);
+    });
+
+    // ပြိုင်ပွဲဇယားကြည့်ရန် ခလုတ်နှိပ်လျှင်
+    document.getElementById('view-bracket-btn').addEventListener('click', () => {
+        renderTournamentScreen(appContent);
+    });
+}
+
+// ၂။ Tournament Brackets ပြိုင်ပွဲဇယား Screen
 export function renderTournamentScreen(container) {
     container.innerHTML = `
-        <div style="padding: 10px; color: white; display: flex; flex-direction: column; align-items: center; width: 100%; height: 100%; box-sizing: border-box; overflow-y: auto;">
+        <div style="padding: 10px; color: white; display: flex; flex-direction: column; align-items: center; width: 100%; height: 100%; box-sizing: border-box; overflow-y: auto; background-color: #0f172a;">
             
             <!-- Header -->
             <div style="display: flex; justify-content: space-between; align-items: center; width: 100%; max-width: 380px; margin-bottom: 10px;">
+                <button id="back-to-home" style="background: none; border: none; color: #38bdf8; cursor: pointer; font-size: 12px; font-weight: bold;">← Home</button>
                 <h2 style="color: #38bdf8; margin: 0; font-size: 13px; text-transform: uppercase; letter-spacing: 1px;">Tournament Brackets</h2>
                 <button id="toggle-admin" style="background: #334155; border: 1px solid #38bdf8; color: #38bdf8; padding: 3px 8px; border-radius: 4px; font-size: 10px; cursor: pointer;">Admin Edit</button>
             </div>
@@ -102,18 +136,21 @@ export function renderTournamentScreen(container) {
     `;
 
     // Events
+    document.getElementById('back-to-home').addEventListener('click', () => {
+        renderTournamentWelcomeScreen(container);
+    });
+
     document.getElementById('toggle-admin').addEventListener('click', () => {
         showAdminEditor(container);
     });
 
-container.querySelectorAll('.group-slot').forEach(el => {
+    container.querySelectorAll('.group-slot').forEach(el => {
         el.addEventListener('click', (e) => {
             const groupId = parseInt(e.currentTarget.getAttribute('data-group'));
             const slotIndex = parseInt(e.currentTarget.getAttribute('data-slot'));
             const group = tournamentData.groups.find(g => g.id === groupId);
             
             if (group.slots[slotIndex].status === 'available') {
-                // ဒီနေရာမှာ renderTournamentRegForm အစား renderRegisterForm ကို ခေါ်ပါ
                 renderRegisterForm(container, { sqName: group.slots[slotIndex].team || '' });
             } else {
                 alert("ဒီ Slot ကို ဝယ်ယူပြီးပါပြီ။");
@@ -163,7 +200,7 @@ function showAdminEditor(container) {
     ];
 
     container.innerHTML = `
-        <div style="padding: 15px; color: white; display: flex; flex-direction: column; align-items: center; width: 100%; box-sizing: border-box; overflow-y: auto; height: 100%;">
+        <div style="padding: 15px; color: white; display: flex; flex-direction: column; align-items: center; width: 100%; box-sizing: border-box; overflow-y: auto; height: 100%; background-color: #0f172a;">
             <div style="display: flex; justify-content: space-between; align-items: center; width: 100%; max-width: 360px; margin-bottom: 15px;">
                 <button id="back-to-bracket" style="background: none; border: none; color: #38bdf8; cursor: pointer; font-weight: bold;">← Back</button>
                 <h3 style="color: #38bdf8; margin: 0; font-size: 14px;">Admin: Edit Date & Time</h3>
