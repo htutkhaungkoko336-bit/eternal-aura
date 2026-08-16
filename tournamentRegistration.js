@@ -164,7 +164,7 @@ export function renderRegisterForm(appContent, savedData = {}) {
             kpayName: document.getElementById('kpay-name').value,
             kpayPhoneNumber: document.getElementById('kpay-phone-number').value,
             contactPhoneNumber: document.getElementById('contact-phone-number').value,
-            fee: "50,000ks",
+            fee: "50k",
             selectedSlot: savedData.selectedSlot || "Slot 1" // ဘယ် Slot ကနေလာတယ်ဆိုတာကိုပါ Payment ဆီ ပို့ပေးမည်
         };
 
