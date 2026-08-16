@@ -18,6 +18,10 @@ export function renderPaymentPage(appContent, formData) {
     let winnerPriceStr = winnerPriceNum.toLocaleString() + 'Ks';
     let matchFormat = (baseNum <= 15000) ? "BO1" : "BO3";
 
+    // formData ထဲက game mode ကို ရယူခြင်း (မပါလာရင် '5vs5' လို့ အသေခံမည်)
+    let currentMode = formData.mode || formData.gameMode || '5vs5';
+    let formattedMode = currentMode.toLowerCase().includes('1vs1') ? '1vs1' : '5vs5';
+
     let prizeBg = "";
     let prizeBorder = "";
     let prizeShadow = "";
@@ -114,11 +118,11 @@ export function renderPaymentPage(appContent, formData) {
                         </div>
                     </div>
 
-                    <!-- 5 vs 5 Mode Checkbox -->
+                    <!-- Mode Checkbox -->
                     <div style="display: flex; align-items: center; justify-content: space-between; background-color: #1e293b; padding: 10px 12px; border-radius: 8px; border: 1px solid #475569;">
                         <div style="display: flex; align-items: center; gap: 10px;">
-                            <input type="checkbox" id="mode-checkbox" data-game-mode="5vs5" style="width: 17px; height: 17px; accent-color: #38bdf8; cursor: pointer;">
-                            <label for="mode-checkbox" style="color: #f8fafc; font-size: 12.5px; font-weight: 700; cursor: pointer;">5 vs 5 Mode</label>
+                            <input type="checkbox" id="mode-checkbox" data-game-mode="${formattedMode}" style="width: 17px; height: 17px; accent-color: #38bdf8; cursor: pointer;">
+                            <label for="mode-checkbox" style="color: #f8fafc; font-size: 12.5px; font-weight: 700; cursor: pointer;">${formattedMode} Mode</label>
                         </div>
                         <span style="background: ${matchFormat === 'BO1' ? '#0ea5e9' : 'linear-gradient(135deg, #6366f1, #a855f7)'}; color: white; font-size: 10.5px; font-weight: 800; padding: 3px 10px; border-radius: 5px; box-shadow: ${matchFormat === 'BO3' ? '0 0 10px rgba(168, 85, 247, 0.4)' : 'none'};">${matchFormat} Match</span>
                     </div>
@@ -209,7 +213,7 @@ export function renderPaymentPage(appContent, formData) {
         renderRegisterForm(appContent, formData);
     });
 
-// Confirm ခလုတ်ကို နှိပ်လိုက်သည့်အခါ Notification ဖန်တီးပြီး မူလ Mode screen သို့ ပြန်သွားရန်
+    // Confirm ခလုတ်ကို နှိပ်လိုက်သည့်အခါ Mode ပေါ်မူတည်၍ Notification တည်ဆောက်ခြင်း
     confirmBtn.addEventListener('click', () => {
         if (confirmBtn.disabled) return;
 
@@ -218,18 +222,17 @@ export function renderPaymentPage(appContent, formData) {
             totalFee: totalStr,
             winnerPrice: winnerPriceStr,
             matchFormat: matchFormat,
-            selectedGameMode: modeCheckbox.getAttribute('data-game-mode')
+            selectedGameMode: formattedMode
         };
 
         console.log("Backend Payload Ready:", finalPayload);
 
-        // Notification title နှင့် message ကို သီးသန့် string ပုံစံဖြင့် ပေးပို့ခြင်း
-        const notiTitle = "Tournament Registration Submitted";
-        const notiMessage = `5vs5 mode fee ${totalStr} ${matchFormat} အတွက် register တင်ထားပါသည်။ Admin မှ စစ်ဆေးပြီးလျှင် noti ပြန်တက်မည်။`;
+        // Mode ပေါ်မူတည်၍ title နှင့် message ကို ပြောင်းလဲပေးခြင်း
+        const notiTitle = `${formattedMode} Mode Registration Submitted`;
+        const notiMessage = `${formattedMode} mode fee ${totalStr} ${matchFormat} အတွက် register တင်ထားပါသည်။ Admin မှ စစ်ဆေးပြီးလျှင် noti ပြန်တက်မည်။`;
         
         addNotification(notiTitle, notiMessage);
 
-        // Alert ကို ဖြုတ်လိုက်ပြီး Mode screen သို့ တိုက်ရိုက်ခေါ်ဆောင်ခြင်း
         renderModeScreen(appContent);
     });
 }
