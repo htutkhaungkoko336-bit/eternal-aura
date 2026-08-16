@@ -1,11 +1,11 @@
 // payment.js
 import { renderRegisterForm } from './register.js';
 import { renderModeScreen } from './mode.js';
-import { addNotification } from './notification.js'; // Notification module ကို import လုပ်ခြင်း
+import { addNotification } from './notification.js';
 
 export function renderPaymentPage(appContent, formData) {
     let rawFee = formData.fee.toLowerCase().trim();
-    let baseNum = parseInt(rawFee.replace('k', '')) * 1000;
+    let baseNum = parseInt(rawFee.replace('k', '').replace('ks', '').replace(',', '')) * 1000;
     if (isNaN(baseNum)) baseNum = 25000;
 
     let selectFeeStr = baseNum.toLocaleString() + 'Ks';
@@ -14,51 +14,70 @@ export function renderPaymentPage(appContent, formData) {
     let totalNum = baseNum + commissionNum;
     let totalStr = totalNum.toLocaleString() + 'Ks';
     
-    let winnerPriceNum = baseNum * 2;
-    let winnerPriceStr = winnerPriceNum.toLocaleString() + 'Ks';
-    let matchFormat = (baseNum <= 15000) ? "BO1" : "BO3";
+    // Tournament ဟုတ်မဟုတ် စစ်ဆေးခြင်း (formData ထဲမှာ isTournament ပါလာလျှင် သို့မဟုတ် mode က tournament ဖြစ်နေလျှင်)
+    let isTournament = formData.isTournament || (formData.mode && formData.mode.toLowerCase().includes('slot'));
 
-    // formData ထဲက game mode ကို ရယူခြင်း (မပါလာရင် '5vs5' လို့ အသေခံမည်)
-    let currentMode = formData.mode || formData.gameMode || '5vs5';
-    let formattedMode = currentMode.toLowerCase().includes('1vs1') ? '1vs1' : '5vs5';
-
+    let winnerPriceStr = "";
+    let matchFormatOrSlot = "";
     let prizeBg = "";
     let prizeBorder = "";
     let prizeShadow = "";
     let titleColor = "";
     let amountColor = "";
 
-    if (baseNum === 5000) {
-        prizeBg = "linear-gradient(135deg, #1c1917 0%, #292524 50%, #44403c 100%)";
-        prizeBorder = "#d97706";
-        prizeShadow = "0 0 12px rgba(217, 119, 6, 0.3)";
-        titleColor = "#fde68a";
-        amountColor = "#fbbf24";
-    } else if (baseNum === 10000) {
-        prizeBg = "linear-gradient(135deg, #0c4a6e 0%, #0369a1 50%, #0284c7 100%)";
-        prizeBorder = "#38bdf8";
-        prizeShadow = "0 0 20px rgba(56, 189, 248, 0.45), inset 0 0 10px rgba(125, 211, 252, 0.3)";
-        titleColor = "#e0f2fe";
-        amountColor = "#38bdf8";
-    } else if (baseNum === 15000) {
-        prizeBg = "linear-gradient(135deg, #431407 0%, #7c2d12 50%, #c2410c 100%)";
-        prizeBorder = "#fb923c";
-        prizeShadow = "0 0 18px rgba(251, 146, 60, 0.45)";
-        titleColor = "#ffedd5";
-        amountColor = "#fdba74";
-    } else if (baseNum === 25000) {
-        prizeBg = "linear-gradient(135deg, #1e1b4b 0%, #312e81 50%, #4338ca 100%)";
-        prizeBorder = "#a855f7";
-        prizeShadow = "0 0 18px rgba(168, 85, 247, 0.45)";
-        titleColor = "#e9d5ff";
-        amountColor = "#facc15";
-    } else {
+    if (isTournament) {
+        // Tournament အတွက် သီးသန့် သတ်မှတ်ချက်များ
+        winnerPriceStr = "400,000Ks";
+        matchFormatOrSlot = formData.mode || formData.gameMode || formData.slot || 'Slot 1';
+        
         prizeBg = "linear-gradient(135deg, #3f2f04 0%, #714f09 50%, #b45309 100%)";
         prizeBorder = "#fbbf24";
         prizeShadow = "0 0 25px rgba(251, 191, 36, 0.5), inset 0 0 15px rgba(254, 240, 138, 0.4)";
         titleColor = "#fef08a";
         amountColor = "#fde047";
+    } else {
+        // ပုံမှန် 5vs5 / 1vs1 အတွက် မူလအတိုင်း
+        let winnerPriceNum = baseNum * 2;
+        winnerPriceStr = winnerPriceNum.toLocaleString() + 'Ks';
+        
+        let currentMode = formData.mode || formData.gameMode || '5vs5';
+        matchFormatOrSlot = currentMode.toLowerCase().includes('1vs1') ? '1vs1' : '5vs5';
+        
+        if (baseNum === 5000) {
+            prizeBg = "linear-gradient(135deg, #1c1917 0%, #292524 50%, #44403c 100%)";
+            prizeBorder = "#d97706";
+            prizeShadow = "0 0 12px rgba(217, 119, 6, 0.3)";
+            titleColor = "#fde68a";
+            amountColor = "#fbbf24";
+        } else if (baseNum === 10000) {
+            prizeBg = "linear-gradient(135deg, #0c4a6e 0%, #0369a1 50%, #0284c7 100%)";
+            prizeBorder = "#38bdf8";
+            prizeShadow = "0 0 20px rgba(56, 189, 248, 0.45), inset 0 0 10px rgba(125, 211, 252, 0.3)";
+            titleColor = "#e0f2fe";
+            amountColor = "#38bdf8";
+        } else if (baseNum === 15000) {
+            prizeBg = "linear-gradient(135deg, #431407 0%, #7c2d12 50%, #c2410c 100%)";
+            prizeBorder = "#fb923c";
+            prizeShadow = "0 0 18px rgba(251, 146, 60, 0.45)";
+            titleColor = "#ffedd5";
+            amountColor = "#fdba74";
+        } else if (baseNum === 25000) {
+            prizeBg = "linear-gradient(135deg, #1e1b4b 0%, #312e81 50%, #4338ca 100%)";
+            prizeBorder = "#a855f7";
+            prizeShadow = "0 0 18px rgba(168, 85, 247, 0.45)";
+            titleColor = "#e9d5ff";
+            amountColor = "#facc15";
+        } else {
+            prizeBg = "linear-gradient(135deg, #3f2f04 0%, #714f09 50%, #b45309 100%)";
+            prizeBorder = "#fbbf24";
+            prizeShadow = "0 0 25px rgba(251, 191, 36, 0.5), inset 0 0 15px rgba(254, 240, 138, 0.4)";
+            titleColor = "#fef08a";
+            amountColor = "#fde047";
+        }
     }
+
+    // Match format (BO1/BO3) ကို ပုံမှန်အတွက်သာ သုံးရန်
+    let matchFormat = (baseNum <= 15000) ? "BO1" : "BO3";
 
     appContent.innerHTML = `
         <div style="display: flex; flex-direction: column; align-items: center; justify-content: flex-start; width: 100%; height: 100%; padding: 4px 12px 15px 12px; box-sizing: border-box; overflow-y: auto; position: relative;">
@@ -84,7 +103,7 @@ export function renderPaymentPage(appContent, formData) {
 
                 <!-- Winner Prize Box -->
                 <div style="position: relative; background: ${prizeBg}; border: 1.5px solid ${prizeBorder}; border-radius: 10px; padding: 10px; text-align: center; box-shadow: ${prizeShadow};">
-                    <span style="display: block; color: ${titleColor}; font-size: 11px; font-weight: 800; text-transform: uppercase; letter-spacing: 1.5px; margin-bottom: 2px; text-shadow: 0 0 8px rgba(255,255,255,0.4);">⚡ WINNER PRIZE ⚡</span>
+                    <span style="display: block; color: ${titleColor}; font-size: 11px; font-weight: 800; text-transform: uppercase; letter-spacing: 1.5px; margin-bottom: 2px; text-shadow: 0 0 8px rgba(255,255,255,0.4);">${isTournament ? '⚡ CHAMPION PRIZE ⚡' : '⚡ WINNER PRIZE ⚡'}</span>
                     <span style="display: block; color: ${amountColor}; font-size: 24px; font-weight: 900; text-shadow: 0 0 12px rgba(0,0,0,0.8);">${winnerPriceStr}</span>
                 </div>
 
@@ -118,13 +137,13 @@ export function renderPaymentPage(appContent, formData) {
                         </div>
                     </div>
 
-                    <!-- Mode Checkbox -->
+                    <!-- Mode / Slot Checkbox Section -->
                     <div style="display: flex; align-items: center; justify-content: space-between; background-color: #1e293b; padding: 10px 12px; border-radius: 8px; border: 1px solid #475569;">
                         <div style="display: flex; align-items: center; gap: 10px;">
-                            <input type="checkbox" id="mode-checkbox" data-game-mode="${formattedMode}" style="width: 17px; height: 17px; accent-color: #38bdf8; cursor: pointer;">
-                            <label for="mode-checkbox" style="color: #f8fafc; font-size: 12.5px; font-weight: 700; cursor: pointer;">${formattedMode} Mode</label>
+                            <input type="checkbox" id="mode-checkbox" data-game-mode="${matchFormatOrSlot}" style="width: 17px; height: 17px; accent-color: #38bdf8; cursor: pointer;">
+                            <label for="mode-checkbox" style="color: #f8fafc; font-size: 12.5px; font-weight: 700; cursor: pointer;">${isTournament ? 'Confirm ' + matchFormatOrSlot : matchFormatOrSlot + ' Mode'}</label>
                         </div>
-                        <span style="background: ${matchFormat === 'BO1' ? '#0ea5e9' : 'linear-gradient(135deg, #6366f1, #a855f7)'}; color: white; font-size: 10.5px; font-weight: 800; padding: 3px 10px; border-radius: 5px; box-shadow: ${matchFormat === 'BO3' ? '0 0 10px rgba(168, 85, 247, 0.4)' : 'none'};">${matchFormat} Match</span>
+                        <span style="background: ${isTournament ? 'linear-gradient(135deg, #0ea5e9, #6366f1)' : (matchFormat === 'BO1' ? '#0ea5e9' : 'linear-gradient(135deg, #6366f1, #a855f7)')}; color: white; font-size: 10.5px; font-weight: 800; padding: 3px 10px; border-radius: 5px;">${isTournament ? 'Tournament' : matchFormat}</span>
                     </div>
 
                     <!-- Buttons -->
@@ -172,7 +191,19 @@ export function renderPaymentPage(appContent, formData) {
     const modeCheckbox = document.getElementById('mode-checkbox');
     const confirmBtn = document.getElementById('confirm-btn');
     
+    let base64SS = formData.ssBase64 || null;
     let ssUploaded = false;
+
+    if (base64SS) {
+        ssBox.style.backgroundImage = `url(${base64SS})`;
+        ssBox.style.backgroundSize = 'cover';
+        ssBox.style.backgroundPosition = 'center';
+        ssBox.style.backgroundRepeat = 'no-repeat';
+        ssBox.style.borderStyle = 'solid';
+        ssBox.style.borderColor = '#38bdf8';
+        ssText.style.display = 'none';
+        ssUploaded = true;
+    }
 
     function updateConfirmButtonState() {
         if (ssUploaded && modeCheckbox.checked) {
@@ -186,12 +217,15 @@ export function renderPaymentPage(appContent, formData) {
         }
     }
 
+    updateConfirmButtonState();
+
     ssInput.addEventListener('change', function(e) {
         const file = e.target.files[0];
         if (file) {
             const reader = new FileReader();
             reader.onload = function(event) {
-                ssBox.style.backgroundImage = `url(${event.target.result})`;
+                base64SS = event.target.result;
+                ssBox.style.backgroundImage = `url(${base64SS})`;
                 ssBox.style.backgroundSize = 'cover';
                 ssBox.style.backgroundPosition = 'center';
                 ssBox.style.backgroundRepeat = 'no-repeat';
@@ -210,26 +244,29 @@ export function renderPaymentPage(appContent, formData) {
     });
 
     document.getElementById('pay-back-btn').addEventListener('click', () => {
-        renderRegisterForm(appContent, formData);
+        const updatedDataForBack = {
+            ...formData,
+            ssBase64: base64SS
+        };
+        renderRegisterForm(appContent, updatedDataForBack);
     });
 
-    // Confirm ခလုတ်ကို နှိပ်လိုက်သည့်အခါ Mode ပေါ်မူတည်၍ Notification တည်ဆောက်ခြင်း
     confirmBtn.addEventListener('click', () => {
         if (confirmBtn.disabled) return;
 
         const finalPayload = {
             ...formData,
+            ssBase64: base64SS,
             totalFee: totalStr,
             winnerPrice: winnerPriceStr,
-            matchFormat: matchFormat,
-            selectedGameMode: formattedMode
+            matchFormat: isTournament ? 'Tournament' : matchFormat,
+            selectedGameMode: matchFormatOrSlot
         };
 
         console.log("Backend Payload Ready:", finalPayload);
 
-        // Mode ပေါ်မူတည်၍ title နှင့် message ကို ပြောင်းလဲပေးခြင်း
-        const notiTitle = `${formattedMode} Mode Registration Submitted`;
-        const notiMessage = `${formattedMode} mode fee ${totalStr} ${matchFormat} အတွက် register တင်ထားပါသည်။ Admin မှ စစ်ဆေးပြီးလျှင် noti ပြန်တက်မည်။`;
+        const notiTitle = `${matchFormatOrSlot} Registration Submitted`;
+        const notiMessage = `${matchFormatOrSlot} fee ${totalStr} အတွက် register တင်ထားပါသည်။ Admin မှ စစ်ဆေးပြီးလျှင် noti ပြန်တက်မည်။`;
         
         addNotification(notiTitle, notiMessage);
 
