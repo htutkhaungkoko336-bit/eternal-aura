@@ -3,7 +3,11 @@
 export function renderRegister1v1Form(appContent, savedData = {}) {
     appContent.innerHTML = `
         <div style="display: flex; flex-direction: column; align-items: center; justify-content: flex-start; width: 100%; height: 100%; padding: 4px 14px 10px 14px; box-sizing: border-box; overflow-y: auto;">
-            <h2 style="color: #f8fafc; font-size: 20px; font-weight: 800; letter-spacing: 1px; margin: 0 0 10px 0; text-transform: uppercase; background: linear-gradient(to right, #38bdf8, #818cf8); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">1 vs 1 Registration</h2>
+            
+            <!-- 1 vs 1 Registration Header with Border Box -->
+            <div style="border: 2px solid #38bdf8; border-radius: 10px; padding: 6px 16px; margin-bottom: 12px; background-color: rgba(56, 189, 248, 0.05); text-align: center;">
+                <h2 style="color: #f8fafc; font-size: 18px; font-weight: 800; letter-spacing: 1px; margin: 0; text-transform: uppercase; background: linear-gradient(to right, #38bdf8, #818cf8); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">1 vs 1 Registration</h2>
+            </div>
             
             <form id="reg-1v1-form" style="display: flex; flex-direction: column; gap: 10px; width: 100%; max-width: 340px; padding-bottom: 30px;">
                 
@@ -18,26 +22,30 @@ export function renderRegister1v1Form(appContent, savedData = {}) {
                     }
                 </style>
 
-                <!-- Top Row: Logo & Game Name / ID -->
-                <div style="display: flex; gap: 12px; align-items: center;">
-                    <div style="display: flex; flex-direction: column; gap: 3px;">
+                <!-- Top Row: Logo & Game Name / ID (Aligned properly) -->
+                <div style="display: flex; gap: 12px; align-items: stretch;">
+                    <div style="display: flex; flex-direction: column; gap: 3px; flex-shrink: 0;">
                         <label style="color: #94a3b8; font-size: 11px; font-weight: 600;">Logo <span style="color: #ef4444;">*</span></label>
-                        <label for="1v1-logo-input" class="reg-1v1-logo-box" style="display: flex; flex-direction: column; align-items: center; justify-content: center; width: 65px; height: 65px; background-color: #1e293b; border: 1.5px dashed #475569; border-radius: 8px; cursor: pointer; overflow: hidden; position: relative; transition: 0.2s; flex-shrink: 0;" id="logo-1v1-preview-box">
+                        <label for="1v1-logo-input" class="reg-1v1-logo-box" style="display: flex; flex-direction: column; align-items: center; justify-content: center; width: 70px; height: 70px; background-color: #1e293b; border: 1.5px dashed #475569; border-radius: 8px; cursor: pointer; overflow: hidden; position: relative; transition: 0.2s;" id="logo-1v1-preview-box">
                             <span id="logo-1v1-text" style="color: #94a3b8; font-size: 11px; font-weight: 600;">Upload</span>
                             <input type="file" id="1v1-logo-input" accept="image/*" style="display: none;">
                         </label>
                     </div>
 
-                    <div style="display: flex; flex-direction: column; gap: 6px; flex-grow: 1;">
-                        <input type="text" id="p1-game-name" class="reg-1v1-input" placeholder="Game Name" value="${savedData.gameName || ''}" required style="width: 100%; height: 32px; padding: 0 8px; background-color: #1e293b; border: 1px solid #334155; border-radius: 6px; color: white; font-size: 12px; outline: none; box-sizing: border-box;">
-                        <input type="number" id="p1-id" class="reg-1v1-input" placeholder="ID (Server ID)" value="${savedData.playerId || ''}" required style="width: 100%; height: 32px; padding: 0 8px; background-color: #1e293b; border: 1px solid #334155; border-radius: 6px; color: white; font-size: 12px; outline: none; box-sizing: border-box;">
+                    <div style="display: flex; flex-direction: column; justify-content: space-between; flex-grow: 1;">
+                        <div style="display: flex; flex-direction: column; gap: 2px;">
+                            <input type="text" id="p1-game-name" class="reg-1v1-input" placeholder="Game Name" value="${savedData.gameName || ''}" required style="width: 100%; height: 32px; padding: 0 8px; background-color: #1e293b; border: 1px solid #334155; border-radius: 6px; color: white; font-size: 12px; outline: none; box-sizing: border-box;">
+                        </div>
+                        <div style="display: flex; flex-direction: column; gap: 2px;">
+                            <input type="number" id="p1-id" class="reg-1v1-input" placeholder="ID" value="${savedData.playerId || ''}" required style="width: 100%; height: 32px; padding: 0 8px; background-color: #1e293b; border: 1px solid #334155; border-radius: 6px; color: white; font-size: 12px; outline: none; box-sizing: border-box;">
+                        </div>
                     </div>
                 </div>
 
                 <!-- Hero Name Section -->
                 <div style="display: flex; flex-direction: column; gap: 3px;">
                     <label style="color: #94a3b8; font-size: 11px; font-weight: 600;">Hero Name</label>
-                    <input type="text" id="hero-name" class="reg-1v1-input" placeholder="Hero Name" value="${savedData.heroName || ''}" required style="width: 100%; height: 38px; padding: 0 10px; background-color: #1e293b; border: 1px solid #334155; border-radius: 6px; color: white; font-size: 12px; outline: none; box-sizing: border-box;">
+                    <input type="text" id="hero-name" class="reg-1v1-input" placeholder="Enter Hero Name (e.g., Gusion, Fanny)" value="${savedData.heroName || ''}" required style="width: 100%; height: 38px; padding: 0 10px; background-color: #1e293b; border: 1px solid #334155; border-radius: 6px; color: white; font-size: 12px; outline: none; box-sizing: border-box;">
                 </div>
 
                 <!-- Payment & Contact Info -->
@@ -152,7 +160,7 @@ export function renderRegister1v1Form(appContent, savedData = {}) {
         }
 
         const formData = {
-            mode: '1vs1', // Payment page ဘက်မှာ 1vs1 လို့ သိစေရန်
+            mode: '1vs1',
             logoBase64: base64Logo,
             gameName: document.getElementById('p1-game-name').value,
             playerId: document.getElementById('p1-id').value,
@@ -163,7 +171,6 @@ export function renderRegister1v1Form(appContent, savedData = {}) {
             fee: feeHiddenInput.value
         };
 
-        // Payment Page သို့ ပို့ဆောင်ခြင်း (Payment page က 1vs1 ကို လက်ခံဖို့ အသင့်ဖြစ်ပြီးသားပါ)
         import('./payment.js').then(module => {
             module.renderPaymentPage(appContent, formData);
         });
