@@ -1,5 +1,6 @@
 // mode.js
 import { renderRegisterForm } from './register.js';
+import { renderRegister1v1Form } from './register-1v1.js'; // 1v1 ဖိုင်ကို import လုပ်ခြင်း
 
 export function renderModeScreen(container) {
     container.innerHTML = `
@@ -42,7 +43,7 @@ function handleModeSelection(mode, container) {
             renderRegisterForm(container);
             break;
         case '1vs1':
-            alert("You selected 1 vs 1 Mode!");
+            renderRegister1v1Form(container); // 1vs1 Form ဖိုင်ဆီသို့ တိုက်ရိုက်ချိတ်ဆက်ပေးလိုက်ပါပြီ
             break;
         case 'tournament':
             alert("You selected Tournament Mode!");
