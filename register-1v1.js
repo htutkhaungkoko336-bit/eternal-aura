@@ -4,9 +4,13 @@ export function renderRegister1v1Form(appContent, savedData = {}) {
     appContent.innerHTML = `
         <div style="display: flex; flex-direction: column; align-items: center; justify-content: flex-start; width: 100%; height: 100%; padding: 4px 14px 10px 14px; box-sizing: border-box; overflow-y: auto;">
             
-            <!-- 1 vs 1 Registration Header with Border Box -->
-            <div style="border: 2px solid #38bdf8; border-radius: 10px; padding: 6px 16px; margin-bottom: 12px; background-color: rgba(56, 189, 248, 0.05); text-align: center;">
-                <h2 style="color: #f8fafc; font-size: 18px; font-weight: 800; letter-spacing: 1px; margin: 0; text-transform: uppercase; background: linear-gradient(to right, #38bdf8, #818cf8); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">1 vs 1 Registration</h2>
+            <!-- System Notification style border box for Header -->
+            <div style="position: relative; border: 2px solid #38bdf8; border-radius: 4px; padding: 8px 16px; margin-bottom: 12px; background-color: rgba(15, 23, 42, 0.8); text-align: center; width: 100%; max-width: 340px; box-sizing: border-box; box-shadow: 0 0 10px rgba(56, 189, 248, 0.3);">
+                <!-- Corner cut style accents matching System Notifications -->
+                <div style="position: absolute; top: -3px; left: -3px; width: 8px; height: 8px; background-color: #0f172a; border-right: 2px solid #38bdf8; border-bottom: 2px solid #38bdf8;"></div>
+                <div style="position: absolute; bottom: -3px; right: -3px; width: 8px; height: 8px; background-color: #0f172a; border-left: 2px solid #38bdf8; border-top: 2px solid #38bdf8;"></div>
+                
+                <h2 style="color: #f8fafc; font-size: 16px; font-weight: 800; letter-spacing: 1px; margin: 0; text-transform: uppercase; background: linear-gradient(to right, #38bdf8, #818cf8); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">1 vs 1 Registration</h2>
             </div>
             
             <form id="reg-1v1-form" style="display: flex; flex-direction: column; gap: 10px; width: 100%; max-width: 340px; padding-bottom: 30px;">
@@ -22,23 +26,24 @@ export function renderRegister1v1Form(appContent, savedData = {}) {
                     }
                 </style>
 
-                <!-- Top Row: Logo & Game Name / ID (Aligned properly) -->
-                <div style="display: flex; gap: 12px; align-items: stretch;">
-                    <div style="display: flex; flex-direction: column; gap: 3px; flex-shrink: 0;">
-                        <label style="color: #94a3b8; font-size: 11px; font-weight: 600;">Logo <span style="color: #ef4444;">*</span></label>
-                        <label for="1v1-logo-input" class="reg-1v1-logo-box" style="display: flex; flex-direction: column; align-items: center; justify-content: center; width: 70px; height: 70px; background-color: #1e293b; border: 1.5px dashed #475569; border-radius: 8px; cursor: pointer; overflow: hidden; position: relative; transition: 0.2s;" id="logo-1v1-preview-box">
-                            <span id="logo-1v1-text" style="color: #94a3b8; font-size: 11px; font-weight: 600;">Upload</span>
-                            <input type="file" id="1v1-logo-input" accept="image/*" style="display: none;">
-                        </label>
-                    </div>
+                <!-- Center Logo Section -->
+                <div style="display: flex; flex-direction: column; align-items: center; gap: 4px; width: 100%;">
+                    <label style="color: #94a3b8; font-size: 11px; font-weight: 600;">Logo <span style="color: #ef4444;">*</span></label>
+                    <label for="1v1-logo-input" class="reg-1v1-logo-box" style="display: flex; flex-direction: column; align-items: center; justify-content: center; width: 80px; height: 80px; background-color: #1e293b; border: 1.5px dashed #475569; border-radius: 8px; cursor: pointer; overflow: hidden; position: relative; transition: 0.2s;" id="logo-1v1-preview-box">
+                        <span id="logo-1v1-text" style="color: #94a3b8; font-size: 11px; font-weight: 600;">Upload</span>
+                        <input type="file" id="1v1-logo-input" accept="image/*" style="display: none;">
+                    </label>
+                </div>
 
-                    <div style="display: flex; flex-direction: column; justify-content: space-between; flex-grow: 1;">
-                        <div style="display: flex; flex-direction: column; gap: 2px;">
-                            <input type="text" id="p1-game-name" class="reg-1v1-input" placeholder="Game Name" value="${savedData.gameName || ''}" required style="width: 100%; height: 32px; padding: 0 8px; background-color: #1e293b; border: 1px solid #334155; border-radius: 6px; color: white; font-size: 12px; outline: none; box-sizing: border-box;">
-                        </div>
-                        <div style="display: flex; flex-direction: column; gap: 2px;">
-                            <input type="number" id="p1-id" class="reg-1v1-input" placeholder="ID" value="${savedData.playerId || ''}" required style="width: 100%; height: 32px; padding: 0 8px; background-color: #1e293b; border: 1px solid #334155; border-radius: 6px; color: white; font-size: 12px; outline: none; box-sizing: border-box;">
-                        </div>
+                <!-- Game Name (Wide) & ID (Compact) Side by Side -->
+                <div style="display: flex; gap: 8px; width: 100%;">
+                    <div style="display: flex; flex-direction: column; gap: 3px; flex-grow: 1;">
+                        <label style="color: #94a3b8; font-size: 11px; font-weight: 600;">Game Name</label>
+                        <input type="text" id="p1-game-name" class="reg-1v1-input" placeholder="Game Name" value="${savedData.gameName || ''}" required style="width: 100%; height: 38px; padding: 0 8px; background-color: #1e293b; border: 1px solid #334155; border-radius: 6px; color: white; font-size: 12px; outline: none; box-sizing: border-box;">
+                    </div>
+                    <div style="display: flex; flex-direction: column; gap: 3px; width: 110px; flex-shrink: 0;">
+                        <label style="color: #94a3b8; font-size: 11px; font-weight: 600;">ID</label>
+                        <input type="number" id="p1-id" class="reg-1v1-input" placeholder="ID" value="${savedData.playerId || ''}" required style="width: 100%; height: 38px; padding: 0 8px; background-color: #1e293b; border: 1px solid #334155; border-radius: 6px; color: white; font-size: 12px; outline: none; box-sizing: border-box;">
                     </div>
                 </div>
 
