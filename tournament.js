@@ -1,13 +1,13 @@
 // tournament.js
 import { renderModeScreen } from './mode.js';
 
-// Tournament Groups Data (Admin က ဒီကနေ Date နဲ့ Time တွေကို ဝင်ပြင်နိုင်ပါတယ်)
+// Tournament Groups Data
 let tournamentData = {
     groups: [
-        { id: 1, name: "GP 1", date: "16.8.2026", time: "6:00 PM", slots: [{ team: null, status: "available" }, { team: null, status: "available" }] },
-        { id: 2, name: "GP 2", date: "16.8.2026", time: "7:00 PM", slots: [{ team: null, status: "available" }, { team: null, status: "available" }] },
-        { id: 3, name: "GP 3", date: "16.8.2026", time: "8:00 PM", slots: [{ team: null, status: "available" }, { team: null, status: "available" }] },
-        { id: 4, name: "GP 4", date: "16.8.2026", time: "9:00 PM", slots: [{ team: null, status: "available" }, { team: null, status: "available" }] }
+        { id: 1, name: "Group 1", date: "16.8.2026", time: "6:00 PM", slots: [{ team: null, status: "available" }, { team: null, status: "available" }] },
+        { id: 2, name: "Group 2", date: "16.8.2026", time: "7:00 PM", slots: [{ team: null, status: "available" }, { team: null, status: "available" }] },
+        { id: 3, name: "Group 3", date: "16.8.2026", time: "8:00 PM", slots: [{ team: null, status: "available" }, { team: null, status: "available" }] },
+        { id: 4, name: "Group 4", date: "16.8.2026", time: "9:00 PM", slots: [{ team: null, status: "available" }, { team: null, status: "available" }] }
     ]
 };
 
@@ -22,10 +22,10 @@ export function renderTournamentScreen(container) {
                 <button id="toggle-admin" style="background: #334155; border: 1px solid #38bdf8; color: #38bdf8; padding: 3px 8px; border-radius: 4px; font-size: 10px; cursor: pointer;">Admin Edit</button>
             </div>
 
-            <!-- Main Vertical Tree Container (Screen အပြည့်နီးပါး ဆန့်ထွက်စေရန်) -->
+            <!-- Main Vertical Tree Container -->
             <div style="display: flex; flex-direction: column; align-items: center; gap: 10px; width: 100%; max-width: 380px; padding-bottom: 20px;">
                 
-                <!-- TOP GROUPS (GP1 & GP2) -->
+                <!-- TOP GROUPS (Group 1 & Group 2) -->
                 <div style="display: flex; justify-content: space-between; width: 100%; gap: 8px;">
                     ${renderGroupCard(tournamentData.groups[0])}
                     ${renderGroupCard(tournamentData.groups[1])}
@@ -33,17 +33,17 @@ export function renderTournamentScreen(container) {
 
                 <!-- SEMI FINAL 1 -->
                 <div style="background: rgba(30, 41, 59, 0.9); border: 1px solid #38bdf8; padding: 6px 10px; border-radius: 8px; width: 85%; text-align: center; box-shadow: 0 0 10px rgba(56, 189, 248, 0.2);">
-                    <span style="font-size: 9px; color: #38bdf8; font-weight: bold; display: block; margin-bottom: 3px;">SEMI 1 (GP1 Winner vs GP2 Winner)</span>
+                    <span style="font-size: 9px; color: #38bdf8; font-weight: bold; display: block; margin-bottom: 3px;">SEMI 1 (Group 1 Winner vs Group 2 Winner)</span>
                     <div style="display: flex; justify-content: space-around; font-size: 9px; color: #cbd5e1;">
-                        <span style="background: #0f172a; padding: 2px 6px; border-radius: 4px;">${tournamentData.groups[0].slots[0].team || 'GP1 W'}</span>
+                        <span style="background: #0f172a; padding: 2px 6px; border-radius: 4px;">${tournamentData.groups[0].slots[0].team || 'Grp 1 W'}</span>
                         <span style="color: #38bdf8; font-weight: bold;">VS</span>
-                        <span style="background: #0f172a; padding: 2px 6px; border-radius: 4px;">${tournamentData.groups[1].slots[0].team || 'GP2 W'}</span>
+                        <span style="background: #0f172a; padding: 2px 6px; border-radius: 4px;">${tournamentData.groups[1].slots[0].team || 'Grp 2 W'}</span>
                     </div>
                 </div>
 
-                <!-- CHAMPION BOX (အလယ်ဗဟို အဓိကနေရာ) -->
+                <!-- CHAMPION BOX -->
                 <div style="background: linear-gradient(to bottom, #0f172a, #1e293b); border: 2px solid #facc15; padding: 10px; border-radius: 12px; width: 95%; text-align: center; box-shadow: 0 0 15px rgba(250, 204, 21, 0.25);">
-                    <span style="font-size: 11px; color: #facc15; font-weight: bold; text-transform: uppercase; letter-spacing: 1px;">👑 Champion</span>
+                    <span style="font-size: 11px; color: #facc15; font-weight: bold; text-transform: uppercase; letter-spacing: 1px;">👑 Champion (BO 5)</span>
                     <div style="margin-top: 6px; display: flex; justify-content: space-between; gap: 8px;">
                         <div style="flex:1; background: #1e293b; border: 1px solid #475569; padding: 6px; border-radius: 6px; font-size: 9px; color: #f8fafc; font-weight: bold;">Finalist 1</div>
                         <span style="align-self: center; font-size: 10px; color: #facc15; font-weight: bold;">VS</span>
@@ -53,15 +53,15 @@ export function renderTournamentScreen(container) {
 
                 <!-- SEMI FINAL 2 -->
                 <div style="background: rgba(30, 41, 59, 0.9); border: 1px solid #38bdf8; padding: 6px 10px; border-radius: 8px; width: 85%; text-align: center; box-shadow: 0 0 10px rgba(56, 189, 248, 0.2);">
-                    <span style="font-size: 9px; color: #38bdf8; font-weight: bold; display: block; margin-bottom: 3px;">SEMI 2 (GP3 Winner vs GP4 Winner)</span>
+                    <span style="font-size: 9px; color: #38bdf8; font-weight: bold; display: block; margin-bottom: 3px;">SEMI 2 (Group 3 Winner vs Group 4 Winner)</span>
                     <div style="display: flex; justify-content: space-around; font-size: 9px; color: #cbd5e1;">
-                        <span style="background: #0f172a; padding: 2px 6px; border-radius: 4px;">${tournamentData.groups[2].slots[0].team || 'GP3 W'}</span>
+                        <span style="background: #0f172a; padding: 2px 6px; border-radius: 4px;">${tournamentData.groups[2].slots[0].team || 'Grp 3 W'}</span>
                         <span style="color: #38bdf8; font-weight: bold;">VS</span>
-                        <span style="background: #0f172a; padding: 2px 6px; border-radius: 4px;">${tournamentData.groups[3].slots[0].team || 'GP4 W'}</span>
+                        <span style="background: #0f172a; padding: 2px 6px; border-radius: 4px;">${tournamentData.groups[3].slots[0].team || 'Grp 4 W'}</span>
                     </div>
                 </div>
 
-                <!-- BOTTOM GROUPS (GP3 & GP4) -->
+                <!-- BOTTOM GROUPS (Group 3 & Group 4) -->
                 <div style="display: flex; justify-content: space-between; width: 100%; gap: 8px;">
                     ${renderGroupCard(tournamentData.groups[2])}
                     ${renderGroupCard(tournamentData.groups[3])}
@@ -92,7 +92,7 @@ export function renderTournamentScreen(container) {
     });
 }
 
-// Group Box UI (GP1, GP2, GP3, GP4 with Time & Date)
+// Group Box UI (Slot 1 နဲ့ Slot 2 ကို သီးသန့်ဘောင်ခတ်ပြသခြင်း၊ VS ဖြုတ်ခြင်း)
 function renderGroupCard(group) {
     return `
         <div style="background: #1e293b; border: 1px solid #334155; padding: 8px; border-radius: 10px; width: 48%; box-sizing: border-box; box-shadow: 0 4px 6px rgba(0,0,0,0.3);">
@@ -103,10 +103,10 @@ function renderGroupCard(group) {
             <div style="display: flex; flex-direction: column; gap: 5px;">
                 ${group.slots.map((slot, idx) => `
                     <div class="group-slot" data-group="${group.id}" data-slot="${idx}"
-                         style="background: ${slot.status === 'available' ? '#0f172a' : '#334155'}; border: 1px solid ${slot.status === 'available' ? '#38bdf8' : '#ef4444'}; padding: 6px; border-radius: 6px; text-align: center; cursor: pointer;">
-                        <span style="font-size: 8px; color: #94a3b8; display: block; margin-bottom: 2px;">VS</span>
-                        <span style="font-size: 9px; color: ${slot.team ? '#fff' : '#38bdf8'}; font-weight: bold; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; display: block;">
-                            ${slot.team || 'Slot ' + (idx + 1)}
+                         style="background: ${slot.status === 'available' ? '#0f172a' : '#334155'}; border: 1px solid ${slot.status === 'available' ? '#38bdf8' : '#ef4444'}; padding: 6px 8px; border-radius: 6px; text-align: center; cursor: pointer; display: flex; justify-content: space-between; align-items: center;">
+                        <span style="font-size: 8px; color: #94a3b8; font-weight: bold;">Slot ${idx + 1}</span>
+                        <span style="font-size: 9px; color: ${slot.team ? '#fff' : '#38bdf8'}; font-weight: bold; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">
+                            ${slot.team || 'Available'}
                         </span>
                     </div>
                 `).join('')}
@@ -115,7 +115,7 @@ function renderGroupCard(group) {
     `;
 }
 
-// Admin Editor Panel (Date နဲ့ Time ကို ပြင်ဆင်ရန်)
+// Admin Editor Panel
 function showAdminEditor(container) {
     container.innerHTML = `
         <div style="padding: 15px; color: white; display: flex; flex-direction: column; align-items: center; width: 100%; box-sizing: border-box; overflow-y: auto; height: 100%;">
@@ -169,7 +169,7 @@ function showTournamentRegForm(container, groupId, slotIndex) {
         <div style="padding: 20px; color: white; display: flex; flex-direction: column; align-items: center; width: 100%;">
             <button id="back-to-brackets" style="background: none; border: none; color: #38bdf8; margin-bottom: 10px; cursor: pointer;">← Back</button>
             <div style="width: 100%; max-width: 320px; background: #1e293b; padding: 20px; border-radius: 12px; border: 1px solid #38bdf8;">
-                <h3 style="margin: 0 0 5px 0; color: #38bdf8; font-size: 14px;">Register ${group.name}</h3>
+                <h3 style="margin: 0 0 5px 0; color: #38bdf8; font-size: 14px;">Register ${group.name} - Slot ${slotIndex + 1}</h3>
                 <p style="font-size: 10px; color: #94a3b8; margin: 0 0 10px 0;">${group.date} - ${group.time}</p>
                 
                 <label style="font-size: 10px; color: #cbd5e1;">Team Name</label>
