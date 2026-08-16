@@ -1,9 +1,11 @@
-// notification.js
-
-// Notification အသစ်တစ်ခုကို သိမ်းဆည်းပြီး Render လုပ်ရန်
 export function addNotification(title, message) {
     const now = new Date();
-    const dateStr = now.toISOString().split('T')[0];
+    
+    // မြန်မာစံတော်ချိန် (Local Time) အရ နေ့စွဲ (YYYY-MM-DD) တိကျစွာ ထုတ်ယူရန်
+    const year = now.getFullYear();
+    const month = String(now.getMonth() + 1).padStart(2, '0');
+    const day = String(now.getDate()).padStart(2, '0');
+    const dateStr = `${year}-${month}-${day}`;
     
     let hours = now.getHours();
     const minutes = now.getMinutes().toString().padStart(2, '0');
@@ -13,8 +15,6 @@ export function addNotification(title, message) {
     const timeStr = `${hours}:${minutes} ${ampm}`;
 
     const newNoti = { title, message, dateStr, timeStr };
-
-    let notifications = JSON.parse(localStorage.getItem('app_notifications')) || [];
     notifications.unshift(newNoti);
     localStorage.setItem('app_notifications', JSON.stringify(notifications));
 
