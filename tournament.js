@@ -3,34 +3,10 @@ import { renderModeScreen } from './mode.js';
 
 let tournamentData = {
     groups: [
-        { 
-            id: 1, name: "Group 1", date: "16.8.2026", time: "6:00 PM", 
-            slots: [
-                { team: null, status: "available" }, { team: null, status: "available" },
-                { team: null, status: "available" }, { team: null, status: "available" }
-            ] 
-        },
-        { 
-            id: 2, name: "Group 2", date: "16.8.2026", time: "7:00 PM", 
-            slots: [
-                { team: null, status: "available" }, { team: null, status: "available" },
-                { team: null, status: "available" }, { team: null, status: "available" }
-            ] 
-        },
-        { 
-            id: 3, name: "Group 3", date: "16.8.2026", time: "8:00 PM", 
-            slots: [
-                { team: null, status: "available" }, { team: null, status: "available" },
-                { team: null, status: "available" }, { team: null, status: "available" }
-            ] 
-        },
-        { 
-            id: 4, name: "Group 4", date: "16.8.2026", time: "9:00 PM", 
-            slots: [
-                { team: null, status: "available" }, { team: null, status: "available" },
-                { team: null, status: "available" }, { team: null, status: "available" }
-            ] 
-        }
+        { id: 1, name: "Group 1", date: "16.8.2026", time: "6:00 PM", slots: [{ team: null, status: "available" }, { team: null, status: "available" }] },
+        { id: 2, name: "Group 2", date: "16.8.2026", time: "7:00 PM", slots: [{ team: null, status: "available" }, { team: null, status: "available" }] },
+        { id: 3, name: "Group 3", date: "16.8.2026", time: "8:00 PM", slots: [{ team: null, status: "available" }, { team: null, status: "available" }] },
+        { id: 4, name: "Group 4", date: "16.8.2026", time: "9:00 PM", slots: [{ team: null, status: "available" }, { team: null, status: "available" }] }
     ],
     semis: [
         { name: "SEMI 1", date: "16.8.2026", time: "10:00 PM", team1: "Group 1 Winner", team2: "Group 2 Winner" },
@@ -66,7 +42,10 @@ export function renderTournamentScreen(container) {
                     </div>
                     <div style="display: flex; justify-content: space-around; align-items: center; font-size: 9px; color: #cbd5e1; padding: 4px 0;">
                         <span style="background: #0f172a; border: 1px solid #475569; padding: 6px 8px; border-radius: 6px; flex: 1;">${tournamentData.semis[0].team1}</span>
-                        <span style="color: #f97316; font-weight: bold; padding: 0 8px;">VS BO3</span>
+                        <div style="display: flex; flex-direction: column; align-items: center; padding: 0 6px;">
+                            <span style="color: #f97316; font-weight: bold; font-size: 9px;">VS</span>
+                            <span style="color: #ffffff; font-weight: bold; font-size: 7px;">BO3</span>
+                        </div>
                         <span style="background: #0f172a; border: 1px solid #475569; padding: 6px 8px; border-radius: 6px; flex: 1;">${tournamentData.semis[0].team2}</span>
                     </div>
                 </div>
@@ -74,9 +53,12 @@ export function renderTournamentScreen(container) {
                 <!-- CHAMPION BOX -->
                 <div style="background: linear-gradient(to bottom, #0f172a, #1e293b); border: 2px solid #facc15; padding: 12px; border-radius: 12px; width: 95%; text-align: center; box-shadow: 0 0 15px rgba(250, 204, 21, 0.25);">
                     <span style="font-size: 11px; color: #facc15; font-weight: bold; text-transform: uppercase; letter-spacing: 1px;">👑 Champion</span>
-                    <div style="margin-top: 8px; display: flex; justify-content: space-between; gap: 8px;">
+                    <div style="margin-top: 8px; display: flex; justify-content: space-between; align-items: center; gap: 8px;">
                         <div style="flex:1; background: #1e293b; border: 1px solid #475569; padding: 8px; border-radius: 6px; font-size: 9px; color: #f8fafc; font-weight: bold;">Finalist 1</div>
-                        <span style="align-self: center; font-size: 10px; color: #f97316; font-weight: bold;">VS BO3</span>
+                        <div style="display: flex; flex-direction: column; align-items: center;">
+                            <span style="color: #f97316; font-weight: bold; font-size: 9px;">VS</span>
+                            <span style="color: #ffffff; font-weight: bold; font-size: 7px;">BO3</span>
+                        </div>
                         <div style="flex:1; background: #1e293b; border: 1px solid #475569; padding: 8px; border-radius: 6px; font-size: 9px; color: #f8fafc; font-weight: bold;">Finalist 2</div>
                     </div>
                 </div>
@@ -89,7 +71,10 @@ export function renderTournamentScreen(container) {
                     </div>
                     <div style="display: flex; justify-content: space-around; align-items: center; font-size: 9px; color: #cbd5e1; padding: 4px 0;">
                         <span style="background: #0f172a; border: 1px solid #475569; padding: 6px 8px; border-radius: 6px; flex: 1;">${tournamentData.semis[1].team1}</span>
-                        <span style="color: #f97316; font-weight: bold; padding: 0 8px;">VS BO3</span>
+                        <div style="display: flex; flex-direction: column; align-items: center; padding: 0 6px;">
+                            <span style="color: #f97316; font-weight: bold; font-size: 9px;">VS</span>
+                            <span style="color: #ffffff; font-weight: bold; font-size: 7px;">BO3</span>
+                        </div>
                         <span style="background: #0f172a; border: 1px solid #475569; padding: 6px 8px; border-radius: 6px; flex: 1;">${tournamentData.semis[1].team2}</span>
                     </div>
                 </div>
@@ -125,7 +110,7 @@ export function renderTournamentScreen(container) {
     });
 }
 
-// Group Card UI (Group တစ်ခုချင်းစီတွင် Slot ၄ ခုစီပါဝင်ပြီး စုစုပေါင်း Slot ၈ ခုအထိ ဖြစ်စေသည်)
+// Group Card UI (Group တစ်ခုချင်းစီတွင် Slot ၂ ခုစီပါရှိပြီး စုစုပေါင်း Slot ၈ ခု ဖြစ်စေသည်)
 function renderGroupCard(group) {
     return `
         <div style="background: #1e293b; border: 1px solid #334155; padding: 10px; border-radius: 10px; width: 48%; box-sizing: border-box; box-shadow: 0 4px 6px rgba(0,0,0,0.3);">
@@ -134,15 +119,27 @@ function renderGroupCard(group) {
                 <span style="font-size: 8px; color: #94a3b8;">${group.date} ${group.time}</span>
             </div>
             <div style="display: flex; flex-direction: column; gap: 6px;">
-                ${group.slots.map((slot, index) => `
-                    <div class="group-slot" data-group="${group.id}" data-slot="${index}"
-                         style="background: ${slot.status === 'available' ? '#0f172a' : '#334155'}; border: 1px solid ${slot.status === 'available' ? '#38bdf8' : '#ef4444'}; padding: 6px 4px; border-radius: 6px; text-align: center; cursor: pointer;">
-                        <span style="font-size: 9px; color: ${slot.team ? '#fff' : '#38bdf8'}; font-weight: bold; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; display: block;">
-                            ${slot.team || `Slot ${index + 1}`}
-                        </span>
-                    </div>
-                    ${index === 1 ? `<div style="text-align: center; font-size: 8px; color: #f97316; font-weight: bold; padding: 2px 0;">VS BO3</div>` : ''}
-                `).join('')}
+                <!-- Slot 1 -->
+                <div class="group-slot" data-group="${group.id}" data-slot="0"
+                     style="background: ${group.slots[0].status === 'available' ? '#0f172a' : '#334155'}; border: 1px solid ${group.slots[0].status === 'available' ? '#38bdf8' : '#ef4444'}; padding: 8px 5px; border-radius: 6px; text-align: center; cursor: pointer;">
+                    <span style="font-size: 9px; color: ${group.slots[0].team ? '#fff' : '#38bdf8'}; font-weight: bold; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; display: block;">
+                        ${group.slots[0].team || 'Slot 1'}
+                    </span>
+                </div>
+
+                <!-- VS နှင့် BO3 (အောက်တွင် အဖြူရောင်ဖြင့် BO3) -->
+                <div style="display: flex; flex-direction: column; align-items: center; padding: 2px 0;">
+                    <span style="font-size: 9px; color: #f97316; font-weight: bold; line-height: 1;">VS</span>
+                    <span style="font-size: 7px; color: #ffffff; font-weight: bold; line-height: 1; margin-top: 2px;">BO3</span>
+                </div>
+
+                <!-- Slot 2 -->
+                <div class="group-slot" data-group="${group.id}" data-slot="1"
+                     style="background: ${group.slots[1].status === 'available' ? '#0f172a' : '#334155'}; border: 1px solid ${group.slots[1].status === 'available' ? '#38bdf8' : '#ef4444'}; padding: 8px 5px; border-radius: 6px; text-align: center; cursor: pointer;">
+                    <span style="font-size: 9px; color: ${group.slots[1].team ? '#fff' : '#38bdf8'}; font-weight: bold; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; display: block;">
+                        ${group.slots[1].team || 'Slot 2'}
+                    </span>
+                </div>
             </div>
         </div>
     `;
