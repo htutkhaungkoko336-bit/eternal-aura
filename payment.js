@@ -229,7 +229,7 @@ export function renderPaymentPage(appContent, formData) {
         
         addNotification(notiTitle, notiMessage);
 
-        alert("Registration တင်ခြင်းအောင်မြင်ပါသည်။ Notification တွင် စစ်ဆေးနိုင်ပါသည်။");
+        // Alert ကို ဖြုတ်လိုက်ပြီး Mode screen သို့ တိုက်ရိုက်ခေါ်ဆောင်ခြင်း
         renderModeScreen(appContent);
     });
 }
