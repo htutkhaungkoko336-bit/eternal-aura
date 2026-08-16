@@ -1,17 +1,16 @@
 // mode.js
 import { renderRegisterForm } from './register.js';
-import { renderRegister1v1Form } from './register-1v1.js'; // 1v1 ဖိုင်ကို import လုပ်ခြင်း
+import { renderRegister1v1Form } from './register-1v1.js';
+import { renderTournamentScreen } from './tournament.js'; // Tournament ဖိုင်ကို import လုပ်ခြင်း
 
 export function renderModeScreen(container) {
     container.innerHTML = `
         <div style="display: flex; flex-direction: column; align-items: center; justify-content: flex-start; gap: 20px; width: 100%; height: 100%; padding: 4px 20px 10px 20px; box-sizing: border-box; overflow-y: auto;">
             
-            <!-- Eternal Aura Header Box with Corner Accents -->
+            <!-- Eternal Aura Header Box -->
             <div style="position: relative; border: 2px solid #38bdf8; border-radius: 4px; padding: 8px 16px; margin-bottom: 6px; background-color: rgba(15, 23, 42, 0.8); text-align: center; width: 100%; max-width: 320px; box-sizing: border-box; box-shadow: 0 0 10px rgba(56, 189, 248, 0.3);">
-                <!-- Corner cut accents using the same blue accent color (#38bdf8) -->
                 <div style="position: absolute; top: -3px; left: -3px; width: 6px; height: 6px; background-color: #38bdf8;"></div>
                 <div style="position: absolute; bottom: -3px; right: -3px; width: 6px; height: 6px; background-color: #38bdf8;"></div>
-                
                 <h2 style="color: #f8fafc; font-size: 20px; font-weight: 800; letter-spacing: 1px; margin: 0; text-transform: uppercase; background: linear-gradient(to right, #38bdf8, #818cf8); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">Eternal Aura</h2>
             </div>
             
@@ -51,10 +50,10 @@ function handleModeSelection(mode, container) {
             renderRegisterForm(container);
             break;
         case '1vs1':
-            renderRegister1v1Form(container); // 1vs1 Form ဖိုင်ဆီသို့ တိုက်ရိုက်ချိတ်ဆက်ပေးလိုက်ပါပြီ
+            renderRegister1v1Form(container);
             break;
         case 'tournament':
-            alert("You selected Tournament Mode!");
+            renderTournamentScreen(container); // Tournament မျက်နှာပြင်သို့ ခေါ်ဆောင်ခြင်း
             break;
     }
 }
