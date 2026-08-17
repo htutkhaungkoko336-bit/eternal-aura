@@ -207,21 +207,25 @@ function showAdminEditor(container) {
 
     document.getElementById('back-to-bracket').addEventListener('click', () => renderTournamentScreen(container));
 
+// Admin Editor Panel အတွင်းက save-settings event listener အပိုင်းကို ဒီအတိုင်း ပြင်ရေးလိုက်ပါ
     document.getElementById('save-settings').addEventListener('click', () => {
+        // Groups များ သိမ်းခြင်း
         tournamentData.groups.forEach((group, idx) => {
-            group.date = document.getElementById(`date-${idx}`).value.trim() || group.date;
-            group.time = document.getElementById(`time-${idx}`).value.trim() || group.time;
+            group.date = document.getElementById(`date-${idx}`).value.trim();
+            group.time = document.getElementById(`time-${idx}`).value.trim();
         });
 
+        // Semis များ သိမ်းခြင်း
         tournamentData.semis.forEach((semi, idx) => {
             const mappedIdx = tournamentData.groups.length + idx;
-            semi.date = document.getElementById(`date-${mappedIdx}`).value.trim() || semi.date;
-            semi.time = document.getElementById(`date-${mappedIdx}`).value.trim() || semi.time;
+            semi.date = document.getElementById(`date-${mappedIdx}`).value.trim();
+            semi.time = document.getElementById(`time-${mappedIdx}`).value.trim(); // ဒီမှာ time ပြင်ပေးထားပါတယ်
         });
 
+        // Champion သိမ်းခြင်း
         const champIdx = tournamentData.groups.length + tournamentData.semis.length;
-        tournamentData.champion.date = document.getElementById(`date-${champIdx}`).value.trim() || tournamentData.champion.date;
-        tournamentData.champion.time = document.getElementById(`date-${champIdx}`).value.trim() || tournamentData.champion.time;
+        tournamentData.champion.date = document.getElementById(`date-${champIdx}`).value.trim();
+        tournamentData.champion.time = document.getElementById(`time-${champIdx}`).value.trim(); // ဒီမှာလည်း time ပြင်ပေးထားပါတယ်
 
         alert("ပြောင်းလဲမှုများကို သိမ်းဆည်းပြီးပါပြီ။");
         renderTournamentScreen(container);
