@@ -1,5 +1,5 @@
 // tournamentpayment.js
-import { renderRegisterForm } from './register.js';
+import { renderRegisterForm } from './tournamentRegistration.js';
 import { renderModeScreen } from './mode.js';
 import { addNotification } from './notification.js';
 
@@ -15,7 +15,9 @@ export function renderPaymentPage(appContent, formData) {
     let totalStr = totalNum.toLocaleString() + 'Ks';
     
     let championPriceStr = "400,000Ks";
-    let slotNum = formData.slot || "1";
+    
+    // Slot နံပါတ်ကို နှစ်ဘက်လုံးက လာတာလက်ခံနိုင်အောင် ချိတ်ပေးထားသည်
+    let slotNum = formData.slot || (formData.selectedSlot ? formData.selectedSlot.replace('Slot ', '') : "1");
 
     appContent.innerHTML = `
         <div style="display: flex; flex-direction: column; align-items: center; justify-content: flex-start; width: 100%; height: 100%; padding: 4px 12px 15px 12px; box-sizing: border-box; overflow-y: auto; position: relative;">
@@ -136,9 +138,9 @@ export function renderPaymentPage(appContent, formData) {
         document.body.appendChild(modal);
     });
 
-    // Back Button
+    // Back Button (Back သွားရင် ဖြည့်ထားတဲ့ formData တွေ မပျောက်အောင် ပြန်ပေးထားသည်)
     backBtn.addEventListener('click', () => {
-        renderRegisterForm(appContent);
+        renderRegisterForm(appContent, formData);
     });
 
     // Confirm Button
@@ -146,4 +148,4 @@ export function renderPaymentPage(appContent, formData) {
         addNotification("Registration Successful! Please wait for approval.");
         renderModeScreen(appContent);
     });
-}  
+}

@@ -93,7 +93,7 @@ export function renderRegisterForm(appContent, savedData = {}) {
                         <input type="tel" inputmode="numeric" pattern="[0-9]*" id="contact-phone-number" class="reg-input" placeholder="09..." value="${savedData.contactPhoneNumber || ''}" required style="width: 100%; height: 40px; padding: 0 8px; background-color: #1e293b; border: 1px solid #334155; border-radius: 6px; color: white; font-size: 12px; outline: none; box-sizing: border-box;" oninput="this.value = this.value.replace(/[^0-9]/g, '')">
                     </div>
                     
-                    <!-- Entry Fee (Changed to 50,000ks) -->
+                    <!-- Entry Fee -->
                     <div style="display: flex; flex-direction: column; gap: 3px; width: 50%;">
                         <label style="color: #94a3b8; font-size: 11px; font-weight: 600;">Entry Fee</label>
                         <div style="display: flex; align-items: center; justify-content: center; width: 100%; height: 40px; padding: 0 10px; background-color: #1e293b; border: 1px solid #334155; border-radius: 6px; color: #38bdf8; font-size: 12px; font-weight: 700; box-sizing: border-box;">
@@ -165,7 +165,8 @@ export function renderRegisterForm(appContent, savedData = {}) {
             kpayPhoneNumber: document.getElementById('kpay-phone-number').value,
             contactPhoneNumber: document.getElementById('contact-phone-number').value,
             fee: "50k",
-            selectedSlot: savedData.selectedSlot || "Slot 1" // ဘယ် Slot ကနေလာတယ်ဆိုတာကိုပါ Payment ဆီ ပို့ပေးမည်
+            selectedSlot: savedData.selectedSlot || "Slot 1",
+            slot: savedData.selectedSlot ? savedData.selectedSlot.replace('Slot ', '') : "1"
         };
 
         import('./payment.js').then(module => {
