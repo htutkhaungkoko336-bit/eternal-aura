@@ -29,7 +29,7 @@ export function renderPaymentPage(appContent, formData) {
 
     if (isTournament) {
         // Tournament ပုံစံ
-        prizeTitle = "⚡ CHAMPION PRIZE ⚡";
+        prizeTitle = "🏆 CHAMPION PRIZE 🏆";
         prizeAmount = "400,000Ks";
         prizeBg = "linear-gradient(135deg, #3f2f04 0%, #714f09 50%, #b45309 100%)";
         prizeBorder = "#fbbf24";
