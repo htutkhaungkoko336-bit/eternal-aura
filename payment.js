@@ -1,5 +1,6 @@
 // payment.js
-import { renderRegisterForm } from './tournamentRegistration.js';
+import { renderRegisterForm as renderTournamentRegister } from './tournamentRegistration.js';
+import { renderRegisterForm as renderNormalRegister } from './register.js';
 import { renderModeScreen } from './mode.js';
 import { addNotification } from './notification.js';
 
@@ -13,25 +14,84 @@ export function renderPaymentPage(appContent, formData) {
     let commissionStr = commissionNum.toLocaleString() + 'Ks';
     let totalNum = baseNum + commissionNum;
     let totalStr = totalNum.toLocaleString() + 'Ks';
-    
-    // Tournament Champion Prize 
-    let championPriceStr = "400,000Ks";
-    
-    // Slot နံပါတ်ကို နှစ်ဘက်လုံးက လာတာလက်ခံနိုင်အောင် ချိတ်ပေးထားသည်
+
+    // Tournament ပုံစံလား စစ်ဆေးခြင်း (Tournament Registration ကလာရင် 'selectedSlot' ဒါမှမဟုတ် 'slot' ပါလာမည်)
+    let isTournament = !!(formData.selectedSlot || formData.slot);
     let slotNum = formData.slot || (formData.selectedSlot ? formData.selectedSlot.replace('Slot ', '') : "1");
+
+    let prizeTitle = "⚡ WINNER PRIZE ⚡";
+    let prizeAmount = "";
+    let prizeBg = "";
+    let prizeBorder = "";
+    let prizeShadow = "";
+    let titleColor = "";
+    let amountColor = "";
+
+    if (isTournament) {
+        // Tournament ပုံစံ
+        prizeTitle = "⚡ CHAMPION PRIZE ⚡";
+        prizeAmount = "400,000Ks";
+        prizeBg = "linear-gradient(135deg, #3f2f04 0%, #714f09 50%, #b45309 100%)";
+        prizeBorder = "#fbbf24";
+        prizeShadow = "0 0 25px rgba(251, 191, 36, 0.5)";
+        titleColor = "#fef08a";
+        amountColor = "#fde047";
+    } else {
+        // ပုံမှန် 1vs1 / 5vs5 ပုံစံ
+        let winnerPriceNum = baseNum * 2;
+        prizeAmount = winnerPriceNum.toLocaleString() + 'Ks';
+        
+        if (baseNum === 5000) {
+            prizeBg = "linear-gradient(135deg, #1c1917 0%, #292524 50%, #44403c 100%)";
+            prizeBorder = "#d97706";
+            prizeShadow = "0 0 12px rgba(217, 119, 6, 0.3)";
+            titleColor = "#fde68a";
+            amountColor = "#fbbf24";
+        } else if (baseNum === 10000) {
+            prizeBg = "linear-gradient(135deg, #0c4a6e 0%, #0369a1 50%, #0284c7 100%)";
+            prizeBorder = "#38bdf8";
+            prizeShadow = "0 0 20px rgba(56, 189, 248, 0.45)";
+            titleColor = "#e0f2fe";
+            amountColor = "#38bdf8";
+        } else if (baseNum === 15000) {
+            prizeBg = "linear-gradient(135deg, #431407 0%, #7c2d12 50%, #c2410c 100%)";
+            prizeBorder = "#fb923c";
+            prizeShadow = "0 0 18px rgba(251, 146, 60, 0.45)";
+            titleColor = "#ffedd5";
+            amountColor = "#fdba74";
+        } else if (baseNum === 25000) {
+            prizeBg = "linear-gradient(135deg, #1e1b4b 0%, #312e81 50%, #4338ca 100%)";
+            prizeBorder = "#a855f7";
+            prizeShadow = "0 0 18px rgba(168, 85, 247, 0.45)";
+            titleColor = "#e9d5ff";
+            amountColor = "#facc15";
+        } else {
+            prizeBg = "linear-gradient(135deg, #3f2f04 0%, #714f09 50%, #b45309 100%)";
+            prizeBorder = "#fbbf24";
+            prizeShadow = "0 0 25px rgba(251, 191, 36, 0.5)";
+            titleColor = "#fef08a";
+            amountColor = "#fde047";
+        }
+    }
+
+    // Mode Display & Badge Text
+    let currentMode = formData.mode || formData.gameMode || '5vs5';
+    let displayModeText = isTournament ? `Tournament Slot ${slotNum}` : (currentMode.toLowerCase().includes('1vs1') ? '1vs1 Mode' : '5vs5 Mode');
+    let badgeText = isTournament ? "TOUR" : ((baseNum <= 15000) ? "BO1" : "BO3");
 
     appContent.innerHTML = `
         <div style="display: flex; flex-direction: column; align-items: center; justify-content: flex-start; width: 100%; height: 100%; padding: 4px 12px 15px 12px; box-sizing: border-box; overflow-y: auto; position: relative;">
-            <h2 style="color: #f8fafc; font-size: 18px; font-weight: 800; letter-spacing: 1px; margin: 0 0 6px 0; text-transform: uppercase; background: linear-gradient(to right, #38bdf8, #818cf8); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">Tournament Payment</h2>
+            <h2 style="color: #f8fafc; font-size: 18px; font-weight: 800; letter-spacing: 1px; margin: 0 0 6px 0; text-transform: uppercase; background: linear-gradient(to right, #38bdf8, #818cf8); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">Payment Details</h2>
             
             <div style="display: flex; flex-direction: column; gap: 10px; width: 100%; max-width: 340px; padding-bottom: 25px;">
                 
                 <!-- Fee Breakdown Box -->
                 <div style="background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%); border: 1px solid #334155; border-radius: 8px; padding: 8px 12px; display: flex; flex-direction: column; gap: 3px; box-shadow: 0 4px 10px rgba(0,0,0,0.3);">
+                    ${isTournament ? `
                     <div style="display: flex; justify-content: space-between; font-size: 11.5px; color: #94a3b8;">
                         <span>Slot :</span>
                         <span style="color: #fbbf24; font-weight: 700;">Slot ${slotNum}</span>
-                    </div>
+                    </div>` : ''}
                     <div style="display: flex; justify-content: space-between; font-size: 11.5px; color: #94a3b8;">
                         <span>Select Fee :</span>
                         <span style="color: #f8fafc; font-weight: 600;">${selectFeeStr}</span>
@@ -46,10 +106,10 @@ export function renderPaymentPage(appContent, formData) {
                     </div>
                 </div>
 
-                <!-- Champion Prize Box -->
-                <div style="background: linear-gradient(135deg, #3f2f04 0%, #714f09 50%, #b45309 100%); border: 1.5px solid #fbbf24; border-radius: 10px; padding: 10px; text-align: center; box-shadow: 0 0 25px rgba(251, 191, 36, 0.5);">
-                    <span style="display: block; color: #fef08a; font-size: 11px; font-weight: 800; text-transform: uppercase; letter-spacing: 1.5px; margin-bottom: 2px;">⚡ CHAMPION PRIZE ⚡</span>
-                    <span style="display: block; color: #fde047; font-size: 24px; font-weight: 900;">${championPriceStr}</span>
+                <!-- Prize Box -->
+                <div style="position: relative; background: ${prizeBg}; border: 1.5px solid ${prizeBorder}; border-radius: 10px; padding: 10px; text-align: center; box-shadow: ${prizeShadow};">
+                    <span style="display: block; color: ${titleColor}; font-size: 11px; font-weight: 800; text-transform: uppercase; letter-spacing: 1.5px; margin-bottom: 2px; text-shadow: 0 0 8px rgba(255,255,255,0.4);">${prizeTitle}</span>
+                    <span style="display: block; color: ${amountColor}; font-size: 24px; font-weight: 900; text-shadow: 0 0 12px rgba(0,0,0,0.8);">${prizeAmount}</span>
                 </div>
 
                 <!-- Main Container for QR & Payment Slip -->
@@ -83,9 +143,12 @@ export function renderPaymentPage(appContent, formData) {
                     </div>
 
                     <!-- Mode Checkbox Section -->
-                    <div style="display: flex; align-items: center; justify-content: center; background-color: #1e293b; padding: 10px; border-radius: 8px; border: 1px solid #475569;">
-                        <input type="checkbox" id="mode-checkbox" style="width: 17px; height: 17px; accent-color: #38bdf8; cursor: pointer; margin-right: 10px;">
-                        <label for="mode-checkbox" style="color: #f8fafc; font-size: 13px; font-weight: 700; cursor: pointer;">Confirm Tournament Mode</label>
+                    <div style="display: flex; align-items: center; justify-content: space-between; background-color: #1e293b; padding: 10px 12px; border-radius: 8px; border: 1px solid #475569;">
+                        <div style="display: flex; align-items: center; gap: 10px;">
+                            <input type="checkbox" id="mode-checkbox" style="width: 17px; height: 17px; accent-color: #38bdf8; cursor: pointer;">
+                            <label for="mode-checkbox" style="color: #f8fafc; font-size: 12.5px; font-weight: 700; cursor: pointer;">Confirm ${displayModeText}</label>
+                        </div>
+                        <span style="background: #334155; color: white; font-size: 10.5px; font-weight: 800; padding: 3px 10px; border-radius: 5px;">${badgeText}</span>
                     </div>
 
                     <!-- Buttons -->
@@ -133,12 +196,10 @@ export function renderPaymentPage(appContent, formData) {
     const ssText = document.getElementById('ss-text');
     const modeCheckbox = document.getElementById('mode-checkbox');
     const confirmBtn = document.getElementById('confirm-btn');
-    const backBtn = document.getElementById('pay-back-btn');
     
     let base64SS = formData.ssBase64 || null;
     let ssUploaded = false;
 
-    // အကယ်၍ အရင် upload တင်ထားပြီးသား SS ရှိရင် ပြန်ဖော်ပြပေးရန်
     if (base64SS) {
         ssBox.style.backgroundImage = `url(${base64SS})`;
         ssBox.style.backgroundSize = 'cover';
@@ -164,7 +225,6 @@ export function renderPaymentPage(appContent, formData) {
 
     updateConfirmButtonState();
 
-    // SS File Change Event
     ssInput.addEventListener('change', function(e) {
         const file = e.target.files[0];
         if (file) {
@@ -189,17 +249,23 @@ export function renderPaymentPage(appContent, formData) {
         updateConfirmButtonState();
     });
 
-    // Back Button (Back သွားရင် ဖြည့်ထားတဲ့ formData နဲ့ ssBase64 တွေ မပျောက်အောင် ပြန်ပေးသည်)
-    backBtn.addEventListener('click', () => {
+    // Back Button Logic
+    document.getElementById('pay-back-btn').addEventListener('click', () => {
         const updatedDataForBack = {
             ...formData,
             slot: slotNum,
+            selectedSlot: isTournament ? `Slot ${slotNum}` : formData.selectedSlot,
             ssBase64: base64SS
         };
-        renderRegisterForm(appContent, updatedDataForBack);
+
+        if (isTournament) {
+            renderTournamentRegister(appContent, updatedDataForBack);
+        } else {
+            renderNormalRegister(appContent, updatedDataForBack);
+        }
     });  
 
-    // Confirm Button
+    // Confirm Button Logic
     confirmBtn.addEventListener('click', () => {
         if (confirmBtn.disabled) return;
 
@@ -208,13 +274,15 @@ export function renderPaymentPage(appContent, formData) {
             slot: slotNum,
             ssBase64: base64SS,
             totalFee: totalStr,
-            championPrice: championPriceStr
+            [isTournament ? 'championPrice' : 'winnerPrice']: prizeAmount,
+            matchFormat: badgeText,
+            selectedGameMode: displayModeText
         };
 
-        console.log("Tournament Backend Payload Ready:", finalPayload);
+        console.log("Backend Payload Ready:", finalPayload);
 
-        const notiTitle = `Tournament Slot ${slotNum} Registration Submitted`;
-        const notiMessage = `Tournament fee ${totalStr} အတွက် register တင်ထားပါသည်။ Admin မှ စစ်ဆေးပြီးလျှင် noti ပြန်တက်မည်။`;
+        const notiTitle = `${displayModeText} Registration Submitted`;
+        const notiMessage = `${displayModeText} fee ${totalStr} အတွက် register တင်ထားပါသည်။ Admin မှ စစ်ဆေးပြီးလျှင် noti ပြန်တက်မည်။`;
         
         addNotification(notiTitle, notiMessage);
 
