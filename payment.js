@@ -4,9 +4,9 @@ import { renderModeScreen } from './mode.js';
 import { addNotification } from './notification.js';
 
 export function renderPaymentPage(appContent, formData) {
-    let rawFee = formData.fee.toLowerCase().trim();
+    let rawFee = formData.fee ? formData.fee.toLowerCase().trim() : '5000';
     let baseNum = parseInt(rawFee.replace('k', '').replace('ks', '').replace(',', '')) * 1000;
-    if (isNaN(baseNum)) baseNum = 25000;
+    if (isNaN(baseNum)) baseNum = 5000;
 
     let selectFeeStr = baseNum.toLocaleString() + 'Ks';
     let commissionNum = baseNum * 0.1;
@@ -14,73 +14,50 @@ export function renderPaymentPage(appContent, formData) {
     let totalNum = baseNum + commissionNum;
     let totalStr = totalNum.toLocaleString() + 'Ks';
     
-    // Tournament ဟုတ်မဟုတ် အသေအချာ စစ်ဆေးခြင်း (formData ထဲမှာ isTournament ပါလျှင် သို့မဟုတ် mode/gameMode/slot ထဲတွင် slot သို့မဟုတ် tournament ပါလျှင်)
-    let checkText = JSON.stringify(formData).toLowerCase();
-    let isTournament = formData.isTournament === true || checkText.includes('slot') || checkText.includes('tournament');
+    // ပုံမှန် 1vs1 / 5vs5 အတွက် Winner Prize တွက်ချက်ခြင်း
+    let winnerPriceNum = baseNum * 2;
+    let winnerPriceStr = winnerPriceNum.toLocaleString() + 'Ks';
+    
+    let currentMode = formData.mode || formData.gameMode || '5vs5';
+    let displayModeText = currentMode.toLowerCase().includes('1vs1') ? '1vs1 Mode' : '5vs5 Mode';
+    let badgeText = (baseNum <= 15000) ? "BO1" : "BO3";
 
-    let winnerPriceStr = "";
-    let displayModeText = "";
-    let badgeText = "";
     let prizeBg = "";
     let prizeBorder = "";
     let prizeShadow = "";
     let titleColor = "";
     let amountColor = "";
 
-    if (isTournament) {
-        // Tournament အတွက် သီးသန့်
-        winnerPriceStr = "400,000Ks";
-        
-        // Slot နံပါတ်ကို ရှာယူခြင်း (ဥပ- Slot 1, Slot 2 ...)
-        let rawSlot = formData.mode || formData.gameMode || formData.slot || formData.selectedSlot || 'Slot 1';
-        displayModeText = rawSlot.toString().toLowerCase().includes('slot') ? rawSlot : `Slot ${rawSlot}`;
-        badgeText = "Tournament";
-
+    if (baseNum === 5000) {
+        prizeBg = "linear-gradient(135deg, #1c1917 0%, #292524 50%, #44403c 100%)";
+        prizeBorder = "#d97706";
+        prizeShadow = "0 0 12px rgba(217, 119, 6, 0.3)";
+        titleColor = "#fde68a";
+        amountColor = "#fbbf24";
+    } else if (baseNum === 10000) {
+        prizeBg = "linear-gradient(135deg, #0c4a6e 0%, #0369a1 50%, #0284c7 100%)";
+        prizeBorder = "#38bdf8";
+        prizeShadow = "0 0 20px rgba(56, 189, 248, 0.45), inset 0 0 10px rgba(125, 211, 252, 0.3)";
+        titleColor = "#e0f2fe";
+        amountColor = "#38bdf8";
+    } else if (baseNum === 15000) {
+        prizeBg = "linear-gradient(135deg, #431407 0%, #7c2d12 50%, #c2410c 100%)";
+        prizeBorder = "#fb923c";
+        prizeShadow = "0 0 18px rgba(251, 146, 60, 0.45)";
+        titleColor = "#ffedd5";
+        amountColor = "#fdba74";
+    } else if (baseNum === 25000) {
+        prizeBg = "linear-gradient(135deg, #1e1b4b 0%, #312e81 50%, #4338ca 100%)";
+        prizeBorder = "#a855f7";
+        prizeShadow = "0 0 18px rgba(168, 85, 247, 0.45)";
+        titleColor = "#e9d5ff";
+        amountColor = "#facc15";
+    } else {
         prizeBg = "linear-gradient(135deg, #3f2f04 0%, #714f09 50%, #b45309 100%)";
         prizeBorder = "#fbbf24";
         prizeShadow = "0 0 25px rgba(251, 191, 36, 0.5), inset 0 0 15px rgba(254, 240, 138, 0.4)";
         titleColor = "#fef08a";
         amountColor = "#fde047";
-    } else {
-        // ပုံမှန် 5vs5 / 1vs1 အတွက်
-        let winnerPriceNum = baseNum * 2;
-        winnerPriceStr = winnerPriceNum.toLocaleString() + 'Ks';
-        
-        let currentMode = formData.mode || formData.gameMode || '5vs5';
-        displayModeText = currentMode.toLowerCase().includes('1vs1') ? '1vs1 Mode' : '5vs5 Mode';
-        badgeText = (baseNum <= 15000) ? "BO1" : "BO3";
-
-        if (baseNum === 5000) {
-            prizeBg = "linear-gradient(135deg, #1c1917 0%, #292524 50%, #44403c 100%)";
-            prizeBorder = "#d97706";
-            prizeShadow = "0 0 12px rgba(217, 119, 6, 0.3)";
-            titleColor = "#fde68a";
-            amountColor = "#fbbf24";
-        } else if (baseNum === 10000) {
-            prizeBg = "linear-gradient(135deg, #0c4a6e 0%, #0369a1 50%, #0284c7 100%)";
-            prizeBorder = "#38bdf8";
-            prizeShadow = "0 0 20px rgba(56, 189, 248, 0.45), inset 0 0 10px rgba(125, 211, 252, 0.3)";
-            titleColor = "#e0f2fe";
-            amountColor = "#38bdf8";
-        } else if (baseNum === 15000) {
-            prizeBg = "linear-gradient(135deg, #431407 0%, #7c2d12 50%, #c2410c 100%)";
-            prizeBorder = "#fb923c";
-            prizeShadow = "0 0 18px rgba(251, 146, 60, 0.45)";
-            titleColor = "#ffedd5";
-            amountColor = "#fdba74";
-        } else if (baseNum === 25000) {
-            prizeBg = "linear-gradient(135deg, #1e1b4b 0%, #312e81 50%, #4338ca 100%)";
-            prizeBorder = "#a855f7";
-            prizeShadow = "0 0 18px rgba(168, 85, 247, 0.45)";
-            titleColor = "#e9d5ff";
-            amountColor = "#facc15";
-        } else {
-            prizeBg = "linear-gradient(135deg, #3f2f04 0%, #714f09 50%, #b45309 100%)";
-            prizeBorder = "#fbbf24";
-            prizeShadow = "0 0 25px rgba(251, 191, 36, 0.5), inset 0 0 15px rgba(254, 240, 138, 0.4)";
-            titleColor = "#fef08a";
-            amountColor = "#fde047";
-        }
     }
 
     appContent.innerHTML = `
@@ -107,7 +84,7 @@ export function renderPaymentPage(appContent, formData) {
 
                 <!-- Winner Prize Box -->
                 <div style="position: relative; background: ${prizeBg}; border: 1.5px solid ${prizeBorder}; border-radius: 10px; padding: 10px; text-align: center; box-shadow: ${prizeShadow};">
-                    <span style="display: block; color: ${titleColor}; font-size: 11px; font-weight: 800; text-transform: uppercase; letter-spacing: 1.5px; margin-bottom: 2px; text-shadow: 0 0 8px rgba(255,255,255,0.4);">${isTournament ? '⚡ CHAMPION PRIZE ⚡' : '⚡ WINNER PRIZE ⚡'}</span>
+                    <span style="display: block; color: ${titleColor}; font-size: 11px; font-weight: 800; text-transform: uppercase; letter-spacing: 1.5px; margin-bottom: 2px; text-shadow: 0 0 8px rgba(255,255,255,0.4);">⚡ WINNER PRIZE ⚡</span>
                     <span style="display: block; color: ${amountColor}; font-size: 24px; font-weight: 900; text-shadow: 0 0 12px rgba(0,0,0,0.8);">${winnerPriceStr}</span>
                 </div>
 
@@ -141,13 +118,13 @@ export function renderPaymentPage(appContent, formData) {
                         </div>
                     </div>
 
-                    <!-- Mode / Slot Checkbox Section -->
+                    <!-- Mode Checkbox Section -->
                     <div style="display: flex; align-items: center; justify-content: space-between; background-color: #1e293b; padding: 10px 12px; border-radius: 8px; border: 1px solid #475569;">
                         <div style="display: flex; align-items: center; gap: 10px;">
                             <input type="checkbox" id="mode-checkbox" data-game-mode="${displayModeText}" style="width: 17px; height: 17px; accent-color: #38bdf8; cursor: pointer;">
                             <label for="mode-checkbox" style="color: #f8fafc; font-size: 12.5px; font-weight: 700; cursor: pointer;">Confirm ${displayModeText}</label>
                         </div>
-                        <span style="background: ${isTournament ? 'linear-gradient(135deg, #0ea5e9, #6366f1)' : '#334155'}; color: white; font-size: 10.5px; font-weight: 800; padding: 3px 10px; border-radius: 5px;">${badgeText}</span>
+                        <span style="background: #334155; color: white; font-size: 10.5px; font-weight: 800; padding: 3px 10px; border-radius: 5px;">${badgeText}</span>
                     </div>
 
                     <!-- Buttons -->
