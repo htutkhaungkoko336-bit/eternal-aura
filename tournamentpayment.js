@@ -146,4 +146,4 @@ export function renderPaymentPage(appContent, formData) {
         addNotification("Registration Successful! Please wait for approval.");
         renderModeScreen(appContent);
     });
-}
+}  
