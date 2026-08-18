@@ -147,63 +147,71 @@ function showPinInputScreen(phone, deviceId) {
 }
 
 // C. အောင်မြင်သွားပါက Home Screen နှင့် Mode Screen ကိုပါ ပူးတွဲပြသရန်
-function handleLoginSuccess(username) {
-    localStorage.setItem('userName', username);
+function handleLoginSuccess(data) {
+    // data ဆိုသည်မှာ object ဖြစ်ပြီး { success: true, name: "...", userId: "..." } ဟု ယူဆသည်
+    // ညီမလေးရဲ့ နာမည်နဲ့ userId ကို သိမ်းဆည်းခြင်း
+    localStorage.setItem('userName', data.name || "User");
     
-    // Login Form ကို ဖျောက်ပြီး Main Container ထဲမှာ Mode Screen နဲ့ Bottom Nav ပေါ်လာစေရန်
+    if (data.userId) {
+        localStorage.setItem('userId', data.userId);
+    }
+    
+    // Login Form ကို ဖျောက်ခြင်း
     formContent.style.display = 'none';
 
-document.querySelector('.container').innerHTML = `
-    <!-- အပေါ်ဘက် Content Area (Scroller ပါဝင်သည်) -->
-    <div id="app-content" style="position: absolute; top: 0; left: 0; width: 100%; bottom: 70px; display: flex; flex-direction: column; overflow-y: auto; box-sizing: border-box;"></div>
-    
-    <!-- အောက်ခြေ Bottom Nav Bar (အသေထားရှိသည်) -->
-    <div style="position: absolute; bottom: 0; left: 0; width: 100%; height: 70px; display: flex; justify-content: space-around; align-items: center; background-color: #0f172a; border-top: 1px solid #1e293b; box-sizing: border-box; z-index: 100; pointer-events: auto;">
+    // Main Container ထဲသို့ UI အသစ်များ ထည့်သွင်းခြင်း
+    document.querySelector('.container').innerHTML = `
+        <!-- အပေါ်ဘက် Content Area -->
+        <div id="app-content" style="position: absolute; top: 0; left: 0; width: 100%; bottom: 70px; display: flex; flex-direction: column; overflow-y: auto; box-sizing: border-box;"></div>
         
-        <div class="nav-item" data-tab="mode" style="display: flex; flex-direction: column; align-items: center; cursor: pointer; color: #38bdf8;">
-            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                <path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path>
-                <polyline points="9 22 9 12 15 12 15 22"></polyline>
-            </svg>
-            <span style="font-size: 10px; margin-top: 4px;">Mode</span>
-        </div>
+        <!-- အောက်ခြေ Bottom Nav Bar -->
+        <div style="position: absolute; bottom: 0; left: 0; width: 100%; height: 70px; display: flex; justify-content: space-around; align-items: center; background-color: #0f172a; border-top: 1px solid #1e293b; box-sizing: border-box; z-index: 100; pointer-events: auto;">
+            
+            <div class="nav-item" data-tab="mode" style="display: flex; flex-direction: column; align-items: center; cursor: pointer; color: #38bdf8;">
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path>
+                    <polyline points="9 22 9 12 15 12 15 22"></polyline>
+                </svg>
+                <span style="font-size: 10px; margin-top: 4px;">Mode</span>
+            </div>
 
-        <div class="nav-item" data-tab="match" style="display: flex; flex-direction: column; align-items: center; cursor: pointer; color: #94a3b8;">
-            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                <path d="m14.5 17.5-6-6"></path>
-                <path d="m13 19 6-6"></path>
-                <path d="m5 11 6 6"></path>
-                <path d="m11 5-6 6"></path>
-                <path d="m19 5-4 4"></path>
-                <path d="m9 19-4-4"></path>
-            </svg>
-            <span style="font-size: 10px; margin-top: 4px;">Match</span>
-        </div>
+            <div class="nav-item" data-tab="match" style="display: flex; flex-direction: column; align-items: center; cursor: pointer; color: #94a3b8;">
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="m14.5 17.5-6-6"></path>
+                    <path d="m13 19 6-6"></path>
+                    <path d="m5 11 6 6"></path>
+                    <path d="m11 5-6 6"></path>
+                    <path d="m19 5-4 4"></path>
+                    <path d="m9 19-4-4"></path>
+                </svg>
+                <span style="font-size: 10px; margin-top: 4px;">Match</span>
+            </div>
 
-        <div class="nav-item" data-tab="notification" style="display: flex; flex-direction: column; align-items: center; cursor: pointer; color: #94a3b8;">
-            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                <path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9"></path>
-                <path d="M10.3 21a1.94 1.94 0 0 0 3.4 0"></path>
-            </svg>
-            <span style="font-size: 10px; margin-top: 4px;">Notification</span>
-        </div>
+            <div class="nav-item" data-tab="notification" style="display: flex; flex-direction: column; align-items: center; cursor: pointer; color: #94a3b8;">
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9"></path>
+                    <path d="M10.3 21a1.94 1.94 0 0 0 3.4 0"></path>
+                </svg>
+                <span style="font-size: 10px; margin-top: 4px;">Notification</span>
+            </div>
 
-        <div class="nav-item" data-tab="profile" style="display: flex; flex-direction: column; align-items: center; cursor: pointer; color: #94a3b8;">
-            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
-                <circle cx="12" cy="7" r="4"></circle>
-            </svg>
-            <span style="font-size: 10px; margin-top: 4px;">Profile</span>
+            <div class="nav-item" data-tab="profile" style="display: flex; flex-direction: column; align-items: center; cursor: pointer; color: #94a3b8;">
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+                    <circle cx="12" cy="7" r="4"></circle>
+                </svg>
+                <span style="font-size: 10px; margin-top: 4px;">Profile</span>
+            </div>
         </div>
+    `;
 
-    </div>
-`;    // Login အောင်မြင်တာနဲ့ Mode Screen ကို အလိုအလျောက် စတင်ပြသမည်
+    // Mode Screen ကို စတင်ပြသခြင်း
     const dynamicAppContent = document.getElementById('app-content');
     if (dynamicAppContent) {
         renderModeScreen(dynamicAppContent);
     }
 
-    // Bottom Nav များကို နှိပ်သည့်အခါ အရောင်ပြောင်းရန်နှင့် Screen အလိုက်ပြသရန်
+    // Bottom Nav Click Event များ သတ်မှတ်ခြင်း
     const navItems = document.querySelectorAll('.nav-item');
     navItems.forEach(item => {
         item.addEventListener('click', function() {
@@ -225,7 +233,7 @@ document.querySelector('.container').innerHTML = `
         });
     });
 
-    // Login ဝင်ပြီးတာနဲ့ Badge ပေါ်လာစေရန် ချက်ချင်းစစ်ဆေးပေးခြင်း
+    // Notification Badge စစ်ဆေးခြင်း
     if (typeof updateNotificationBadge === 'function') {
         updateNotificationBadge();
     }
