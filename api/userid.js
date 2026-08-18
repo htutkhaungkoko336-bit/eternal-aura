@@ -25,7 +25,7 @@ function getYangonTimeStr() {
     const minutes = yangonTime.getMinutes().toString().padStart(2, '0');
     const ampm = hours >= 12 ? 'pm' : 'am';
     hours = hours % 12 || 12;
-    return `${dateStr}     ${hours}:${minutes} ${ampm}`;
+    return `${dateStr}    ${hours}:${minutes} ${ampm}`;
 }
 
 module.exports = async function handler(req, res) {
@@ -93,10 +93,12 @@ module.exports = async function handler(req, res) {
 
             await usersRef.doc(userId).set(newUserData);
 
+            // [ပြင်ဆင်ချက်] Response ထဲတွင် userId ထည့်ပေးလိုက်ပါပြီ
             return res.status(200).json({ 
                 success: true, 
                 message: "User registered successfully", 
-                name: name 
+                name: name,
+                userId: userId 
             });
         }
 
@@ -108,10 +110,12 @@ module.exports = async function handler(req, res) {
 
         // ပထမဆုံး Register လုပ်ထားတဲ့ Original Device နဲ့ တူနေရင် Password မလိုဘဲ တန်းဝင်ခွင့်ပေးမည်
         if (userData.deviceId === deviceId) {
+            // [ပြင်ဆင်ချက်] Response ထဲတွင် userId ထည့်ပေးလိုက်ပါပြီ
             return res.status(200).json({ 
                 success: true, 
                 message: "Original device matched. Login successful", 
-                name: userData.name 
+                name: userData.name,
+                userId: userData.userId 
             });
         }
 
@@ -133,21 +137,21 @@ module.exports = async function handler(req, res) {
         }
 
         // PIN မှန်ကန်ပါက Original Device ကို လုံးဝ မပြောင်းလဲဘဲ ထားမည်။
-        // သို့သော် ဝင်ရောက်လာသော Device အသစ်နှင့် အချိန်ကို သပ်သပ် Field တစ်ခု (`recentLogins`) ထဲတွင် မှတ်တမ်းတင် သိမ်းဆည်းမည်။
         const loginRecord = {
             deviceId: deviceId,
             loginTime: getYangonTimeStr()
         };
 
-        // ဒေတာဘေ့စ်ဖောင်းပွမှု မဖြစ်စေရန် မကြာသေးမီက ဝင်ထားသော Login များကို စနစ်တကျ ထည့်သွင်းမည် (သို့မဟုတ် အသစ်ကို ထိပ်ဆုံးမှ တင်မည်)
         await usersRef.doc(userData.userId).update({
             recentLogins: FieldValue.arrayUnion(loginRecord)
         });
 
+        // [ပြင်ဆင်ချက်] Response ထဲတွင် userId ထည့်ပေးလိုက်ပါပြီ
         return res.status(200).json({ 
             success: true, 
             message: "Login successful on another device with PIN", 
-            name: userData.name 
+            name: userData.name,
+            userId: userData.userId 
         });
 
     } catch (error) {
