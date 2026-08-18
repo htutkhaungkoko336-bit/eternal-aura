@@ -189,6 +189,7 @@ export function renderRegisterForm(appContent, savedData = {}) {
         }
 
         const formData = {
+            userId: localStorage.getItem('userId') || 'guest_user', // ဒီလိုလေး ထည့်ပေးလိုက်ပါ
             logoBase64: base64Logo,
             sqName: document.getElementById('sq-name').value,
             
