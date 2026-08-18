@@ -69,26 +69,31 @@ module.exports = async function handler(req, res) {
             collectionName = '1vs1_registrations';
             
             // Logo နဲ့ Payment Slip ကို ImgBB သို့ တင်ခြင်း
-            const logoUrl = await uploadToImgBB(data.logo);
-            const slipUrl = await uploadToImgBB(data.paymentSlip);
+            // (payment.js သို့မဟုတ် formData ကလာတဲ့ ပုံနာမည် အမျိုးမျိုးကို ခြုံပြီး ဖမ်းပေးခြင်း)
+            const logoToUpload = data.logo || data.logoBase64 || '';
+            const slipToUpload = data.paymentSlip || data.paymentSlipUrl || '';
+
+            const logoUrl = await uploadToImgBB(logoToUpload);
+            const slipUrl = await uploadToImgBB(slipToUpload);
 
             registrationData = {
                 userId: data.userId,
-                inGameName: data.inGameName || '',
-                gameId: data.gameId || '',
+                // Frontend က gameName လို့ ပို့ရင် inGameName ထဲ ထည့်မယ် (မပါရင် ဒုတိယနာမည်ကို ယူမယ်)
+                inGameName: data.gameName || data.inGameName || '',
+                // Frontend က playerId လို့ ပို့ရင် gameId ထဲ ထည့်မယ်
+                gameId: data.playerId || data.gameId || '',
                 heroName: data.heroName || '',
                 kpayName: data.kpayName || '',
-                kpayPhNo: data.kpayPhNo || '',
-                contactPhNo: data.contactPhNo || '',
+                kpayPhNo: data.kpayPhoneNumber || data.kpayPhNo || '',
+                contactPhNo: data.contactPhoneNumber || data.contactPhNo || '',
                 fee: data.fee || '',
-                bo: data.bo || '',
                 logo: logoUrl,          
                 paymentSlip: slipUrl,   
                 status: 'PENDING', 
                 time: getYangonTimeStr(),
                 createdAt: new Date()
             };
-        } 
+        }
         // ၂။ 5VS5 Mode အတွက်
         else if (mode === '5vs5') {
             collectionName = '5vs5_registrations';
@@ -110,7 +115,6 @@ module.exports = async function handler(req, res) {
                 kpayPhNo: data.kpayPhNo || '',
                 contactPhNo: data.contactPhNo || '',
                 fee: data.fee || '',
-                bo: data.bo || '',
                 paymentSlip: slipUrl,
                 status: 'PENDING',
                 time: getYangonTimeStr(),
