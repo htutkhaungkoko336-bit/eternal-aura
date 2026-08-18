@@ -191,22 +191,28 @@ export function renderRegisterForm(appContent, savedData = {}) {
         const formData = {
             logoBase64: base64Logo,
             sqName: document.getElementById('sq-name').value,
+            
+            // Backend မျှော်လင့်ထားသော Field နာမည်များနှင့် အတိအကျ ကိုက်ညီစေခြင်း
             roamerName: document.getElementById('roamer-name').value,
             roamerId: document.getElementById('roamer-id').value,
-            expLanerName: document.getElementById('exp-laner-name').value,
-            expLanerId: document.getElementById('exp-laner-id').value,
-            goldLanerName: document.getElementById('gold-laner-name').value,
-            goldLanerId: document.getElementById('gold-laner-id').value,
-            midLanerName: document.getElementById('mid-laner-name').value,
-            midLanerId: document.getElementById('mid-laner-id').value,
-            junglerName: document.getElementById('jungler-name').value,
-            junglerId: document.getElementById('jungler-id').value,
+            
+            expName: document.getElementById('exp-laner-name').value,
+            expId: document.getElementById('exp-laner-id').value,
+            
+            goldName: document.getElementById('gold-laner-name').value,
+            goldId: document.getElementById('gold-laner-id').value,
+            
+            midName: document.getElementById('mid-laner-name').value,
+            midId: document.getElementById('mid-laner-id').value,
+            
+            jungleName: document.getElementById('jungler-name').value,
+            jungleId: document.getElementById('jungler-id').value,
+            
             kpayName: document.getElementById('kpay-name').value,
-            kpayPhoneNumber: document.getElementById('kpay-phone-number').value,
-            contactPhoneNumber: document.getElementById('contact-phone-number').value,
+            kpayPhNo: document.getElementById('kpay-phone-number').value,
+            contactPhNo: document.getElementById('contact-phone-number').value,
             fee: feeHiddenInput.value
         };
-
         import('./payment.js').then(module => {
             module.renderPaymentPage(appContent, formData);
         });
