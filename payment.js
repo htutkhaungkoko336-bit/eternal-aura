@@ -281,6 +281,7 @@ confirmBtn.addEventListener('click', async () => {
     const currentUserId = localStorage.getItem('userId') || formData.userId || 'guest_user';
 
     // ၃။ Backend သို့ ပို့မည့် Payload (Backend မျှော်လင့်ထားသည့် Field အမည်များနှင့် အတိအကျ ကိုက်ညီစေရန်)
+// ၃။ Backend သို့ ပို့မည့် Payload
     const requestBody = {
         mode: modeType,
         data: {
@@ -296,18 +297,18 @@ confirmBtn.addEventListener('click', async () => {
             logo: formData.logoBase64 || formData.teamLogo || formData.logo || '',
             paymentSlip: base64SS || formData.paymentSlip || '',
 
-            // Tournament အတွက် (Backend ကုဒ်အရ data.teamLogo နှင့် data.paymentSlipUrl ကို တောင်းထားပါသည်)
+            // Tournament အတွက် 
             teamLogo: formData.teamLogo || formData.logoBase64 || formData.logo || '',
             paymentSlipUrl: base64SS || formData.paymentSlipUrl || '',
 
             // အခြား UI မှပါလာသော အချက်အလက်များ
             slot: slotNum,
-            totalFee: totalStr,
+            fee: totalStr,          // <--- ဒီနေရာမှာ fee ကို totalStr (ဥပမာ 5,500Ks) နဲ့ ထည့်ပေးလိုက်ပါ
+            totalFee: totalStr,     // <--- Backend က totalFee နဲ့ လှမ်းဖမ်းရင်လည်း ရအောင် ထည့်ပေးခြင်း
             matchFormat: badgeText,
             selectedGameMode: displayModeText
         }
     };
-
     // UI Loading State
     confirmBtn.disabled = true;
     confirmBtn.textContent = "Submitting...";
