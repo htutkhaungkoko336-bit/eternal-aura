@@ -140,7 +140,7 @@ export function renderRegisterForm(appContent, savedData = {}) {
         }
     });
 
-    document.getElementById('reg-form').addEventListener('submit', function(e) {
+document.getElementById('reg-form').addEventListener('submit', function(e) {
         e.preventDefault();
         
         if (!base64Logo) {
@@ -148,34 +148,45 @@ export function renderRegisterForm(appContent, savedData = {}) {
             return;
         }
 
+        // Backend က မျှော်လင့်ထားသော Key နာမည်များနှင့် ကိုက်ညီစေရန် ပြင်ဆင်ထားခြင်း
         const formData = {
-            logoBase64: base64Logo,
-            sqName: document.getElementById('sq-name').value,
-            roamerName: document.getElementById('roamer-name').value,
-            roamerId: document.getElementById('roamer-id').value,
-            expLanerName: document.getElementById('exp-laner-name').value,
-            expLanerId: document.getElementById('exp-laner-id').value,
-            goldLanerName: document.getElementById('gold-laner-name').value,
-            goldLanerId: document.getElementById('gold-laner-id').value,
-            midLanerName: document.getElementById('mid-laner-name').value,
-            midLanerId: document.getElementById('mid-laner-id').value,
-            junglerName: document.getElementById('jungler-name').value,
-            junglerId: document.getElementById('jungler-id').value,
-            kpayName: document.getElementById('kpay-name').value,
+            userId: "AURA-KOMB3E", // သင့် app ရှိ active user id ကို ထည့်ရန် (သို့) savedData.userId
+            teamName: document.getElementById('sq-name').value,
+            teamLogo: base64Logo,
+            
+            // Player Lineup များကို Backend ၏ Tournament Mode မျှော်လင့်ချက်အတိုင်း တိုက်ရိုက်ထည့်ခြင်း
+            playerRoamerName: document.getElementById('roamer-name').value,
+            playerRoamerId: document.getElementById('roamer-id').value,
+            
+            playerExpName: document.getElementById('exp-laner-name').value,
+            playerExpId: document.getElementById('exp-laner-id').value,
+            
+            playerGoldName: document.getElementById('gold-laner-name').value,
+            playerGoldId: document.getElementById('gold-laner-id').value,
+            
+            playerMidName: document.getElementById('mid-laner-name').value,
+            playerMidId: document.getElementById('mid-laner-id').value,
+            
+            playerJungleName: document.getElementById('jungler-name').value,
+            playerJungleId: document.getElementById('jungler-id').value,
+            
+            kpayAccountName: document.getElementById('kpay-name').value,
             kpayPhoneNumber: document.getElementById('kpay-phone-number').value,
             contactPhoneNumber: document.getElementById('contact-phone-number').value,
-            fee: "50k",
+            
             selectedSlot: savedData.selectedSlot || "Slot 1",
             slot: savedData.selectedSlot ? savedData.selectedSlot.replace('Slot ', '') : "1"
         };
 
+        // နောက်တစ်ဆင့် (Payment Page သို့မဟုတ် API သို့) ပို့ရန်
+        // ဥပမာ - payment page သို့မဟုတ် တိုက်ရိုက် API သို့ ပို့သည့်ပုံစံ
         import('./payment.js').then(module => {
             module.renderPaymentPage(appContent, formData);
         }).catch(() => {
             alert("Payment module ကို မတွေ့ရှိပါ။");
         });
     });
-
+    
     document.getElementById('back-btn').addEventListener('click', () => {
         renderTournamentScreen(appContent);
     });

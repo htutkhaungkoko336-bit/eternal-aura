@@ -122,7 +122,6 @@ module.exports = async function handler(req, res) {
             };
         } 
         // ၃။ TOURNAMENT Mode အတွက်
-// ၃။ TOURNAMENT Mode အတွက်
         else if (mode === 'tournament') {
             collectionName = 'tournament_registrations';
             
