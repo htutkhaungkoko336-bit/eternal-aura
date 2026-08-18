@@ -23,6 +23,30 @@ function getYangonTimeStr() {
     return `${dateStr}    ${hours}:${minutes} ${ampm}`;
 }
 
+// ImgBB သို့ ပုံတင်ပေးမည့် Function
+async function uploadToImgBB(base64Image) {
+    if (!base64Image || !base64Image.startsWith('data:image')) {
+        return base64Image; // ပုံမဟုတ်ဘဲ URL ဖြစ်နေပြီးသားဆိုရင် တန်းပြန်ပေးမယ်
+    }
+
+    const apiKey = process.env.IMGBB_API_KEY;
+    const base64Data = base64Image.split(',')[1];
+    
+    const formData = new URLSearchParams();
+    formData.append('image', base64Data);
+
+    const response = await fetch(`https://api.imgbb.com/1/upload?key=${apiKey}`, {
+        method: 'POST',
+        body: formData
+    });
+    
+    const result = await response.json();
+    if (!result.success) {
+        throw new Error("ImgBB Upload Failed: " + (result.error?.message || "Unknown error"));
+    }
+    return result.data.url; // ImgBB မှ ထွက်လာသော ပုံ Link
+}
+
 module.exports = async function handler(req, res) {
     // POST Method ဟုတ်မဟုတ် စစ်ဆေးခြင်း
     if (req.method !== 'POST') {
@@ -43,6 +67,11 @@ module.exports = async function handler(req, res) {
         // ၁။ 1VS1 Mode အတွက်
         if (mode === '1vs1') {
             collectionName = '1vs1_registrations';
+            
+            // Logo နဲ့ Payment Slip ကို ImgBB သို့ တင်ခြင်း
+            const logoUrl = await uploadToImgBB(data.logo);
+            const slipUrl = await uploadToImgBB(data.paymentSlip);
+
             registrationData = {
                 userId: data.userId,
                 inGameName: data.inGameName || '',
@@ -53,9 +82,9 @@ module.exports = async function handler(req, res) {
                 contactPhNo: data.contactPhNo || '',
                 fee: data.fee || '',
                 bo: data.bo || '',
-                logo: data.logo || '', // Image URL or Base64
-                paymentSlip: data.paymentSlip || '', // Image URL or Base64
-                status: 'PENDING', // PENDING, CONFIRM, REJECT
+                logo: logoUrl,          
+                paymentSlip: slipUrl,   
+                status: 'PENDING', 
                 time: getYangonTimeStr(),
                 createdAt: new Date()
             };
@@ -63,10 +92,15 @@ module.exports = async function handler(req, res) {
         // ၂။ 5VS5 Mode အတွက်
         else if (mode === '5vs5') {
             collectionName = '5vs5_registrations';
+            
+            // Logo နဲ့ Payment Slip ကို ImgBB သို့ တင်ခြင်း
+            const logoUrl = await uploadToImgBB(data.logo);
+            const slipUrl = await uploadToImgBB(data.paymentSlip);
+
             registrationData = {
                 userId: data.userId,
                 sqName: data.sqName || '',
-                logo: data.logo || '',
+                logo: logoUrl,
                 roamer: { name: data.roamerName || '', id: data.roamerId || '' },
                 exp: { name: data.expName || '', id: data.expId || '' },
                 gold: { name: data.goldName || '', id: data.goldId || '' },
@@ -77,19 +111,24 @@ module.exports = async function handler(req, res) {
                 contactPhNo: data.contactPhNo || '',
                 fee: data.fee || '',
                 bo: data.bo || '',
-                paymentSlip: data.paymentSlip || '',
+                paymentSlip: slipUrl,
                 status: 'PENDING',
                 time: getYangonTimeStr(),
                 createdAt: new Date()
             };
         } 
-        // ၃။ TOURNAMENT Mode အတွက် (5VS5 ပုံစံတူသော်လည်း Fields နာမည် သီးသန့်ခွဲထားသည်)
+        // ၃။ TOURNAMENT Mode အတွက်
         else if (mode === 'tournament') {
             collectionName = 'tournament_registrations';
+            
+            // Team Logo နဲ့ Payment Slip ကို ImgBB သို့ တင်ခြင်း
+            const teamLogoUrl = await uploadToImgBB(data.teamLogo);
+            const slipUrl = await uploadToImgBB(data.paymentSlipUrl);
+
             registrationData = {
                 userId: data.userId,
                 teamName: data.teamName || '',
-                teamLogo: data.teamLogo || '',
+                teamLogo: teamLogoUrl,
                 playerRoamer: { name: data.playerRoamerName || '', gameId: data.playerRoamerId || '' },
                 playerExp: { name: data.playerExpName || '', gameId: data.playerExpId || '' },
                 playerGold: { name: data.playerGoldName || '', gameId: data.playerGoldId || '' },
@@ -98,9 +137,9 @@ module.exports = async function handler(req, res) {
                 kpayAccountName: data.kpayAccountName || '',
                 kpayPhoneNumber: data.kpayPhoneNumber || '',
                 contactPhoneNumber: data.contactPhoneNumber || '',
-                fee: "50K", // Tournament အတွက် 50K အမြဲသေချာစေရန်
+                fee: "50K", 
                 boFormat: data.boFormat || '',
-                paymentSlipUrl: data.paymentSlipUrl || '',
+                paymentSlipUrl: slipUrl,
                 status: 'PENDING',
                 time: getYangonTimeStr(),
                 createdAt: new Date()

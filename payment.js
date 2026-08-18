@@ -265,27 +265,78 @@ export function renderPaymentPage(appContent, formData) {
         }
     });  
 
-    // Confirm Button Logic
-    confirmBtn.addEventListener('click', () => {
+// Confirm Button Logic
+    confirmBtn.addEventListener('click', async () => {
         if (confirmBtn.disabled) return;
 
-        const finalPayload = {
-            ...formData,
-            slot: slotNum,
-            ssBase64: base64SS,
-            totalFee: totalStr,
-            [isTournament ? 'championPrice' : 'winnerPrice']: prizeAmount,
-            matchFormat: badgeText,
-            selectedGameMode: displayModeText
+        // ၁။ Backend က လက်ခံမည့် mode အမည်ကို အတိအကျ သတ်မှတ်ခြင်း ('1vs1', '5vs5', 'tournament')
+        let modeType = '5vs5'; // Default
+        if (isTournament) {
+            modeType = 'tournament';
+        } else if (currentMode.toLowerCase().includes('1vs1')) {
+            modeType = '1vs1';
+        }
+
+        // ၂။ Backend သို့ ပို့မည့် Payload (Backend မျှော်လင့်ထားသည့် Field အမည်များနှင့် အတိအကျ ကိုက်ညီစေရန်)
+        const requestBody = {
+            mode: modeType,
+            data: {
+                userId: formData.userId || "guest_user",
+                
+                // Form မှ အချက်အလက်များ အားလုံးထည့်သွင်းခြင်း
+                ...formData,
+
+                // --- Mode အလိုက် ပုံများနှင့် အချက်အလက်များ ချိန်ညှိခြင်း ---
+                
+                // 1vs1 နှင့် 5vs5 အတွက်
+                logo: formData.logoBase64 || formData.teamLogo || formData.logo || '',
+                paymentSlip: base64SS || formData.paymentSlip || '',
+
+                // Tournament အတွက် (Backend ကုဒ်အရ data.teamLogo နှင့် data.paymentSlipUrl ကို တောင်းထားပါသည်)
+                teamLogo: formData.teamLogo || formData.logoBase64 || formData.logo || '',
+                paymentSlipUrl: base64SS || formData.paymentSlipUrl || '',
+
+                // အခြား UI မှပါလာသော အချက်အလက်များ
+                slot: slotNum,
+                totalFee: totalStr,
+                matchFormat: badgeText,
+                selectedGameMode: displayModeText
+            }
         };
 
-        console.log("Backend Payload Ready:", finalPayload);
+        // UI Loading State
+        confirmBtn.disabled = true;
+        confirmBtn.textContent = "Submitting...";
 
-        const notiTitle = `${displayModeText} Registration Submitted`;
-        const notiMessage = `${displayModeText} fee ${totalStr} အတွက် register တင်ထားပါသည်။ Admin မှ စစ်ဆေးပြီးလျှင် noti ပြန်တက်မည်။`;
-        
-        addNotification(notiTitle, notiMessage);
+        try {
+            // ၃။ Backend (`/api/register`) သို့ ပို့ခြင်း
+            const response = await fetch('/api/register', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(requestBody)
+            });
 
-        renderModeScreen(appContent);
+            const result = await response.json();
+
+            if (result.success) {
+                const notiTitle = `${displayModeText} Registration Submitted`;
+                const notiMessage = `${displayModeText} fee ${totalStr} အတွက် register တင်ထားပါသည်။ Admin မှ စစ်ဆေးပြီးလျှင် noti ပြန်တက်မည်။`;
+                
+                addNotification(notiTitle, notiMessage);
+                alert("စာရင်းပေးသွင်းခြင်း အောင်မြင်ပါသည်ရှင့်!");
+                renderModeScreen(appContent);
+            } else {
+                alert("အမှားအယွင်းရှိပါသည်: " + (result.message || "Unknown error"));
+                confirmBtn.disabled = false;
+                confirmBtn.textContent = "Confirm";
+            }
+        } catch (error) {
+            console.error("Submission Error:", error);
+            alert("ဆာဗာချိတ်ဆက်မှု အဆင်မပြေပါ။ ကျေးဇူးပြု၍ ခဏနေ ထပ်ကြိုးစားပါရှင့်။");
+            confirmBtn.disabled = false;
+            confirmBtn.textContent = "Confirm";
+        }
     });
 }
