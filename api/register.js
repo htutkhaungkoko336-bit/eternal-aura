@@ -122,6 +122,7 @@ module.exports = async function handler(req, res) {
             };
         } 
         // ၃။ TOURNAMENT Mode အတွက်
+// ၃။ TOURNAMENT Mode အတွက်
         else if (mode === 'tournament') {
             collectionName = 'tournament_registrations';
             
@@ -142,13 +143,15 @@ module.exports = async function handler(req, res) {
                 kpayPhoneNumber: data.kpayPhoneNumber || '',
                 contactPhoneNumber: data.contactPhoneNumber || '',
                 fee: "50K", 
-                boFormat: data.boFormat || '',
+                slot: data.slot || '',
+                selectedSlot: data.selectedSlot || '',
                 paymentSlipUrl: slipUrl,
                 status: 'PENDING',
                 time: getYangonTimeStr(),
                 createdAt: new Date()
             };
-        } else {
+        }
+            else {
             return res.status(400).json({ success: false, message: "Invalid registration mode" });
         }
 
