@@ -35,10 +35,9 @@ document.addEventListener('DOMContentLoaded', () => {
                 const data = await response.json();
 
                 if (data.success) {
-                    handleLoginSuccess(data.name || "User");
+                    handleLoginSuccess(data); // data တစ်ခုလုံးကို ပို့ပေးလိုက်ပါ
                     return;
                 }
-
                 if (data.requiresPassword) {
                     showPinInputScreen(phone, deviceId);
                     return;
@@ -94,7 +93,7 @@ function showNameInputScreen(phone, pin, deviceId) {
 
             const data = await response.json();
             if (data.success) {
-                handleLoginSuccess(data.name);
+                handleLoginSuccess(data);
             } else {
                 alert("စာရင်းသွင်းမအောင်မြင်ပါ: " + data.message);
             }
@@ -135,7 +134,7 @@ function showPinInputScreen(phone, deviceId) {
 
             const data = await response.json();
             if (data.success) {
-                handleLoginSuccess(data.name || "User");
+                handleLoginSuccess(data);
             } else {
                 alert("PIN မှားယွင်းနေပါသည်: " + (data.message || "Access denied"));
             }
