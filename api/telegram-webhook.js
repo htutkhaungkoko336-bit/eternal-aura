@@ -22,7 +22,7 @@ module.exports = async (req, res) => {
         // Admin က Inline Button ကို နှိပ်မှသာ ဝင်လာမည်
         if (update.callback_query) {
             const callbackQuery = update.callback_query;
-            const data = callbackQuery.data; // ဥပမာ- confirm_12345_timestamp
+            const data = callbackQuery.data; // ဥပမာ- confirm_userId_timestamp
             const chatId = callbackQuery.message.chat.id;
             const messageId = callbackQuery.message.message_id;
             const BOT_TOKEN = process.env.TELEGRAM_BOT_TOKEN;
@@ -40,24 +40,26 @@ module.exports = async (req, res) => {
                 responseText = "❌ This registration has been REJECTED.";
             }
 
-            // --- Firebase Database ထဲမှ Status ပြောင်းမည့်အပိုင်း ---
+            // --- Firebase Database ထဲမှ Status ပြောင်းမည့်အပိုင်း (Fix လုပ်ထားသည်) ---
             try {
                 const collections = ['1vs1_registrations', '5vs5_registrations', 'tournament_registrations'];
                 
-                // Collection ၃ ခုစလုံးထဲမှာ userId ကို ရှာပြီး update လုပ်မယ်
+                // Collection တစ်ခုချင်းစီကို စစ်ဆေးပြီး Update လုပ်ခြင်း
                 for (const col of collections) {
                     const querySnapshot = await db.collection(col).where('userId', '==', userId).get();
                     
                     if (!querySnapshot.empty) {
-                        querySnapshot.forEach(async (doc) => {
-                            await doc.ref.update({ status: newStatus });
-                        });
+                        // Promise.all သုံးပြီး Update အားလုံး ပြီးဆုံးသည်အထိ စောင့်ရန်
+                        const updatePromises = querySnapshot.docs.map(doc => 
+                            doc.ref.update({ status: newStatus })
+                        );
+                        await Promise.all(updatePromises);
                     }
                 }
             } catch (dbError) {
                 console.error("Database Update Error:", dbError);
             }
-            // ----------------------------------------------------
+            // --------------------------------------------------------------------
 
             // Telegram Group ထဲရှိ မူလစာသားကို အပ်ဒိတ်လုပ်ပေးခြင်း (ခလုတ်များကို ဖြုတ်ရန်)
             await fetch(`https://api.telegram.org/bot${BOT_TOKEN}/editMessageCaption`, {
