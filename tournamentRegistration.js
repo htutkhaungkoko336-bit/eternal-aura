@@ -97,9 +97,9 @@ export function renderRegisterForm(appContent, savedData = {}) {
                     <div style="display: flex; flex-direction: column; gap: 3px; width: 50%;">
                         <label style="color: #94a3b8; font-size: 11px; font-weight: 600;">Entry Fee</label>
                         <div style="display: flex; align-items: center; justify-content: center; width: 100%; height: 40px; padding: 0 10px; background-color: #1e293b; border: 1px solid #334155; border-radius: 6px; color: #38bdf8; font-size: 12px; font-weight: 700; box-sizing: border-box;">
-                            <span>50k</span>
+                            <span>50000Ks</span>
                         </div>
-                        <input type="hidden" id="fee-value" value="50k">
+                        <input type="hidden" id="fee-value" value="50000Ks">
                     </div>
                 </div>
 

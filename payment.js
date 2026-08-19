@@ -5,9 +5,20 @@ import { renderModeScreen } from './mode.js';
 import { addNotification } from './notification.js';
 
 export function renderPaymentPage(appContent, formData) {
-    let rawFee = formData.fee ? formData.fee.toLowerCase().trim() : '5000';
-    let baseNum = parseInt(rawFee.replace('k', '').replace('ks', '').replace(',', '')) * 1000;
-    if (isNaN(baseNum)) baseNum = 5000;
+    // Tournament ပုံစံလား စစ်ဆေးခြင်း
+    let isTournament = !!(formData.selectedSlot || formData.slot);
+
+    // Tournament ဆိုရင် fee ကို 50000 လို့ အလိုအလျောက် သတ်မှတ်ပေးမည် (မဟုတ်ရင် ပုံမှန် formData.fee ကို ယူမည်)
+    let rawFee = isTournament ? '50000' : (formData.fee ? formData.fee.toLowerCase().trim() : '5000');
+    
+    let baseNum = parseInt(rawFee.replace('k', '').replace('ks', '').replace(',', '')) * (rawFee.includes('k') ? 1000 : 1); // တကယ်လို့ k ပါရင် သို့မဟုတ် ပမာဏမှန်ကန်စေရန်
+    
+    // ပိုမိုသေချာစေရန် Tournament အတွက် baseNum ကို 50000 တိတိ သတ်မှတ်ပေးခြင်း
+    if (isTournament) {
+        baseNum = 50000;
+    } else if (isNaN(baseNum)) {
+        baseNum = 5000;
+    }
 
     let selectFeeStr = baseNum.toLocaleString() + 'Ks';
     let commissionNum = baseNum * 0.1;
@@ -15,10 +26,8 @@ export function renderPaymentPage(appContent, formData) {
     let totalNum = baseNum + commissionNum;
     let totalStr = totalNum.toLocaleString() + 'Ks';
 
-    // Tournament ပုံစံလား စစ်ဆေးခြင်း (Tournament Registration ကလာရင် 'selectedSlot' ဒါမှမဟုတ် 'slot' ပါလာမည်)
-    let isTournament = !!(formData.selectedSlot || formData.slot);
     let slotNum = formData.slot || (formData.selectedSlot ? formData.selectedSlot.replace('Slot ', '') : "1");
-
+    // ကျန်သည့် ကုဒ်များ ဆက် لکھရန်...
     let prizeTitle = "⚡ WINNER PRIZE ⚡";
     let prizeAmount = "";
     let prizeBg = "";
