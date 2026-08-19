@@ -1,3 +1,16 @@
+const { initializeApp, cert, getApps } = require('firebase-admin/app');
+const { getFirestore } = require('firebase-admin/firestore');
+const fetch = require('node-fetch');
+
+// Firebase Admin Initialize လုပ်ခြင်း
+const app = getApps().length === 0 
+  ? initializeApp({
+      credential: cert(JSON.parse(process.env.FIREBASE_SERVICE_ACCOUNT))
+    }) 
+  : getApps()[0];
+
+const db = getFirestore(app);
+
 module.exports = async (req, res) => {
     if (req.method !== 'POST') {
         return res.status(200).send('Webhook is active');
@@ -16,14 +29,35 @@ module.exports = async (req, res) => {
 
             const [action, userId, timestamp] = data.split('_');
 
+            let newStatus = "";
             let responseText = "";
+
             if (action === 'confirm') {
+                newStatus = 'CONFIRMED';
                 responseText = "✅ This registration has been CONFIRMED.";
-                // TODO: ဒီနေရာတွင် Firebase Database ထဲမှ သက်ဆိုင်ရာ userId ၏ status ကို 'approved' သို့ ပြောင်းပါ
             } else if (action === 'reject') {
+                newStatus = 'REJECTED';
                 responseText = "❌ This registration has been REJECTED.";
-                // TODO: ဒီနေရာတွင် Firebase Database ထဲမှ သက်ဆိုင်ရာ userId ၏ status ကို 'rejected' သို့ ပြောင်းပါ
             }
+
+            // --- Firebase Database ထဲမှ Status ပြောင်းမည့်အပိုင်း ---
+            try {
+                const collections = ['1vs1_registrations', '5vs5_registrations', 'tournament_registrations'];
+                
+                // Collection ၃ ခုစလုံးထဲမှာ userId ကို ရှာပြီး update လုပ်မယ်
+                for (const col of collections) {
+                    const querySnapshot = await db.collection(col).where('userId', '==', userId).get();
+                    
+                    if (!querySnapshot.empty) {
+                        querySnapshot.forEach(async (doc) => {
+                            await doc.ref.update({ status: newStatus });
+                        });
+                    }
+                }
+            } catch (dbError) {
+                console.error("Database Update Error:", dbError);
+            }
+            // ----------------------------------------------------
 
             // Telegram Group ထဲရှိ မူလစာသားကို အပ်ဒိတ်လုပ်ပေးခြင်း (ခလုတ်များကို ဖြုတ်ရန်)
             await fetch(`https://api.telegram.org/bot${BOT_TOKEN}/editMessageCaption`, {
@@ -42,7 +76,10 @@ module.exports = async (req, res) => {
             await fetch(`https://api.telegram.org/bot${BOT_TOKEN}/answerCallbackQuery`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ callback_query_id: callbackQuery.id, text: "Successfully updated!" })
+                body: JSON.stringify({ 
+                    callback_query_id: callbackQuery.id, 
+                    text: `Successfully ${newStatus.toLowerCase()}!` 
+                })
             });
         }
 
