@@ -80,9 +80,9 @@ async function sendRegistrationToTelegram(userData, paymentSlipBase64) {
         detailsCaption = `🎮 **Mode:** ${mode}`;
     }
 
-    // Telegram ထဲ ပို့မည့် ပင်မစာသား
+    // အပေါ်ဆုံးမှာ ခေါင်းစဉ်အနေနဲ့ ထားမည့် စာသားအသစ်
     const caption = `
-🚨 **NEW REGISTRATION PENDING** 🚨
+🚀 **NEW REGISTRATION** 🚀
 ━━━━━━━━━━━━━━━━━━━
 ${detailsCaption}
     `.trim();
@@ -107,7 +107,6 @@ ${detailsCaption}
 
         const form = new FormData();
         form.append('chat_id', GROUP_ID);
-        // Payment Slip ပုံကို အရင်ဆုံး ပို့ပေးခြင်း
         form.append('photo', imageBuffer, { filename: 'payment_slip.jpg', contentType: 'image/jpeg' });
         form.append('caption', caption);
         form.append('parse_mode', 'Markdown');
