@@ -1,5 +1,7 @@
 const { initializeApp, cert, getApps } = require('firebase-admin/app');
 const { getFirestore } = require('firebase-admin/firestore');
+// ၁။ telegram.js ထဲက Function ကို ယူသုံးရန် လှမ်းခေါ်ခြင်း
+const { sendRegistrationToTelegram } = require('./telegram'); 
 
 // Firebase Admin Initialize လုပ်ခြင်း
 const app = getApps().length === 0 
@@ -63,24 +65,24 @@ module.exports = async function handler(req, res) {
 
         let collectionName = '';
         let registrationData = {};
+        let slipForTelegram = ''; // Telegram ဆီ ပို့ရန် Payment Slip ပုံ (Base64 သို့မဟုတ် URL)
 
         // ၁။ 1VS1 Mode အတွက်
         if (mode === '1vs1') {
             collectionName = '1vs1_registrations';
             
-            // Logo နဲ့ Payment Slip ကို ImgBB သို့ တင်ခြင်း
-            // (payment.js သို့မဟုတ် formData ကလာတဲ့ ပုံနာမည် အမျိုးမျိုးကို ခြုံပြီး ဖမ်းပေးခြင်း)
             const logoToUpload = data.logo || data.logoBase64 || '';
             const slipToUpload = data.paymentSlip || data.paymentSlipUrl || '';
+
+            // Telegram ဆီ မတင်ခင် မူရင်း Base64 ပုံကို သိမ်းထားခြင်း
+            slipForTelegram = slipToUpload;
 
             const logoUrl = await uploadToImgBB(logoToUpload);
             const slipUrl = await uploadToImgBB(slipToUpload);
 
             registrationData = {
                 userId: data.userId,
-                // Frontend က gameName လို့ ပို့ရင် inGameName ထဲ ထည့်မယ် (မပါရင် ဒုတိယနာမည်ကို ယူမယ်)
                 inGameName: data.gameName || data.inGameName || '',
-                // Frontend က playerId လို့ ပို့ရင် gameId ထဲ ထည့်မယ်
                 gameId: data.playerId || data.gameId || '',
                 heroName: data.heroName || '',
                 kpayName: data.kpayName || '',
@@ -98,7 +100,8 @@ module.exports = async function handler(req, res) {
         else if (mode === '5vs5') {
             collectionName = '5vs5_registrations';
             
-            // Logo နဲ့ Payment Slip ကို ImgBB သို့ တင်ခြင်း
+            slipForTelegram = data.paymentSlip;
+
             const logoUrl = await uploadToImgBB(data.logo);
             const slipUrl = await uploadToImgBB(data.paymentSlip);
 
@@ -125,7 +128,8 @@ module.exports = async function handler(req, res) {
         else if (mode === 'tournament') {
             collectionName = 'tournament_registrations';
             
-            // Team Logo နဲ့ Payment Slip ကို ImgBB သို့ တင်ခြင်း
+            slipForTelegram = data.paymentSlipUrl;
+
             const teamLogoUrl = await uploadToImgBB(data.teamLogo);
             const slipUrl = await uploadToImgBB(data.paymentSlipUrl);
 
@@ -149,13 +153,26 @@ module.exports = async function handler(req, res) {
                 time: getYangonTimeStr(),
                 createdAt: new Date()
             };
-        }
-            else {
+        } else {
             return res.status(400).json({ success: false, message: "Invalid registration mode" });
         }
 
-        // သဆိုင်ရာ Collection ထဲသို့ Data အသစ် ထည့်သွင်းခြင်း
+        // သက်ဆိုင်ရာ Collection ထဲသို့ Data အသစ် ထည့်သွင်းခြင်း
         const docRef = await db.collection(collectionName).add(registrationData);
+
+        // ၂။ Database ထဲ အောင်မြင်စွာ သိမ်းပြီးသည်နှင့် Telegram Group ဆီသို့ ပုံနှင့် စာပို့ရန် လှမ်းခေါ်ခြင်း
+        const telegramPayload = {
+            ...data,
+            // Telegram ထဲ ပေါ်မည့်အချက်အလက်များအတွက် ဖြည့်စွက်ပေးခြင်း
+            name: data.inGameName || data.sqName || data.teamName || 'N/A',
+            phone: data.contactPhoneNumber || data.contactPhNo || 'N/A'
+        };
+
+        const telegramResult = await sendRegistrationToTelegram(telegramPayload, slipForTelegram);
+
+        if (!telegramResult.success) {
+            console.error("Telegram Error:", telegramResult.error);
+        }
 
         return res.status(200).json({ 
             success: true, 
