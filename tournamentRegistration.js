@@ -99,7 +99,7 @@ export function renderRegisterForm(appContent, savedData = {}) {
                         <div style="display: flex; align-items: center; justify-content: center; width: 100%; height: 40px; padding: 0 10px; background-color: #1e293b; border: 1px solid #334155; border-radius: 6px; color: #38bdf8; font-size: 12px; font-weight: 700; box-sizing: border-box;">
                             <span>50,000ks</span>
                         </div>
-                        <input type="hidden" id="fee-value" value="50,000ks">
+                        <input type="hidden" id="fee-value" value="50k">
                     </div>
                 </div>
 
