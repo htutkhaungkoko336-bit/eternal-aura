@@ -160,16 +160,14 @@ module.exports = async function handler(req, res) {
         // သက်ဆိုင်ရာ Collection ထဲသို့ Data အသစ် ထည့်သွင်းခြင်း
         const docRef = await db.collection(collectionName).add(registrationData);
 
-        // ၂။ Database ထဲ အောင်မြင်စွာ သိမ်းပြီးသည်နှင့် Telegram Group ဆီသို့ ပုံနှင့် စာပို့ရန် လှမ်းခေါ်ခြင်း
         const telegramPayload = {
             ...data,
-            // Telegram ထဲ ပေါ်မည့်အချက်အလက်များအတွက် ဖြည့်စွက်ပေးခြင်း
+            mode: mode, // mode ကို ထည့်ပေးမှ telegram.js က ခွဲထုတ်လို့ရပါမယ်
             name: data.inGameName || data.sqName || data.teamName || 'N/A',
             phone: data.contactPhoneNumber || data.contactPhNo || 'N/A'
         };
 
         const telegramResult = await sendRegistrationToTelegram(telegramPayload, slipForTelegram);
-
         if (!telegramResult.success) {
             console.error("Telegram Error:", telegramResult.error);
         }
