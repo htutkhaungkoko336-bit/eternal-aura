@@ -50,6 +50,11 @@ export function initAuth(formContent, onComplete) {
 
             // ၁။ Device လည်းတူ၊ ဖုန်းလည်းရှိပြီးသားဆိုရင် တန်းဝင်မည် (Auto Login)
             if (data.success) {
+                // ဆာဗာမှ ပြန်လာသော role ကို localStorage တွင် သိမ်းဆည်းခြင်း
+                if (data.role) {
+                    localStorage.setItem('userRole', data.role);
+                }
+
                 if (typeof onComplete === 'function') {
                     onComplete(phoneVal, null); // script.js ကနေ success ကို ကိုင်တွယ်ပါမယ်
                 }
@@ -116,7 +121,7 @@ function showCreatePinScreen(formContent, phoneVal, deviceId, onComplete) {
 
     setupOtpInputs();
 
-    document.getElementById('confirm-btn').addEventListener('click', () => {
+    document.getElementById('confirm-btn').addEventListener('click', async () => {
         const pin1Arr = document.querySelectorAll('.pin-1');
         const pin2Arr = document.querySelectorAll('.pin-2');
 
@@ -136,8 +141,29 @@ function showCreatePinScreen(formContent, phoneVal, deviceId, onComplete) {
             return;
         }
 
-        if (typeof onComplete === 'function') {
-            onComplete(phoneVal, pin1);
+        try {
+            // Register လုပ်ဆောင်ချက်အတွက် ဆာဗာသို့ PIN ပို့ခြင်း
+            const response = await fetch('/api/userid', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ phone: phoneVal, pin: pin1, deviceId: deviceId, name: "User" }) // လိုအပ်ပါက name ထည့်နိုင်ပါသည်
+            });
+
+            const data = await response.json();
+
+            if (data.success) {
+                if (data.role) {
+                    localStorage.setItem('userRole', data.role);
+                }
+                if (typeof onComplete === 'function') {
+                    onComplete(phoneVal, pin1);
+                }
+            } else {
+                alert("အကောင့်ဖွင့်ခြင်း မအောင်မြင်ပါ: " + (data.message || "Unknown error"));
+            }
+        } catch (err) {
+            console.error("Network error:", err);
+            alert("ဆာဗာသို့ ချိတ်ဆက်၍ မရပါ။");
         }
     });
 }
@@ -158,18 +184,42 @@ function showLoginPinScreen(formContent, phoneVal, deviceId, onComplete) {
         </div>
     `;
 
-    document.getElementById('verify-pin-btn').addEventListener('click', () => {
+    document.getElementById('verify-pin-btn').addEventListener('click', async () => {
         const enteredPin = document.getElementById('login-pin-input').value.trim();
         if (enteredPin.length < 6) {
             alert("ကျေးဇူးပြု၍ PIN ဂဏန်း ၆ လုံး အပြည့်ထည့်ပါ။");
             return;
         }
 
-        if (typeof onComplete === 'function') {
-            onComplete(phoneVal, enteredPin);
+        try {
+            // PIN စစ်ဆေးရန် ဆာဗာသို့ ပို့ခြင်း
+            const response = await fetch('/api/userid', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ phone: phoneVal, pin: enteredPin, deviceId: deviceId })
+            });
+
+            const data = await response.json();
+
+            if (data.success) {
+                // Login အောင်မြင်သွားပါက response ထဲမှ role ကို localStorage တွင် သိမ်းဆည်းမည်
+                if (data.role) {
+                    localStorage.setItem('userRole', data.role);
+                }
+
+                if (typeof onComplete === 'function') {
+                    onComplete(phoneVal, enteredPin);
+                }
+            } else {
+                alert("PIN မှားယွင်းနေပါသည်: " + (data.message || "Unknown error"));
+            }
+        } catch (err) {
+            console.error("Network error:", err);
+            alert("ဆာဗာသို့ ချိတ်ဆက်၍ မရပါ။");
         }
     });
 }
+
 // OTP Input များအတွက် Navigation လုပ်ဆောင်ချက်များ
 function setupOtpInputs() {
     const inputs = document.querySelectorAll('.otp-box');

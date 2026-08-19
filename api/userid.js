@@ -80,25 +80,27 @@ module.exports = async function handler(req, res) {
             const hashedPin = bcrypt.hashSync(pin, salt);
             const userId = generateUniqueUserId();
             const createdAtStr = getYangonTimeStr();
+            const defaultRole = 'user'; // အကောင့်အသစ်ဆိုလျှင် default role သတ်မှတ်ခြင်း
 
             const newUserData = {
                 userId: userId,
                 name: name,
                 phone: phone,
                 pin: hashedPin,
-                deviceId: deviceId, // Original Device ကို အသေ သိမ်းမည်
+                deviceId: deviceId,
+                role: defaultRole,
                 createdAt: createdAtStr,
-                recentLogins: [] // အခြား Device များမှ ဝင်ရောက်ခဲ့မှုကို သိမ်းရန် Field အသစ်
+                recentLogins: []
             };
 
             await usersRef.doc(userId).set(newUserData);
 
-            // [ပြင်ဆင်ချက်] Response ထဲတွင် userId ထည့်ပေးလိုက်ပါပြီ
             return res.status(200).json({ 
                 success: true, 
                 message: "User registered successfully", 
                 name: name,
-                userId: userId 
+                userId: userId,
+                role: defaultRole
             });
         }
 
@@ -110,12 +112,12 @@ module.exports = async function handler(req, res) {
 
         // ပထမဆုံး Register လုပ်ထားတဲ့ Original Device နဲ့ တူနေရင် Password မလိုဘဲ တန်းဝင်ခွင့်ပေးမည်
         if (userData.deviceId === deviceId) {
-            // [ပြင်ဆင်ချက်] Response ထဲတွင် userId ထည့်ပေးလိုက်ပါပြီ
             return res.status(200).json({ 
                 success: true, 
                 message: "Original device matched. Login successful", 
                 name: userData.name,
-                userId: userData.userId 
+                userId: userData.userId,
+                role: userData.role || 'user'
             });
         }
 
@@ -146,12 +148,12 @@ module.exports = async function handler(req, res) {
             recentLogins: FieldValue.arrayUnion(loginRecord)
         });
 
-        // [ပြင်ဆင်ချက်] Response ထဲတွင် userId ထည့်ပေးလိုက်ပါပြီ
         return res.status(200).json({ 
             success: true, 
             message: "Login successful on another device with PIN", 
             name: userData.name,
-            userId: userData.userId 
+            userId: userData.userId,
+            role: userData.role || 'user'
         });
 
     } catch (error) {

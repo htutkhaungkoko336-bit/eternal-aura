@@ -1,5 +1,3 @@
-// tournament.js
-
 import { renderRegisterForm } from './tournamentRegistration.js';
 
 let tournamentData = {
@@ -30,13 +28,19 @@ let tournamentData = {
 
 // အက်ပ်စဖွင့်ချင်း (သို့မဟုတ် Home နှိပ်လျှင်) Tournament Brackets ကို တန်းပြရန်
 export function renderTournamentScreen(container) {
+    // LocalStorage ထဲတွင် သိမ်းထားသော userRole ကို စစ်ဆေးခြင်း
+    const userRole = localStorage.getItem('userRole') || 'user'; 
+    const isAdmin = (userRole === 'admin');
+
     container.innerHTML = `
         <div style="padding: 10px; color: white; display: flex; flex-direction: column; align-items: center; width: 100%; height: 100%; box-sizing: border-box; overflow-y: auto; background-color: #0f172a;">
             
             <!-- Header -->
             <div style="display: flex; justify-content: space-between; align-items: center; width: 100%; max-width: 380px; margin-bottom: 10px;">
                 <h2 style="color: #38bdf8; margin: 0; font-size: 13px; text-transform: uppercase; letter-spacing: 1px;">TOURNAMENT BRACKETS</h2>
-                <button id="toggle-admin" style="background: #334155; border: 1px solid #38bdf8; color: #38bdf8; padding: 3px 8px; border-radius: 4px; font-size: 10px; cursor: pointer;">Admin Edit</button>
+                
+                <!-- Admin ဖြစ်မှသာ Admin Edit ခလုတ်ကို ပေါ်စေမည် -->
+                ${isAdmin ? '<button id="toggle-admin" style="background: #334155; border: 1px solid #38bdf8; color: #38bdf8; padding: 3px 8px; border-radius: 4px; font-size: 10px; cursor: pointer;">Admin Edit</button>' : ''}
             </div>
 
             <!-- Main Vertical Tree Container -->
@@ -64,7 +68,7 @@ export function renderTournamentScreen(container) {
                     </div>
                 </div>
 
-                <!-- CHAMPION BOX (ဆုငွေ ၄ သိန်းနှင့် ဖလားပုံများဖြင့် ပိုလန်းသော Design) -->
+                <!-- CHAMPION BOX -->
                 <div style="background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%); border: 2px solid #facc15; padding: 14px; border-radius: 12px; width: 95%; text-align: center; box-shadow: 0 0 20px rgba(250, 204, 21, 0.4); position: relative; overflow: hidden;">
                     <div style="position: absolute; top: -10px; left: -10px; font-size: 24px; opacity: 0.15;">🏆</div>
                     <div style="position: absolute; bottom: -10px; right: -10px; font-size: 24px; opacity: 0.15;">🏆</div>
@@ -114,20 +118,23 @@ export function renderTournamentScreen(container) {
         </div>
     `;
 
-    document.getElementById('toggle-admin').addEventListener('click', () => {
-        showAdminEditor(container);
-    });
+    // Admin ခလုတ် ရှိမှသာ (Admin ဖြစ်မှသာ) Event Listener ချိတ်မည်
+    const toggleAdminBtn = document.getElementById('toggle-admin');
+    if (toggleAdminBtn) {
+        toggleAdminBtn.addEventListener('click', () => {
+            showAdminEditor(container);
+        }); 
+    }
 
-    // Slot တစ်ခုချင်းစီကို နှိပ်၍ စာရင်းပေးသွင်းခြင်း (ဘယ် Slot ကနေ ဝင်တယ်ဆိုတာပါ ပို့ပေးမည်)
+    // Slot တစ်ခုချင်းစီကို နှိပ်၍ စာရင်းပေးသွင်းခြင်း
     container.querySelectorAll('.group-slot').forEach(el => {
         el.addEventListener('click', (e) => {
             const groupId = parseInt(e.currentTarget.getAttribute('data-group'));
             const slotIndex = parseInt(e.currentTarget.getAttribute('data-slot'));
             const group = tournamentData.groups.find(g => g.id === groupId);
-            const selectedSlotLabel = group.slots[slotIndex].label; // ဥပမာ - "Slot 1", "Slot 2"
+            const selectedSlotLabel = group.slots[slotIndex].label;
 
             if (group.slots[slotIndex].status === 'available') {
-                // Register Form သို့ Slot အချက်အလက် (ဥပမာ: "Slot 1") ပါ ပို့ပေးမည်
                 renderRegisterForm(container, { selectedSlot: selectedSlotLabel });
             } else {
                 alert("ဒီ Slot ကို အဖွဲ့တစ်ဖွဲ့မှ ယူပြီးပါပြီ။");
@@ -207,7 +214,7 @@ function showAdminEditor(container) {
 
     document.getElementById('back-to-bracket').addEventListener('click', () => renderTournamentScreen(container));
 
-// Admin Editor Panel အတွင်းက save-settings event listener အပိုင်းကို ဒီအတိုင်း ပြင်ရေးလိုက်ပါ
+    // Admin Editor Panel အတွင်းက save-settings event listener
     document.getElementById('save-settings').addEventListener('click', () => {
         // Groups များ သိမ်းခြင်း
         tournamentData.groups.forEach((group, idx) => {
@@ -219,13 +226,13 @@ function showAdminEditor(container) {
         tournamentData.semis.forEach((semi, idx) => {
             const mappedIdx = tournamentData.groups.length + idx;
             semi.date = document.getElementById(`date-${mappedIdx}`).value.trim();
-            semi.time = document.getElementById(`time-${mappedIdx}`).value.trim(); // ဒီမှာ time ပြင်ပေးထားပါတယ်
+            semi.time = document.getElementById(`time-${mappedIdx}`).value.trim(); 
         });
 
         // Champion သိမ်းခြင်း
         const champIdx = tournamentData.groups.length + tournamentData.semis.length;
         tournamentData.champion.date = document.getElementById(`date-${champIdx}`).value.trim();
-        tournamentData.champion.time = document.getElementById(`time-${champIdx}`).value.trim(); // ဒီမှာလည်း time ပြင်ပေးထားပါတယ်
+        tournamentData.champion.time = document.getElementById(`time-${champIdx}`).value.trim(); 
 
         alert("ပြောင်းလဲမှုများကို သိမ်းဆည်းပြီးပါပြီ။");
         renderTournamentScreen(container);
