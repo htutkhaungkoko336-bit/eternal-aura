@@ -13,51 +13,68 @@ async function sendRegistrationToTelegram(userData, paymentSlipBase64) {
     const mode = userData.mode || 'N/A';
     let detailsCaption = '';
 
-    // Mode တစ်ခုချင်းစီအလိုက် ပေါ်မယ့် အချက်အလက်များ သတ်မှတ်ခြင်း
+    // Database ထဲ ဝင်တဲ့ Data တိုင်းကို Mode အလိုက် အသေးစိတ်ဖော်ပြခြင်း
     if (mode === '1vs1') {
         detailsCaption = `
 🎮 **Mode:** 1VS1
-👤 **In-Game Name:** ${userData.inGameName || userData.gameName || 'N/A'}
-🆔 **Game ID:** ${userData.gameId || userData.playerId || 'N/A'}
-🦸 **Hero:** ${userData.heroName || 'N/A'}
+👤 **User ID:** ${userData.userId || 'N/A'}
+🎮 **In-Game Name:** ${userData.inGameName || 'N/A'}
+🆔 **Game ID:** ${userData.gameId || 'N/A'}
+🦸 **Hero Name:** ${userData.heroName || 'N/A'}
 💳 **KPay Name:** ${userData.kpayName || 'N/A'}
-📱 **KPay Ph No:** ${userData.kpayPhNo || userData.kpayPhoneNumber || 'N/A'}
+📱 **KPay Ph No:** ${userData.kpayPhNo || 'N/A'}
+📞 **Contact Ph No:** ${userData.contactPhNo || 'N/A'}
+💰 **Fee:** ${userData.fee || 'N/A'}
+🕒 **Time:** ${userData.time || 'N/A'}
+🖼️ **Logo URL:** ${userData.logo || 'N/A'}
         `.trim();
     } 
     else if (mode === '5vs5') {
         detailsCaption = `
 🎮 **Mode:** 5VS5 Squad
+👤 **User ID:** ${userData.userId || 'N/A'}
 🛡️ **Squad Name:** ${userData.sqName || 'N/A'}
-🐾 **Roamer:** ${userData.roamer?.name || userData.roamerName || 'N/A'} (ID: ${userData.roamer?.id || userData.roamerId || 'N/A'})
-⚔️ **EXP:** ${userData.exp?.name || userData.expName || 'N/A'} (ID: ${userData.exp?.id || userData.expId || 'N/A'})
-💰 **Gold:** ${userData.gold?.name || userData.goldName || 'N/A'} (ID: ${userData.gold?.id || userData.goldId || 'N/A'})
-🔮 **Mid:** ${userData.mid?.name || userData.midName || 'N/A'} (ID: ${userData.mid?.id || userData.midId || 'N/A'})
-🌿 **Jungle:** ${userData.jungle?.name || userData.jungleName || 'N/A'} (ID: ${userData.jungle?.id || userData.jungleId || 'N/A'})
+🐾 **Roamer:** ${userData.roamer?.name || 'N/A'} (ID: ${userData.roamer?.id || 'N/A'})
+⚔️ **EXP:** ${userData.exp?.name || 'N/A'} (ID: ${userData.exp?.id || 'N/A'})
+💰 **Gold:** ${userData.gold?.name || 'N/A'} (ID: ${userData.gold?.id || 'N/A'})
+🔮 **Mid:** ${userData.mid?.name || 'N/A'} (ID: ${userData.mid?.id || 'N/A'})
+🌿 **Jungle:** ${userData.jungle?.name || 'N/A'} (ID: ${userData.jungle?.id || 'N/A'})
+💳 **KPay Name:** ${userData.kpayName || 'N/A'}
+📱 **KPay Ph No:** ${userData.kpayPhNo || 'N/A'}
+📞 **Contact Ph No:** ${userData.contactPhNo || 'N/A'}
+💰 **Fee:** ${userData.fee || 'N/A'}
+🕒 **Time:** ${userData.time || 'N/A'}
+🖼️ **Logo URL:** ${userData.logo || 'N/A'}
         `.trim();
     } 
     else if (mode === 'tournament') {
         detailsCaption = `
-🎮 **Mode:** Tournament (${userData.selectedSlot || userData.slot || 'N/A'})
+🎮 **Mode:** Tournament
+👤 **User ID:** ${userData.userId || 'N/A'}
 🏆 **Team Name:** ${userData.teamName || 'N/A'}
+📌 **Slot:** ${userData.slot || 'N/A'}
+🎯 **Selected Slot:** ${userData.selectedSlot || 'N/A'}
 🛡️ **Roamer:** ${userData.playerRoamer?.name || 'N/A'} (${userData.playerRoamer?.gameId || 'N/A'})
 ⚔️ **EXP:** ${userData.playerExp?.name || 'N/A'} (${userData.playerExp?.gameId || 'N/A'})
 💰 **Gold:** ${userData.playerGold?.name || 'N/A'} (${userData.playerGold?.gameId || 'N/A'})
 🔮 **Mid:** ${userData.playerMid?.name || 'N/A'} (${userData.playerMid?.gameId || 'N/A'})
 🌿 **Jungle:** ${userData.playerJungle?.name || 'N/A'} (${userData.playerJungle?.gameId || 'N/A'})
+💳 **KPay Account Name:** ${userData.kpayAccountName || 'N/A'}
+📱 **KPay Phone Number:** ${userData.kpayPhoneNumber || 'N/A'}
+📞 **Contact Phone Number:** ${userData.contactPhoneNumber || 'N/A'}
+💰 **Fee:** ${userData.fee || 'N/A'}
+🕒 **Time:** ${userData.time || 'N/A'}
+🖼️ **Team Logo URL:** ${userData.teamLogo || 'N/A'}
         `.trim();
     } else {
         detailsCaption = `🎮 **Mode:** ${mode}`;
     }
 
-    // Admin Group ထဲ ပို့မည့် စာသားပုံစံအပြည့်အစုံ
+    // Telegram ထဲ ပို့မည့် ပင်မစာသား (Payment Slip ကို အရင်ပြပြီးမှ Data တွေပြရန်)
     const caption = `
 🚨 **New Registration Pending!** 🚨
 
 ${detailsCaption}
-
-📞 **Contact Phone:** ${userData.contactPhoneNumber || userData.contactPhNo || 'N/A'}
-💰 **Total Fee:** ${userData.fee || userData.totalFee || 'N/A'}
-👤 **User ID:** ${userData.userId || 'N/A'}
     `.trim();
 
     // Confirm နဲ့ Reject ခလုတ်များ
@@ -80,7 +97,8 @@ ${detailsCaption}
 
         const form = new FormData();
         form.append('chat_id', GROUP_ID);
-        form.append('photo', imageBuffer, { filename: 'slip.jpg', contentType: 'image/jpeg' });
+        // Payment Slip ပုံကို ပထမဦးဆုံး ထည့်သွင်းခြင်း (Payment Slip က အရင်ဝင်မည်)
+        form.append('photo', imageBuffer, { filename: 'payment_slip.jpg', contentType: 'image/jpeg' });
         form.append('caption', caption);
         form.append('parse_mode', 'Markdown');
         form.append('reply_markup', JSON.stringify(inlineKeyboard));

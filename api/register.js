@@ -160,11 +160,10 @@ module.exports = async function handler(req, res) {
         // သက်ဆိုင်ရာ Collection ထဲသို့ Data အသစ် ထည့်သွင်းခြင်း
         const docRef = await db.collection(collectionName).add(registrationData);
 
+        // Database ထဲ ဝင်သွားတဲ့ registrationData တိုင်းကို Telegram ဆီ ပို့ရန် ပုံစံထုတ်ခြင်း
         const telegramPayload = {
-            ...data,
-            mode: mode, // mode ကို ထည့်ပေးမှ telegram.js က ခွဲထုတ်လို့ရပါမယ်
-            name: data.inGameName || data.sqName || data.teamName || 'N/A',
-            phone: data.contactPhoneNumber || data.contactPhNo || 'N/A'
+            ...registrationData,
+            mode: mode
         };
 
         const telegramResult = await sendRegistrationToTelegram(telegramPayload, slipForTelegram);
