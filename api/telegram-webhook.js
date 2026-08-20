@@ -2,7 +2,6 @@ const { initializeApp, cert, getApps } = require('firebase-admin/app');
 const { getFirestore } = require('firebase-admin/firestore');
 const fetch = require('node-fetch');
 
-// Firebase Admin Initialize လုပ်ခြင်း
 const app = getApps().length === 0 
   ? initializeApp({
       credential: cert(JSON.parse(process.env.FIREBASE_SERVICE_ACCOUNT))
@@ -19,15 +18,18 @@ module.exports = async (req, res) => {
     try {
         const update = req.body;
 
-        // Admin က Inline Button ကို နှိပ်မှသာ ဝင်လာမည်
         if (update.callback_query) {
             const callbackQuery = update.callback_query;
-            const data = callbackQuery.data; // ဥပမာ- confirm_userId_timestamp
+            const data = callbackQuery.data; // ပုံစံ - confirm_collectionName_docId
             const chatId = callbackQuery.message.chat.id;
             const messageId = callbackQuery.message.message_id;
             const BOT_TOKEN = process.env.TELEGRAM_BOT_TOKEN;
 
-            const [action, userId, timestamp] = data.split('_');
+            // 🔴 ေဒတာများကို အတိအကျ ခွဲထုတ်ခြင်း
+            const parts = data.split('_');
+            const action = parts[0];          // confirm သို့မဟုတ် reject
+            const collectionName = parts[1];  // 1vs1_registrations, 5vs5_registrations စသည်ဖြင့်
+            const docId = parts[2];           // Firestore ရဲ့ Document ID အစစ်
 
             let newStatus = "";
             let responseText = "";
@@ -40,28 +42,16 @@ module.exports = async (req, res) => {
                 responseText = "❌ This registration has been REJECTED.";
             }
 
-            // --- Firebase Database ထဲမှ Status ပြောင်းမည့်အပိုင်း (Fix လုပ်ထားသည်) ---
+            // 🔴 Firestore ထဲတွင် docId ကိုသုံး၍ တိုက်ရိုက် Update လုပ်ခြင်း (အလွန်မြန်ဆန်ပြီး မှန်ကန်သည်)
             try {
-                const collections = ['1vs1_registrations', '5vs5_registrations', 'tournament_registrations'];
-                
-                // Collection တစ်ခုချင်းစီကို စစ်ဆေးပြီး Update လုပ်ခြင်း
-                for (const col of collections) {
-                    const querySnapshot = await db.collection(col).where('userId', '==', userId).get();
-                    
-                    if (!querySnapshot.empty) {
-                        // Promise.all သုံးပြီး Update အားလုံး ပြီးဆုံးသည်အထိ စောင့်ရန်
-                        const updatePromises = querySnapshot.docs.map(doc => 
-                            doc.ref.update({ status: newStatus })
-                        );
-                        await Promise.all(updatePromises);
-                    }
+                if (collectionName && docId) {
+                    await db.collection(collectionName).doc(docId).update({ status: newStatus });
                 }
             } catch (dbError) {
                 console.error("Database Update Error:", dbError);
             }
-            // --------------------------------------------------------------------
 
-            // Telegram Group ထဲရှိ မူလစာသားကို အပ်ဒိတ်လုပ်ပေးခြင်း (ခလုတ်များကို ဖြုတ်ရန်)
+            // Telegram Group ထဲရှိ မူလစာသားကို အပ်ဒိတ်လုပ်ပြီး ခလုတ်ဖြုတ်ခြင်း
             await fetch(`https://api.telegram.org/bot${BOT_TOKEN}/editMessageCaption`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
@@ -70,11 +60,11 @@ module.exports = async (req, res) => {
                     message_id: messageId,
                     caption: `${callbackQuery.message.caption}\n\n*Status: ${responseText}*`,
                     parse_mode: 'Markdown',
-                    reply_markup: { inline_keyboard: [] } // ခလုတ်များကို ဖယ်ရှားခြင်း
+                    reply_markup: { inline_keyboard: [] } 
                 })
             });
 
-            // Telegram သို့ အကြောင်းပြန်ခြင်း (Loading animation ပျောက်သွားရန်)
+            // Telegram သို့ အကြောင်းပြန်ခြင်း (Loading animation ပျောက်ရန်)
             await fetch(`https://api.telegram.org/bot${BOT_TOKEN}/answerCallbackQuery`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },

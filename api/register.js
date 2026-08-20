@@ -1,9 +1,7 @@
 const { initializeApp, cert, getApps } = require('firebase-admin/app');
 const { getFirestore } = require('firebase-admin/firestore');
-// ၁။ telegram.js ထဲက Function ကို ယူသုံးရန် လှမ်းခေါ်ခြင်း
 const { sendRegistrationToTelegram } = require('./telegram'); 
 
-// Firebase Admin Initialize လုပ်ခြင်း
 const app = getApps().length === 0 
   ? initializeApp({
       credential: cert(JSON.parse(process.env.FIREBASE_SERVICE_ACCOUNT))
@@ -12,7 +10,6 @@ const app = getApps().length === 0
 
 const db = getFirestore(app);
 
-// မြန်မာစံတော်ချိန် ရယူရန် Helper Function
 function getYangonTimeStr() {
     const now = new Date();
     const utc = now.getTime() + (now.getTimezoneOffset() * 60000);
@@ -25,10 +22,9 @@ function getYangonTimeStr() {
     return `${dateStr}    ${hours}:${minutes} ${ampm}`;
 }
 
-// ImgBB သို့ ပုံတင်ပေးမည့် Function
 async function uploadToImgBB(base64Image) {
     if (!base64Image || !base64Image.startsWith('data:image')) {
-        return base64Image; // ပုံမဟုတ်ဘဲ URL ဖြစ်နေပြီးသားဆိုရင် တန်းပြန်ပေးမယ်
+        return base64Image; 
     }
 
     const apiKey = process.env.IMGBB_API_KEY;
@@ -46,11 +42,10 @@ async function uploadToImgBB(base64Image) {
     if (!result.success) {
         throw new Error("ImgBB Upload Failed: " + (result.error?.message || "Unknown error"));
     }
-    return result.data.url; // ImgBB မှ ထွက်လာသော ပုံ Link
+    return result.data.url;
 }
 
 module.exports = async function handler(req, res) {
-    // POST Method ဟုတ်မဟုတ် စစ်ဆေးခြင်း
     if (req.method !== 'POST') {
         res.setHeader('Allow', ['POST']);
         return res.status(405).json({ success: false, message: `Method ${req.method} not allowed` });
@@ -65,16 +60,12 @@ module.exports = async function handler(req, res) {
 
         let collectionName = '';
         let registrationData = {};
-        let slipForTelegram = ''; // Telegram ဆီ ပို့ရန် Payment Slip ပုံ (Base64 သို့မဟုတ် URL)
+        let slipForTelegram = '';
 
-        // ၁။ 1VS1 Mode အတွက်
         if (mode === '1vs1') {
             collectionName = '1vs1_registrations';
-            
             const logoToUpload = data.logo || data.logoBase64 || '';
             const slipToUpload = data.paymentSlip || data.paymentSlipUrl || '';
-
-            // Telegram ဆီ မတင်ခင် မူရင်း Base64 ပုံကို သိမ်းထားခြင်း
             slipForTelegram = slipToUpload;
 
             const logoUrl = await uploadToImgBB(logoToUpload);
@@ -96,10 +87,8 @@ module.exports = async function handler(req, res) {
                 createdAt: new Date()
             };
         }
-        // ၂။ 5VS5 Mode အတွက်
         else if (mode === '5vs5') {
             collectionName = '5vs5_registrations';
-            
             slipForTelegram = data.paymentSlip;
 
             const logoUrl = await uploadToImgBB(data.logo);
@@ -124,10 +113,8 @@ module.exports = async function handler(req, res) {
                 createdAt: new Date()
             };
         } 
-        // ၃။ TOURNAMENT Mode အတွက်
         else if (mode === 'tournament') {
             collectionName = 'tournament_registrations';
-            
             slipForTelegram = data.paymentSlipUrl;
 
             const teamLogoUrl = await uploadToImgBB(data.teamLogo);
@@ -157,16 +144,16 @@ module.exports = async function handler(req, res) {
             return res.status(400).json({ success: false, message: "Invalid registration mode" });
         }
 
-        // သက်ဆိုင်ရာ Collection ထဲသို့ Data အသစ် ထည့်သွင်းခြင်း
+        // 1. Firestore ထဲသို့ Data အသစ်ထည့်ပြီး Document ID (docId) ကို ရယူခြင်း
         const docRef = await db.collection(collectionName).add(registrationData);
 
-        // Database ထဲ ဝင်သွားတဲ့ registrationData တိုင်းကို Telegram ဆီ ပို့ရန် ပုံစံထုတ်ခြင်း
         const telegramPayload = {
             ...registrationData,
             mode: mode
         };
 
-        const telegramResult = await sendRegistrationToTelegram(telegramPayload, slipForTelegram);
+        // 2. docId ကို Telegram ဆီသို့ ပေးပို့ခြင်း
+        const telegramResult = await sendRegistrationToTelegram(telegramPayload, slipForTelegram, collectionName, docRef.id);
         if (!telegramResult.success) {
             console.error("Telegram Error:", telegramResult.error);
         }

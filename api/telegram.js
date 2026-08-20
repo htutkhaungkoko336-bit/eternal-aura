@@ -1,7 +1,7 @@
 const fetch = require('node-fetch');
 const FormData = require('form-data');
 
-async function sendRegistrationToTelegram(userData, paymentSlipBase64) {
+async function sendRegistrationToTelegram(userData, paymentSlipBase64, collectionName, docId) {
     const BOT_TOKEN = process.env.TELEGRAM_BOT_TOKEN;
     const GROUP_ID = process.env.REGISTRATION_GROUP_ID;
 
@@ -13,7 +13,6 @@ async function sendRegistrationToTelegram(userData, paymentSlipBase64) {
     const mode = userData.mode || 'N/A';
     let detailsCaption = '';
 
-    // Database ထဲ ဝင်တဲ့ Data များကို ရှင်းလင်းစွာ ခွဲထုတ်ဖော်ပြခြင်း
     if (mode === '1vs1') {
         detailsCaption = `
 🎮 **Mode:** 1VS1
@@ -80,19 +79,18 @@ async function sendRegistrationToTelegram(userData, paymentSlipBase64) {
         detailsCaption = `🎮 **Mode:** ${mode}`;
     }
 
-    // အပေါ်ဆုံးမှာ ခေါင်းစဉ်အနေနဲ့ ထားမည့် စာသားအသစ်
     const caption = `
 🚀 **NEW REGISTRATION** 🚀
 ━━━━━━━━━━━━━━━━━━━
 ${detailsCaption}
     `.trim();
 
-    // Confirm နဲ့ Reject ခလုတ်များ
+    // 🔴 callback_data ထဲတွင် collectionName နှင့် docId ကို တွဲထည့်ခြင်း
     const inlineKeyboard = {
         inline_keyboard: [
             [
-                { text: "✅ Confirm", callback_data: `confirm_${userData.userId}_${Date.now()}` },
-                { text: "❌ Reject", callback_data: `reject_${userData.userId}_${Date.now()}` }
+                { text: "✅ Confirm", callback_data: `confirm_${collectionName}_${docId}` },
+                { text: "❌ Reject", callback_data: `reject_${collectionName}_${docId}` }
             ]
         ]
     };
