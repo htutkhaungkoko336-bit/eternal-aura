@@ -89,7 +89,7 @@ module.exports = async function handler(req, res) {
                 kpayPhNo: data.kpayPhoneNumber || data.kpayPhNo || '',
                 contactPhNo: data.contactPhoneNumber || data.contactPhNo || '',
                 fee: data.fee || '',
-                logo: logoUrl,           
+                logo: logoUrl,          
                 paymentSlip: slipUrl,   
                 status: 'PENDING', 
                 time: getYangonTimeStr(),
@@ -166,8 +166,7 @@ module.exports = async function handler(req, res) {
             mode: mode
         };
 
-        // ဒီနေရာမှာ collectionName နဲ့ docRef.id (docId) ကို ထည့်ပေးလိုက်ပါပြီ
-        const telegramResult = await sendRegistrationToTelegram(telegramPayload, slipForTelegram, collectionName, docRef.id);
+        const telegramResult = await sendRegistrationToTelegram(telegramPayload, slipForTelegram);
         if (!telegramResult.success) {
             console.error("Telegram Error:", telegramResult.error);
         }

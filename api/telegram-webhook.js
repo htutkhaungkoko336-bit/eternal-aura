@@ -2,7 +2,6 @@ const { initializeApp, cert, getApps } = require('firebase-admin/app');
 const { getFirestore } = require('firebase-admin/firestore');
 const fetch = require('node-fetch');
 
-// Firebase Admin Initialize လုပ်ခြင်း
 const app = getApps().length === 0 
   ? initializeApp({
       credential: cert(JSON.parse(process.env.FIREBASE_SERVICE_ACCOUNT))
@@ -19,74 +18,61 @@ module.exports = async (req, res) => {
     try {
         const update = req.body;
 
-        // Admin က Inline Button ကို နှိပ်မှသာ ဝင်လာမည်
         if (update.callback_query) {
             const callbackQuery = update.callback_query;
-            const data = callbackQuery.data; // ဥပမာ- confirm_collectionName_docId_userId (သို့) မူလပုံစံ
+            const data = callbackQuery.data; // ပုံစံ - c_5_iaGZgFGk4GAqndwSpph (သို့) r_5_...
             const chatId = callbackQuery.message.chat.id;
             const messageId = callbackQuery.message.message_id;
             const BOT_TOKEN = process.env.TELEGRAM_BOT_TOKEN;
 
-            // Data ကို underscore (_) ဖြင့် ခွဲထုတ်ခြင်း
             const parts = data.split('_');
-            const action = parts[0]; // 'confirm' သို့မဟုတ် 'reject'
+            const actionPrefix = parts[0]; // 'c' သို့မဟုတ် 'r'
             
             let newStatus = "";
             let responseText = "";
-            let adminReasonText = "Registration rejected by admin"; // လိုအပ်ပါက အကြောင်းပြချက်
+            let adminReasonText = "Registration rejected by admin";
 
-            if (action === 'confirm') {
+            if (actionPrefix === 'c') {
                 newStatus = 'CONFIRMED';
                 responseText = "✅ This registration has been CONFIRMED.";
-            } else if (action === 'reject') {
+            } else if (actionPrefix === 'r') {
                 newStatus = 'REJECTED';
                 responseText = "❌ This registration has been REJECTED.";
             }
 
-            // --- Firebase Database ထဲမှ သက်ဆိုင်ရာ Document တစ်ခုတည်းကိုသာ Update ပြုလုပ်ခြင်း ---
+            // 🔴 တိကျသော Document တစ်ခုတည်းကိုသာ update လုပ်ခြင်း
             try {
-                // အကယ်၍ Callback data ထဲမှာ collection နဲ့ docId ပါလာလျှင် (အတိအကျ ထိန်းချုပ်ရန်)
                 if (parts.length >= 3) {
-                    const collectionName = parts[1];
+                    const colCode = parts[1];
                     const docId = parts[2];
 
-                    const docRef = db.collection(collectionName).doc(docId);
-                    const docSnap = await docRef.get();
+                    let collectionName = '';
+                    if (colCode === '1') collectionName = '1vs1_registrations';
+                    else if (colCode === '5') collectionName = '5vs5_registrations';
+                    else if (colCode === 't') collectionName = 'tournament_registrations';
 
-                    if (docSnap.exists) {
-                        let updateData = {
-                            status: newStatus,
-                            updatedAt: new Date()
-                        };
+                    if (collectionName && docId) {
+                        const docRef = db.collection(collectionName).doc(docId);
+                        const docSnap = await docRef.get();
 
-                        if (newStatus === 'REJECTED') {
-                            updateData.rejectReason = adminReasonText;
-                        }
+                        if (docSnap.exists) {
+                            let updateData = {
+                                status: newStatus,
+                                updatedAt: new Date()
+                            };
 
-                        await docRef.update(updateData);
-                    }
-                } 
-                else {
-                    // ရှေးဟောင်းပုံစံ (userId တစ်ခုတည်းနဲ့ လာခဲ့ရင် - Backup အနေနဲ့ ထားရှိခြင်း)
-                    const userId = parts[1];
-                    const collections = ['1vs1_registrations', '5vs5_registrations', 'tournament_registrations'];
-                    
-                    for (const col of collections) {
-                        const querySnapshot = await db.collection(col).where('userId', '==', userId).get();
-                        if (!querySnapshot.empty) {
-                            const updatePromises = querySnapshot.docs.map(doc => {
-                                let updateData = { status: newStatus, updatedAt: new Date() };
-                                if (newStatus === 'REJECTED') updateData.rejectReason = adminReasonText;
-                                return doc.ref.update(updateData);
-                            });
-                            await Promise.all(updatePromises);
+                            if (newStatus === 'REJECTED') {
+                                updateData.rejectReason = adminReasonText;
+                            }
+
+                            // ထို Document တစ်ခုတည်းကိုသာ တိုက်ရိုက် Update ချမည်
+                            await docRef.update(updateData);
                         }
                     }
                 }
             } catch (dbError) {
                 console.error("Database Update Error:", dbError);
             }
-            // --------------------------------------------------------------------
 
             // Telegram Group ထဲရှိ မူလစာသားကို အပ်ဒိတ်လုပ်ပေးခြင်း (ခလုတ်များကို ဖြုတ်ရန်)
             await fetch(`https://api.telegram.org/bot${BOT_TOKEN}/editMessageCaption`, {
@@ -97,11 +83,10 @@ module.exports = async (req, res) => {
                     message_id: messageId,
                     caption: `${callbackQuery.message.caption}\n\n*Status: ${responseText}*`,
                     parse_mode: 'Markdown',
-                    reply_markup: { inline_keyboard: [] } // ခလုတ်များကို ဖယ်ရှားခြင်း
+                    reply_markup: { inline_keyboard: [] }
                 })
             });
 
-            // Telegram သို့ အကြောင်းပြန်ခြင်း (Loading animation ပျောက်သွားရန်)
             await fetch(`https://api.telegram.org/bot${BOT_TOKEN}/answerCallbackQuery`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
