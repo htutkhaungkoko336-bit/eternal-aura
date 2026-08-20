@@ -1,7 +1,7 @@
 const fetch = require('node-fetch');
 const FormData = require('form-data');
 
-async function sendRegistrationToTelegram(userData, paymentSlipBase64) {
+async function sendRegistrationToTelegram(userData, paymentSlipBase64, collectionName, docId) {
     const BOT_TOKEN = process.env.TELEGRAM_BOT_TOKEN;
     const GROUP_ID = process.env.REGISTRATION_GROUP_ID;
 
@@ -87,12 +87,12 @@ async function sendRegistrationToTelegram(userData, paymentSlipBase64) {
 ${detailsCaption}
     `.trim();
 
-    // Confirm နဲ့ Reject ခလုတ်များ
+    // Confirm နဲ့ Reject ခလုတ်များ (collectionName နဲ့ docId ပါ ထည့်ပေးခြင်း)
     const inlineKeyboard = {
         inline_keyboard: [
             [
-                { text: "✅ Confirm", callback_data: `confirm_${userData.userId}_${Date.now()}` },
-                { text: "❌ Reject", callback_data: `reject_${userData.userId}_${Date.now()}` }
+                { text: "✅ Confirm", callback_data: `confirm_${collectionName}_${docId}_${userData.userId}` },
+                { text: "❌ Reject", callback_data: `reject_${collectionName}_${docId}_${userData.userId}` }
             ]
         ]
     };
