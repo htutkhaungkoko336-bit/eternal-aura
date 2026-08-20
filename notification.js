@@ -168,7 +168,7 @@ function renderNotificationCards(container, notifications) {
     });
 }
 
-// Server API ကနေ Status လှမ်းစစ်မယ့် Function (Fixed duplicate triggers)
+// Server API ကနေ Status လှမ်းစစ်မယ့် Function
 export async function checkStatusViaApi(userId) {
     try {
         const response = await fetch(`/api/check-status?userId=${userId}`); 
@@ -177,14 +177,29 @@ export async function checkStatusViaApi(userId) {
         const currentStatus = data.status; // 'CONFIRMED', 'APPROVED', 'REJECTED', 'PENDING' etc.
         const lastStatus = localStorage.getItem(`last_status_${userId}`);
 
-        // Status အသစ်ပြောင်းလဲမှသာ သို့မဟုတ် ပထမဆုံးအကြိမ် သိရှိမှသာ Notification ပို့ရန်
-        if (currentStatus && currentStatus !== lastStatus) {
-            if (currentStatus === 'CONFIRMED' || currentStatus === 'APPROVED') {
-                addNotification("Registration Confirmed! ✅", "သင်၏ စာရင်းသွင်းမှု အောင်မြင်စွာ အတည်ပြုပြီးပါပြီ။");
-            } else if (currentStatus === 'REJECTED') {
-                addNotification("Registration Rejected ❌", `အကြောင်းရင်း: ${data.reason || "No reason provided."}`);
-            }
+        let title = "";
+        let message = "";
 
+        if (currentStatus === 'CONFIRMED' || currentStatus === 'APPROVED') {
+            title = "Registration Confirmed! ✅";
+            message = "သင်၏ စာရင်းသွင်းမှု အောင်မြင်စွာ အတည်ပြုပြီးပါပြီ။";
+        } else if (currentStatus === 'REJECTED') {
+            title = "Registration Rejected ❌";
+            message = `အကြောင်းရင်း: ${data.reason || "No reason provided."}`;
+        }
+
+        // Status ပြောင်းသွားရင် (သို့) LocalStorage မှာ last_status မရှိသေးရင်
+        if (currentStatus && currentStatus !== lastStatus) {
+            if (title && message) {
+                let notifications = JSON.parse(localStorage.getItem('app_notifications')) || [];
+                
+                // အဲ့ဒီ Title နဲ့ Notification မျိုး လုံးဝမရှိသေးမှသာ အသစ်ထည့်မည် (အထပ်ထပ်မဖြစ်အောင်)
+                const alreadyExists = notifications.some(noti => noti.title === title);
+                
+                if (!alreadyExists) {
+                    addNotification(title, message);
+                }
+            }
             // လက်ရှိ Status ကို မှတ်ထားမည်
             localStorage.setItem(`last_status_${userId}`, currentStatus);
         }
@@ -192,7 +207,6 @@ export async function checkStatusViaApi(userId) {
         console.error("Error checking status:", error);
     }
 }
-
 // Polling ကို စတင်ရန် Function
 export function startStatusPolling() {
     const savedUserId = localStorage.getItem('userId') || localStorage.getItem('user_id');
