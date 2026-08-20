@@ -211,7 +211,13 @@ export async function checkStatusViaApi(userId) {
 }
 // Polling ကို စတင်ရန် Function
 export function startStatusPolling() {
-    const savedUserId = localStorage.getItem('userId') || localStorage.getItem('user_id');
+    // ညီမလေးရဲ့ App မှာသုံးနေတဲ့ LocalStorage Key နာမည်အတზ ကျေကျေလည်လည် ထည့်ပေးပါ
+    // ဥပမာ - 'userId', 'user_id', 'currentUser', etc.
+    const savedUserId = localStorage.getItem('userId') || localStorage.getItem('user_id') || localStorage.getItem('AURA-K0MB3E'); 
+    
+    // ဒါမှမဟုတ် တကယ်လို့ User ID က အခြားနေရာမှာရှိရင် ဒီနေရာမှာ တိုက်ရိုက်ထည့်စမ်းလို့ရပါတယ်
+    // const savedUserId = "AURA-K0MB3E"; 
+
     console.log("Saved User ID for polling:", savedUserId);
     
     if (savedUserId) {
@@ -225,8 +231,7 @@ export function startStatusPolling() {
     } else {
         console.warn("No userId found in localStorage! Polling not started.");
     }
-}// Polling ကို စတင်ရန် Function
-
+}
 document.addEventListener('DOMContentLoaded', () => {
     updateNotificationBadge();
 });
