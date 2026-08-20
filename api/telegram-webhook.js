@@ -20,16 +20,24 @@ module.exports = async (req, res) => {
 
         if (update.callback_query) {
             const callbackQuery = update.callback_query;
-            const data = callbackQuery.data; // ပုံစံ - confirm_collectionName_docId
+            const data = callbackQuery.data; // ပုံစံ - confirm_5vs5_registrations_OzOcxxIPMMGD7bEsqp0j
             const chatId = callbackQuery.message.chat.id;
             const messageId = callbackQuery.message.message_id;
             const BOT_TOKEN = process.env.TELEGRAM_BOT_TOKEN;
 
-            // 🔴 ေဒတာများကို အတိအကျ ခွဲထုတ်ခြင်း
-            const parts = data.split('_');
-            const action = parts[0];          // confirm သို့မဟုတ် reject
-            const collectionName = parts[1];  // 1vs1_registrations, 5vs5_registrations စသည်ဖြင့်
-            const docId = parts[2];           // Firestore ရဲ့ Document ID အစစ်
+            console.log("Received callback data:", data);
+
+            // data ကို ပထမဆုံး underscore (_) နှစ်ခုဖြင့်သာ action နှင့် ကျန်တာကို ခွဲထုတ်ခြင်း
+            const firstUnderscore = data.indexOf('_');
+            const action = data.substring(0, firstUnderscore); // confirm သို့မဟုတ် reject
+            const remaining = data.substring(firstUnderscore + 1);
+            
+            // ကျန်တဲ့ထဲမှာ နောက်ဆုံး underscore ကို ရှာပြီး collectionName နဲ့ docId ကို ခွဲထုတ်ခြင်း
+            const lastUnderscore = remaining.lastIndexOf('_');
+            const collectionName = remaining.substring(0, lastUnderscore);
+            const docId = remaining.substring(lastUnderscore + 1);
+
+            console.log(`Parsed -> Action: ${action}, Collection: ${collectionName}, DocID: ${docId}`);
 
             let newStatus = "";
             let responseText = "";
@@ -42,10 +50,13 @@ module.exports = async (req, res) => {
                 responseText = "❌ This registration has been REJECTED.";
             }
 
-            // 🔴 Firestore ထဲတွင် docId ကိုသုံး၍ တိုက်ရိုက် Update လုပ်ခြင်း (အလွန်မြန်ဆန်ပြီး မှန်ကန်သည်)
+            // Firestore ထဲတွင် docId ကိုသုံး၍ တိုက်ရိုက် Update လုပ်ခြင်း
             try {
                 if (collectionName && docId) {
                     await db.collection(collectionName).doc(docId).update({ status: newStatus });
+                    console.log("Firestore updated successfully!");
+                } else {
+                    console.error("Invalid collectionName or docId");
                 }
             } catch (dbError) {
                 console.error("Database Update Error:", dbError);
