@@ -167,32 +167,42 @@ function renderNotificationCards(container, notifications) {
         container.appendChild(card);
     });
 }
-// Server API ကနေ Status လှမ်းစစ်မယ့် Function
+
+// Server API ကနေ Status လှမ်းစစ်မယ့် Function (Fixed duplicate triggers)
 export async function checkStatusViaApi(userId) {
     try {
-        const response = await fetch(`/api/check-status?userId=${userId}`);
+        const response = await fetch(`/api/check-status?userId=${userId}`); 
         const data = await response.json();
 
-        const currentStatus = data.status; // 'CONFIRMED', 'APPROVED', 'REJECTED', 'PENDING'
+        const currentStatus = data.status; // 'CONFIRMED', 'APPROVED', 'REJECTED', 'PENDING' etc.
         const lastStatus = localStorage.getItem(`last_status_${userId}`);
 
-        // Status အသစ်ပြောင်းလဲမှသာ (သို့) ပထမဆုံးအကြိမ် သိရှိမှသာ Notification ပို့ရန်
+        // Status အသစ်ပြောင်းလဲမှသာ သို့မဟုတ် ပထမဆုံးအကြိမ် သိရှိမှသာ Notification ပို့ရန်
         if (currentStatus && currentStatus !== lastStatus) {
-            
-            // PENDING ကနေ အခြားတစ်ခုခုသို့ ပြောင်းသွားမှသာ သို့မဟုတ် ပထမအကြိမ်ဖြစ်မှ
             if (currentStatus === 'CONFIRMED' || currentStatus === 'APPROVED') {
                 addNotification("Registration Confirmed! ✅", "သင်၏ စာရင်းသွင်းမှု အောင်မြင်စွာ အတည်ပြုပြီးပါပြီ။");
             } else if (currentStatus === 'REJECTED') {
                 addNotification("Registration Rejected ❌", `အကြောင်းရင်း: ${data.reason || "No reason provided."}`);
             }
 
-            // လက်ရှိ Status ကို အမြဲတမ်း မှတ်ထားမည်
+            // လက်ရှိ Status ကို မှတ်ထားမည်
             localStorage.setItem(`last_status_${userId}`, currentStatus);
         }
     } catch (error) {
         console.error("Error checking status:", error);
     }
 }
+
+// Polling ကို စတင်ရန် Function
+export function startStatusPolling() {
+    const savedUserId = localStorage.getItem('userId') || localStorage.getItem('user_id');
+    if (savedUserId) {
+        setInterval(() => {
+            checkStatusViaApi(savedUserId);
+        }, 5000);
+    }
+}
+
 document.addEventListener('DOMContentLoaded', () => {
     updateNotificationBadge();
 });
