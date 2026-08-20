@@ -168,69 +168,6 @@ function renderNotificationCards(container, notifications) {
     });
 }
 
-// Server API ကနေ Status လှမ်းစစ်မယ့် Function (Debugging with console.log)
-// Server API ကနေ Status လှမ်းစစ်မယ့် Function (SessionStorage ဖြင့် ထပ်မံကာကွယ်ခြင်း)
-export async function checkStatusViaApi(userId) {
-    try {
-        console.log("Checking status for userId:", userId);
-        const response = await fetch(`/api/check-status?userId=${userId}`); 
-        const data = await response.json();
-        console.log("API Response data:", data);
-
-        const currentStatus = data.status; // 'CONFIRMED', 'APPROVED', 'REJECTED', 'PENDING' etc.
-        
-        // Session ထဲမှာ ဒီ user အတွက် ပြီးခဲ့တဲ့ status ကို မှတ်မယ် (Browser Tab ပိတ်ရင် ပြန်ရှင်းသွားမယ်)
-        const sessionKey = `notified_status_${userId}`;
-        const notifiedStatus = sessionStorage.getItem(sessionKey);
-
-        let title = "";
-        let message = "";
-
-        if (currentStatus === 'CONFIRMED' || currentStatus === 'APPROVED') {
-            title = "Registration Confirmed! ✅";
-            message = "သင်၏ စာရင်းသွင်းမှု အောင်မြင်စွာ အတည်ပြုပြီးပါပြီ။";
-        } else if (currentStatus === 'REJECTED') {
-            title = "Registration Rejected ❌";
-            message = `အကြောင်းရင်း: ${data.reason || "No reason provided."}`;
-        }
-
-        // Status က CONFIRMED သို့မဟုတ် REJECTED ဖြစ်ပြီး၊ ဒီ Session မှာ ဒီ Status အတွက် Notification လုံးဝမပို့ရသေးရင်သာ
-        if ((currentStatus === 'CONFIRMED' || currentStatus === 'APPROVED' || currentStatus === 'REJECTED') && notifiedStatus !== currentStatus) {
-            
-            if (title && message) {
-                console.log("Triggering addNotification for:", currentStatus);
-                addNotification(title, message);
-                
-                // ဒီ Status အတွက် Notification ပို့ပြီးပြီလို့ Session မှာ မှတ်ထားလိုက်မယ်
-                sessionStorage.setItem(sessionKey, currentStatus);
-            }
-        }
-    } catch (error) {
-        console.error("Error checking status via API:", error);
-    }
-}
-// Polling ကို အလိုအလျောက် စတင်ရန် (userId ကို စဉ်ဆက်မပြတ် စောင့်ကြည့်မည်)
-export function startStatusPolling() {
-    // တစ်ကြိမ်တည်းနဲ့ Interval ပွားမသွားအောင် တားဆီးရန်
-    if (window.isPollingStarted) return;
-    window.isPollingStarted = true;
-
-    console.log("Status polling service initialized.");
-
-    // ၅ စက္ကန့်တစ်ခါ (သို့မဟုတ် userId ရှိလာတာနဲ့) စစ်မယ့် Loop
-    setInterval(() => {
-        const savedUserId = localStorage.getItem('userId') || localStorage.getItem('user_id');
-        if (savedUserId) {
-            checkStatusViaApi(savedUserId);
-        }
-    }, 5000);
-}
-
-// App စတင်တာနဲ့ Polling ကို အလိုအလျောက် စတင်ရန်
-document.addEventListener('DOMContentLoaded', () => {
-    updateNotificationBadge();
-    startStatusPolling(); // Page စပွင့်တာနဲ့ Polling ကို စတင်လိုက်သည်
-});
 document.addEventListener('DOMContentLoaded', () => {
     updateNotificationBadge();
 });

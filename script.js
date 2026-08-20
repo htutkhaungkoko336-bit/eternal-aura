@@ -1,6 +1,7 @@
+// main.js
 import { initAuth } from './auth.js';
 import { renderModeScreen } from './mode.js';
-import { addNotification, renderNotificationScreen, checkStatusViaApi, startStatusPolling } from './notification.js';
+import { addNotification, renderNotificationScreen } from './notification.js';
 
 // DOM Elements များကို ရယူခြင်း
 const formContent = document.getElementById('form-content');
@@ -15,10 +16,7 @@ if (formContent) {
 }
 
 document.addEventListener('DOMContentLoaded', () => {
-    // 1. Notification Status Polling ကို စတင်ရန် (Notification file ထဲက function ကို လှမ်းခေါ်ခြင်း)
-    startStatusPolling();
-
-    // 2. Authentication ကို စတင်ရန်
+    // လိုအပ်ပါက Authentication ကို စတင်ရန်
     if (typeof initAuth === 'function' && formContent) {
         initAuth(formContent, async (phone, pin) => {
             let deviceId = localStorage.getItem('device_id');
@@ -37,19 +35,21 @@ document.addEventListener('DOMContentLoaded', () => {
                 const data = await response.json();
 
                 if (data.success) {
-                    handleLoginSuccess(data); 
+                    handleLoginSuccess(data); // data တစ်ခုလုံးကို ပို့ပေးလိုက်ပါ
                     return;
                 }
                 if (data.requiresPassword) {
                     showPinInputScreen(phone, deviceId);
                     return;
                 }
+
                 if (data.requiresRegistration) {
                     showNameInputScreen(phone, pin, deviceId);
                     return;
                 }
 
                 alert("အမှားအယွင်းရှိသည်: " + (data.message || "Unknown error"));
+
             } catch (err) {
                 console.error("Network error:", err);
                 alert("ဆာဗာသို့ ချိတ်ဆက်၍ မရပါ။");
@@ -57,11 +57,12 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
-    // 3. Mode မျက်နှာပြင်ကို စတင်ပြသရန်
+    // Mode မျက်နှာပြင်ကို စတင်ပြသရန်
     if (appContent) {
         renderModeScreen(appContent);
     }
 });
+
 // A. User အသစ်အတွက် Name ထည့်ခိုင်းမည့် Screen
 function showNameInputScreen(phone, pin, deviceId) {
     formContent.innerHTML = `
