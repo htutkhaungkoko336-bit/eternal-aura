@@ -167,7 +167,29 @@ function renderNotificationCards(container, notifications) {
         container.appendChild(card);
     });
 }
+// Server API ကနေ Status လှမ်းစစ်မယ့် Function
+export async function checkStatusViaApi(userId) {
+    try {
+        const response = await fetch(`/api/check-status?userId=${userId}`); // ကိုယ့်ရဲ့ API endpoint
+        const data = await response.json();
 
+        if (data.status === 'CONFIRMED') {
+            const lastStatus = localStorage.getItem(`last_status_${userId}`);
+            if (lastStatus !== 'CONFIRMED') {
+                addNotification("Registration Confirmed! ✅", "သင်၏ စာရင်းသွင်းမှု အောင်မြင်စွာ အတည်ပြုပြီးပါပြီ။");
+                localStorage.setItem(`last_status_${userId}`, 'CONFIRMED');
+            }
+        } else if (data.status === 'REJECTED') {
+            const lastStatus = localStorage.getItem(`last_status_${userId}`);
+            if (lastStatus !== 'REJECTED') {
+                addNotification("Registration Rejected ❌", `အကြောင်းရင်း: ${data.reason || "No reason provided."}`);
+                localStorage.setItem(`last_status_${userId}`, 'REJECTED');
+            }
+        }
+    } catch (error) {
+        console.error("Error checking status:", error);
+    }
+}
 document.addEventListener('DOMContentLoaded', () => {
     updateNotificationBadge();
 });
