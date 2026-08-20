@@ -22,15 +22,18 @@ module.exports = async (req, res) => {
         // Admin က Inline Button ကို နှိပ်မှသာ ဝင်လာမည်
         if (update.callback_query) {
             const callbackQuery = update.callback_query;
-            const data = callbackQuery.data; // ဥပမာ- confirm_userId_timestamp
+            const data = callbackQuery.data; // ဥပမာ- confirm_collectionName_docId_userId (သို့) မူလပုံစံ
             const chatId = callbackQuery.message.chat.id;
             const messageId = callbackQuery.message.message_id;
             const BOT_TOKEN = process.env.TELEGRAM_BOT_TOKEN;
 
-            const [action, userId, timestamp] = data.split('_');
-
+            // Data ကို underscore (_) ဖြင့် ခွဲထုတ်ခြင်း
+            const parts = data.split('_');
+            const action = parts[0]; // 'confirm' သို့မဟုတ် 'reject'
+            
             let newStatus = "";
             let responseText = "";
+            let adminReasonText = "Registration rejected by admin"; // လိုအပ်ပါက အကြောင်းပြချက်
 
             if (action === 'confirm') {
                 newStatus = 'CONFIRMED';
@@ -40,20 +43,44 @@ module.exports = async (req, res) => {
                 responseText = "❌ This registration has been REJECTED.";
             }
 
-            // --- Firebase Database ထဲမှ Status ပြောင်းမည့်အပိုင်း (Fix လုပ်ထားသည်) ---
+            // --- Firebase Database ထဲမှ သက်ဆိုင်ရာ Document တစ်ခုတည်းကိုသာ Update ပြုလုပ်ခြင်း ---
             try {
-                const collections = ['1vs1_registrations', '5vs5_registrations', 'tournament_registrations'];
-                
-                // Collection တစ်ခုချင်းစီကို စစ်ဆေးပြီး Update လုပ်ခြင်း
-                for (const col of collections) {
-                    const querySnapshot = await db.collection(col).where('userId', '==', userId).get();
+                // အကယ်၍ Callback data ထဲမှာ collection နဲ့ docId ပါလာလျှင် (အတိအကျ ထိန်းချုပ်ရန်)
+                if (parts.length >= 3) {
+                    const collectionName = parts[1];
+                    const docId = parts[2];
+
+                    const docRef = db.collection(collectionName).doc(docId);
+                    const docSnap = await docRef.get();
+
+                    if (docSnap.exists) {
+                        let updateData = {
+                            status: newStatus,
+                            updatedAt: new Date()
+                        };
+
+                        if (newStatus === 'REJECTED') {
+                            updateData.rejectReason = adminReasonText;
+                        }
+
+                        await docRef.update(updateData);
+                    }
+                } 
+                else {
+                    // ရှေးဟောင်းပုံစံ (userId တစ်ခုတည်းနဲ့ လာခဲ့ရင် - Backup အနေနဲ့ ထားရှိခြင်း)
+                    const userId = parts[1];
+                    const collections = ['1vs1_registrations', '5vs5_registrations', 'tournament_registrations'];
                     
-                    if (!querySnapshot.empty) {
-                        // Promise.all သုံးပြီး Update အားလုံး ပြီးဆုံးသည်အထိ စောင့်ရန်
-                        const updatePromises = querySnapshot.docs.map(doc => 
-                            doc.ref.update({ status: newStatus })
-                        );
-                        await Promise.all(updatePromises);
+                    for (const col of collections) {
+                        const querySnapshot = await db.collection(col).where('userId', '==', userId).get();
+                        if (!querySnapshot.empty) {
+                            const updatePromises = querySnapshot.docs.map(doc => {
+                                let updateData = { status: newStatus, updatedAt: new Date() };
+                                if (newStatus === 'REJECTED') updateData.rejectReason = adminReasonText;
+                                return doc.ref.update(updateData);
+                            });
+                            await Promise.all(updatePromises);
+                        }
                     }
                 }
             } catch (dbError) {
