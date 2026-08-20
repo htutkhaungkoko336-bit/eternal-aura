@@ -21,16 +21,27 @@ module.exports = async (req, res) => {
     }
 
     try {
-        // 5vs5_registrations သို့မဟုတ် သက်ဆိုင်ရာ Collection ထဲတွင် userId Field ဖြင့် ရှာဖွေခြင်း
-        // (လိုအပ်ပါက 1vs1_registrations များကိုပါ ထပ်စစ်နိုင်သည်)
         const collections = ['5vs5_registrations', '1vs1_registrations', 'tournament_registrations'];
         let foundData = null;
+        let latestTime = 0;
 
         for (const colName of collections) {
-            const snapshot = await db.collection(colName).where('userId', '==', userId).get();
+            // userId တူတာတွေကို ရှာမယ် (createdAt အလိုက် အသစ်ဆုံးကို ယူဖို့)
+            const snapshot = await db.collection(colName)
+                .where('userId', '==', userId)
+                .orderBy('createdAt', 'desc')
+                .limit(1)
+                .get();
+
             if (!snapshot.empty) {
-                foundData = snapshot.docs[0].data();
-                break;
+                const docData = snapshot.docs[0].data();
+                const docTime = docData.createdAt && docData.createdAt.toMillis ? docData.createdAt.toMillis() : 0;
+                
+                // အသစ်ဆုံး စာရင်းသွင်းမှုကို ရွေးထုတ်ရန်
+                if (docTime >= latestTime) {
+                    latestTime = docTime;
+                    foundData = docData;
+                }
             }
         }
 
