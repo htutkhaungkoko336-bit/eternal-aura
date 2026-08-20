@@ -169,6 +169,7 @@ function renderNotificationCards(container, notifications) {
 }
 
 // Server API ကနေ Status လှမ်းစစ်မယ့် Function (Debugging with console.log)
+// Server API ကနေ Status လှမ်းစစ်မယ့် Function (SessionStorage ဖြင့် ထပ်မံကာကွယ်ခြင်း)
 export async function checkStatusViaApi(userId) {
     try {
         console.log("Checking status for userId:", userId);
@@ -177,7 +178,10 @@ export async function checkStatusViaApi(userId) {
         console.log("API Response data:", data);
 
         const currentStatus = data.status; // 'CONFIRMED', 'APPROVED', 'REJECTED', 'PENDING' etc.
-        const lastStatus = localStorage.getItem(`last_status_${userId}`);
+        
+        // Session ထဲမှာ ဒီ user အတွက် ပြီးခဲ့တဲ့ status ကို မှတ်မယ် (Browser Tab ပိတ်ရင် ပြန်ရှင်းသွားမယ်)
+        const sessionKey = `notified_status_${userId}`;
+        const notifiedStatus = sessionStorage.getItem(sessionKey);
 
         let title = "";
         let message = "";
@@ -190,23 +194,21 @@ export async function checkStatusViaApi(userId) {
             message = `အကြောင်းရင်း: ${data.reason || "No reason provided."}`;
         }
 
-        if (currentStatus && currentStatus !== lastStatus) {
+        // Status က CONFIRMED သို့မဟုတ် REJECTED ဖြစ်ပြီး၊ ဒီ Session မှာ ဒီ Status အတွက် Notification လုံးဝမပို့ရသေးရင်သာ
+        if ((currentStatus === 'CONFIRMED' || currentStatus === 'APPROVED' || currentStatus === 'REJECTED') && notifiedStatus !== currentStatus) {
+            
             if (title && message) {
-                let notifications = JSON.parse(localStorage.getItem('app_notifications')) || [];
-                const alreadyExists = notifications.some(noti => noti.title === title);
+                console.log("Triggering addNotification for:", currentStatus);
+                addNotification(title, message);
                 
-                if (!alreadyExists) {
-                    console.log("Adding new notification:", title);
-                    addNotification(title, message);
-                }
+                // ဒီ Status အတွက် Notification ပို့ပြီးပြီလို့ Session မှာ မှတ်ထားလိုက်မယ်
+                sessionStorage.setItem(sessionKey, currentStatus);
             }
-            localStorage.setItem(`last_status_${userId}`, currentStatus);
         }
     } catch (error) {
         console.error("Error checking status via API:", error);
     }
 }
-
 // Polling ကို စတင်ရန် Function
 export function startStatusPolling() {
     const savedUserId = localStorage.getItem('userId') || localStorage.getItem('user_id');
