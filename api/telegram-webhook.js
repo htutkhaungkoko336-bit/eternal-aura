@@ -2,6 +2,7 @@ const { initializeApp, cert, getApps } = require('firebase-admin/app');
 const { getFirestore } = require('firebase-admin/firestore');
 const fetch = require('node-fetch');
 
+// Firebase Admin Initialize လုပ်ခြင်း
 const app = getApps().length === 0 
   ? initializeApp({
       credential: cert(JSON.parse(process.env.FIREBASE_SERVICE_ACCOUNT))
@@ -18,61 +19,47 @@ module.exports = async (req, res) => {
     try {
         const update = req.body;
 
+        // Admin က Inline Button ကို နှိပ်မှသာ ဝင်လာမည်
         if (update.callback_query) {
             const callbackQuery = update.callback_query;
-            const data = callbackQuery.data; // ပုံစံ - c_5_iaGZgFGk4GAqndwSpph (သို့) r_5_...
+            const data = callbackQuery.data; // ဥပမာ- confirm_userId_timestamp
             const chatId = callbackQuery.message.chat.id;
             const messageId = callbackQuery.message.message_id;
             const BOT_TOKEN = process.env.TELEGRAM_BOT_TOKEN;
 
-            const parts = data.split('_');
-            const actionPrefix = parts[0]; // 'c' သို့မဟုတ် 'r'
-            
+            const [action, userId, timestamp] = data.split('_');
+
             let newStatus = "";
             let responseText = "";
-            let adminReasonText = "Registration rejected by admin";
 
-            if (actionPrefix === 'c') {
+            if (action === 'confirm') {
                 newStatus = 'CONFIRMED';
                 responseText = "✅ This registration has been CONFIRMED.";
-            } else if (actionPrefix === 'r') {
+            } else if (action === 'reject') {
                 newStatus = 'REJECTED';
                 responseText = "❌ This registration has been REJECTED.";
             }
 
-            // 🔴 တိကျသော Document တစ်ခုတည်းကိုသာ update လုပ်ခြင်း
+            // --- Firebase Database ထဲမှ Status ပြောင်းမည့်အပိုင်း (Fix လုပ်ထားသည်) ---
             try {
-                if (parts.length >= 3) {
-                    const colCode = parts[1];
-                    const docId = parts[2];
-
-                    let collectionName = '';
-                    if (colCode === '1') collectionName = '1vs1_registrations';
-                    else if (colCode === '5') collectionName = '5vs5_registrations';
-                    else if (colCode === 't') collectionName = 'tournament_registrations';
-
-                    if (collectionName && docId) {
-                        const docRef = db.collection(collectionName).doc(docId);
-                        const docSnap = await docRef.get();
-
-                        if (docSnap.exists) {
-                            let updateData = {
-                                status: newStatus,
-                                updatedAt: new Date()
-                            };
-
-                            if (newStatus === 'REJECTED') {
-                                updateData.rejectReason = adminReasonText;
-                            }
-
-                            // ထို Document တစ်ခုတည်းကိုသာ တိုက်ရိုက် Update ချမည်
-                            await docRef.update(updateData);
-                        }
+                const collections = ['1vs1_registrations', '5vs5_registrations', 'tournament_registrations'];
+                
+                // Collection တစ်ခုချင်းစီကို စစ်ဆေးပြီး Update လုပ်ခြင်း
+                for (const col of collections) {
+                    const querySnapshot = await db.collection(col).where('userId', '==', userId).get();
+                    
+                    if (!querySnapshot.empty) {
+                        // Promise.all သုံးပြီး Update အားလုံး ပြီးဆုံးသည်အထိ စောင့်ရန်
+                        const updatePromises = querySnapshot.docs.map(doc => 
+                            doc.ref.update({ status: newStatus })
+                        );
+                        await Promise.all(updatePromises);
                     }
                 }
             } catch (dbError) {
                 console.error("Database Update Error:", dbError);
             }
+            // --------------------------------------------------------------------
 
             // Telegram Group ထဲရှိ မူလစာသားကို အပ်ဒိတ်လုပ်ပေးခြင်း (ခလုတ်များကို ဖြုတ်ရန်)
             await fetch(`https://api.telegram.org/bot${BOT_TOKEN}/editMessageCaption`, {
@@ -83,10 +70,11 @@ module.exports = async (req, res) => {
                     message_id: messageId,
                     caption: `${callbackQuery.message.caption}\n\n*Status: ${responseText}*`,
                     parse_mode: 'Markdown',
-                    reply_markup: { inline_keyboard: [] }
+                    reply_markup: { inline_keyboard: [] } // ခလုတ်များကို ဖယ်ရှားခြင်း
                 })
             });
 
+            // Telegram သို့ အကြောင်းပြန်ခြင်း (Loading animation ပျောက်သွားရန်)
             await fetch(`https://api.telegram.org/bot${BOT_TOKEN}/answerCallbackQuery`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },

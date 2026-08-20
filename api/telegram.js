@@ -1,7 +1,7 @@
 const fetch = require('node-fetch');
 const FormData = require('form-data');
 
-async function sendRegistrationToTelegram(userData, paymentSlipBase64, collectionName, docId) {
+async function sendRegistrationToTelegram(userData, paymentSlipBase64) {
     const BOT_TOKEN = process.env.TELEGRAM_BOT_TOKEN;
     const GROUP_ID = process.env.REGISTRATION_GROUP_ID;
 
@@ -13,6 +13,7 @@ async function sendRegistrationToTelegram(userData, paymentSlipBase64, collectio
     const mode = userData.mode || 'N/A';
     let detailsCaption = '';
 
+    // Database ထဲ ဝင်တဲ့ Data များကို ရှင်းလင်းစွာ ခွဲထုတ်ဖော်ပြခြင်း
     if (mode === '1vs1') {
         detailsCaption = `
 🎮 **Mode:** 1VS1
@@ -21,10 +22,12 @@ async function sendRegistrationToTelegram(userData, paymentSlipBase64, collectio
 🎮 **In-Game Name:** ${userData.inGameName || 'N/A'}
 🆔 **Game ID:** ${userData.gameId || 'N/A'}
 🦸 **Hero Name:** ${userData.heroName || 'N/A'}
+
 💳 **KPay Name:** ${userData.kpayName || 'N/A'}
 📱 **KPay Ph No:** ${userData.kpayPhNo || 'N/A'}
 📞 **Contact Ph No:** ${userData.contactPhNo || 'N/A'}
 💰 **Fee:** ${userData.fee || 'N/A'}
+
 🕒 **Time:** ${userData.time || 'N/A'}
 🖼️ **Logo URL:** ${userData.logo || 'N/A'}
         `.trim();
@@ -35,15 +38,18 @@ async function sendRegistrationToTelegram(userData, paymentSlipBase64, collectio
 ━━━━━━━━━━━━━━━━━━━
 👤 **User ID:** ${userData.userId || 'N/A'}
 🛡️ **Squad Name:** ${userData.sqName || 'N/A'}
+
 🐾 **Roamer:** ${userData.roamer?.name || 'N/A'} (ID: ${userData.roamer?.id || 'N/A'})
 ⚔️ **EXP:** ${userData.exp?.name || 'N/A'} (ID: ${userData.exp?.id || 'N/A'})
 💰 **Gold:** ${userData.gold?.name || 'N/A'} (ID: ${userData.gold?.id || 'N/A'})
 🔮 **Mid:** ${userData.mid?.name || 'N/A'} (ID: ${userData.mid?.id || 'N/A'})
 🌿 **Jungle:** ${userData.jungle?.name || 'N/A'} (ID: ${userData.jungle?.id || 'N/A'})
+
 💳 **KPay Name:** ${userData.kpayName || 'N/A'}
 📱 **KPay Ph No:** ${userData.kpayPhNo || 'N/A'}
 📞 **Contact Ph No:** ${userData.contactPhNo || 'N/A'}
 💰 **Fee:** ${userData.fee || 'N/A'}
+
 🕒 **Time:** ${userData.time || 'N/A'}
 🖼️ **Logo URL:** ${userData.logo || 'N/A'}
         `.trim();
@@ -55,15 +61,18 @@ async function sendRegistrationToTelegram(userData, paymentSlipBase64, collectio
 👤 **User ID:** ${userData.userId || 'N/A'}
 🏆 **Team Name:** ${userData.teamName || 'N/A'}
 📌 **Slot:** ${userData.slot || 'N/A'} | 🎯 **Selected:** ${userData.selectedSlot || 'N/A'}
+
 🛡️ **Roamer:** ${userData.playerRoamer?.name || 'N/A'} (${userData.playerRoamer?.gameId || 'N/A'})
 ⚔️ **EXP:** ${userData.playerExp?.name || 'N/A'} (${userData.playerExp?.gameId || 'N/A'})
 💰 **Gold:** ${userData.playerGold?.name || 'N/A'} (${userData.playerGold?.gameId || 'N/A'})
 🔮 **Mid:** ${userData.playerMid?.name || 'N/A'} (${userData.playerMid?.gameId || 'N/A'})
 🌿 **Jungle:** ${userData.playerJungle?.name || 'N/A'} (${userData.playerJungle?.gameId || 'N/A'})
+
 💳 **KPay Name:** ${userData.kpayAccountName || 'N/A'}
 📱 **KPay Ph No:** ${userData.kpayPhoneNumber || 'N/A'}
 📞 **Contact Ph No:** ${userData.contactPhoneNumber || 'N/A'}
 💰 **Fee:** ${userData.fee || 'N/A'}
+
 🕒 **Time:** ${userData.time || 'N/A'}
 🖼️ **Team Logo URL:** ${userData.teamLogo || 'N/A'}
         `.trim();
@@ -71,23 +80,19 @@ async function sendRegistrationToTelegram(userData, paymentSlipBase64, collectio
         detailsCaption = `🎮 **Mode:** ${mode}`;
     }
 
+    // အပေါ်ဆုံးမှာ ခေါင်းစဉ်အနေနဲ့ ထားမည့် စာသားအသစ်
     const caption = `
 🚀 **NEW REGISTRATION** 🚀
 ━━━━━━━━━━━━━━━━━━━
 ${detailsCaption}
     `.trim();
 
-    // Collection နာမည်ကို Telegram 64 bytes limit အတွင်းဆံ့အောင် အတိုကောက်ပြောင်းခြင်း
-    let colCode = '1';
-    if (collectionName === '5vs5_registrations') colCode = '5';
-    else if (collectionName === 'tournament_registrations') colCode = 't';
-
-    // 🔴 အရေးကြီးချက် - တိကျသော docId တစ်ခုတည်းကိုသာ update လုပ်ရန် ခလုတ်ဒေတာတွင် ထည့်ပေးခြင်း
+    // Confirm နဲ့ Reject ခလုတ်များ
     const inlineKeyboard = {
         inline_keyboard: [
             [
-                { text: "✅ Confirm", callback_data: `c_${colCode}_${docId}` },
-                { text: "❌ Reject", callback_data: `r_${colCode}_${docId}` }
+                { text: "✅ Confirm", callback_data: `confirm_${userData.userId}_${Date.now()}` },
+                { text: "❌ Reject", callback_data: `reject_${userData.userId}_${Date.now()}` }
             ]
         ]
     };
