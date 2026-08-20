@@ -1,6 +1,6 @@
 import { initAuth } from './auth.js';
 import { renderModeScreen } from './mode.js';
-import { addNotification, renderNotificationScreen, checkStatusViaApi } from './notification.js'; // checkStatusViaApi ကို import ထည့်ထားပါတယ်
+import { addNotification, renderNotificationScreen, checkStatusViaApi, startStatusPolling } from './notification.js';
 
 // DOM Elements များကို ရယူခြင်း
 const formContent = document.getElementById('form-content');
@@ -15,13 +15,8 @@ if (formContent) {
 }
 
 document.addEventListener('DOMContentLoaded', () => {
-    // 1. Notification Status ကို API မှ 5 စက္ကန့်တစ်ခါ စစ်ဆေးရန်
-    const savedUserId = localStorage.getItem('user_id');
-    if (savedUserId) {
-        setInterval(() => {
-            checkStatusViaApi(savedUserId);
-        }, 5000);
-    }
+    // 1. Notification Status Polling ကို စတင်ရန် (Notification file ထဲက function ကို လှမ်းခေါ်ခြင်း)
+    startStatusPolling();
 
     // 2. Authentication ကို စတင်ရန်
     if (typeof initAuth === 'function' && formContent) {

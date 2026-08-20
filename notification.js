@@ -190,6 +190,15 @@ export async function checkStatusViaApi(userId) {
         console.error("Error checking status:", error);
     }
 }
+// Polling ကို စတင်ရန် Function
+export function startStatusPolling() {
+    const savedUserId = localStorage.getItem('userId') || localStorage.getItem('user_id');
+    if (savedUserId) {
+        setInterval(() => {
+            checkStatusViaApi(savedUserId);
+        }, 5000);
+    }
+}
 document.addEventListener('DOMContentLoaded', () => {
     updateNotificationBadge();
 });
