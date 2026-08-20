@@ -20,11 +20,6 @@ export function addNotification(title, message) {
     const newNoti = { title, message, dateStr, timeStr };
 
     let notifications = JSON.parse(localStorage.getItem('app_notifications')) || [];
-    
-    // ထပ်နေတဲ့ Noti တွေ မဖြစ်အောင် ခေတ္တစစ်ဆေးခြင်း (Duplicate ကာကွယ်ရန်)
-    const isDuplicate = notifications.some(n => n.title === title && n.message === message);
-    if (isDuplicate) return;
-
     notifications.unshift(newNoti);
     localStorage.setItem('app_notifications', JSON.stringify(notifications));
 
@@ -119,6 +114,7 @@ function renderNotificationCards(container, notifications) {
                         <span style="display: inline-block; width: 8px; height: 8px; background-color: #38bdf8; border-radius: 50%; box-shadow: 0 0 8px #38bdf8;"></span>
                         <h3 style="color: #f8fafc; font-size: 15px; font-weight: 700; margin: 0; letter-spacing: 0.5px;">${noti.title}</h3>
                     </div>
+                    <!-- ရိုးရိုးရှင်းရှင်းနှင့် သပ်ရပ်သော နေ့စွဲနှင့် အချိန်ဖော်ပြချက် -->
                     <p style="color: #94a3b8; font-size: 11px; margin: 6px 0 0 16px; font-family: monospace; letter-spacing: 0.5px;">${noti.dateStr} &nbsp;&bull;&nbsp; ${noti.timeStr}</p>
                 </div>
                 <div style="display: flex; align-items: center; gap: 10px;">
@@ -170,34 +166,6 @@ function renderNotificationCards(container, notifications) {
 
         container.appendChild(card);
     });
-}
-
-// --- Firestore Status ကို စစ်ဆေးပြီး Notification တင်ပေးမည့် Function ---
-export function handleRegistrationStatusCheck(registrationData) {
-    if (!registrationData || !registrationData.status) return;
-
-    // LocalStorage ထဲမှာ ဒီ Status အတွက် Noti ဝင်ပြီးသားလား စစ်ရန် (ထပ်ခါထပ်ခါ မတက်အောင်)
-    const lastStatusKey = `notified_status_${registrationData.userId || 'user'}`;
-    const lastNotifiedStatus = localStorage.getItem(lastStatusKey);
-
-    if (lastNotifiedStatus === registrationData.status) {
-        return; // Status မပြောင်းသေးရင် ထပ်မပြတော့ပါ
-    }
-
-    if (registrationData.status === 'REJECTED') {
-        const title = "❌ Registration Rejected";
-        const message = `တောင်းပန်ပါတယ်၊ သင့်ရဲ့ Tournament တင်သွင်းမှု ငြင်းပယ်ခံရပါပြီ။ အကြောင်းပြချက်: ${registrationData.rejectReason || 'အကြောင်းပြချက် မရှိပါ'}`;
-        
-        addNotification(title, message);
-        localStorage.setItem(lastStatusKey, 'REJECTED');
-    } 
-    else if (registrationData.status === 'CONFIRMED') {
-        const title = "✅ Registration Confirmed";
-        const message = "ဂုဏ်ယူပါတယ်! သင့်ရဲ့ Tournament ဝင်ရောက်ခွင့် အတည်ပြုပြီးပါပြီ။";
-        
-        addNotification(title, message);
-        localStorage.setItem(lastStatusKey, 'CONFIRMED');
-    }
 }
 
 document.addEventListener('DOMContentLoaded', () => {

@@ -31,7 +31,6 @@ module.exports = async (req, res) => {
 
             let newStatus = "";
             let responseText = "";
-            let adminReasonText = "Registration rejected by admin"; // လိုအပ်ပါက အကြောင်းပြချက် စာသားထည့်နိုင်ပါသည်
 
             if (action === 'confirm') {
                 newStatus = 'CONFIRMED';
@@ -41,7 +40,7 @@ module.exports = async (req, res) => {
                 responseText = "❌ This registration has been REJECTED.";
             }
 
-            // --- Firebase Database ထဲမှ Status နှင့် Reason ကို Update ပြုလုပ်ခြင်း ---
+            // --- Firebase Database ထဲမှ Status ပြောင်းမည့်အပိုင်း (Fix လုပ်ထားသည်) ---
             try {
                 const collections = ['1vs1_registrations', '5vs5_registrations', 'tournament_registrations'];
                 
@@ -50,20 +49,10 @@ module.exports = async (req, res) => {
                     const querySnapshot = await db.collection(col).where('userId', '==', userId).get();
                     
                     if (!querySnapshot.empty) {
-                        const updatePromises = querySnapshot.docs.map(doc => {
-                            let updateData = { 
-                                status: newStatus,
-                                updatedAt: new Date()
-                            };
-                            
-                            // အကယ်၍ Reject လုပ်ပါက rejectReason ကိုပါ ထည့်သွင်းမည်
-                            if (newStatus === 'REJECTED') {
-                                updateData.rejectReason = adminReasonText;
-                            }
-
-                            return doc.ref.update(updateData);
-                        });
-                        
+                        // Promise.all သုံးပြီး Update အားလုံး ပြီးဆုံးသည်အထိ စောင့်ရန်
+                        const updatePromises = querySnapshot.docs.map(doc => 
+                            doc.ref.update({ status: newStatus })
+                        );
                         await Promise.all(updatePromises);
                     }
                 }
@@ -72,7 +61,7 @@ module.exports = async (req, res) => {
             }
             // --------------------------------------------------------------------
 
-            // Telegram Group ထရှိ မူလစာသားကို အပ်ဒိတ်လုပ်ပေးခြင်း (ခလုတ်များကို ဖြုတ်ရန်)
+            // Telegram Group ထဲရှိ မူလစာသားကို အပ်ဒိတ်လုပ်ပေးခြင်း (ခလုတ်များကို ဖြုတ်ရန်)
             await fetch(`https://api.telegram.org/bot${BOT_TOKEN}/editMessageCaption`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
