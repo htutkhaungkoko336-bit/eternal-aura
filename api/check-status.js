@@ -23,25 +23,23 @@ module.exports = async (req, res) => {
     try {
         const collections = ['5vs5_registrations', '1vs1_registrations', 'tournament_registrations'];
         let foundData = null;
-        let latestTime = 0;
 
         for (const colName of collections) {
-            // userId တူတာတွေကို ရှာမယ် (createdAt အလိုက် အသစ်ဆုံးကို ယူဖို့)
+            // userId တူတာတွေကို ရှာမယ်
             const snapshot = await db.collection(colName)
                 .where('userId', '==', userId)
-                .orderBy('createdAt', 'desc')
-                .limit(1)
                 .get();
 
             if (!snapshot.empty) {
-                const docData = snapshot.docs[0].data();
-                const docTime = docData.createdAt && docData.createdAt.toMillis ? docData.createdAt.toMillis() : 0;
-                
-                // အသစ်ဆုံး စာရင်းသွင်းမှုကို ရွေးထုတ်ရန်
-                if (docTime >= latestTime) {
-                    latestTime = docTime;
-                    foundData = docData;
-                }
+                snapshot.forEach(doc => {
+                    const data = doc.data();
+                    // CONFIRMED ဖြစ်နေတာကို ဦးစားပေး ယူမယ်
+                    if (data.status === 'CONFIRMED' || data.status === 'APPROVED') {
+                        foundData = data;
+                    } else if (!foundData) {
+                        foundData = data;
+                    }
+                });
             }
         }
 
