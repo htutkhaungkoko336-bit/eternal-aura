@@ -1,7 +1,7 @@
 // main.js
 import { initAuth } from './auth.js';
 import { renderModeScreen } from './mode.js';
-import { addNotification, renderNotificationScreen } from './notification.js';
+import { addNotification, renderNotificationScreen, handleRegistrationStatusCheck } from './notification.js';
 
 // DOM Elements များကို ရယူခြင်း
 const formContent = document.getElementById('form-content');
