@@ -168,11 +168,13 @@ function renderNotificationCards(container, notifications) {
     });
 }
 
-// Server API ကနေ Status လှမ်းစစ်မယ့် Function
+// Server API ကနေ Status လှမ်းစစ်မယ့် Function (Debugging with console.log)
 export async function checkStatusViaApi(userId) {
     try {
+        console.log("Checking status for userId:", userId);
         const response = await fetch(`/api/check-status?userId=${userId}`); 
         const data = await response.json();
+        console.log("API Response data:", data);
 
         const currentStatus = data.status; // 'CONFIRMED', 'APPROVED', 'REJECTED', 'PENDING' etc.
         const lastStatus = localStorage.getItem(`last_status_${userId}`);
@@ -188,34 +190,40 @@ export async function checkStatusViaApi(userId) {
             message = `အကြောင်းရင်း: ${data.reason || "No reason provided."}`;
         }
 
-        // Status ပြောင်းသွားရင် (သို့) LocalStorage မှာ last_status မရှိသေးရင်
         if (currentStatus && currentStatus !== lastStatus) {
             if (title && message) {
                 let notifications = JSON.parse(localStorage.getItem('app_notifications')) || [];
-                
-                // အဲ့ဒီ Title နဲ့ Notification မျိုး လုံးဝမရှိသေးမှသာ အသစ်ထည့်မည် (အထပ်ထပ်မဖြစ်အောင်)
                 const alreadyExists = notifications.some(noti => noti.title === title);
                 
                 if (!alreadyExists) {
+                    console.log("Adding new notification:", title);
                     addNotification(title, message);
                 }
             }
-            // လက်ရှိ Status ကို မှတ်ထားမည်
             localStorage.setItem(`last_status_${userId}`, currentStatus);
         }
     } catch (error) {
-        console.error("Error checking status:", error);
+        console.error("Error checking status via API:", error);
     }
 }
+
 // Polling ကို စတင်ရန် Function
 export function startStatusPolling() {
     const savedUserId = localStorage.getItem('userId') || localStorage.getItem('user_id');
+    console.log("Saved User ID for polling:", savedUserId);
+    
     if (savedUserId) {
+        // စစချင်း တစ်ခါချက်ချင်းစစ်မယ်
+        checkStatusViaApi(savedUserId);
+
+        // ပြီးမှ ၅ စက္ကန့်တစ်ခါ ဆက်စစ်မယ်
         setInterval(() => {
             checkStatusViaApi(savedUserId);
         }, 5000);
+    } else {
+        console.warn("No userId found in localStorage! Polling not started.");
     }
-}
+}// Polling ကို စတင်ရန် Function
 
 document.addEventListener('DOMContentLoaded', () => {
     updateNotificationBadge();
