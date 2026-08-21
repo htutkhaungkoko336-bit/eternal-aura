@@ -43,12 +43,21 @@ module.exports = async (req, res) => {
             if (action === 'confirm') {
                 newStatus = 'CONFIRMED';
                 responseText = "✅ This registration has been CONFIRMED.";
+            } else if (action === 'reject') {
+                newStatus = 'REJECTED';
+                responseText = "❌ This registration has been REJECTED.";
+            }
 
-                try {
-                    if (collectionName && docId) {
-                        const regDocRef = db.collection(collectionName).doc(docId);
+            // ၁။ ပထမဆုံး မူလ Registration Document ရဲ့ Status ကို အရင်ပြောင်းမည် (အမြဲအောင်မြင်စေရန်)
+            try {
+                if (collectionName && docId) {
+                    const regDocRef = db.collection(collectionName).doc(docId);
+                    await regDocRef.update({ status: newStatus });
+                    console.log("Firestore registration status updated successfully!");
+
+                    // ၂။ အကယ်၍ Confirm ဖြစ်ရင် User Keys များကို သီးသန့် try/catch ဖြင့် လုံခြုံစွာ တိုးပေးမည်
+                    if (action === 'confirm') {
                         const regDoc = await regDocRef.get();
-
                         if (regDoc.exists) {
                             const regData = regDoc.data();
                             const userId = regData.userId;
@@ -76,52 +85,38 @@ module.exports = async (req, res) => {
                                 }
 
                                 if (keyFieldToIncrement) {
-                                    const userRef = db.collection('users').doc(userId);
-                                    const userDoc = await userRef.get();
+                                    try {
+                                        const userRef = db.collection('users').doc(userId);
+                                        const userDoc = await userRef.get();
+                                        const fieldKeyOnly = keyFieldToIncrement.split('.')[1];
 
-                                    if (userDoc.exists) {
-                                        const userData = userDoc.data();
-                                        
-                                        // User ထဲမှာ keys object သို့မဟုတ် သက်ဆိုင်ရာ key လုံးဝမရှိသေးရင် 0 နဲ့ အရင်စဆောက်ပေးမည်
-                                        if (!userData.keys || userData.keys[keyFieldToIncrement.split('.')[1]] === undefined) {
+                                        if (!userDoc.exists || !userDoc.data().keys || userDoc.data().keys[fieldKeyOnly] === undefined) {
                                             await userRef.set({
                                                 keys: {
-                                                    [keyFieldToIncrement.split('.')[1]]: 0
+                                                    [fieldKeyOnly]: 0
                                                 }
                                             }, { merge: true });
                                         }
 
-                                        // ပြီးမှ +1 တိုးမည်
                                         await userRef.update({
                                             [keyFieldToIncrement]: FieldValue.increment(1)
                                         });
                                         console.log(`User ${userId} got +1 key for ${keyFieldToIncrement}`);
+                                    } catch (userErr) {
+                                        console.error("Error updating user keys (non-blocking):", userErr);
                                     }
                                 }
                             }
                         }
-
-                        await regDocRef.update({ status: newStatus });
-                        console.log("Firestore updated successfully!");
                     }
-                } catch (dbError) {
-                    console.error("Database Update Error:", dbError);
+                } else {
+                    console.error("Invalid collectionName or docId");
                 }
-
-            } else if (action === 'reject') {
-                newStatus = 'REJECTED';
-                responseText = "❌ This registration has been REJECTED.";
-
-                try {
-                    if (collectionName && docId) {
-                        await db.collection(collectionName).doc(docId).update({ status: newStatus });
-                        console.log("Firestore updated successfully (Rejected)!");
-                    }
-                } catch (dbError) {
-                    console.error("Database Update Error:", dbError);
-                }
+            } catch (dbError) {
+                console.error("Database Update Error:", dbError);
             }
 
+            // Telegram Group ထဲရှိ မူလစာသားကို အပ်ဒိတ်လုပ်ပြီး ခလုတ်ဖြုတ်ခြင်း
             await fetch(`https://api.telegram.org/bot${BOT_TOKEN}/editMessageCaption`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
@@ -134,6 +129,7 @@ module.exports = async (req, res) => {
                 })
             });
 
+            // Telegram သို့ အကြောင်းပြန်ခြင်း (Loading animation ပျောက်ရန်)
             await fetch(`https://api.telegram.org/bot${BOT_TOKEN}/answerCallbackQuery`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
