@@ -159,6 +159,8 @@ module.exports = async function handler(req, res) {
             return res.status(400).json({ success: false, message: "Invalid registration mode" });
         }
 
+// ... (အပေါ်ပိုင်း code အားလုံး အတူတူပါပဲ)
+
         // 1. Firestore ၏ သက်ဆိုင်ရာ collection ထဲသို့ Data အသစ်ထည့်ခြင်း
         const docRef = await db.collection(collectionName).add(registrationData);
 
@@ -166,13 +168,27 @@ module.exports = async function handler(req, res) {
         const userRef = db.collection('users').doc(data.userId);
         await userRef.set({
             [gameModeKey]: FieldValue.increment(1)
-        }, { merge: true }); // Document မရှိသေးရင် အသစ်ဆောက်ပေးပြီး ရှိပြီးသားဆိုရင် Key ကို 1 ပေါင်းပေးပါမည်
+        }, { merge: true });
 
-        // 3. Database ထဲမှာ Notification အသစ်တစ်ခု တန်းထည့်ပေးခြင်း (User ဘက်က လှမ်းစစ်ရန်)
+        // 3. Database ထဲမှာ Key အမျိုးအစားအလိုက် Noti အသစ် တန်းထည့်ပေးခြင်း
+        let notiTitle = `${mode.toUpperCase()} Key Added!`;
+        let notiMessage = `သင့်ရဲ့ ${gameModeKey} ဝယ်ယူမှု / စာရင်းပေးသွင်းမှု အောင်မြင်ပြီး Key တိုးမြှင့်ပြီးပါပြီရှင့်။`;
+
+        if (mode === 'tournament') {
+            notiTitle = "🏆 Tournament Slot Secured!";
+            notiMessage = `သင့်အတွက် Tournament Key (Slot ${data.slot || ''}) အောင်မြင်စွာ ရရှိသွားပါပြီရှင့်။`;
+        } else if (mode === '5vs5') {
+            notiTitle = "⚔️ 5vs5 Key Added!";
+            notiMessage = `သင့်ရဲ့ 5vs5 (${data.fee || '5K'}) Key 1 ခု အောင်မြင်စွာ တိုးသွားပါပြီရှင့်။`;
+        } else if (mode === '1vs1') {
+            notiTitle = "🎯 1vs1 Key Added!";
+            notiMessage = `သင့်ရဲ့ 1vs1 Key 1 ခု အောင်မြင်စွာ တိုးသွားပါပြီရှင့်။`;
+        }
+
         await db.collection('notifications').add({
             userId: data.userId,
-            title: `${mode.toUpperCase()} Registration Successful!`,
-            message: `သင့်ရဲ့ ${mode} စာရင်းပေးသွင်းမှု Key အသစ် Database ထဲသို့ ဝင်ရောက်လာပါပြီရှင့်။`,
+            title: notiTitle,
+            message: notiMessage,
             dateStr: getYangonDateStr(),
             timeStr: getYangonTimeStr(),
             read: false,
@@ -196,6 +212,8 @@ module.exports = async function handler(req, res) {
             registrationId: docRef.id 
         });
 
+// ... (အောက်ပိုင်း catch block အတူတူပါပဲ)
+// 
     } catch (error) {
         console.error("Registration Error:", error);
         return res.status(500).json({ success: false, message: "Server Error", error: error.message });
