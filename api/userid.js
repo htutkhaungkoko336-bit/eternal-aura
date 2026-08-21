@@ -82,6 +82,22 @@ module.exports = async function handler(req, res) {
             const createdAtStr = getYangonTimeStr();
             const defaultRole = 'user'; // အကောင့်အသစ်ဆိုလျှင် default role သတ်မှတ်ခြင်း
 
+            // အကောင့်အသစ်အတွက် Default Key ၁၁ မျိုး (0 စီဖြင့်)
+            const defaultKeys = {
+                "1vs1-5k": 0,
+                "1vs1-10k": 0,
+                "1vs1-15k": 0,
+                "1vs1-25k": 0,
+                "1vs1-50k": 0,
+                "5vs5-5k": 0,
+                "5vs5-10k": 0,
+                "5vs5-15k": 0,
+                "5vs5_25k": 0,
+                "5vs5_50k": 0,
+                // လိုအပ်မည့် အခြား Key အမျိုးအစားများကိုလည်း ဤနေရာတွင် ဆက်ထည့်နိုင်သည် (စုစုပေါင်း ၁၁ မျိုး)
+                "tournament": 0
+            };
+
             const newUserData = {
                 userId: userId,
                 name: name,
@@ -89,6 +105,7 @@ module.exports = async function handler(req, res) {
                 pin: hashedPin,
                 deviceId: deviceId,
                 role: defaultRole,
+                keys: defaultKeys, // <--- ထည့်သွင်းလိုက်သော Key ၁၁ မျိုး
                 createdAt: createdAtStr,
                 recentLogins: []
             };

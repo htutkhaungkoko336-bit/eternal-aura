@@ -1,5 +1,5 @@
 const { initializeApp, cert, getApps } = require('firebase-admin/app');
-const { getFirestore } = require('firebase-admin/firestore');
+const { getFirestore, FieldValue } = require('firebase-admin/firestore');
 const fetch = require('node-fetch');
 
 const app = getApps().length === 0 
@@ -20,7 +20,7 @@ module.exports = async (req, res) => {
 
         if (update.callback_query) {
             const callbackQuery = update.callback_query;
-            const data = callbackQuery.data; // ပုံစံ - confirm_5vs5_registrations_OzOcxxIPMMGD7bEsqp0j
+            const data = callbackQuery.data; // ဥပမာ - confirm_5vs5_registrations_OzOcxxIPMMGD7bEsqp0j
             const chatId = callbackQuery.message.chat.id;
             const messageId = callbackQuery.message.message_id;
             const BOT_TOKEN = process.env.TELEGRAM_BOT_TOKEN;
@@ -45,21 +45,71 @@ module.exports = async (req, res) => {
             if (action === 'confirm') {
                 newStatus = 'CONFIRMED';
                 responseText = "✅ This registration has been CONFIRMED.";
+
+                try {
+                    if (collectionName && docId) {
+                        // ၁။ မူလ Registration Document ကို ယူမည် (userId နှင့် fee သိရှိရန်)
+                        const regDocRef = db.collection(collectionName).doc(docId);
+                        const regDoc = await regDocRef.get();
+
+                        if (regDoc.exists) {
+                            const regData = regDoc.data();
+                            const userId = regData.userId;
+
+                            if (userId) {
+                                // ၂. ဘယ် collection နဲ့ fee ပေါ်မူတည်၍ Key Field ကို တိကျစွာ သတ်မှတ်ခြင်း
+                                let keyFieldToIncrement = "";
+                                const fee = (regData.fee || "").toLowerCase();
+
+                                if (collectionName === '1vs1_registrations') {
+                                    if (fee.includes('5k')) keyFieldToIncrement = "keys.1vs1-5k";
+                                    else if (fee.includes('10k')) keyFieldToIncrement = "keys.1vs1-10k";
+                                    else if (fee.includes('15k')) keyFieldToIncrement = "keys.1vs1-15k";
+                                    else if (fee.includes('25k')) keyFieldToIncrement = "keys.1vs1-25k";
+                                    else if (fee.includes('50k')) keyFieldToIncrement = "keys.1vs1-50k";
+                                    else keyFieldToIncrement = "keys.1vs1-5k"; // Default
+                                } else if (collectionName === 'tournament_registrations') {
+                                    keyFieldToIncrement = "keys.tournament";
+                                } else if (collectionName === '5vs5_registrations') {
+                                    if (fee.includes('5k')) keyFieldToIncrement = "keys.5vs5-5k";
+                                    else if (fee.includes('10k')) keyFieldToIncrement = "keys.5vs5-10k";
+                                    else if (fee.includes('15k')) keyFieldToIncrement = "keys.5vs5-15k";
+                                    else if (fee.includes('25k')) keyFieldToIncrement = "keys.5vs5-25k";
+                                    else if (fee.includes('50k')) keyFieldToIncrement = "keys.5vs5-50k";
+                                    else keyFieldToIncrement = "keys.5vs5-5k"; // Default
+                                }
+
+                                // ၃။ User ရဲ့ သက်ဆိုင်ရာ Key ကို +1 တိုးပေးခြင်း
+                                if (keyFieldToIncrement) {
+                                    const userRef = db.collection('users').doc(userId);
+                                    await userRef.update({
+                                        [keyFieldToIncrement]: FieldValue.increment(1)
+                                    });
+                                    console.log(`User ${userId} got +1 key for ${keyFieldToIncrement}`);
+                                }
+                            }
+                        }
+
+                        // ၄။ Registration Status ကို CONFIRMED သို့ ပြောင်းမည်
+                        await regDocRef.update({ status: newStatus });
+                        console.log("Firestore updated successfully!");
+                    }
+                } catch (dbError) {
+                    console.error("Database Update Error:", dbError);
+                }
+
             } else if (action === 'reject') {
                 newStatus = 'REJECTED';
                 responseText = "❌ This registration has been REJECTED.";
-            }
 
-            // Firestore ထဲတွင် docId ကိုသုံး၍ တိုက်ရိုက် Update လုပ်ခြင်း
-            try {
-                if (collectionName && docId) {
-                    await db.collection(collectionName).doc(docId).update({ status: newStatus });
-                    console.log("Firestore updated successfully!");
-                } else {
-                    console.error("Invalid collectionName or docId");
+                try {
+                    if (collectionName && docId) {
+                        await db.collection(collectionName).doc(docId).update({ status: newStatus });
+                        console.log("Firestore updated successfully (Rejected)!");
+                    }
+                } catch (dbError) {
+                    console.error("Database Update Error:", dbError);
                 }
-            } catch (dbError) {
-                console.error("Database Update Error:", dbError);
             }
 
             // Telegram Group ထဲရှိ မူလစာသားကို အပ်ဒိတ်လုပ်ပြီး ခလုတ်ဖြုတ်ခြင်း
