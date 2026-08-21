@@ -1,7 +1,7 @@
-// auth.js - ဖုန်းနံပါတ်နှင့် PIN လက်ခံစစ်ဆေးခြင်း Module
+// auth.js - Step-by-Step Auth Flow (Phone -> Name -> PIN)
 
 export function initAuth(formContent, onComplete) {
-    // ပထမဆုံး ဖုန်းနံပါတ်ထည့်မည့် Screen ကို ပြသခြင်း
+    // Step 1: ဖုန်းနံပါတ် တောင်းမည့် Screen
     formContent.innerHTML = `
         <div style="display: flex; flex-direction: column; gap: 8px; width: 100%;">
             <p style="color: #94a3b8; font-size: 14px; text-align: left; width: 100%;">Enter Phone Number</p>
@@ -39,7 +39,6 @@ export function initAuth(formContent, onComplete) {
         }
 
         try {
-            // ဖုန်းနံပါတ်နှင့် Device ID ကို ဆာဗာသို့ အရင်ပို့စစ်မည်
             const response = await fetch('/api/userid', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
@@ -48,26 +47,22 @@ export function initAuth(formContent, onComplete) {
 
             const data = await response.json();
 
-            // ၁။ Device လည်းတူ၊ ဖုန်းလည်းရှိပြီးသားဆိုရင် တန်းဝင်မည် (Auto Login)
+            // ၁။ Auto Login (ဖုန်းနံပါတ်ရော Device ID ပါ ကိုက်ညီလျှင်)
             if (data.success) {
-                if (data.role) {
-                    localStorage.setItem('userRole', data.role);
-                }
-                if (typeof onComplete === 'function') {
-                    onComplete(data); // data တစ်ခုလုံးကို ပို့ပေးမည်
-                }
+                if (data.role) localStorage.setItem('userRole', data.role);
+                if (typeof onComplete === 'function') onComplete(data);
                 return;
             }
 
-            // ၂။ ဖုန်းရှိသော်လည်း Device ID မတူတော့၍ PIN တောင်းခံလာပါက (Login PIN Screen သို့သွားမည်)
+            // ၂။ Existing User (Device မတူ၍ PIN တောင်းမည့် Screen သို့သွားမည်)
             if (data.requiresPassword) {
                 showLoginPinScreen(formContent, phoneVal, deviceId, onComplete);
                 return;
             }
 
-            // ၃။ ဖုန်းနံပါတ် မရှိသေးပါက (Register - Name & PIN Screen သို့သွားမည်)
+            // ၃။ New User (Step 2: Name တောင်းမည့် Screen သို့သွားမည်)
             if (data.requiresRegistration) {
-                showNameAndPinScreen(formContent, phoneVal, deviceId, onComplete);
+                showNameInputScreen(formContent, phoneVal, deviceId, onComplete);
                 return;
             }
 
@@ -80,17 +75,40 @@ export function initAuth(formContent, onComplete) {
     });
 }
 
-// (က) User အသစ်အတွက် နာမည်နှင့် PIN အသစ် တောင်းမည့် Screen
-function showNameAndPinScreen(formContent, phoneVal, deviceId, onComplete) {
+// Step 2: နာမည် တောင်းမည့် မျက်နှာပြင်
+function showNameInputScreen(formContent, phoneVal, deviceId, onComplete) {
     formContent.innerHTML = `
         <div style="display: flex; flex-direction: column; gap: 15px; width: 100%;">
-            <div style="width: 100%;">
-                <p style="color: #94a3b8; font-size: 13px; margin-bottom: 6px; text-align: left;">Enter Your Name</p>
-                <div class="input-box" style="width: 100%; background-color: #1e293b; padding: 14px 20px; border-radius: 16px; border: 1px solid #334155;">
-                    <input type="text" id="username-input" placeholder="Your Name" maxlength="25" autofocus style="width: 100%; color: white; background: transparent; border: none; font-size: 16px; outline: none;">
-                </div>
+            <p style="color: #94a3b8; font-size: 14px; text-align: left; width: 100%;">Enter Your Name</p>
+            <div class="input-box" style="width: 100%; background-color: #1e293b; padding: 16px 20px; border-radius: 16px; border: 1px solid #334155;">
+                <input type="text" id="username-input" placeholder="Your Name" maxlength="25" autofocus style="width: 100%; color: white; background: transparent; border: none; font-size: 16px; outline: none;">
             </div>
+            <button class="next-btn" id="name-next-btn" style="width: 100%; justify-content: center; padding: 14px 20px; margin-top: 5px; display: flex; align-items: center; gap: 8px;">
+                <span>Continue</span>
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                    <line x1="5" y1="12" x2="19" y2="12"></line>
+                    <polyline points="12 5 19 12 12 19"></polyline>
+                </svg>
+            </button>
+        </div>
+    `;
 
+    document.getElementById('name-next-btn').addEventListener('click', () => {
+        const username = document.getElementById('username-input').value.trim();
+        if (!username) {
+            alert("ကျေးဇူးပြု၍ နာမည်ထည့်ပါ။");
+            return;
+        }
+
+        // Step 3: Name ရသွားပြီဖြစ်၍ PIN သတ်မှတ်မည့် Screen သို့ ဆက်သွားမည်
+        showCreatePinScreen(formContent, username, phoneVal, deviceId, onComplete);
+    });
+}
+
+// Step 3: PIN ဂဏန်း ၆ လုံး သတ်မှတ်မည့် မျက်နှာပြင်
+function showCreatePinScreen(formContent, username, phoneVal, deviceId, onComplete) {
+    formContent.innerHTML = `
+        <div style="display: flex; flex-direction: column; gap: 15px; width: 100%;">
             <div style="width: 100%;">
                 <p style="color: #94a3b8; font-size: 13px; margin-bottom: 6px; text-align: left;">Create 6-digit PIN</p>
                 <div class="otp-container" style="display: flex; gap: 6px; justify-content: center; width: 100%;">
@@ -115,7 +133,7 @@ function showNameAndPinScreen(formContent, phoneVal, deviceId, onComplete) {
                 </div>
             </div>
 
-            <button class="next-btn" id="register-finish-btn" style="width: 100%; justify-content: center; padding: 14px 20px; margin-top: 5px; display: flex; align-items: center; gap: 8px;">
+            <button class="next-btn" id="finish-register-btn" style="width: 100%; justify-content: center; padding: 14px 20px; margin-top: 5px; display: flex; align-items: center; gap: 8px;">
                 <span>Finish & Register</span>
                 <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
                     <polyline points="20 6 9 17 4 12"></polyline>
@@ -126,13 +144,7 @@ function showNameAndPinScreen(formContent, phoneVal, deviceId, onComplete) {
 
     setupOtpInputs();
 
-    document.getElementById('register-finish-btn').addEventListener('click', async () => {
-        const username = document.getElementById('username-input').value.trim();
-        if (!username) {
-            alert("ကျေးဇူးပြု၍ နာမည်ထည့်ပါ။");
-            return;
-        }
-
+    document.getElementById('finish-register-btn').addEventListener('click', async () => {
         const pin1Arr = document.querySelectorAll('.pin-1');
         const pin2Arr = document.querySelectorAll('.pin-2');
 
@@ -143,7 +155,7 @@ function showNameAndPinScreen(formContent, phoneVal, deviceId, onComplete) {
         pin2Arr.forEach(i => pin2 += i.value);
 
         if (pin1.length < 6 || pin2.length < 6) {
-            alert("ကျေးဇူးပြု၍ ကိုယ်ပိုင် PIN ဂဏန်း ၆ လုံး အပြည့်ထည့်ပါ။");
+            alert("ကျေးဇူးပြု၍ PIN ဂဏန်း ၆ လုံး အပြည့်ထည့်ပါ။");
             return;
         }
 
@@ -153,6 +165,7 @@ function showNameAndPinScreen(formContent, phoneVal, deviceId, onComplete) {
         }
 
         try {
+            // အားလုံးပြည့်စုံသွားမှ ဆာဗာဆီ ပို့ပါမည်
             const response = await fetch('/api/userid', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
@@ -162,12 +175,8 @@ function showNameAndPinScreen(formContent, phoneVal, deviceId, onComplete) {
             const data = await response.json();
 
             if (data.success) {
-                if (data.role) {
-                    localStorage.setItem('userRole', data.role);
-                }
-                if (typeof onComplete === 'function') {
-                    onComplete(data);
-                }
+                if (data.role) localStorage.setItem('userRole', data.role);
+                if (typeof onComplete === 'function') onComplete(data);
             } else {
                 alert("အကောင့်ဖွင့်ခြင်း မအောင်မြင်ပါ: " + (data.message || "Unknown error"));
             }
@@ -178,10 +187,10 @@ function showNameAndPinScreen(formContent, phoneVal, deviceId, onComplete) {
     });
 }
 
-// (ခ) Device ပြောင်းသွားသူများအတွက် PIN တောင်းမည့် Screen (Login PIN)
+// Device အသစ်များအတွက် PIN တောင်းမည့် Screen (Login PIN)
 function showLoginPinScreen(formContent, phoneVal, deviceId, onComplete) {
     formContent.innerHTML = `
-        <div style="display: flex; flex-direction: column; gap: 15px; width: 100%; align-items: center;">
+        <div style="display: flex; flex-direction: column; gap: 15px; width: 100%;">
             <p style="color: #94a3b8; font-size: 14px; text-align: left; width: 100%;">New Device Detected. Enter Your PIN</p>
             
             <div class="input-box" style="width: 100%; background-color: #1e293b; padding: 16px 20px; border-radius: 16px; border: 1px solid #334155;">
@@ -211,12 +220,8 @@ function showLoginPinScreen(formContent, phoneVal, deviceId, onComplete) {
             const data = await response.json();
 
             if (data.success) {
-                if (data.role) {
-                    localStorage.setItem('userRole', data.role);
-                }
-                if (typeof onComplete === 'function') {
-                    onComplete(data);
-                }
+                if (data.role) localStorage.setItem('userRole', data.role);
+                if (typeof onComplete === 'function') onComplete(data);
             } else {
                 alert("PIN မှားယွင်းနေပါသည်: " + (data.message || "Unknown error"));
             }
@@ -227,7 +232,7 @@ function showLoginPinScreen(formContent, phoneVal, deviceId, onComplete) {
     });
 }
 
-// OTP Input များအတွက် Navigation လုပ်ဆောင်ချက်များ
+// OTP Box လှုပ်ရှားမှုများအတွက် Utility Function
 function setupOtpInputs() {
     const inputs = document.querySelectorAll('.otp-box');
     inputs.forEach((input, index) => {
