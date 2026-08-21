@@ -1,51 +1,5 @@
 // notification.js
 
-import { db } from './firebase.js'; // (ညီမလေးရဲ့ Project ထဲက firebase config နေရာအတိုင်း ချိန်ပေးပါ)
-import { collection, query, where, getDocs, orderBy } from "https://www.gstatic.com/firebasejs/10.x.x/firebase-firestore.js"; // သို့မဟုတ် ညီမလေးသုံးနေတဲ့ firebase import အတိုင်း
-
-// Firebase Database မှ Noti အသစ်များကို လှမ်းဆွဲယူပြီး LocalStorage ထဲ ပေါင်းထည့်ရန်
-export async function syncUserNotifications(userId) {
-    if (!userId) return;
-    try {
-        const notiRef = collection(db, 'notifications');
-        const q = query(notiRef, where("userId", "==", userId), orderBy("createdAt", "desc"));
-        const querySnapshot = await getDocs(q);
-        
-        let dbNotis = [];
-        querySnapshot.forEach((doc) => {
-            const data = doc.data();
-            dbNotis.push({
-                title: data.title,
-                message: data.message,
-                dateStr: data.dateStr,
-                timeStr: data.timeStr,
-                createdAt: data.createdAt?.toMillis ? data.createdAt.toMillis() : Date.now()
-            });
-        });
-
-        if (dbNotis.length > 0) {
-            // LocalStorage ထဲရှိပြီးသား Noti များနှင့် Database မှ Noti များကို ပေါင်းစပ်ခြင်း (Duplicate ဖြစ်မှုကို ခေါင်းစဉ်နှင့် အချိန်ဖြင့် စစ်ဆေးခြင်း)
-            let localNotis = JSON.parse(localStorage.getItem('app_notifications')) || [];
-            
-            dbNotis.forEach(dbNoti => {
-                const exists = localNotis.some(local => 
-                    local.title === dbNoti.title && local.message === dbNoti.message && local.dateStr === dbNoti.dateStr
-                );
-                if (!exists) {
-                    localNotis.push(dbNoti);
-                }
-            });
-
-            // နေ့စွဲအသစ်အရ အပေါ်ဆုံးသို့ ရောက်အောင် စီခြင်း (Sort by createdAt or date)
-            localNotis.sort((a, b) => (b.createdAt || 0) - (a.createdAt || 0));
-
-            localStorage.setItem('app_notifications', JSON.stringify(localNotis));
-        }
-    } catch (error) {
-        console.error("Error syncing notifications:", error);
-    }
-}
-
 // Notification အသစ်တစ်ခုကို သိမ်းဆည်းပြီး Render လုပ်ရန်
 export function addNotification(title, message) {
     const now = new Date();
@@ -63,7 +17,7 @@ export function addNotification(title, message) {
     hours = hours ? hours : 12;
     const timeStr = `${hours}:${minutes} ${ampm}`;
 
-    const newNoti = { title, message, dateStr, timeStr, createdAt: now.getTime() };
+    const newNoti = { title, message, dateStr, timeStr };
 
     let notifications = JSON.parse(localStorage.getItem('app_notifications')) || [];
     notifications.unshift(newNoti);
@@ -80,13 +34,8 @@ export function addNotification(title, message) {
     }
 }
 
-// Notification Screen ကို ဝင်ရောက်ကြည့်ရှုသည့်အခါ Firebase မှပါ sync လုပ်ပြီး Badge ရှင်းလင်းပေးရန်
-export async function renderNotificationScreen(container) {
-    const userId = localStorage.getItem('userId'); // ညီမလေး App ထဲမှာ User ID သိမ်းထားတဲ့ Key နာမည်နဲ့ ချိန်ပါ
-    if (userId) {
-        await syncUserNotifications(userId); // Database မှ Noti အသစ်များကို လှမ်းဆွဲယူမည်
-    }
-
+// Notification Screen ကို ဝင်ရောက်ကြည့်ရှုသည့်အခါ Badge ကို ရှင်းလင်းပေးရန်
+export function renderNotificationScreen(container) {
     localStorage.setItem('app_unread_count', '0');
     updateNotificationBadge();
 
