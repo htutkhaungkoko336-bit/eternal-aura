@@ -287,8 +287,7 @@ confirmBtn.addEventListener('click', async () => {
     }
 
     // ၂။ localStorage ထဲက userId ကို ဦးစားပေးယူခြင်း (မရှိမှသာ formData သို့မဟုတ် guest_user သုံးမည်)
-    const currentUserId = localStorage.getItem('userId') || formData.userId || 'guest_user';
-
+    const currentUserId = localStorage.getItem('userId') || localStorage.getItem('activeUserId') || formData.userId || 'guest_user';
     // ၃။ Backend သို့ ပို့မည့် Payload (Backend မျှော်လင့်ထားသည့် Field အမည်များနှင့် အတိအကျ ကိုက်ညီစေရန်)
     const requestBody = {
         mode: modeType,
