@@ -69,11 +69,10 @@ module.exports = async function handler(req, res) {
         // (က) ဖုန်းနံပါတ် မရှိသေးပါက (အကောင့်အသစ် Register လုပ်ရန်)
         // -------------------------------------------------------------
         if (snapshot.empty) {
-            // အကယ်၍ name သို့မဟုတ် pin တစ်ခုခု လျော့နေလျှင် (သို့မဟုတ် name မပါလာလျှင်) အကောင့်မဆောက်သေးဘဲ Name တောင်းခိုင်းမည်
             if (!name || !pin) {
                 return res.status(200).json({ 
                     requiresRegistration: true, 
-                    message: "Please provide name and PIN." 
+                    message: "Phone not found. Please provide name and PIN." 
                 });
             }
 
@@ -81,11 +80,11 @@ module.exports = async function handler(req, res) {
             const hashedPin = bcrypt.hashSync(pin, salt);
             const userId = generateUniqueUserId();
             const createdAtStr = getYangonTimeStr();
-            const defaultRole = 'user'; 
+            const defaultRole = 'user'; // အကောင့်အသစ်ဆိုလျှင် default role သတ်မှတ်ခြင်း
 
             const newUserData = {
                 userId: userId,
-                name: name, // ညီမလေး ရိုက်ထည့်လိုက်တဲ့ နာမည်အစစ်ကို သေချာသိမ်းမည်
+                name: name,
                 phone: phone,
                 pin: hashedPin,
                 deviceId: deviceId,

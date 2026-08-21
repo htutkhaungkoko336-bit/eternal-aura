@@ -39,7 +39,7 @@ export function initAuth(formContent, onComplete) {
         }
 
         try {
-            // ဖုန်းနံပါတ်နှင့် Device ID ကို ဆာဗာသို့ အရင်ပို့စစ်မည် (PIN မပါသေးပါ)
+            // ဖုန်းနံပါတ်နှင့် Device ID ကို ဆာဗာသို့ အရင်ပို့စစ်မည်
             const response = await fetch('/api/userid', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
@@ -50,13 +50,11 @@ export function initAuth(formContent, onComplete) {
 
             // ၁။ Device လည်းတူ၊ ဖုန်းလည်းရှိပြီးသားဆိုရင် တန်းဝင်မည် (Auto Login)
             if (data.success) {
-                // ဆာဗာမှ ပြန်လာသော role ကို localStorage တွင် သိမ်းဆည်းခြင်း
                 if (data.role) {
                     localStorage.setItem('userRole', data.role);
                 }
-
                 if (typeof onComplete === 'function') {
-                    onComplete(phoneVal, null); // script.js ကနေ success ကို ကိုင်တွယ်ပါမယ်
+                    onComplete(data); // data တစ်ခုလုံးကို ပို့ပေးမည်
                 }
                 return;
             }
@@ -67,9 +65,9 @@ export function initAuth(formContent, onComplete) {
                 return;
             }
 
-            // ၃။ ဖုန်းနံပါတ် မရှိသေးပါက (Register - Create PIN Screen သို့သွားမည်)
+            // ၃။ ဖုန်းနံပါတ် မရှိသေးပါက (Register - Name & PIN Screen သို့သွားမည်)
             if (data.requiresRegistration) {
-                showCreatePinScreen(formContent, phoneVal, deviceId, onComplete);
+                showNameAndPinScreen(formContent, phoneVal, deviceId, onComplete);
                 return;
             }
 
@@ -82,14 +80,21 @@ export function initAuth(formContent, onComplete) {
     });
 }
 
-// (က) User အသစ်အတွက် PIN အသစ်ဖန်တီးမည့် Screen (Create & Confirm PIN)
-function showCreatePinScreen(formContent, phoneVal, deviceId, onComplete) {
+// (က) User အသစ်အတွက် နာမည်နှင့် PIN အသစ် တောင်းမည့် Screen
+function showNameAndPinScreen(formContent, phoneVal, deviceId, onComplete) {
     formContent.innerHTML = `
         <div style="display: flex; flex-direction: column; gap: 15px; width: 100%;">
             <div style="width: 100%;">
-                <p style="color: #94a3b8; font-size: 13px; margin-bottom: 6px; text-align: left;">Create your own 6-digit PIN</p>
+                <p style="color: #94a3b8; font-size: 13px; margin-bottom: 6px; text-align: left;">Enter Your Name</p>
+                <div class="input-box" style="width: 100%; background-color: #1e293b; padding: 14px 20px; border-radius: 16px; border: 1px solid #334155;">
+                    <input type="text" id="username-input" placeholder="Your Name" maxlength="25" autofocus style="width: 100%; color: white; background: transparent; border: none; font-size: 16px; outline: none;">
+                </div>
+            </div>
+
+            <div style="width: 100%;">
+                <p style="color: #94a3b8; font-size: 13px; margin-bottom: 6px; text-align: left;">Create 6-digit PIN</p>
                 <div class="otp-container" style="display: flex; gap: 6px; justify-content: center; width: 100%;">
-                    <input type="password" class="otp-box pin-1" maxlength="1" inputmode="numeric" autofocus>
+                    <input type="password" class="otp-box pin-1" maxlength="1" inputmode="numeric">
                     <input type="password" class="otp-box pin-1" maxlength="1" inputmode="numeric">
                     <input type="password" class="otp-box pin-1" maxlength="1" inputmode="numeric">
                     <input type="password" class="otp-box pin-1" maxlength="1" inputmode="numeric">
@@ -99,7 +104,7 @@ function showCreatePinScreen(formContent, phoneVal, deviceId, onComplete) {
             </div>
 
             <div style="width: 100%;">
-                <p style="color: #94a3b8; font-size: 13px; margin-bottom: 6px; text-align: left;">Confirm your 6-digit PIN</p>
+                <p style="color: #94a3b8; font-size: 13px; margin-bottom: 6px; text-align: left;">Confirm 6-digit PIN</p>
                 <div class="otp-container" style="display: flex; gap: 6px; justify-content: center; width: 100%;">
                     <input type="password" class="otp-box pin-2" maxlength="1" inputmode="numeric">
                     <input type="password" class="otp-box pin-2" maxlength="1" inputmode="numeric">
@@ -110,8 +115,8 @@ function showCreatePinScreen(formContent, phoneVal, deviceId, onComplete) {
                 </div>
             </div>
 
-            <button class="next-btn" id="confirm-btn" style="width: 100%; justify-content: center; padding: 14px 20px; margin-top: 5px; display: flex; align-items: center; gap: 8px;">
-                <span>Confirm</span>
+            <button class="next-btn" id="register-finish-btn" style="width: 100%; justify-content: center; padding: 14px 20px; margin-top: 5px; display: flex; align-items: center; gap: 8px;">
+                <span>Finish & Register</span>
                 <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
                     <polyline points="20 6 9 17 4 12"></polyline>
                 </svg>
@@ -121,7 +126,13 @@ function showCreatePinScreen(formContent, phoneVal, deviceId, onComplete) {
 
     setupOtpInputs();
 
-    document.getElementById('confirm-btn').addEventListener('click', async () => {
+    document.getElementById('register-finish-btn').addEventListener('click', async () => {
+        const username = document.getElementById('username-input').value.trim();
+        if (!username) {
+            alert("ကျေးဇူးပြု၍ နာမည်ထည့်ပါ။");
+            return;
+        }
+
         const pin1Arr = document.querySelectorAll('.pin-1');
         const pin2Arr = document.querySelectorAll('.pin-2');
 
@@ -142,11 +153,10 @@ function showCreatePinScreen(formContent, phoneVal, deviceId, onComplete) {
         }
 
         try {
-            // Register လုပ်ဆောင်ချက်အတွက် ဆာဗာသို့ PIN ပို့ခြင်း
             const response = await fetch('/api/userid', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ phone: phoneVal, pin: pin1, deviceId: deviceId, name: "User" }) // လိုအပ်ပါက name ထည့်နိုင်ပါသည်
+                body: JSON.stringify({ name: username, phone: phoneVal, pin: pin1, deviceId: deviceId })
             });
 
             const data = await response.json();
@@ -156,7 +166,7 @@ function showCreatePinScreen(formContent, phoneVal, deviceId, onComplete) {
                     localStorage.setItem('userRole', data.role);
                 }
                 if (typeof onComplete === 'function') {
-                    onComplete(phoneVal, pin1);
+                    onComplete(data);
                 }
             } else {
                 alert("အကောင့်ဖွင့်ခြင်း မအောင်မြင်ပါ: " + (data.message || "Unknown error"));
@@ -172,10 +182,10 @@ function showCreatePinScreen(formContent, phoneVal, deviceId, onComplete) {
 function showLoginPinScreen(formContent, phoneVal, deviceId, onComplete) {
     formContent.innerHTML = `
         <div style="display: flex; flex-direction: column; gap: 15px; width: 100%; align-items: center;">
-            <p style="color: #94a3b8; font-size: 14px; text-align: center; width: 100%;">New Device Detected. Enter Your PIN</p>
+            <p style="color: #94a3b8; font-size: 14px; text-align: left; width: 100%;">New Device Detected. Enter Your PIN</p>
             
             <div class="input-box" style="width: 100%; background-color: #1e293b; padding: 16px 20px; border-radius: 16px; border: 1px solid #334155;">
-                <input type="password" id="login-pin-input" placeholder="Enter 6-digit PIN" maxlength="6" inputmode="numeric" autofocus style="width: 100%; color: white; background: transparent; border: none; font-size: 16px; outline: none; text-align: center; letter-spacing: 4px;" onfocus="this.placeholder=''" onblur="this.placeholder='Enter 6-digit PIN'">
+                <input type="password" id="login-pin-input" placeholder="Enter 6-digit PIN" maxlength="6" inputmode="numeric" autofocus style="width: 100%; color: white; background: transparent; border: none; font-size: 16px; outline: none; text-align: center; letter-spacing: 4px;">
             </div>
 
             <button class="next-btn" id="verify-pin-btn" style="width: 100%; justify-content: center; padding: 14px 20px; margin-top: 5px; display: flex; align-items: center; gap: 8px;">
@@ -192,7 +202,6 @@ function showLoginPinScreen(formContent, phoneVal, deviceId, onComplete) {
         }
 
         try {
-            // PIN စစ်ဆေးရန် ဆာဗာသို့ ပို့ခြင်း
             const response = await fetch('/api/userid', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
@@ -202,13 +211,11 @@ function showLoginPinScreen(formContent, phoneVal, deviceId, onComplete) {
             const data = await response.json();
 
             if (data.success) {
-                // Login အောင်မြင်သွားပါက response ထဲမှ role ကို localStorage တွင် သိမ်းဆည်းမည်
                 if (data.role) {
                     localStorage.setItem('userRole', data.role);
                 }
-
                 if (typeof onComplete === 'function') {
-                    onComplete(phoneVal, enteredPin);
+                    onComplete(data);
                 }
             } else {
                 alert("PIN မှားယွင်းနေပါသည်: " + (data.message || "Unknown error"));

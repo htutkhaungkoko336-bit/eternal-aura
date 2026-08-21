@@ -18,42 +18,9 @@ if (formContent) {
 document.addEventListener('DOMContentLoaded', () => {
     // လိုအပ်ပါက Authentication ကို စတင်ရန်
     if (typeof initAuth === 'function' && formContent) {
-        initAuth(formContent, async (phone, pin) => {
-            let deviceId = localStorage.getItem('device_id');
-            if (!deviceId) {
-                deviceId = 'dev_' + Math.random().toString(36).substring(2, 12);
-                localStorage.setItem('device_id', deviceId);
-            }
-
-            try {
-                const response = await fetch('/api/userid', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ phone: phone, pin: pin, deviceId: deviceId })
-                });
-
-                const data = await response.json();
-
-                if (data.success) {
-                    handleLoginSuccess(data); // data တစ်ခုလုံးကို ပို့ပေးလိုက်ပါ
-                    return;
-                }
-                if (data.requiresPassword) {
-                    showPinInputScreen(phone, deviceId);
-                    return;
-                }
-
-                if (data.requiresRegistration) {
-                    showNameInputScreen(phone, pin, deviceId);
-                    return;
-                }
-
-                alert("အမှားအယွင်းရှိသည်: " + (data.message || "Unknown error"));
-
-            } catch (err) {
-                console.error("Network error:", err);
-                alert("ဆာဗာသို့ ချိတ်ဆက်၍ မရပါ။");
-            }
+        initAuth(formContent, (data) => {
+            // အောင်မြင်သွားပါက handleLoginSuccess သို့ ဒေတာပို့မည်
+            handleLoginSuccess(data);
         });
     }
 
@@ -63,92 +30,8 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 });
 
-// A. User အသစ်အတွက် Name ထည့်ခိုင်းမည့် Screen
-function showNameInputScreen(phone, pin, deviceId) {
-    formContent.innerHTML = `
-        <div style="display: flex; flex-direction: column; gap: 15px; width: 100%;">
-            <p style="color: #94a3b8; font-size: 14px; text-align: left; width: 100%;">Enter Your Name</p>
-            <div class="input-box" style="width: 100%; background-color: #1e293b; padding: 16px 20px; border-radius: 16px; border: 1px solid #334155;">
-                <input type="text" id="username-input" placeholder="Your Name" maxlength="25" autofocus style="width: 100%; color: white; background: transparent; border: none; font-size: 16px; outline: none;">
-            </div>
-            <button class="next-btn" id="finish-btn" style="width: 100%; justify-content: center; padding: 14px 20px; margin-top: 5px; display: flex; align-items: center; gap: 8px;">
-                <span>Finish</span>
-            </button>
-        </div>
-    `;
-
-    document.getElementById('finish-btn').addEventListener('click', async () => {
-        const username = document.getElementById('username-input').value.trim();
-        if (!username) {
-            alert("ကျေးဇူးပြု၍ နာမည်ထည့်ပါ။");
-            return;
-        }
-
-        try {
-            const response = await fetch('/api/userid', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ name: username, phone: phone, pin: pin, deviceId: deviceId })
-            });
-
-            const data = await response.json();
-            if (data.success) {
-                handleLoginSuccess(data);
-            } else {
-                alert("စာရင်းသွင်းမအောင်မြင်ပါ: " + data.message);
-            }
-        } catch (err) {
-            console.error("Network error:", err);
-            alert("ဆာဗာသို့ ချိတ်ဆက်၍ မရပါ။");
-        }
-    });
-}
-
-// B. Device ပြောင်းသွားသူများအတွက် PIN တောင်းမည့် Screen
-function showPinInputScreen(phone, deviceId) {
-    formContent.innerHTML = `
-        <div style="display: flex; flex-direction: column; gap: 15px; width: 100%;">
-            <p style="color: #94a3b8; font-size: 14px; text-align: left; width: 100%;">New Device Detected. Enter Your PIN</p>
-            <div class="input-box" style="width: 100%; background-color: #1e293b; padding: 16px 20px; border-radius: 16px; border: 1px solid #334155;">
-                <input type="password" id="login-pin-input" placeholder="Enter PIN" autofocus style="width: 100%; color: white; background: transparent; border: none; font-size: 16px; outline: none;">
-            </div>
-            <button class="next-btn" id="verify-pin-btn" style="width: 100%; justify-content: center; padding: 14px 20px; margin-top: 5px; display: flex; align-items: center; gap: 8px;">
-                <span>Verify & Login</span>
-            </button>
-        </div>
-    `;
-
-    document.getElementById('verify-pin-btn').addEventListener('click', async () => {
-        const enteredPin = document.getElementById('login-pin-input').value.trim();
-        if (!enteredPin) {
-            alert("ကျေးဇူးပြု၍ PIN ထည့်ပါ။");
-            return;
-        }
-
-        try {
-            const response = await fetch('/api/userid', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ phone: phone, pin: enteredPin, deviceId: deviceId })
-            });
-
-            const data = await response.json();
-            if (data.success) {
-                handleLoginSuccess(data);
-            } else {
-                alert("PIN မှားယွင်းနေပါသည်: " + (data.message || "Access denied"));
-            }
-        } catch (err) {
-            console.error("Network error:", err);
-            alert("ဆာဗာသို့ ချိတ်ဆက်၍ မရပါ။");
-        }
-    });
-}
-
-// C. အောင်မြင်သွားပါက Home Screen နှင့် Mode Screen ကိုပါ ပူးတွဲပြသရန်
+// Login သို့မဟုတ် Register အောင်မြင်သွားပါက Home Screen နှင့် Mode Screen ကိုပါ ပူးတွဲပြသရန်
 function handleLoginSuccess(data) {
-    // data ဆိုသည်မှာ object ဖြစ်ပြီး { success: true, name: "...", userId: "..." } ဟု ယူဆသည်
-    // ညီမလေးရဲ့ နာမည်နဲ့ userId ကို သိမ်းဆည်းခြင်း
     localStorage.setItem('userName', data.name || "User");
     
     if (data.userId) {
