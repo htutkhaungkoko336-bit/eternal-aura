@@ -1,4 +1,4 @@
-// auth.js - Step-by-Step Auth Flow (Phone -> Name -> PIN)
+// auth.js - Step-by-Step Auth Flow (Phone -> PIN -> Name)
 
 export function initAuth(formContent, onComplete) {
     // Step 1: ဖုန်းနံပါတ် တောင်းမည့် Screen
@@ -47,7 +47,7 @@ export function initAuth(formContent, onComplete) {
 
             const data = await response.json();
 
-            // ၁။ Auto Login (ဖုန်းနံပါတ်ရော Device ID ပါ ကိုက်ညီလျှင်)
+            // ၁။ Auto Login (ဖုန်းရော Device ID ပါ ကိုက်ညီလျှင်)
             if (data.success) {
                 if (data.role) localStorage.setItem('userRole', data.role);
                 if (typeof onComplete === 'function') onComplete(data);
@@ -60,9 +60,9 @@ export function initAuth(formContent, onComplete) {
                 return;
             }
 
-            // ၃။ New User (Step 2: Name တောင်းမည့် Screen သို့သွားမည်)
+            // ၃။ New User (Step 2: PIN သတ်မှတ်မည့် Screen သို့သွားမည်)
             if (data.requiresRegistration) {
-                showNameInputScreen(formContent, phoneVal, deviceId, onComplete);
+                showCreatePinScreen(formContent, phoneVal, deviceId, onComplete);
                 return;
             }
 
@@ -75,38 +75,8 @@ export function initAuth(formContent, onComplete) {
     });
 }
 
-// Step 2: နာမည် တောင်းမည့် မျက်နှာပြင်
-function showNameInputScreen(formContent, phoneVal, deviceId, onComplete) {
-    formContent.innerHTML = `
-        <div style="display: flex; flex-direction: column; gap: 15px; width: 100%;">
-            <p style="color: #94a3b8; font-size: 14px; text-align: left; width: 100%;">Enter Your Name</p>
-            <div class="input-box" style="width: 100%; background-color: #1e293b; padding: 16px 20px; border-radius: 16px; border: 1px solid #334155;">
-                <input type="text" id="username-input" placeholder="Your Name" maxlength="25" autofocus style="width: 100%; color: white; background: transparent; border: none; font-size: 16px; outline: none;">
-            </div>
-            <button class="next-btn" id="name-next-btn" style="width: 100%; justify-content: center; padding: 14px 20px; margin-top: 5px; display: flex; align-items: center; gap: 8px;">
-                <span>Continue</span>
-                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-                    <line x1="5" y1="12" x2="19" y2="12"></line>
-                    <polyline points="12 5 19 12 12 19"></polyline>
-                </svg>
-            </button>
-        </div>
-    `;
-
-    document.getElementById('name-next-btn').addEventListener('click', () => {
-        const username = document.getElementById('username-input').value.trim();
-        if (!username) {
-            alert("ကျေးဇူးပြု၍ နာမည်ထည့်ပါ။");
-            return;
-        }
-
-        // Step 3: Name ရသွားပြီဖြစ်၍ PIN သတ်မှတ်မည့် Screen သို့ ဆက်သွားမည်
-        showCreatePinScreen(formContent, username, phoneVal, deviceId, onComplete);
-    });
-}
-
-// Step 3: PIN ဂဏန်း ၆ လုံး သတ်မှတ်မည့် မျက်နှာပြင်
-function showCreatePinScreen(formContent, username, phoneVal, deviceId, onComplete) {
+// Step 2: PIN ဂဏန်း ၆ လုံး သတ်မှတ်မည့် မျက်နှာပြင် (New User)
+function showCreatePinScreen(formContent, phoneVal, deviceId, onComplete) {
     formContent.innerHTML = `
         <div style="display: flex; flex-direction: column; gap: 15px; width: 100%;">
             <div style="width: 100%;">
@@ -133,10 +103,11 @@ function showCreatePinScreen(formContent, username, phoneVal, deviceId, onComple
                 </div>
             </div>
 
-            <button class="next-btn" id="finish-register-btn" style="width: 100%; justify-content: center; padding: 14px 20px; margin-top: 5px; display: flex; align-items: center; gap: 8px;">
-                <span>Finish & Register</span>
+            <button class="next-btn" id="pin-next-btn" style="width: 100%; justify-content: center; padding: 14px 20px; margin-top: 5px; display: flex; align-items: center; gap: 8px;">
+                <span>Continue</span>
                 <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-                    <polyline points="20 6 9 17 4 12"></polyline>
+                    <line x1="5" y1="12" x2="19" y2="12"></line>
+                    <polyline points="12 5 19 12 12 19"></polyline>
                 </svg>
             </button>
         </div>
@@ -144,7 +115,7 @@ function showCreatePinScreen(formContent, username, phoneVal, deviceId, onComple
 
     setupOtpInputs();
 
-    document.getElementById('finish-register-btn').addEventListener('click', async () => {
+    document.getElementById('pin-next-btn').addEventListener('click', () => {
         const pin1Arr = document.querySelectorAll('.pin-1');
         const pin2Arr = document.querySelectorAll('.pin-2');
 
@@ -164,12 +135,41 @@ function showCreatePinScreen(formContent, username, phoneVal, deviceId, onComple
             return;
         }
 
+        // Step 3: PIN မှန်ကန်ပါက နာမည်တောင်းမည့် Screen သို့ ဆက်သွားမည်
+        showNameInputScreen(formContent, phoneVal, pin1, deviceId, onComplete);
+    });
+}
+
+// Step 3: နာမည် တောင်းမည့် မျက်နှာပြင် (အကောင့်ဖွင့်ခြင်း ပြီးဆုံးရန်)
+function showNameInputScreen(formContent, phoneVal, pinVal, deviceId, onComplete) {
+    formContent.innerHTML = `
+        <div style="display: flex; flex-direction: column; gap: 15px; width: 100%;">
+            <p style="color: #94a3b8; font-size: 14px; text-align: left; width: 100%;">Enter Your Name</p>
+            <div class="input-box" style="width: 100%; background-color: #1e293b; padding: 16px 20px; border-radius: 16px; border: 1px solid #334155;">
+                <input type="text" id="username-input" placeholder="Your Name" maxlength="25" autofocus style="width: 100%; color: white; background: transparent; border: none; font-size: 16px; outline: none;">
+            </div>
+            <button class="next-btn" id="finish-register-btn" style="width: 100%; justify-content: center; padding: 14px 20px; margin-top: 5px; display: flex; align-items: center; gap: 8px;">
+                <span>Finish & Register</span>
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                    <polyline points="20 6 9 17 4 12"></polyline>
+                </svg>
+            </button>
+        </div>
+    `;
+
+    document.getElementById('finish-register-btn').addEventListener('click', async () => {
+        const username = document.getElementById('username-input').value.trim();
+        if (!username) {
+            alert("ကျေးဇူးပြု၍ နာမည်ထည့်ပါ။");
+            return;
+        }
+
         try {
-            // အားလုံးပြည့်စုံသွားမှ ဆာဗာဆီ ပို့ပါမည်
+            // အချက်အလက် အားလုံးပြည့်စုံသွားပြီဖြစ်၍ ဆာဗာဆီသို့ ပို့မည်
             const response = await fetch('/api/userid', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ name: username, phone: phoneVal, pin: pin1, deviceId: deviceId })
+                body: JSON.stringify({ name: username, phone: phoneVal, pin: pinVal, deviceId: deviceId })
             });
 
             const data = await response.json();
