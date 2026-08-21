@@ -1,5 +1,5 @@
 const { initializeApp, cert, getApps } = require('firebase-admin/app');
-const { getFirestore } = require('firebase-admin/firestore');
+const { getFirestore, FieldValue } = require('firebase-admin/firestore'); // FieldValue ကို ထည့်သွင်းထားပါသည်
 const { sendRegistrationToTelegram } = require('./telegram'); 
 
 const app = getApps().length === 0 
@@ -20,6 +20,17 @@ function getYangonTimeStr() {
     const ampm = hours >= 12 ? 'pm' : 'am';
     hours = hours % 12 || 12;
     return `${dateStr}    ${hours}:${minutes} ${ampm}`;
+}
+
+// နေ့စွဲ သီးသန့်ထုတ်ရန် Helper
+function getYangonDateStr() {
+    const now = new Date();
+    const utc = now.getTime() + (now.getTimezoneOffset() * 60000);
+    const yangonTime = new Date(utc + (3600000 * 6.5));
+    const year = yangonTime.getFullYear();
+    const month = String(yangonTime.getMonth() + 1).padStart(2, '0');
+    const day = String(yangonTime.getDate()).padStart(2, '0');
+    return `${year}-${month}-${day}`;
 }
 
 async function uploadToImgBB(base64Image) {
@@ -61,9 +72,11 @@ module.exports = async function handler(req, res) {
         let collectionName = '';
         let registrationData = {};
         let slipForTelegram = '';
+        let gameModeKey = ''; // User document ထဲမှာ တိုးရမည့် Field Key (ဥပမာ tournament, 5vs5-5k စသည်ဖြင့်)
 
         if (mode === '1vs1') {
             collectionName = '1vs1_registrations';
+            gameModeKey = '1vs1-5k'; // ညီမလေးရဲ့ Database ထဲက Key နာမည်အတိုင်း ချိန်ညှိနိုင်ပါတယ်
             const logoToUpload = data.logo || data.logoBase64 || '';
             const slipToUpload = data.paymentSlip || data.paymentSlipUrl || '';
             slipForTelegram = slipToUpload;
@@ -89,6 +102,7 @@ module.exports = async function handler(req, res) {
         }
         else if (mode === '5vs5') {
             collectionName = '5vs5_registrations';
+            gameModeKey = '5vs5-5k'; // လိုအပ်သလို ပြင်နိုင်ပါတယ်
             slipForTelegram = data.paymentSlip;
 
             const logoUrl = await uploadToImgBB(data.logo);
@@ -115,6 +129,7 @@ module.exports = async function handler(req, res) {
         } 
         else if (mode === 'tournament') {
             collectionName = 'tournament_registrations';
+            gameModeKey = 'tournament'; // Database ထဲက tournament key ကို ယူရန်
             slipForTelegram = data.paymentSlipUrl;
 
             const teamLogoUrl = await uploadToImgBB(data.teamLogo);
@@ -144,15 +159,32 @@ module.exports = async function handler(req, res) {
             return res.status(400).json({ success: false, message: "Invalid registration mode" });
         }
 
-        // 1. Firestore ထဲသို့ Data အသစ်ထည့်ပြီး Document ID (docId) ကို ရယူခြင်း
+        // 1. Firestore ၏ သက်ဆိုင်ရာ collection ထဲသို့ Data အသစ်ထည့်ခြင်း
         const docRef = await db.collection(collectionName).add(registrationData);
+
+        // 2. ညီမလေးပြထားတဲ့ ပုံထဲကလို `users` ထဲက user document ရဲ့ key ကို 1 တိုးပေးခြင်း (increment)
+        const userRef = db.collection('users').doc(data.userId);
+        await userRef.set({
+            [gameModeKey]: FieldValue.increment(1)
+        }, { merge: true }); // Document မရှိသေးရင် အသစ်ဆောက်ပေးပြီး ရှိပြီးသားဆိုရင် Key ကို 1 ပေါင်းပေးပါမည်
+
+        // 3. Database ထဲမှာ Notification အသစ်တစ်ခု တန်းထည့်ပေးခြင်း (User ဘက်က လှမ်းစစ်ရန်)
+        await db.collection('notifications').add({
+            userId: data.userId,
+            title: `${mode.toUpperCase()} Registration Successful!`,
+            message: `သင့်ရဲ့ ${mode} စာရင်းပေးသွင်းမှု Key အသစ် Database ထဲသို့ ဝင်ရောက်လာပါပြီရှင့်။`,
+            dateStr: getYangonDateStr(),
+            timeStr: getYangonTimeStr(),
+            read: false,
+            createdAt: new Date()
+        });
 
         const telegramPayload = {
             ...registrationData,
             mode: mode
         };
 
-        // 2. docId ကို Telegram ဆီသို့ ပေးပို့ခြင်း
+        // 4. Telegram ဆီသို့ ပေးပို့ခြင်း
         const telegramResult = await sendRegistrationToTelegram(telegramPayload, slipForTelegram, collectionName, docRef.id);
         if (!telegramResult.success) {
             console.error("Telegram Error:", telegramResult.error);
