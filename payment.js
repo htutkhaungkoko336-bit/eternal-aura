@@ -289,33 +289,26 @@ confirmBtn.addEventListener('click', async () => {
     // ၂။ localStorage ထဲက userId ကို ဦးစားပေးယူခြင်း (မရှိမှသာ formData သို့မဟုတ် guest_user သုံးမည်)
     const currentUserId = localStorage.getItem('userId') || localStorage.getItem('activeUserId') || formData.userId || 'guest_user';
     // ၃။ Backend သို့ ပို့မည့် Payload (Backend မျှော်လင့်ထားသည့် Field အမည်များနှင့် အတိအကျ ကိုက်ညီစေရန်)
-    const requestBody = {
+        const requestBody = {
         mode: modeType,
         data: {
-            // Login ဝင်ထားစဉ်က သိမ်းထားသော User ID ကို ထည့်သွင်းခြင်း
+            // 1. Form အဟောင်းထဲက ပါလာတာတွေ အကုန်ထည့်မည်
+            ...formData,
+            
+            // 2. userId ကို အောက်ဆုံးကနေ ထပ်ရေးခြင်းဖြင့် အသစ်ကို အစားထိုးစေရန်
             userId: currentUserId,
             
-            // Form မှ အချက်အလက်များ အားလုံးထည့်သွင်းခြင်း
-            ...formData,
-
-            // --- Mode အလိုက် ပုံများနှင့် အချက်အလက်များ ချိန်ညှိခြင်း ---
-            
-            // 1vs1 နှင့် 5vs5 အတွက်
+            // --- အခြား ချိန်ညှိချက်များ ---
             logo: formData.logoBase64 || formData.teamLogo || formData.logo || '',
             paymentSlip: base64SS || formData.paymentSlip || '',
-
-            // Tournament အတွက် (Backend ကုဒ်အရ data.teamLogo နှင့် data.paymentSlipUrl ကို တောင်းထားပါသည်)
             teamLogo: formData.teamLogo || formData.logoBase64 || formData.logo || '',
             paymentSlipUrl: base64SS || formData.paymentSlipUrl || '',
-
-            // အခြား UI မှပါလာသော အချက်အလက်များ
             slot: slotNum,
             totalFee: totalStr,
             matchFormat: badgeText,
             selectedGameMode: displayModeText
         }
     };
-
     // UI Loading State
     confirmBtn.disabled = true;
     confirmBtn.textContent = "Submitting...";
