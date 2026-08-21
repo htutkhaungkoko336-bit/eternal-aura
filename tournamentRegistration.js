@@ -150,7 +150,7 @@ document.getElementById('reg-form').addEventListener('submit', function(e) {
 
         // Backend က မျှော်လင့်ထားသော Key နာမည်များနှင့် ကိုက်ညီစေရန် ပြင်ဆင်ထားခြင်း
         const formData = {
-            userId: "AURA-KOMB3E", // သင့် app ရှိ active user id ကို ထည့်ရန် (သို့) savedData.userId
+            userId: savedData.userId || localStorage.getItem('activeUserId') || "AURA-KOMB3E",      
             teamName: document.getElementById('sq-name').value,
             teamLogo: base64Logo,
             
