@@ -35,8 +35,6 @@ module.exports = async (req, res) => {
             const collectionName = remaining.substring(0, lastUnderscore);
             const docId = remaining.substring(lastUnderscore + 1);
 
-            console.log(`Parsed -> Action: ${action}, Collection: ${collectionName}, DocID: ${docId}`);
-
             let newStatus = "";
             let responseText = "";
 
@@ -48,14 +46,12 @@ module.exports = async (req, res) => {
                 responseText = "❌ This registration has been REJECTED.";
             }
 
-            // ၁။ ပထမဆုံး မူလ Registration Document ရဲ့ Status ကို အရင်ပြောင်းမည် (အမြဲအောင်မြင်စေရန်)
             try {
                 if (collectionName && docId) {
                     const regDocRef = db.collection(collectionName).doc(docId);
                     await regDocRef.update({ status: newStatus });
                     console.log("Firestore registration status updated successfully!");
 
-                    // ၂။ အကယ်၍ Confirm ဖြစ်ရင် User Keys များကို သီးသန့် try/catch ဖြင့် လုံခြုံစွာ တိုးပေးမည်
                     if (action === 'confirm') {
                         const regDoc = await regDocRef.get();
                         if (regDoc.exists) {
@@ -66,21 +62,21 @@ module.exports = async (req, res) => {
                                 let keyFieldToIncrement = "";
                                 const fee = (regData.fee || "").toLowerCase();
 
+                                // စုစုပေါင်း Key အမျိုးအစားများကို ညီမလေးရဲ့ User စာရင်းအသစ်အတိုင်း တိကျစွာ ခွဲပေးခြင်း
                                 if (collectionName === '1vs1_registrations') {
-                                    if (fee.includes('5k')) keyFieldToIncrement = "keys.1vs1-5k";
-                                    else if (fee.includes('10k')) keyFieldToIncrement = "keys.1vs1-10k";
-                                    else if (fee.includes('15k')) keyFieldToIncrement = "keys.1vs1-15k";
+                                    if (fee.includes('50k')) keyFieldToIncrement = "keys.1vs1-50k";
                                     else if (fee.includes('25k')) keyFieldToIncrement = "keys.1vs1-25k";
-                                    else if (fee.includes('50k')) keyFieldToIncrement = "keys.1vs1-50k";
+                                    else if (fee.includes('15k')) keyFieldToIncrement = "keys.1vs1-15k";
+                                    else if (fee.includes('10k')) keyFieldToIncrement = "keys.1vs1-10k";
                                     else keyFieldToIncrement = "keys.1vs1-5k"; 
                                 } else if (collectionName === 'tournament_registrations') {
                                     keyFieldToIncrement = "keys.tournament";
                                 } else if (collectionName === '5vs5_registrations') {
-                                    if (fee.includes('5k')) keyFieldToIncrement = "keys.5vs5-5k";
-                                    else if (fee.includes('10k')) keyFieldToIncrement = "keys.5vs5-10k";
+                                    // ညီမလေးရဲ့ 5vs5 key နာမည်တွေမှာ underscore (-) ပါတာနဲ့ (_) ပါတာ နှစ်မျိုးစလုံးကို စစ်ပေးရန်
+                                    if (fee.includes('50k')) keyFieldToIncrement = "keys.5vs5_50k";
+                                    else if (fee.includes('25k')) keyFieldToIncrement = "keys.5vs5_25k";
                                     else if (fee.includes('15k')) keyFieldToIncrement = "keys.5vs5-15k";
-                                    else if (fee.includes('25k')) keyFieldToIncrement = "keys.5vs5-25k";
-                                    else if (fee.includes('50k')) keyFieldToIncrement = "keys.5vs5-50k";
+                                    else if (fee.includes('10k')) keyFieldToIncrement = "keys.5vs5-10k";
                                     else keyFieldToIncrement = "keys.5vs5-5k"; 
                                 }
 
@@ -88,6 +84,8 @@ module.exports = async (req, res) => {
                                     try {
                                         const userRef = db.collection('users').doc(userId);
                                         const userDoc = await userRef.get();
+                                        
+                                        // ဥပမာ keys.1vs1-25k ဆိုရင် fieldKeyOnly က 1vs1-25k ဖြစ်ပါမယ်
                                         const fieldKeyOnly = keyFieldToIncrement.split('.')[1];
 
                                         if (!userDoc.exists || !userDoc.data().keys || userDoc.data().keys[fieldKeyOnly] === undefined) {
@@ -109,14 +107,11 @@ module.exports = async (req, res) => {
                             }
                         }
                     }
-                } else {
-                    console.error("Invalid collectionName or docId");
                 }
             } catch (dbError) {
                 console.error("Database Update Error:", dbError);
             }
 
-            // Telegram Group ထဲရှိ မူလစာသားကို အပ်ဒိတ်လုပ်ပြီး ခလုတ်ဖြုတ်ခြင်း
             await fetch(`https://api.telegram.org/bot${BOT_TOKEN}/editMessageCaption`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
@@ -129,7 +124,6 @@ module.exports = async (req, res) => {
                 })
             });
 
-            // Telegram သို့ အကြောင်းပြန်ခြင်း (Loading animation ပျောက်ရန်)
             await fetch(`https://api.telegram.org/bot${BOT_TOKEN}/answerCallbackQuery`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
