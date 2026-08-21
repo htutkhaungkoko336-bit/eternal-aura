@@ -20,19 +20,17 @@ module.exports = async (req, res) => {
 
         if (update.callback_query) {
             const callbackQuery = update.callback_query;
-            const data = callbackQuery.data; // ဥပမာ - confirm_5vs5_registrations_OzOcxxIPMMGD7bEsqp0j
+            const data = callbackQuery.data; 
             const chatId = callbackQuery.message.chat.id;
             const messageId = callbackQuery.message.message_id;
             const BOT_TOKEN = process.env.TELEGRAM_BOT_TOKEN;
 
             console.log("Received callback data:", data);
 
-            // data ကို ပထမဆုံး underscore (_) နှစ်ခုဖြင့်သာ action နှင့် ကျန်တာကို ခွဲထုတ်ခြင်း
             const firstUnderscore = data.indexOf('_');
-            const action = data.substring(0, firstUnderscore); // confirm သို့မဟုတ် reject
+            const action = data.substring(0, firstUnderscore); 
             const remaining = data.substring(firstUnderscore + 1);
             
-            // ကျန်တဲ့ထဲမှာ နောက်ဆုံး underscore ကို ရှာပြီး collectionName နဲ့ docId ကို ခွဲထုတ်ခြင်း
             const lastUnderscore = remaining.lastIndexOf('_');
             const collectionName = remaining.substring(0, lastUnderscore);
             const docId = remaining.substring(lastUnderscore + 1);
@@ -48,7 +46,6 @@ module.exports = async (req, res) => {
 
                 try {
                     if (collectionName && docId) {
-                        // ၁။ မူလ Registration Document ကို ယူမည် (userId နှင့် fee သိရှိရန်)
                         const regDocRef = db.collection(collectionName).doc(docId);
                         const regDoc = await regDocRef.get();
 
@@ -57,7 +54,6 @@ module.exports = async (req, res) => {
                             const userId = regData.userId;
 
                             if (userId) {
-                                // ၂. ဘယ် collection နဲ့ fee ပေါ်မူတည်၍ Key Field ကို တိကျစွာ သတ်မှတ်ခြင်း
                                 let keyFieldToIncrement = "";
                                 const fee = (regData.fee || "").toLowerCase();
 
@@ -67,7 +63,7 @@ module.exports = async (req, res) => {
                                     else if (fee.includes('15k')) keyFieldToIncrement = "keys.1vs1-15k";
                                     else if (fee.includes('25k')) keyFieldToIncrement = "keys.1vs1-25k";
                                     else if (fee.includes('50k')) keyFieldToIncrement = "keys.1vs1-50k";
-                                    else keyFieldToIncrement = "keys.1vs1-5k"; // Default
+                                    else keyFieldToIncrement = "keys.1vs1-5k"; 
                                 } else if (collectionName === 'tournament_registrations') {
                                     keyFieldToIncrement = "keys.tournament";
                                 } else if (collectionName === '5vs5_registrations') {
@@ -76,21 +72,35 @@ module.exports = async (req, res) => {
                                     else if (fee.includes('15k')) keyFieldToIncrement = "keys.5vs5-15k";
                                     else if (fee.includes('25k')) keyFieldToIncrement = "keys.5vs5-25k";
                                     else if (fee.includes('50k')) keyFieldToIncrement = "keys.5vs5-50k";
-                                    else keyFieldToIncrement = "keys.5vs5-5k"; // Default
+                                    else keyFieldToIncrement = "keys.5vs5-5k"; 
                                 }
 
-                                // ၃။ User ရဲ့ သက်ဆိုင်ရာ Key ကို +1 တိုးပေးခြင်း
                                 if (keyFieldToIncrement) {
                                     const userRef = db.collection('users').doc(userId);
-                                    await userRef.update({
-                                        [keyFieldToIncrement]: FieldValue.increment(1)
-                                    });
-                                    console.log(`User ${userId} got +1 key for ${keyFieldToIncrement}`);
+                                    const userDoc = await userRef.get();
+
+                                    if (userDoc.exists) {
+                                        const userData = userDoc.data();
+                                        
+                                        // User ထဲမှာ keys object သို့မဟုတ် သက်ဆိုင်ရာ key လုံးဝမရှိသေးရင် 0 နဲ့ အရင်စဆောက်ပေးမည်
+                                        if (!userData.keys || userData.keys[keyFieldToIncrement.split('.')[1]] === undefined) {
+                                            await userRef.set({
+                                                keys: {
+                                                    [keyFieldToIncrement.split('.')[1]]: 0
+                                                }
+                                            }, { merge: true });
+                                        }
+
+                                        // ပြီးမှ +1 တိုးမည်
+                                        await userRef.update({
+                                            [keyFieldToIncrement]: FieldValue.increment(1)
+                                        });
+                                        console.log(`User ${userId} got +1 key for ${keyFieldToIncrement}`);
+                                    }
                                 }
                             }
                         }
 
-                        // ၄။ Registration Status ကို CONFIRMED သို့ ပြောင်းမည်
                         await regDocRef.update({ status: newStatus });
                         console.log("Firestore updated successfully!");
                     }
@@ -112,7 +122,6 @@ module.exports = async (req, res) => {
                 }
             }
 
-            // Telegram Group ထဲရှိ မူလစာသားကို အပ်ဒိတ်လုပ်ပြီး ခလုတ်ဖြုတ်ခြင်း
             await fetch(`https://api.telegram.org/bot${BOT_TOKEN}/editMessageCaption`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
@@ -125,7 +134,6 @@ module.exports = async (req, res) => {
                 })
             });
 
-            // Telegram သို့ အကြောင်းပြန်ခြင်း (Loading animation ပျောက်ရန်)
             await fetch(`https://api.telegram.org/bot${BOT_TOKEN}/answerCallbackQuery`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
