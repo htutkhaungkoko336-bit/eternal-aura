@@ -47,23 +47,20 @@ module.exports = async (req, res) => {
                 updateKeyboard = true;
             } 
             else if (action === 'reject') {
-                responseText = "⚠️ ပယ်ချရသည့် အကြောင်းရင်းကို ရွေးချယ်ပါ:";
+                responseText = "⚠️ ပယ်ချရမည့် အကြောင်းရင်းကို ရွေးချယ်ပါ:";
                 updateKeyboard = true;
                 newInlineKeyboard = [
-                    [{ text: "🚫 ညစ်ညမ်းပုံ/မသင့်လျော်သောပုံ တင်ထားခြင်း", callback_data: `reason_r1_${collectionName}_${docId}` }],
-                    [{ text: "⚠️ Game Name သို့မဟုတ် Game ID မှားယွင်းခြင်း", callback_data: `reason_r2_${collectionName}_${docId}` }],
-                    [{ text: "💰 ငွေပမာဏ လျော့နည်းနေခြင်း (သို့) မမှန်ကန်ခြင်း", callback_data: `reason_r3_${collectionName}_${docId}` }],
-                    [{ text: "📝 အချက်အလက်များ မပြည့်စုံခြင်း", callback_data: `reason_r4_${collectionName}_${docId}` }],
-                    [{ text: "🔄 ငွေလွှဲအကောင့်အမည် သို့မဟုတ် ဖုန်းနံပါတ် မှားယွင်းခြင်း", callback_data: `reason_r5_${collectionName}_${docId}` }],
+                    [{ text: "🚫 ညစ်ညမ်းပုံ/မသင့်လျော်သောပုံ", callback_data: `select_r1_${collectionName}_${docId}` }],
+                    [{ text: "⚠️ Game Name/ID မှားယွင်း", callback_data: `select_r2_${collectionName}_${docId}` }],
+                    [{ text: "💰 ငွေပမာဏ မမှန်", callback_data: `select_r3_${collectionName}_${docId}` }],
+                    [{ text: "📝 အချက်အလက် မပြည့်စုံ", callback_data: `select_r4_${collectionName}_${docId}` }],
+                    [{ text: "🔄 အကောင့်အမည်/ဖုန်းနံပါတ် မှားယွင်း", callback_data: `select_r5_${collectionName}_${docId}` }],
                     [{ text: "🔙 Back", callback_data: `back_${collectionName}_${docId}` }]
                 ];
             }
-            else if (action === 'reason') {
-                newStatus = 'REJECTED';
-                
+            else if (action === 'select') {
                 const parts = remaining.split('_');
-                const reasonKey = parts[0]; 
-                
+                const reasonKey = parts[0];
                 const reasonsMap = {
                     'r1': 'ညစ်ညမ်းပုံ သို့မဟုတ် မသင့်လျော်သော Payment Slip ဖြစ်ပါသည်',
                     'r2': 'Game Name သို့မဟုတ် Game ID မှားယွင်းနေပါသည်',
@@ -71,12 +68,28 @@ module.exports = async (req, res) => {
                     'r4': 'အချက်အလက်များ မပြည့်စုံပါ',
                     'r5': 'ငွေလွှဲအကောင့် အမည် သို့မဟုတ် ဖုန်းနံပါတ် မှားယွင်းနေပါသည်'
                 };
-
                 rejectionReasonText = reasonsMap[reasonKey] || 'အခြားအကြောင်းပြချက်ဖြင့် ပယ်ချပါသည်';
-                responseText = `❌ REJECTED\nReason: ${rejectionReasonText}`;
+                responseText = `Selected: ${rejectionReasonText}\n\nအပြီးသတ် ပယ်ချရန် "✅ Confirm Reject" ကိုနှိပ်ပါ`;
                 updateKeyboard = true;
-
-                // 🔴 အရေးကြီးဆုံးပြင်ဆင်ချက်: Reason ရွေးလိုက်တာနဲ့ ဒီမှာ Database ကို တန်းပြီး Update လုပ်ပါမယ်
+                
+                newInlineKeyboard = [
+                    [{ text: "✅ Confirm Reject", callback_data: `confirmrej_${reasonKey}_${collectionName}_${docId}` }],
+                    [{ text: "🔙 Back to Reasons", callback_data: `reject_${collectionName}_${docId}` }]
+                ];
+            }
+            else if (action === 'confirmrej') {
+                const parts = remaining.split('_');
+                const reasonKey = parts[0];
+                const reasonsMap = {
+                    'r1': 'ညစ်ညမ်းပုံ သို့မဟုတ် မသင့်လျော်သော Payment Slip ဖြစ်ပါသည်',
+                    'r2': 'Game Name သို့မဟုတ် Game ID မှားယွင်းနေပါသည်',
+                    'r3': 'ငွေပမာဏ လျော့နည်းနေပါသည် သို့မဟုတ် မမှန်ကန်ပါ',
+                    'r4': 'အချက်အလက်များ မပြည့်စုံပါ',
+                    'r5': 'ငွေလွှဲအကောင့် အမည် သို့မဟုတ် ဖုန်းနံပါတ် မှားယွင်းနေပါသည်'
+                };
+                rejectionReasonText = reasonsMap[reasonKey] || 'အခြားအကြောင်းပြချက်ဖြင့် ပယ်ချပါသည်';
+                newStatus = 'REJECTED';
+                
                 if (collectionName && docId) {
                     try {
                         const regDocRef = db.collection(collectionName).doc(docId);
@@ -86,10 +99,13 @@ module.exports = async (req, res) => {
                         });
                         console.log("SUCCESS: Database updated to REJECTED with reason:", rejectionReasonText);
                     } catch (dbErr) {
-                        console.error("Database Update Error inside reason action:", dbErr);
+                        console.error("Database Update Error inside confirmrej action:", dbErr);
                     }
                 }
-            } 
+                responseText = `❌ REJECTED\nReason: ${rejectionReasonText}`;
+                updateKeyboard = true;
+                newInlineKeyboard = []; 
+            }
             else if (action === 'back') {
                 responseText = "⏳ Waiting for admin action...";
                 updateKeyboard = true;
