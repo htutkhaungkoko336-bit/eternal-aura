@@ -47,7 +47,10 @@ module.exports = async (req, res) => {
                 updateKeyboard = true;
             } 
             else if (action === 'reject') {
-                // Short keys များကို အသုံးပြုထားပါသည် (Telegram 64 bytes limit အတွက်)
+                // Reject ခလုတ်ကို နှိပ်လိုက်တာနဲ့ Database မှာ Status ကို REJECTED လို့ တန်းပြီးပြောင်းမည်
+                newStatus = 'REJECTED';
+                rejectionReasonText = 'အခြားအကြောင်းပြချက်ဖြင့် ပယ်ချပါသည် (အကြောင်းရင်း ဆက်လက်ရွေးချယ်နေဆဲ)';
+                
                 responseText = "⚠️ ပယ်ချရသည့် အကြောင်းရင်းကို ရွေးချယ်ပါ:";
                 updateKeyboard = true;
                 newInlineKeyboard = [
@@ -58,8 +61,8 @@ module.exports = async (req, res) => {
                     [{ text: "🔄 ငွေလွှဲအကောင့်အမည် သို့မဟုတ် ဖုန်းနံပါတ် မှားယွင်းခြင်း", callback_data: `reason_r5_${collectionName}_${docId}` }],
                     [{ text: "🔙 Back", callback_data: `back_${collectionName}_${docId}` }]
                 ];
-            } 
-            else if (action === 'reason') {
+            }
+                else if (action === 'reason') {
                 // Admin ရွေးလိုက်သော Short Key (r1, r2, r3 စသည်) ကို စစ်ဆေးပြီး အမှန်တကယ် ပေါ်ရမည့် စာသားသို့ ပြောင်းလဲခြင်း
                 newStatus = 'REJECTED';
                 const reasonKey = remaining.substring(0, remaining.indexOf('_'));
