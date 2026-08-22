@@ -58,7 +58,7 @@ module.exports = async (req, res) => {
                     [{ text: "🔙 Back", callback_data: `back_${collectionName}_${docId}` }]
                 ];
             }
-                else if (action === 'reason') {
+            else if (action === 'reason') {
                 newStatus = 'REJECTED';
                 
                 const parts = remaining.split('_');
@@ -76,7 +76,7 @@ module.exports = async (req, res) => {
                 responseText = `❌ REJECTED\nReason: ${rejectionReasonText}`;
                 updateKeyboard = true;
 
-                // ⚠️ အရေးကြီးသည် - Reason ရွေးလိုက်တာနဲ့ Database ထဲသို့ တိုက်ရိုက် Update လုပ်ရန် ဤနေရာတွင် ထည့်ပေးပါ
+                // 🔴 အရေးကြီးဆုံးပြင်ဆင်ချက်: Reason ရွေးလိုက်တာနဲ့ ဒီမှာ Database ကို တန်းပြီး Update လုပ်ပါမယ်
                 if (collectionName && docId) {
                     try {
                         const regDocRef = db.collection(collectionName).doc(docId);
@@ -84,13 +84,13 @@ module.exports = async (req, res) => {
                             status: 'REJECTED',
                             rejectionReason: rejectionReasonText
                         });
-                        console.log("Firestore status successfully updated to REJECTED with reason:", rejectionReasonText);
-                    } catch (updateErr) {
-                        console.error("Error updating rejection reason in DB:", updateErr);
+                        console.log("SUCCESS: Database updated to REJECTED with reason:", rejectionReasonText);
+                    } catch (dbErr) {
+                        console.error("Database Update Error inside reason action:", dbErr);
                     }
                 }
             } 
-                else if (action === 'back') {
+            else if (action === 'back') {
                 responseText = "⏳ Waiting for admin action...";
                 updateKeyboard = true;
                 newInlineKeyboard = [
@@ -101,71 +101,62 @@ module.exports = async (req, res) => {
                 ];
             }
 
+            // Confirm အတွက် သီးသန့် Database Update အပိုင်း
             try {
-                if (collectionName && docId) {
+                if (collectionName && docId && action === 'confirm') {
                     const regDocRef = db.collection(collectionName).doc(docId);
+                    await regDocRef.update({ status: 'CONFIRMED' });
 
-                    if (newStatus === 'CONFIRMED' || newStatus === 'REJECTED') {
-                        const updateData = { status: newStatus };
-                        if (newStatus === 'REJECTED' && rejectionReasonText) {
-                            updateData.rejectionReason = rejectionReasonText;
-                        }
-                        await regDocRef.update(updateData);
-                        console.log("Firestore registration status updated successfully to:", newStatus);
-                    }
+                    const regDoc = await regDocRef.get();
+                    if (regDoc.exists) {
+                        const regData = regDoc.data();
+                        const userId = regData.userId;
 
-                    if (newStatus === 'CONFIRMED') {
-                        const regDoc = await regDocRef.get();
-                        if (regDoc.exists) {
-                            const regData = regDoc.data();
-                            const userId = regData.userId;
+                        if (userId) {
+                            let keyFieldToIncrement = "";
+                            const fee = (regData.fee || "").toLowerCase();
 
-                            if (userId) {
-                                let keyFieldToIncrement = "";
-                                const fee = (regData.fee || "").toLowerCase();
+                            if (collectionName === '1vs1_registrations') {
+                                if (fee.includes('50k')) keyFieldToIncrement = "keys.1vs1-50k";
+                                else if (fee.includes('25k')) keyFieldToIncrement = "keys.1vs1-25k";
+                                else if (fee.includes('15k')) keyFieldToIncrement = "keys.1vs1-15k";
+                                else if (fee.includes('10k')) keyFieldToIncrement = "keys.1vs1-10k";
+                                else keyFieldToIncrement = "keys.1vs1-5k"; 
+                            } else if (collectionName === 'tournament_registrations') {
+                                keyFieldToIncrement = "keys.tournament";
+                            } else if (collectionName === '5vs5_registrations') {
+                                if (fee.includes('50k')) keyFieldToIncrement = "keys.5vs5_50k";
+                                else if (fee.includes('25k')) keyFieldToIncrement = "keys.5vs5_25k";
+                                else if (fee.includes('15k')) keyFieldToIncrement = "keys.5vs5-15k";
+                                else if (fee.includes('10k')) keyFieldToIncrement = "keys.5vs5-10k";
+                                else keyFieldToIncrement = "keys.5vs5-5k"; 
+                            }
 
-                                if (collectionName === '1vs1_registrations') {
-                                    if (fee.includes('50k')) keyFieldToIncrement = "keys.1vs1-50k";
-                                    else if (fee.includes('25k')) keyFieldToIncrement = "keys.1vs1-25k";
-                                    else if (fee.includes('15k')) keyFieldToIncrement = "keys.1vs1-15k";
-                                    else if (fee.includes('10k')) keyFieldToIncrement = "keys.1vs1-10k";
-                                    else keyFieldToIncrement = "keys.1vs1-5k"; 
-                                } else if (collectionName === 'tournament_registrations') {
-                                    keyFieldToIncrement = "keys.tournament";
-                                } else if (collectionName === '5vs5_registrations') {
-                                    if (fee.includes('50k')) keyFieldToIncrement = "keys.5vs5_50k";
-                                    else if (fee.includes('25k')) keyFieldToIncrement = "keys.5vs5_25k";
-                                    else if (fee.includes('15k')) keyFieldToIncrement = "keys.5vs5-15k";
-                                    else if (fee.includes('10k')) keyFieldToIncrement = "keys.5vs5-10k";
-                                    else keyFieldToIncrement = "keys.5vs5-5k"; 
-                                }
+                            if (keyFieldToIncrement) {
+                                try {
+                                    const userRef = db.collection('users').doc(userId);
+                                    const userDoc = await userRef.get();
+                                    const fieldKeyOnly = keyFieldToIncrement.split('.')[1];
 
-                                if (keyFieldToIncrement) {
-                                    try {
-                                        const userRef = db.collection('users').doc(userId);
-                                        const userDoc = await userRef.get();
-                                        const fieldKeyOnly = keyFieldToIncrement.split('.')[1];
-
-                                        if (!userDoc.exists || !userDoc.data().keys || userDoc.data().keys[fieldKeyOnly] === undefined) {
-                                            await userRef.set({
-                                                keys: { [fieldKeyOnly]: 0 }
-                                            }, { merge: true });
-                                        }
-
-                                        await userRef.update({
-                                            [keyFieldToIncrement]: FieldValue.increment(1)
-                                        });
-                                        console.log(`User ${userId} got +1 key for ${keyFieldToIncrement}`);
-                                    } catch (userErr) {
-                                        console.error("Error updating user keys (non-blocking):", userErr);
+                                    if (!userDoc.exists || !userDoc.data().keys || userDoc.data().keys[fieldKeyOnly] === undefined) {
+                                        await userRef.set({
+                                            keys: { [fieldKeyOnly]: 0 }
+                                        }, { merge: true });
                                     }
+
+                                    await userRef.update({
+                                        [keyFieldToIncrement]: FieldValue.increment(1)
+                                    });
+                                    console.log(`User ${userId} got +1 key for ${keyFieldToIncrement}`);
+                                } catch (userErr) {
+                                    console.error("Error updating user keys (non-blocking):", userErr);
                                 }
                             }
                         }
                     }
                 }
             } catch (dbError) {
-                console.error("Database Update Error:", dbError);
+                console.error("Database Confirm Error:", dbError);
             }
 
             if (updateKeyboard) {
