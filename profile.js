@@ -1,4 +1,4 @@
-// profile.js - Cyberpunk Profile with High-Tech SVG Trophies
+// profile.js - Custom Image Trophy Version
 
 export function renderProfileScreen(container) {
     const userName = localStorage.getItem('userName') || "CyberPlayer";
@@ -9,6 +9,9 @@ export function renderProfileScreen(container) {
     const isChampion = localStorage.getItem('isChampion') === 'true'; 
     const has1vs1Win = localStorage.getItem('has1vs1Win') === 'true';   
     const has5vs5Win = localStorage.getItem('has5vs5Win') === 'true';   
+
+    // Champion နေရာမှာ ထည့်ချင်တဲ့ ပုံလင့်ခ် (သို့) Base64 ကို ဒီနေရာမှာ ထည့်ပါ
+    const championImageUrl = "champion.jpg"; // ဥပမာ ပုံလင့်ခ် (ညီမကြိုက်တဲ့ပုံနဲ့ လဲလို့ရပါတယ်)
 
     container.innerHTML = `
         <style>
@@ -79,7 +82,7 @@ export function renderProfileScreen(container) {
                 font-family: monospace;
             }
 
-            /* --- High-Tech Trophies Styling --- */
+            /* --- Custom Image Trophy Styling --- */
             .trophies-group {
                 display: flex;
                 flex-direction: column;
@@ -87,23 +90,29 @@ export function renderProfileScreen(container) {
                 gap: 8px;
             }
             
-            /* Big Champion Trophy (SVG Container) */
+            /* Custom Champion Image Box */
             .cyber-trophy-big {
-                width: 36px;
-                height: 36px;
+                width: 42px;
+                height: 42px;
                 display: flex;
                 align-items: center;
                 justify-content: center;
-                color: #334155; /* မရသေးရင် အရိပ်လို မှိန်နေမယ် */
                 transition: 0.4s ease;
+                /* မရသေးရင် အရိပ်လို မှိန်နေပြီး မှုန်နေမယ် */
+                filter: grayscale(100%) brightness(40%) opacity(0.3);
             }
             .cyber-trophy-big.active {
-                color: #facc15; /* ရွှေရောင် လင်းလက်မည် */
-                filter: drop-shadow(0 0 8px #facc15) drop-shadow(0 0 16px #eab308);
+                /* Champion ရရင် လင်းလက်ပြီး ရွှေရောင်အရိပ်ထွက်မည် */
+                filter: grayscale(0%) brightness(120%) drop-shadow(0 0 10px #facc15) drop-shadow(0 0 20px #eab308);
                 transform: scale(1.1);
             }
+            .cyber-trophy-big img {
+                width: 100%;
+                height: 100%;
+                object-fit: contain;
+            }
 
-            /* Small Mode Trophies Row */
+            /* Small Mode Trophies */
             .small-trophies-row {
                 display: flex;
                 gap: 8px;
@@ -118,15 +127,15 @@ export function renderProfileScreen(container) {
                 transition: 0.4s ease;
             }
             .cyber-trophy-small.active-1v1 {
-                color: #38bdf8; /* Cyan Neon for 1vs1 */
+                color: #38bdf8;
                 filter: drop-shadow(0 0 6px #38bdf8);
             }
             .cyber-trophy-small.active-5v5 {
-                color: #ec4899; /* Pink/Purple Neon for 5vs5 */
+                color: #ec4899;
                 filter: drop-shadow(0 0 6px #ec4899);
             }
 
-            /* Action Grid */
+            /* Action Grid & Panels */
             .action-grid {
                 display: grid;
                 grid-template-columns: 1fr 1fr;
@@ -182,7 +191,7 @@ export function renderProfileScreen(container) {
                 margin-bottom: 8px;
                 display: flex;
                 align-items: center;
-                gap: 6px;
+-gap: 6px;
             }
             .msg-input {
                 width: 100%;
@@ -228,29 +237,20 @@ export function renderProfileScreen(container) {
                     </div>
                 </div>
 
-                <!-- High-Tech SVG Trophies -->
+                <!-- Custom Image Trophy Area -->
                 <div class="trophies-group">
-                    <!-- Champion Trophy (Big) -->
+                    <!-- Champion Image Box -->
                     <div class="cyber-trophy-big ${isChampion ? 'active' : ''}" title="Champion Trophy">
-                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="100%" height="100%">
-                            <path d="M6 9H4.5a2.5 2.5 0 0 1 0-5H6"></path>
-                            <path d="M18 9h1.5a2.5 2.5 0 0 0 0-5H18"></path>
-                            <path d="M4 22h16"></path>
-                            <path d="M10 14.66V17c0 .55-.47.98-.97 1.21C7.85 18.75 7 20.24 7 22"></path>
-                            <path d="M14 14.66V17c0 .55.47.98.97 1.21C16.15 18.75 17 20.24 17 22"></path>
-                            <path d="M18 2H6v7a6 6 0 0 0 12 0V2Z"></path>
-                        </svg>
+                        <img src="${championImageUrl}" alt="Champion Trophy">
                     </div>
 
                     <!-- Small Trophies (1vs1 & 5vs5) -->
                     <div class="small-trophies-row">
-                        <!-- 1vs1 Winner Icon (Lightning/Flash) -->
                         <div class="cyber-trophy-small ${has1vs1Win ? 'active-1v1' : ''}" title="1vs1 Winner">
                             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" width="100%" height="100%">
                                 <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"></polygon>
                             </svg>
                         </div>
-                        <!-- 5vs5 Winner Icon (Shield) -->
                         <div class="cyber-trophy-small ${has5vs5Win ? 'active-5v5' : ''}" title="5vs5 Winner">
                             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" width="100%" height="100%">
                                 <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path>
