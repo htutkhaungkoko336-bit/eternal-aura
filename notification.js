@@ -1,8 +1,8 @@
 // ==========================================
-// 1. Notification & Local Storage Management
+// 1. Notification Local Storage & Render (Sync မပါတော့ပါ)
 // ==========================================
 
-// Notification အသစ်တစ်ခုကို သိမ်းဆည်းပြီး Render လုပ်ရန်
+// Notification အသစ်တစ်ခုကို LocalStorage ထဲ သိမ်းဆည်းပြီး Render လုပ်ရန်
 export function addNotification(title, message) {
     const now = new Date();
     const year = now.getFullYear();
@@ -126,18 +126,12 @@ function renderNotificationCards(container, notifications) {
             body.style.maxHeight = body.style.maxHeight === '0px' || !body.style.maxHeight ? '1200px' : '0px';
         });
 
-        card.querySelector('.delete-btn').addEventListener('click', async () => {
-            try {
-                await fetch('/api/get-notifications', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ notificationId: noti.id })
-                });
-                let currentNotis = JSON.parse(localStorage.getItem('app_notifications')) || [];
-                currentNotis = currentNotis.filter(n => n.id !== noti.id);
-                localStorage.setItem('app_notifications', JSON.stringify(currentNotis));
-                renderNotificationCards(container, currentNotis);
-            } catch (err) { console.error("Delete Error:", err); }
+        // Local Storage ထဲကနေသာ ဖယ်ရှားရန် ပြင်ဆင်ထားခြင်း (API မခေါ်တော့ပါ)
+        card.querySelector('.delete-btn').addEventListener('click', () => {
+            let currentNotis = JSON.parse(localStorage.getItem('app_notifications')) || [];
+            currentNotis = currentNotis.filter(n => n.title !== noti.title || n.timeStr !== noti.timeStr);
+            localStorage.setItem('app_notifications', JSON.stringify(currentNotis));
+            renderNotificationCards(container, currentNotis);
         });
 
         container.appendChild(card);
@@ -146,36 +140,12 @@ function renderNotificationCards(container, notifications) {
 
 
 // ==========================================
-// 2. Database Sync & Registration
+// 2. Registration Submission (Notification Sync ဖြုတ်ပြီး)
 // ==========================================
 
-// Database Sync
-export async function syncUserNotifications(userId) {
-    if (!userId) return;
-    try {
-        const response = await fetch(`/api/get-notifications?userId=${userId}`);
-        const result = await response.json();
-        if (result.success) {
-            localStorage.setItem('app_notifications', JSON.stringify(result.notifications));
-            
-            const unreadCount = result.notifications.filter(n => n.read === false).length;
-            localStorage.setItem('app_unread_count', unreadCount.toString());
-            
-            updateNotificationBadge();
-            
-            const listContainer = document.getElementById('notification-list-container');
-            if (listContainer) {
-                renderNotificationCards(listContainer, result.notifications);
-            }
-        }
-    } catch (error) { console.error("Sync Error:", error); }
-}
-
-// Register တင်ပြီးပါက Page မ refresh ရအောင် စီမံထားသော Function
 export async function submitUserRegistration(mode, formData, currentUserId, feedbackElement = null) {
     formData.userId = currentUserId; 
     
-    // Feedback ပေးဖို့ UI element ရှိရင် စာတန်းပြမယ်
     if (feedbackElement) {
         feedbackElement.textContent = "Processing...";
         feedbackElement.style.color = "#38bdf8";
@@ -190,21 +160,17 @@ export async function submitUserRegistration(mode, formData, currentUserId, feed
         const result = await response.json();
 
         if (result.success) {
-            // အောင်မြင်ရင် စာတန်းကို အလိုလိုမပျောက်သွားဘဲ ဆက်ပြထားမယ်
             if (feedbackElement) {
                 feedbackElement.textContent = "Registration successful! Key received.";
-                feedbackElement.style.color = "#22c55e"; // Green color
+                feedbackElement.style.color = "#22c55e"; 
             } else {
                 console.log("Registration successful!");
             }
-
-            // Page refresh မလုပ်ဘဲ Notification ကို ချက်ချင်း Update လုပ်မယ်
-            await syncUserNotifications(currentUserId);
             
         } else {
             if (feedbackElement) {
                 feedbackElement.textContent = "Error: " + (result.message || "Registration failed");
-                feedbackElement.style.color = "#ef4444"; // Red color
+                feedbackElement.style.color = "#ef4444"; 
             }
         }
     } catch (error) {
@@ -223,15 +189,12 @@ export async function submitUserRegistration(mode, formData, currentUserId, feed
 
 document.addEventListener('DOMContentLoaded', () => {
     updateNotificationBadge();
-    const currentUserId = localStorage.getItem('user_id'); 
-    if (currentUserId) syncUserNotifications(currentUserId);
 
-    // ဥပမာ - Register ခလုတ်နှိပ်သည့်နေရာ ချိတ်ဆက်ပုံ
-    const registerBtn = document.getElementById('register-submit-btn'); // ကိုယ့်ရဲ့ Register ခလုတ် ID ထည့်ရန်
+    const registerBtn = document.getElementById('register-submit-btn'); 
     if (registerBtn) {
         registerBtn.addEventListener('click', async () => {
-            const feedbackText = document.getElementById('status-message'); // UI မှာ စာပြမယ့် element ID ထည့်ရန်
-            const formData = { /* ညီမလေးရဲ့ Form Data များကို ဒီမှာ ထည့်ရန် */ };
+            const feedbackText = document.getElementById('status-message'); 
+            const formData = { /* Form Data ထည့်ရန် */ };
             const userId = localStorage.getItem('user_id');
 
             await submitUserRegistration('1vs1', formData, userId, feedbackText);
