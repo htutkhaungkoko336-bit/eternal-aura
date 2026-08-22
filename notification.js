@@ -1,10 +1,6 @@
-// notification.js
-
 // Notification အသစ်တစ်ခုကို သိမ်းဆည်းပြီး Render လုပ်ရန်
 export function addNotification(title, message) {
     const now = new Date();
-    
-    // မြန်မာစံတော်ချိန် (Local Time) အရ နေ့စွဲ (YYYY-MM-DD) တိကျစွာ ထုတ်ယူရန်
     const year = now.getFullYear();
     const month = String(now.getMonth() + 1).padStart(2, '0');
     const day = String(now.getDate()).padStart(2, '0');
@@ -41,8 +37,6 @@ export function renderNotificationScreen(container) {
 
     container.innerHTML = `
         <div style="width: 100%; height: 100%; display: flex; flex-direction: column; background-color: #0b0f19; box-sizing: border-box; overflow: hidden;">
-            
-            <!-- Modern Tech Header -->
             <div style="flex-shrink: 0; background-color: #0b0f19; padding: 12px 16px 10px 16px; box-sizing: border-box; border-bottom: 1px solid #1e293b; z-index: 10; display: flex; justify-content: center; align-items: center;">
                 <div style="position: relative; padding: 8px 20px; background: linear-gradient(135deg, rgba(56, 189, 248, 0.1), rgba(129, 140, 248, 0.1)); border: 2px solid #38bdf8; box-shadow: 0 0 15px rgba(56, 189, 248, 0.2); text-align: center; border-radius: 4px;">
                     <div style="position: absolute; top: -2px; left: -2px; width: 6px; height: 6px; background: #38bdf8;"></div>
@@ -52,8 +46,6 @@ export function renderNotificationScreen(container) {
                     </h2>
                 </div>
             </div>
-
-            <!-- Notifications List Container -->
             <div id="notification-list-container" style="display: flex; flex-direction: column; gap: 15px; width: 100%; padding: 15px 20px 120px 20px; box-sizing: border-box; overflow-y: auto; flex-grow: 1; min-height: 0;">
             </div>
         </div>
@@ -61,14 +53,12 @@ export function renderNotificationScreen(container) {
 
     const listContainer = document.getElementById('notification-list-container');
     const notifications = JSON.parse(localStorage.getItem('app_notifications')) || [];
-    
     renderNotificationCards(listContainer, notifications);
 }
 
-// Notification Bell လေးရဲ့ အပေါ်တည့်တည့်တွင် Badge ပြသရန် Function
+// Notification Bell Update
 export function updateNotificationBadge() {
     const unreadCount = parseInt(localStorage.getItem('app_unread_count') || '0', 10);
-    
     const notiNavBtn = document.querySelector('.nav-item[data-tab="notification"]'); 
     
     if (notiNavBtn) {
@@ -91,7 +81,7 @@ export function updateNotificationBadge() {
     }
 }
 
-// Card များကို HTML ထဲ ထည့်သွင်းပေးသည့် Helper Function
+// Card Render Helper
 function renderNotificationCards(container, notifications) {
     if (notifications.length === 0) {
         container.innerHTML = `<p style="color: #64748b; font-size: 13px; text-align: center; margin-top: 30px;">No new notifications.</p>`;
@@ -99,7 +89,7 @@ function renderNotificationCards(container, notifications) {
     }
 
     container.innerHTML = '';
-    notifications.forEach((noti, index) => {
+    notifications.forEach((noti) => {
         const card = document.createElement('div');
         card.className = 'cyber-noti-card';
         card.style.cssText = 'background: linear-gradient(135deg, #1e1b4b 0%, #0f172a 100%); border: 1px solid #38bdf8; border-radius: 8px; padding: 16px 16px 24px 16px; box-shadow: 0 0 15px rgba(56, 189, 248, 0.15); position: relative; transition: all 0.3s ease; flex-shrink: 0;';
@@ -107,140 +97,84 @@ function renderNotificationCards(container, notifications) {
         card.innerHTML = `
             <div style="position: absolute; top: 0; left: 0; width: 6px; height: 6px; background-color: #38bdf8;"></div>
             <div style="position: absolute; bottom: 0; right: 0; width: 6px; height: 6px; background-color: #38bdf8;"></div>
-
             <div class="noti-header" style="display: flex; justify-content: space-between; align-items: flex-start; width: 100%; cursor: pointer;">
                 <div style="flex-grow: 1;">
                     <div style="display: flex; align-items: center; gap: 8px;">
                         <span style="display: inline-block; width: 8px; height: 8px; background-color: #38bdf8; border-radius: 50%; box-shadow: 0 0 8px #38bdf8;"></span>
-                        <h3 style="color: #f8fafc; font-size: 15px; font-weight: 700; margin: 0; letter-spacing: 0.5px;">${noti.title}</h3>
+                        <h3 style="color: #f8fafc; font-size: 15px; font-weight: 700; margin: 0;">${noti.title}</h3>
                     </div>
-                    <!-- ရိုးရိုးရှင်းရှင်းနှင့် သပ်ရပ်သော နေ့စွဲနှင့် အချိန်ဖော်ပြချက် -->
-                    <p style="color: #94a3b8; font-size: 11px; margin: 6px 0 0 16px; font-family: monospace; letter-spacing: 0.5px;">${noti.dateStr} &nbsp;&bull;&nbsp; ${noti.timeStr}</p>
+                    <p style="color: #94a3b8; font-size: 11px; margin: 6px 0 0 16px; font-family: monospace;">${noti.dateStr} &bull; ${noti.timeStr}</p>
                 </div>
                 <div style="display: flex; align-items: center; gap: 10px;">
-                    <button class="delete-btn" title="Clear Notification" style="background: rgba(56, 189, 248, 0.1); border: 1px solid #38bdf8; color: #38bdf8; cursor: pointer; font-size: 10px; font-weight: 700; padding: 4px 10px; border-radius: 4px; transition: all 0.2s; letter-spacing: 0.5px;">CLEAR</button>
-                    <span class="toggle-icon" style="color: #38bdf8; font-size: 14px; font-weight: bold; transition: transform 0.3s;">▼</span>
+                    <button class="delete-btn" style="background: rgba(56, 189, 248, 0.1); border: 1px solid #38bdf8; color: #38bdf8; cursor: pointer; padding: 4px 10px; border-radius: 4px;">CLEAR</button>
+                    <span class="toggle-icon" style="color: #38bdf8;">▼</span>
                 </div>
             </div>
-
-            <div class="noti-body" style="max-height: 0; overflow: hidden; transition: max-height 0.3s ease, margin-top 0.3s ease; border-top: 1px solid transparent;">
-                <div style="padding-top: 12px; margin-top: 10px; border-top: 1px dashed #334155; color: #cbd5e1; font-size: 13px; line-height: 1.6; padding-bottom: 5px;">
-                    <p style="margin: 0;">${noti.message}</p>
-                </div>
+            <div class="noti-body" style="max-height: 0; overflow: hidden; transition: max-height 0.3s ease; border-top: 1px dashed #334155; margin-top: 10px;">
+                <p style="color: #cbd5e1; font-size: 13px; padding-top: 10px;">${noti.message}</p>
             </div>
         `;
 
-        const headerEl = card.querySelector('.noti-header');
-        headerEl.addEventListener('click', (e) => {
+        // Interaction
+        card.querySelector('.noti-header').addEventListener('click', (e) => {
             if (e.target.closest('.delete-btn')) return;
             const body = card.querySelector('.noti-body');
-            const icon = card.querySelector('.toggle-icon');
-            
-            const isOpen = body.style.maxHeight && body.style.maxHeight !== '0px';
-            
-            if (isOpen) {
-                body.style.maxHeight = '0px';
-                icon.style.transform = 'rotate(0deg)';
-            } else {
-                body.style.maxHeight = '1200px'; 
-                icon.style.transform = 'rotate(180deg)';
-            }
+            body.style.maxHeight = body.style.maxHeight === '0px' || !body.style.maxHeight ? '1200px' : '0px';
         });
 
-        const deleteBtn = card.querySelector('.delete-btn');
-        deleteBtn.addEventListener('mouseenter', () => {
-            deleteBtn.style.backgroundColor = '#38bdf8';
-            deleteBtn.style.color = '#0b0f19';
-        });
-        deleteBtn.addEventListener('mouseleave', () => {
-            deleteBtn.style.backgroundColor = 'rgba(56, 189, 248, 0.1)';
-            deleteBtn.style.color = '#38bdf8';
-        });
-
-        deleteBtn.addEventListener('click', () => {
-            let currentNotis = JSON.parse(localStorage.getItem('app_notifications')) || [];
-            currentNotis.splice(index, 1);
-            localStorage.setItem('app_notifications', JSON.stringify(currentNotis));
-            renderNotificationCards(container, currentNotis);
+        card.querySelector('.delete-btn').addEventListener('click', async () => {
+            try {
+                await fetch('/api/get-notifications', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ notificationId: noti.id })
+                });
+                let currentNotis = JSON.parse(localStorage.getItem('app_notifications')) || [];
+                currentNotis = currentNotis.filter(n => n.id !== noti.id);
+                localStorage.setItem('app_notifications', JSON.stringify(currentNotis));
+                renderNotificationCards(container, currentNotis);
+            } catch (err) { console.error("Delete Error:", err); }
         });
 
         container.appendChild(card);
     });
 }
-// Database မှ User ၏ Noti များကို လှမ်းဆွဲယူပြီး LocalStorage နှင့် Sync လုပ်ရန်
+
+// Database Sync
 export async function syncUserNotifications(userId) {
     if (!userId) return;
-
     try {
         const response = await fetch(`/api/get-notifications?userId=${userId}`);
         const result = await response.json();
-
         if (result.success) {
-            // Server ကလာတဲ့ Data များကို notification.js နဲ့ ကိုက်ညီအောင် ပြောင်းခြင်း
-            const formattedNotis = result.notifications.map(n => ({
-                title: n.title,
-                message: n.message,
-                dateStr: n.dateStr,
-                timeStr: n.timeStr,
-                read: n.read || false
-            }));
-
-            // LocalStorage ထဲ သိမ်းဆည်းခြင်း
-            localStorage.setItem('app_notifications', JSON.stringify(formattedNotis));
-            
-            // မဖတ်ရသေးတဲ့ အရေအတွက် (unread count) ကို တွက်ချက်ခြင်း
-            const unreadCount = formattedNotis.filter(n => !n.read).length;
+            localStorage.setItem('app_notifications', JSON.stringify(result.notifications));
+            const unreadCount = result.notifications.filter(n => !n.read).length;
             localStorage.setItem('app_unread_count', unreadCount.toString());
-
-            // UI ပေါ်တွင် Badge နဲ့ List ကို Update လုပ်ရန်
             updateNotificationBadge();
-            
             const listContainer = document.getElementById('notification-list-container');
-            if (listContainer) {
-                renderNotificationCards(listContainer, formattedNotis);
-            }
+            if (listContainer) renderNotificationCards(listContainer, result.notifications);
         }
-    } catch (error) {
-        console.error("Failed to sync notifications from server:", error);
-    }
+    } catch (error) { console.error("Sync Error:", error); }
 }
-async function submitUserRegistration(mode, formData, currentUserId) {
-    // formData ထဲမှာ userId ထည့်ပေးဖို့ မမေ့နဲ့နော်
-    formData.userId = currentUserId; 
 
+export async function submitUserRegistration(mode, formData, currentUserId) {
+    formData.userId = currentUserId; 
     try {
         const response = await fetch('/api/register', {
             method: 'POST',
-            headers: {
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify({
-                mode: mode, // '1vs1', '5vs5' သို့မဟုတ် 'tournament'
-                data: formData
-            })
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ mode, data: formData })
         });
-
         const result = await response.json();
-
         if (result.success) {
-            alert("စာရင်းပေးသွင်းခြင်း အောင်မြင်ပါသည်! Key တိုးပြီးပါပြီ။");
-            
-            // ပြီးတာနဲ့ Noti အသစ်တွေကို Server ကနေ ပြန်လှမ်းဆွဲပြီး UI မှာပြမယ်
+            alert("Registration successful!");
             await syncUserNotifications(currentUserId);
-        } else {
-            alert("အမှားအယွင်းရှိပါတယ်: " + result.message);
         }
-    } catch (error) {
-        console.error("Submission Network Error:", error);
-    }
+    } catch (error) { console.error("Submit Error:", error); }
 }
 
 document.addEventListener('DOMContentLoaded', () => {
     updateNotificationBadge();
-    
-    // User ID က ဘယ်ကနေ လာမှာလဲ (ဥပမာ - localStorage ထဲမှာ သိမ်းထားရင်)
     const currentUserId = localStorage.getItem('user_id'); 
-    if (currentUserId) {
-        syncUserNotifications(currentUserId);
-    }
+    if (currentUserId) syncUserNotifications(currentUserId);
 });
