@@ -228,7 +228,7 @@ function showLoginPinScreen(formContent, phoneVal, deviceId, onComplete) {
             }
         } catch (err) {
             console.error("Network error:", err);
-            alert("ဆာဗာသို့ ချိတ်ဆက်၍ မရပါ။");
+            alert("Logo ပြောင်းတင်ပေးပါ");
         }
     });
 }
