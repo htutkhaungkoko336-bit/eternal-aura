@@ -338,7 +338,7 @@ confirmBtn.addEventListener('click', async () => {
                 const pollingInterval = setInterval(async () => {
                     try {
                         console.log(`🔍 Checking status for ID: ${regId} ...`);
-                        const checkRes = await fetch(`/api/check-status?id=${regId}`);
+                        const checkRes = await fetch(`/api/check-status?registrationId=${regId}&userId=${currentUserId}&mode=${modeType}`); 
                         const checkData = await checkRes.json();
                         console.log("📊 Check Status Result:", checkData);
 
