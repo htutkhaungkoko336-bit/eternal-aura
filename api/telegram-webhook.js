@@ -37,22 +37,61 @@ module.exports = async (req, res) => {
 
             let newStatus = "";
             let responseText = "";
+            let rejectionReasonText = "";
+            let updateKeyboard = false;
+            let newInlineKeyboard = [];
 
             if (action === 'confirm') {
                 newStatus = 'CONFIRMED';
                 responseText = "✅ This registration has been CONFIRMED.";
-            } else if (action === 'reject') {
+                updateKeyboard = true;
+            } 
+            else if (action === 'reject') {
+                // Reject နှိပ်လိုက်ရင် အကြောင်းရင်းရွေးချယ်စရာ ခလုတ်များ ပေါ်လာစေရန်
+                responseText = "⚠️ ပယ်ချရသည့် အကြောင်းရင်းကို ရွေးချယ်ပါ:";
+                updateKeyboard = true;
+                newInlineKeyboard = [
+                    [{ text: "🚫 ညစ်ညမ်းပုံ/မသင့်လျော်သောပုံ တင်ထားခြင်း", callback_data: `reason_ညစ်ညမ်းပုံ သို့မဟုတ် မသင့်လျော်သော Payment Slip ဖြစ်ပါသည်_${collectionName}_${docId}` }],
+                    [{ text: "⚠️ Game Name သို့မဟုတ် Game ID မှားယွင်းခြင်း", callback_data: `reason_Game Name သို့မဟုတ် Game ID မှားယွင်းနေပါသည်_${collectionName}_${docId}` }],
+                    [{ text: "💰 ငွေပမာဏ လျော့နည်းနေခြင်း (သို့) မမှန်ကန်ခြင်း", callback_data: `reason_ငွေပမာဏ လျော့နည်းနေပါသည် သို့မဟုတ် မမှန်ကန်ပါ_${collectionName}_${docId}` }],
+                    [{ text: "📝 အချက်အလက်များ မပြည့်စုံခြင်း", callback_data: `reason_အချက်အလက်များ မပြည့်စုံပါ_${collectionName}_${docId}` }],
+                    [{ text: "🔄 ငွေလွှဲိုင်နာမ် သို့မဟုတ် ဖုန်းနံပါတ် မှားယွင်းခြင်း", callback_data: `reason_ငွေလွှဲအကောင့် အမည် သို့မဟုတ် ဖုန်းနံပါတ် မှားယွင်းနေပါသည်_${collectionName}_${docId}` }],
+                    [{ text: "🔙 Back", callback_data: `back_${collectionName}_${docId}` }]
+                ];
+            } 
+            else if (action === 'reason') {
+                // Admin က အကြောင်းရင်းတစ်ခုကို နှိပ်လိုက်သောအခါ
                 newStatus = 'REJECTED';
-                responseText = "❌ This registration has been REJECTED.";
+                rejectionReasonText = remaining.substring(0, remaining.lastIndexOf('_' + collectionName + '_' + docId));
+                responseText = `❌ REJECTED\nReason: ${rejectionReasonText}`;
+                updateKeyboard = true;
+            }
+            else if (action === 'back') {
+                responseText = "⏳ Waiting for admin action...";
+                updateKeyboard = true;
+                newInlineKeyboard = [
+                    [
+                        { text: "✅ Confirm", callback_data: `confirm_${collectionName}_${docId}` },
+                        { text: "❌ Reject", callback_data: `reject_${collectionName}_${docId}` }
+                    ]
+                ];
             }
 
             try {
                 if (collectionName && docId) {
                     const regDocRef = db.collection(collectionName).doc(docId);
-                    await regDocRef.update({ status: newStatus });
-                    console.log("Firestore registration status updated successfully!");
 
-                    if (action === 'confirm') {
+                    // Status update လုပ်ခြင်း (Reject ဖြစ်လျှင် rejectionReason ပါ ထည့်မည်)
+                    if (newStatus === 'CONFIRMED' || newStatus === 'REJECTED') {
+                        const updateData = { status: newStatus };
+                        if (newStatus === 'REJECTED' && rejectionReasonText) {
+                            updateData.rejectionReason = rejectionReasonText;
+                        }
+                        await regDocRef.update(updateData);
+                        console.log("Firestore registration status updated successfully!");
+                    }
+
+                    if (newStatus === 'CONFIRMED') {
                         const regDoc = await regDocRef.get();
                         if (regDoc.exists) {
                             const regData = regDoc.data();
@@ -62,7 +101,6 @@ module.exports = async (req, res) => {
                                 let keyFieldToIncrement = "";
                                 const fee = (regData.fee || "").toLowerCase();
 
-                                // စုစုပေါင်း Key အမျိုးအစားများကို ညီမလေးရဲ့ User စာရင်းအသစ်အတိုင်း တိကျစွာ ခွဲပေးခြင်း
                                 if (collectionName === '1vs1_registrations') {
                                     if (fee.includes('50k')) keyFieldToIncrement = "keys.1vs1-50k";
                                     else if (fee.includes('25k')) keyFieldToIncrement = "keys.1vs1-25k";
@@ -72,7 +110,6 @@ module.exports = async (req, res) => {
                                 } else if (collectionName === 'tournament_registrations') {
                                     keyFieldToIncrement = "keys.tournament";
                                 } else if (collectionName === '5vs5_registrations') {
-                                    // ညီမလေးရဲ့ 5vs5 key နာမည်တွေမှာ underscore (-) ပါတာနဲ့ (_) ပါတာ နှစ်မျိုးစလုံးကို စစ်ပေးရန်
                                     if (fee.includes('50k')) keyFieldToIncrement = "keys.5vs5_50k";
                                     else if (fee.includes('25k')) keyFieldToIncrement = "keys.5vs5_25k";
                                     else if (fee.includes('15k')) keyFieldToIncrement = "keys.5vs5-15k";
@@ -84,15 +121,11 @@ module.exports = async (req, res) => {
                                     try {
                                         const userRef = db.collection('users').doc(userId);
                                         const userDoc = await userRef.get();
-                                        
-                                        // ဥပမာ keys.1vs1-25k ဆိုရင် fieldKeyOnly က 1vs1-25k ဖြစ်ပါမယ်
                                         const fieldKeyOnly = keyFieldToIncrement.split('.')[1];
 
                                         if (!userDoc.exists || !userDoc.data().keys || userDoc.data().keys[fieldKeyOnly] === undefined) {
                                             await userRef.set({
-                                                keys: {
-                                                    [fieldKeyOnly]: 0
-                                                }
+                                                keys: { [fieldKeyOnly]: 0 }
                                             }, { merge: true });
                                         }
 
@@ -112,24 +145,32 @@ module.exports = async (req, res) => {
                 console.error("Database Update Error:", dbError);
             }
 
-            await fetch(`https://api.telegram.org/bot${BOT_TOKEN}/editMessageCaption`, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                    chat_id: chatId,
-                    message_id: messageId,
-                    caption: `${callbackQuery.message.caption}\n\n*Status: ${responseText}*`,
-                    parse_mode: 'Markdown',
-                    reply_markup: { inline_keyboard: [] } 
-                })
-            });
+            if (updateKeyboard) {
+                // Telegram မက်ဆေ့န်း၏ Caption ကို အပ်ဒိတ်လုပ်ခြင်း
+                let originalCaption = callbackQuery.message.caption || "";
+                if (originalCaption.includes("\n\n*Status:")) {
+                    originalCaption = originalCaption.split("\n\n*Status:")[0];
+                }
+
+                await fetch(`https://api.telegram.org/bot${BOT_TOKEN}/editMessageCaption`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        chat_id: chatId,
+                        message_id: messageId,
+                        caption: `${originalCaption}\n\n*Status: ${responseText}*`,
+                        parse_mode: 'Markdown',
+                        reply_markup: { inline_keyboard: newInlineKeyboard } 
+                    })
+                });
+            }
 
             await fetch(`https://api.telegram.org/bot${BOT_TOKEN}/answerCallbackQuery`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ 
                     callback_query_id: callbackQuery.id, 
-                    text: `Successfully ${newStatus.toLowerCase()}!` 
+                    text: newStatus ? `Successfully ${newStatus.toLowerCase()}!` : "Please select a reason" 
                 })
             });
         }
