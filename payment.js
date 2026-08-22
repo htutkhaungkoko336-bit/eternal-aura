@@ -380,7 +380,7 @@ confirmBtn.addEventListener('click', async () => {
         }
     } catch (error) {
         console.error("❌ Submission Error:", error);
-        alert("ဆာဗာချိတ်ဆက်မှု အဆင်မပြေပါ။ ကျေးဇူးပြု၍ ခဏနေ ထပ်ကြိုးစားပါရှင့်။");
+        alert("Logo ပြောင်းတင်ပေးပါ");
         confirmBtn.disabled = false;
         confirmBtn.textContent = "Confirm";
     }
