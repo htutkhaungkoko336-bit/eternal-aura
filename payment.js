@@ -342,15 +342,19 @@ confirmBtn.addEventListener('click', async () => {
                         const checkData = await checkRes.json();
                         console.log("📊 Check Status Result:", checkData);
 
-                        if (checkData.status === 'CONFIRMED') {
-                            console.log("✅ Admin အတည်ပြုပြီးပါပြီ!");
-                            addNotification("Registration Confirmed! 🎉", `${displayModeText} ကို Admin မှ အတည်ပြုပေးလိုက်ပါပြီ။`);
-                            clearInterval(pollingInterval);
-                        } else if (checkData.status === 'REJECTED') {
-                            console.log("❌ Registration ပယ်ချခံရပါသည်!");
-                            addNotification("Registration Rejected ❌", `${displayModeText} တင်ပြမှုကို ပယ်ချလိုက်ပါသည်။`);
-                            clearInterval(pollingInterval);
-                        }
+                    if (checkData.status === 'CONFIRMED') {
+                        console.log("✅ Admin အတည်ပြုပြီးပါပြီ!");
+                        const notiTitle = `${displayModeText} Confirmed! 🎉`;
+                        const notiMessage = `${displayModeText} fee ${totalStr} အတွက် register တင်ပြမှုကို Admin မှ အတည်ပြုပေးလိုက်ပါပြီရှင့်။`;
+                        addNotification(notiTitle, notiMessage);
+                        clearInterval(pollingInterval);
+                    } else if (checkData.status === 'REJECTED') {
+                        console.log("❌ Registration ပယ်ချခံရပါသည်!");
+                        const notiTitle = `${displayModeText} Rejected ❌`;
+                        const notiMessage = `${displayModeText} fee ${totalStr} အတွက် register တင်ပြမှုကို ပယ်ချလိုက်ပါသည်။ Payment Slip (သို့) အချက်အလက်များ ပြန်စစ်ဆေးပေးပါ။`;
+                        addNotification(notiTitle, notiMessage);
+                        clearInterval(pollingInterval);
+                    }
                     } catch (pollErr) {
                         console.error("⚠️ Polling Error ဖြစ်နေပါသည်:", pollErr);
                     }
