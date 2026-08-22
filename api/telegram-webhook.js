@@ -69,11 +69,11 @@ module.exports = async (req, res) => {
                 const actualDocId = restOfData.substring(lastUnderscoreInRest + 1);
 
                 const reasonsMap = {
-                    'r1': 'ညစ်ညမ်းပုံ သို့မဟုတ် မသင့်လျော်သော Payment Slip ဖြစ်ပါသည်',
-                    'r2': 'Game Name သို့မဟုတ် Game ID မှားယွင်းနေပါသည်',
-                    'r3': 'ငွေပမာဏ လျော့နည်းနေပါသည် သို့မဟုတ် မမှန်ကန်ပါ',
+                    'r1': 'ညစ်ညမ်းပုံ/မသင့်လျော်သောပုံများပါဝင်နေပါသည်။',
+                    'r2': 'Game Name / Game ID မှားယွင်းနေပါသည်',
+                    'r3': 'ငွေပမာဏ လျော့နည်းနေပါသည်။',
                     'r4': 'အချက်အလက်များ မပြည့်စုံပါ',
-                    'r5': 'ငွေလွှဲအကောင့် အမည် သို့မဟုတ် ဖုန်းနံပါတ် မှားယွင်းနေပါသည်'
+                    'r5': 'K pay Phone Number /  Name မှားယွင်းနေပါသည်။'
                 };
                 
                 const rejectionReasonText = reasonsMap[reasonKey] || 'အခြားအကြောင်းပြချက်ဖြင့် ပယ်ချပါသည်';
