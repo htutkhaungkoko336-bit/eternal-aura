@@ -47,7 +47,6 @@ module.exports = async (req, res) => {
                 updateKeyboard = true;
             } 
             else if (action === 'reject') {
-                // ဒီနေရာမှာ Reject ခလုတ်နှိပ်ရုံနဲ့ Database ကို မပြောင်းသေးဘဲ အကြောင်းရင်းရွေးခိုင်းမည့် ခလုတ်များကိုသာ ပြပေးမည်
                 responseText = "⚠️ ပယ်ချရသည့် အကြောင်းရင်းကို ရွေးချယ်ပါ:";
                 updateKeyboard = true;
                 newInlineKeyboard = [
@@ -60,9 +59,11 @@ module.exports = async (req, res) => {
                 ];
             }
             else if (action === 'reason') {
-                // Admin က အကြောင်းရင်း (Reason) တစ်ခုခုကို နှိပ်မှသာ REJECTED အဖြစ် Database သို့ တန်းဝင်မည်
                 newStatus = 'REJECTED';
-                const reasonKey = remaining.substring(0, remaining.indexOf('_'));
+                
+                // ပြင်ဆင်ချက်: remaining ကို split လုပ်ပြီး reasonKey (ဥပမာ r1, r2) ကို တိကျစွာ ထုတ်ယူခြင်း
+                const parts = remaining.split('_');
+                const reasonKey = parts[0]; 
                 
                 const reasonsMap = {
                     'r1': 'ညစ်ညမ်းပုံ သို့မဟုတ် မသင့်လျော်သော Payment Slip ဖြစ်ပါသည်',
@@ -97,7 +98,7 @@ module.exports = async (req, res) => {
                             updateData.rejectionReason = rejectionReasonText;
                         }
                         await regDocRef.update(updateData);
-                        console.log("Firestore registration status updated successfully!");
+                        console.log("Firestore registration status updated successfully to:", newStatus);
                     }
 
                     if (newStatus === 'CONFIRMED') {
