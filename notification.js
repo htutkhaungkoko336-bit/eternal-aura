@@ -2,6 +2,7 @@
 // 1. Notification & Local Storage Management
 // ==========================================
 
+// Notification အသစ်တစ်ခုကို သိမ်းဆည်းပြီး Render လုပ်ရန်
 export function addNotification(title, message) {
     const now = new Date();
     const year = now.getFullYear();
@@ -33,6 +34,7 @@ export function addNotification(title, message) {
     }
 }
 
+// Notification Screen ကို ဝင်ရောက်ကြည့်ရှုသည့်အခါ Badge ကို ရှင်းလင်းပေးရန်
 export function renderNotificationScreen(container) {
     localStorage.setItem('app_unread_count', '0');
     updateNotificationBadge();
@@ -58,6 +60,7 @@ export function renderNotificationScreen(container) {
     renderNotificationCards(listContainer, notifications);
 }
 
+// Notification Bell Update
 export function updateNotificationBadge() {
     const unreadCount = parseInt(localStorage.getItem('app_unread_count') || '0', 10);
     const notiNavBtn = document.querySelector('.nav-item[data-tab="notification"]'); 
@@ -82,6 +85,7 @@ export function updateNotificationBadge() {
     }
 }
 
+// Card Render Helper
 function renderNotificationCards(container, notifications) {
     if (notifications.length === 0) {
         container.innerHTML = `<p style="color: #64748b; font-size: 13px; text-align: center; margin-top: 30px;">No new notifications.</p>`;
@@ -115,6 +119,7 @@ function renderNotificationCards(container, notifications) {
             </div>
         `;
 
+        // Interaction
         card.querySelector('.noti-header').addEventListener('click', (e) => {
             if (e.target.closest('.delete-btn')) return;
             const body = card.querySelector('.noti-body');
@@ -139,10 +144,12 @@ function renderNotificationCards(container, notifications) {
     });
 }
 
+
 // ==========================================
 // 2. Database Sync & Registration
 // ==========================================
 
+// Database Sync
 export async function syncUserNotifications(userId) {
     if (!userId) return;
     try {
@@ -164,9 +171,11 @@ export async function syncUserNotifications(userId) {
     } catch (error) { console.error("Sync Error:", error); }
 }
 
+// Register တင်ပြီးပါက Page မ refresh ရအောင် စီမံထားသော Function
 export async function submitUserRegistration(mode, formData, currentUserId, feedbackElement = null) {
     formData.userId = currentUserId; 
     
+    // Feedback ပေးဖို့ UI element ရှိရင် စာတန်းပြမယ်
     if (feedbackElement) {
         feedbackElement.textContent = "Processing...";
         feedbackElement.style.color = "#38bdf8";
@@ -181,17 +190,21 @@ export async function submitUserRegistration(mode, formData, currentUserId, feed
         const result = await response.json();
 
         if (result.success) {
+            // အောင်မြင်ရင် စာတန်းကို အလိုလိုမပျောက်သွားဘဲ ဆက်ပြထားမယ်
             if (feedbackElement) {
                 feedbackElement.textContent = "Registration successful! Key received.";
-                feedbackElement.style.color = "#22c55e"; 
+                feedbackElement.style.color = "#22c55e"; // Green color
+            } else {
+                console.log("Registration successful!");
             }
 
+            // Page refresh မလုပ်ဘဲ Notification ကို ချက်ချင်း Update လုပ်မယ်
             await syncUserNotifications(currentUserId);
             
         } else {
             if (feedbackElement) {
                 feedbackElement.textContent = "Error: " + (result.message || "Registration failed");
-                feedbackElement.style.color = "#ef4444"; 
+                feedbackElement.style.color = "#ef4444"; // Red color
             }
         }
     } catch (error) {
@@ -202,3 +215,26 @@ export async function submitUserRegistration(mode, formData, currentUserId, feed
         }
     }
 }
+
+
+// ==========================================
+// 3. Event Listeners Initialization
+// ==========================================
+
+document.addEventListener('DOMContentLoaded', () => {
+    updateNotificationBadge();
+    const currentUserId = localStorage.getItem('user_id'); 
+    if (currentUserId) syncUserNotifications(currentUserId);
+
+    // ဥပမာ - Register ခလုတ်နှိပ်သည့်နေရာ ချိတ်ဆက်ပုံ
+    const registerBtn = document.getElementById('register-submit-btn'); // ကိုယ့်ရဲ့ Register ခလုတ် ID ထည့်ရန်
+    if (registerBtn) {
+        registerBtn.addEventListener('click', async () => {
+            const feedbackText = document.getElementById('status-message'); // UI မှာ စာပြမယ့် element ID ထည့်ရန်
+            const formData = { /* ညီမလေးရဲ့ Form Data များကို ဒီမှာ ထည့်ရန် */ };
+            const userId = localStorage.getItem('user_id');
+
+            await submitUserRegistration('1vs1', formData, userId, feedbackText);
+        });
+    }
+});
