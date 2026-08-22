@@ -22,10 +22,9 @@ module.exports = async function handler(req, res) {
             return res.status(400).json({ success: false, message: "User ID is required" });
         }
 
-        // Firestore ထဲက notifications collection ထဲမှာ ဒီ userId နဲ့ဆိုင်တာတွေကို လှမ်းစစ်မယ်
+        // orderBy ကို ဖြုတ်ပြီး .get() လုပ်မည် (Index လိုတော့ပါဘူး)
         const snapshot = await db.collection('notifications')
             .where('userId', '==', userId)
-            .orderBy('createdAt', 'desc')
             .get();
 
         const notifications = [];
@@ -34,6 +33,13 @@ module.exports = async function handler(req, res) {
                 id: doc.id,
                 ...doc.data()
             });
+        });
+
+        // JavaScript ဘက်ကနေ createdAt အသစ်ဆုံးကို အပေါ်တင်ပြီး Sort လုပ်မည်
+        notifications.sort((a, b) => {
+            const timeA = a.createdAt ? new Date(a.createdAt).getTime() : 0;
+            const timeB = b.createdAt ? new Date(b.createdAt).getTime() : 0;
+            return timeB - timeA;
         });
 
         return res.status(200).json({ 
