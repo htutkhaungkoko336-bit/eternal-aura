@@ -61,6 +61,9 @@ module.exports = async (req, res) => {
             else if (action === 'select') {
                 const parts = remaining.split('_');
                 const reasonKey = parts[0];
+                const actualCollection = parts[1];
+                const actualDocId = parts[2];
+
                 const reasonsMap = {
                     'r1': 'ညစ်ညမ်းပုံ သို့မဟုတ် မသင့်လျော်သော Payment Slip ဖြစ်ပါသည်',
                     'r2': 'Game Name သို့မဟုတ် Game ID မှားယွင်းနေပါသည်',
@@ -73,13 +76,17 @@ module.exports = async (req, res) => {
                 updateKeyboard = true;
                 
                 newInlineKeyboard = [
-                    [{ text: "✅ Confirm Reject", callback_data: `confirmrej_${reasonKey}_${collectionName}_${docId}` }],
-                    [{ text: "🔙 Back to Reasons", callback_data: `reject_${collectionName}_${docId}` }]
+                    [{ text: "✅ Confirm Reject", callback_data: `confirmrej_${reasonKey}_${actualCollection}_${actualDocId}` }],
+                    [{ text: "🔙 Back to Reasons", callback_data: `reject_${actualCollection}_${actualDocId}` }]
                 ];
             }
             else if (action === 'confirmrej') {
                 const parts = remaining.split('_');
                 const reasonKey = parts[0];
+                // 🔴 ဤနေရာတွင် Collection နဲ့ DocId ကို အတိအကျ ခွဲထုတ်ပေးပါသည်
+                const actualCollection = parts[1];
+                const actualDocId = parts.slice(2).join('_');
+
                 const reasonsMap = {
                     'r1': 'ညစ်ညမ်းပုံ သို့မဟုတ် မသင့်လျော်သော Payment Slip ဖြစ်ပါသည်',
                     'r2': 'Game Name သို့မဟုတ် Game ID မှားယွင်းနေပါသည်',
@@ -90,14 +97,14 @@ module.exports = async (req, res) => {
                 rejectionReasonText = reasonsMap[reasonKey] || 'အခြားအကြောင်းပြချက်ဖြင့် ပယ်ချပါသည်';
                 newStatus = 'REJECTED';
                 
-                if (collectionName && docId) {
+                if (actualCollection && actualDocId) {
                     try {
-                        const regDocRef = db.collection(collectionName).doc(docId);
+                        const regDocRef = db.collection(actualCollection).doc(actualDocId);
                         await regDocRef.update({
                             status: 'REJECTED',
                             rejectionReason: rejectionReasonText
                         });
-                        console.log("SUCCESS: Database updated to REJECTED with reason:", rejectionReasonText);
+                        console.log(`SUCCESS: Database updated ${actualCollection}/${actualDocId} to REJECTED`);
                     } catch (dbErr) {
                         console.error("Database Update Error inside confirmrej action:", dbErr);
                     }
