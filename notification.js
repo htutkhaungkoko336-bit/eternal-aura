@@ -168,7 +168,6 @@ function startCheckingStatus(registrationId, userId, mode) {
 // ==========================================
 // 3. Registration Submission 
 // ==========================================
-
 export async function submitUserRegistration(mode, formData, currentUserId, feedbackElement = null) {
     formData.userId = currentUserId; 
     
@@ -185,15 +184,30 @@ export async function submitUserRegistration(mode, formData, currentUserId, feed
         });
         const result = await response.json();
 
+        // Server က ဘာ Response ပို့လိုက်လဲ Console မှာ အရင်စစ်မယ်
+        console.log("API Register Response:", result);
+
         if (result.success) {
             if (feedbackElement) {
-                feedbackElement.textContent = "Registration successful! Waiting for admin confirmation...";
+                feedbackElement.textContent = "Registration successful! Waiting for admin...";
                 feedbackElement.style.color = "#22c55e"; 
             }
             
-            // Register တင်ပြီးတာနဲ့ ၅ စက္ကန့်တစ်ကြိမ် Status လှမ်းစစ်မယ့် Function ကို စတင်ခေါ်ပေးလိုက်သည်
-            if (result.registrationId) {
-                startCheckingStatus(result.registrationId, currentUserId, mode);
+            // ချက်ချင်း Noti တက်ခိုင်းမည်
+            addNotification(
+                `${mode.toUpperCase()} Registration Submitted`, 
+                "မင်းရဲ့ Register တင်ထားမှု အောင်မြင်ပါတယ်။ Admin ဘက်က အတည်ပြုပေးသည်အထိ ခေတ္တစောင့်ဆိုင်းပေးပါ။"
+            );
+
+            // Registration ID သေချာပါလာမလာ စစ်မယ် (Server က registrationId ပို့ပေးသလို တချို့နေရာမှာ id ဖြစ်နေရင်လည်း ယူလို့ရအောင်)
+            const regId = result.registrationId || result.id;
+            console.log("Extracted Registration ID:", regId);
+
+            if (regId) {
+                console.log("Starting Polling Function...");
+                startCheckingStatus(regId, currentUserId, mode);
+            } else {
+                console.error("Error: Registration ID is missing from API response!");
             }
 
         } else {
