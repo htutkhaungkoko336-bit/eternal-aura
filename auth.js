@@ -50,6 +50,7 @@ export function initAuth(formContent, onComplete) {
             // ၁။ Auto Login (ဖုန်းရော Device ID ပါ ကိုက်ညီလျှင်)
             if (data.success) {
                 if (data.role) localStorage.setItem('userRole', data.role);
+                if (data.userId) localStorage.setItem('user_id', data.userId); // userId သိမ်းခြင်း
                 if (typeof onComplete === 'function') onComplete(data);
                 return;
             }
@@ -135,7 +136,6 @@ function showCreatePinScreen(formContent, phoneVal, deviceId, onComplete) {
             return;
         }
 
-        // Step 3: PIN မှန်ကန်ပါက နာမည်တောင်းမည့် Screen သို့ ဆက်သွားမည်
         showNameInputScreen(formContent, phoneVal, pin1, deviceId, onComplete);
     });
 }
@@ -165,7 +165,6 @@ function showNameInputScreen(formContent, phoneVal, pinVal, deviceId, onComplete
         }
 
         try {
-            // အချက်အလက် အားလုံးပြည့်စုံသွားပြီဖြစ်၍ ဆာဗာဆီသို့ ပို့မည်
             const response = await fetch('/api/userid', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
@@ -176,6 +175,7 @@ function showNameInputScreen(formContent, phoneVal, pinVal, deviceId, onComplete
 
             if (data.success) {
                 if (data.role) localStorage.setItem('userRole', data.role);
+                if (data.userId) localStorage.setItem('user_id', data.userId); // userId သိမ်းခြင်း
                 if (typeof onComplete === 'function') onComplete(data);
             } else {
                 alert("အကောင့်ဖွင့်ခြင်း မအောင်မြင်ပါ: " + (data.message || "Unknown error"));
@@ -221,6 +221,7 @@ function showLoginPinScreen(formContent, phoneVal, deviceId, onComplete) {
 
             if (data.success) {
                 if (data.role) localStorage.setItem('userRole', data.role);
+                if (data.userId) localStorage.setItem('user_id', data.userId); // userId သိမ်းခြင်း
                 if (typeof onComplete === 'function') onComplete(data);
             } else {
                 alert("PIN မှားယွင်းနေပါသည်: " + (data.message || "Unknown error"));
@@ -232,7 +233,6 @@ function showLoginPinScreen(formContent, phoneVal, deviceId, onComplete) {
     });
 }
 
-// OTP Box လှုပ်ရှားမှုများအတွက် Utility Function
 function setupOtpInputs() {
     const inputs = document.querySelectorAll('.otp-box');
     inputs.forEach((input, index) => {
