@@ -1,16 +1,14 @@
-// profile.js - Cyberpunk Theme Profile Screen with Sketch Layout
+// profile.js - Cyberpunk Profile with High-Tech SVG Trophies
 
 export function renderProfileScreen(container) {
-    // LocalStorage မှ အချက်အလက်များ ရယူခြင်း (သို့မဟုတ် Default)
     const userName = localStorage.getItem('userName') || "CyberPlayer";
     const userId = localStorage.getItem('userId') || "EA-88492";
-    const userAvatar = localStorage.getItem('userAvatar') || ""; // Profile ပုံအတွက် (Base64 or URL)
+    const userAvatar = localStorage.getItem('userAvatar') || ""; 
     const userKey = localStorage.getItem('userKey') || "EA-KEY-9988-XYZ";
     
-    // Achievement / Champion အခြေအနေများ (localStorage မှာ သိမ်းမည်)
-    const isChampion = localStorage.getItem('isChampion') === 'true'; // ကြီးတဲ့ဖလား လင်းမလင်း
-    const has1vs1Win = localStorage.getItem('has1vs1Win') === 'true';   // 1vs1 ဖလားသေး
-    const has5vs5Win = localStorage.getItem('has5vs5Win') === 'true';   // 5vs5 ဖလားသေး
+    const isChampion = localStorage.getItem('isChampion') === 'true'; 
+    const has1vs1Win = localStorage.getItem('has1vs1Win') === 'true';   
+    const has5vs5Win = localStorage.getItem('has5vs5Win') === 'true';   
 
     container.innerHTML = `
         <style>
@@ -23,7 +21,6 @@ export function renderProfileScreen(container) {
                 box-sizing: border-box;
                 padding-bottom: 50px;
             }
-            /* Top Header Card (Avatar + Name + ID + Trophies) */
             .top-profile-card {
                 background: rgba(15, 23, 42, 0.85);
                 border: 1px solid #38bdf8;
@@ -41,7 +38,6 @@ export function renderProfileScreen(container) {
                 align-items: center;
                 gap: 12px;
             }
-            /* Profile Picture Upload Box (+) */
             .pf-upload-box {
                 width: 60px;
                 height: 60px;
@@ -82,40 +78,55 @@ export function renderProfileScreen(container) {
                 color: #94a3b8;
                 font-family: monospace;
             }
-            /* Trophy Section */
+
+            /* --- High-Tech Trophies Styling --- */
             .trophies-group {
                 display: flex;
                 flex-direction: column;
+                align-items: flex-end;
+                gap: 8px;
+            }
+            
+            /* Big Champion Trophy (SVG Container) */
+            .cyber-trophy-big {
+                width: 36px;
+                height: 36px;
+                display: flex;
                 align-items: center;
-                gap: 6px;
+                justify-content: center;
+                color: #334155; /* မရသေးရင် အရိပ်လို မှိန်နေမယ် */
+                transition: 0.4s ease;
             }
-            /* Big Champion Trophy */
-            .big-trophy {
-                font-size: 26px;
-                filter: grayscale(100%) opacity(0.3);
-                transition: 0.3s;
-            }
-            .big-trophy.active {
-                filter: grayscale(0%) opacity(1);
-                text-shadow: 0 0 15px #facc15, 0 0 30px #facc15;
+            .cyber-trophy-big.active {
+                color: #facc15; /* ရွှေရောင် လင်းလက်မည် */
+                filter: drop-shadow(0 0 8px #facc15) drop-shadow(0 0 16px #eab308);
                 transform: scale(1.1);
             }
-            /* Small Trophies (1vs1 & 5vs5) */
+
+            /* Small Mode Trophies Row */
             .small-trophies-row {
                 display: flex;
-                gap: 6px;
+                gap: 8px;
             }
-            .small-trophy {
-                font-size: 14px;
-                filter: grayscale(100%) opacity(0.2);
-                transition: 0.3s;
+            .cyber-trophy-small {
+                width: 22px;
+                height: 22px;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                color: #334155;
+                transition: 0.4s ease;
             }
-            .small-trophy.active {
-                filter: grayscale(0%) opacity(1);
-                text-shadow: 0 0 8px #38bdf8;
+            .cyber-trophy-small.active-1v1 {
+                color: #38bdf8; /* Cyan Neon for 1vs1 */
+                filter: drop-shadow(0 0 6px #38bdf8);
+            }
+            .cyber-trophy-small.active-5v5 {
+                color: #ec4899; /* Pink/Purple Neon for 5vs5 */
+                filter: drop-shadow(0 0 6px #ec4899);
             }
 
-            /* Key & History Buttons Grid */
+            /* Action Grid */
             .action-grid {
                 display: grid;
                 grid-template-columns: 1fr 1fr;
@@ -143,7 +154,6 @@ export function renderProfileScreen(container) {
                 letter-spacing: 1px;
             }
 
-            /* Expandable Display Area (Key & History Modal/Box) */
             .display-panel {
                 background: rgba(15, 23, 42, 0.95);
                 border: 1px solid #38bdf8;
@@ -158,7 +168,6 @@ export function renderProfileScreen(container) {
                 display: block;
             }
 
-            /* Message Section (Cyber City Style) */
             .message-section {
                 background: rgba(15, 23, 42, 0.85);
                 border: 1px solid #f43f5e;
@@ -206,7 +215,7 @@ export function renderProfileScreen(container) {
         </style>
 
         <div class="cyber-profile-wrapper">
-            <!-- 1. Top Section: PF Box (+), Name, ID, Trophies -->
+            <!-- Top Card -->
             <div class="top-profile-card">
                 <div class="profile-left-group">
                     <label class="pf-upload-box" id="avatar-container" title="ဓာတ်ပုံပြောင်းရန်နှိပ်ပါ">
@@ -219,17 +228,39 @@ export function renderProfileScreen(container) {
                     </div>
                 </div>
 
-                <!-- Trophies (Champion & Mode Wins) -->
+                <!-- High-Tech SVG Trophies -->
                 <div class="trophies-group">
-                    <div class="big-trophy ${isChampion ? 'active' : ''}" title="Champion Trophy">🏆</div>
+                    <!-- Champion Trophy (Big) -->
+                    <div class="cyber-trophy-big ${isChampion ? 'active' : ''}" title="Champion Trophy">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="100%" height="100%">
+                            <path d="M6 9H4.5a2.5 2.5 0 0 1 0-5H6"></path>
+                            <path d="M18 9h1.5a2.5 2.5 0 0 0 0-5H18"></path>
+                            <path d="M4 22h16"></path>
+                            <path d="M10 14.66V17c0 .55-.47.98-.97 1.21C7.85 18.75 7 20.24 7 22"></path>
+                            <path d="M14 14.66V17c0 .55.47.98.97 1.21C16.15 18.75 17 20.24 17 22"></path>
+                            <path d="M18 2H6v7a6 6 0 0 0 12 0V2Z"></path>
+                        </svg>
+                    </div>
+
+                    <!-- Small Trophies (1vs1 & 5vs5) -->
                     <div class="small-trophies-row">
-                        <span class="small-trophy ${has1vs1Win ? 'active' : ''}" title="1vs1 Winner">⚡</span>
-                        <span class="small-trophy ${has5vs5Win ? 'active' : ''}" title="5vs5 Winner">🛡️</span>
+                        <!-- 1vs1 Winner Icon (Lightning/Flash) -->
+                        <div class="cyber-trophy-small ${has1vs1Win ? 'active-1v1' : ''}" title="1vs1 Winner">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" width="100%" height="100%">
+                                <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"></polygon>
+                            </svg>
+                        </div>
+                        <!-- 5vs5 Winner Icon (Shield) -->
+                        <div class="cyber-trophy-small ${has5vs5Win ? 'active-5v5' : ''}" title="5vs5 Winner">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" width="100%" height="100%">
+                                <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path>
+                            </svg>
+                        </div>
                     </div>
                 </div>
             </div>
 
-            <!-- 2. Key & History Buttons Grid -->
+            <!-- Action Grid -->
             <div class="action-grid">
                 <div class="cyber-action-box" id="btn-key">
                     <span>KEY 🔑</span>
@@ -239,14 +270,11 @@ export function renderProfileScreen(container) {
                 </div>
             </div>
 
-            <!-- Expandable Panel for Key -->
             <div class="display-panel" id="panel-key">
                 <div style="color: #38bdf8; font-weight: bold; margin-bottom: 4px;">YOUR SECURITY KEY:</div>
                 <div style="font-family: monospace; background: #020617; padding: 6px; border-radius: 6px; border: 1px solid #1e293b; color: #facc15;">${userKey}</div>
-                <div style="font-size: 10px; color: #94a3b8; margin-top: 4px;">ဒီကုဒ်ကို မည်သူ့ကိုမျှ မပေးပါ။</div>
             </div>
 
-            <!-- Expandable Panel for History -->
             <div class="display-panel" id="panel-history">
                 <div style="color: #38bdf8; font-weight: bold; margin-bottom: 6px;">MATCH & REGISTER HISTORY:</div>
                 <div style="background: #020617; padding: 6px 8px; border-radius: 6px; border: 1px solid #1e293b; margin-bottom: 4px;">
@@ -257,7 +285,7 @@ export function renderProfileScreen(container) {
                 </div>
             </div>
 
-            <!-- 3. Message Section (User to User Connect) -->
+            <!-- Message Section -->
             <div class="message-section">
                 <div class="message-title">💬 ETERNAL AURA NETWORK CHAT</div>
                 <input type="text" class="msg-input" id="peer-id-input" placeholder="Enter Receiver User ID (e.g. EA-12345)">
@@ -267,9 +295,7 @@ export function renderProfileScreen(container) {
         </div>
     `;
 
-    // --- JavaScript Logic for Interactivity ---
-
-    // 1. Profile Photo Upload & LocalStorage Persistence (Database မလိုဘဲ သိမ်းရန်)
+    // --- Logic ---
     const fileInput = document.getElementById('pf-file-input');
     fileInput.addEventListener('change', function(e) {
         const file = e.target.files[0];
@@ -277,9 +303,7 @@ export function renderProfileScreen(container) {
             const reader = new FileReader();
             reader.onload = function(event) {
                 const base64Image = event.target.result;
-                localStorage.setItem('userAvatar', base64Image); // localStorage မှာ သိမ်းမည်
-                
-                // UI တွင် ချက်ချင်းပြောင်းရန်
+                localStorage.setItem('userAvatar', base64Image);
                 const avatarContainer = document.getElementById('avatar-container');
                 avatarContainer.innerHTML = `<img src="${base64Image}" id="pf-img"><input type="file" id="pf-file-input" accept="image/*" style="display: none;">`;
             };
@@ -287,7 +311,6 @@ export function renderProfileScreen(container) {
         }
     });
 
-    // 2. Key Box Toggle
     const btnKey = document.getElementById('btn-key');
     const panelKey = document.getElementById('panel-key');
     const panelHistory = document.getElementById('panel-history');
@@ -297,14 +320,12 @@ export function renderProfileScreen(container) {
         panelHistory.classList.remove('show');
     });
 
-    // 3. History Box Toggle
     const btnHistory = document.getElementById('btn-history');
     btnHistory.addEventListener('click', () => {
         panelHistory.classList.toggle('show');
         panelKey.classList.remove('show');
     });
 
-    // 4. Message Send Action
     const sendMsgBtn = document.getElementById('send-peer-msg-btn');
     sendMsgBtn.addEventListener('click', () => {
         const peerId = document.getElementById('peer-id-input').value.trim();
