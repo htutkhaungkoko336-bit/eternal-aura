@@ -81,11 +81,16 @@ module.exports = async (req, res) => {
                 ];
             }
             else if (action === 'confirmrej') {
-                const parts = remaining.split('_');
-                const reasonKey = parts[0];
-                // 🔴 ဤနေရာတွင် Collection နဲ့ DocId ကို အတိအကျ ခွဲထုတ်ပေးပါသည်
-                const actualCollection = parts[1];
-                const actualDocId = parts.slice(2).join('_');
+                // ပုံမှန်ဆိုရင် data ပုံစံက confirmrej_r1_1vs1_registrations_DOCID လ่าရှိပါတယ်
+                // ဒါကြောင့် remaining က r1_1vs1_registrations_DOCID ဖြစ်ပါတယ်။
+                const firstUnderscoreInRem = remaining.indexOf('_');
+                const reasonKey = remaining.substring(0, firstUnderscoreInRem); // r1
+                const restOfData = remaining.substring(firstUnderscoreInRem + 1); // 1vs1_registrations_DOCID
+
+                // နောက်ဆုံး underscore က collection နဲ့ docId ကို ခွဲပေးမှာပါ
+                const lastUnderscoreInRest = restOfData.lastIndexOf('_');
+                const actualCollection = restOfData.substring(0, lastUnderscoreInRest); // 1vs1_registrations
+                const actualDocId = restOfData.substring(lastUnderscoreInRest + 1); // DOCID
 
                 const reasonsMap = {
                     'r1': 'ညစ်ညမ်းပုံ သို့မဟုတ် မသင့်လျော်သော Payment Slip ဖြစ်ပါသည်',
