@@ -167,7 +167,80 @@ function renderNotificationCards(container, notifications) {
         container.appendChild(card);
     });
 }
+// Database မှ User ၏ Noti များကို လှမ်းဆွဲယူပြီး LocalStorage နှင့် Sync လုပ်ရန်
+export async function syncUserNotifications(userId) {
+    if (!userId) return;
+
+    try {
+        const response = await fetch(`/api/get-notifications?userId=${userId}`);
+        const result = await response.json();
+
+        if (result.success) {
+            // Server ကလာတဲ့ Data များကို notification.js နဲ့ ကိုက်ညီအောင် ပြောင်းခြင်း
+            const formattedNotis = result.notifications.map(n => ({
+                title: n.title,
+                message: n.message,
+                dateStr: n.dateStr,
+                timeStr: n.timeStr,
+                read: n.read || false
+            }));
+
+            // LocalStorage ထဲ သိမ်းဆည်းခြင်း
+            localStorage.setItem('app_notifications', JSON.stringify(formattedNotis));
+            
+            // မဖတ်ရသေးတဲ့ အရေအတွက် (unread count) ကို တွက်ချက်ခြင်း
+            const unreadCount = formattedNotis.filter(n => !n.read).length;
+            localStorage.setItem('app_unread_count', unreadCount.toString());
+
+            // UI ပေါ်တွင် Badge နဲ့ List ကို Update လုပ်ရန်
+            updateNotificationBadge();
+            
+            const listContainer = document.getElementById('notification-list-container');
+            if (listContainer) {
+                renderNotificationCards(listContainer, formattedNotis);
+            }
+        }
+    } catch (error) {
+        console.error("Failed to sync notifications from server:", error);
+    }
+}
+async function submitUserRegistration(mode, formData, currentUserId) {
+    // formData ထဲမှာ userId ထည့်ပေးဖို့ မမေ့နဲ့နော်
+    formData.userId = currentUserId; 
+
+    try {
+        const response = await fetch('/api/register', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                mode: mode, // '1vs1', '5vs5' သို့မဟုတ် 'tournament'
+                data: formData
+            })
+        });
+
+        const result = await response.json();
+
+        if (result.success) {
+            alert("စာရင်းပေးသွင်းခြင်း အောင်မြင်ပါသည်! Key တိုးပြီးပါပြီ။");
+            
+            // ပြီးတာနဲ့ Noti အသစ်တွေကို Server ကနေ ပြန်လှမ်းဆွဲပြီး UI မှာပြမယ်
+            await syncUserNotifications(currentUserId);
+        } else {
+            alert("အမှားအယွင်းရှိပါတယ်: " + result.message);
+        }
+    } catch (error) {
+        console.error("Submission Network Error:", error);
+    }
+}
 
 document.addEventListener('DOMContentLoaded', () => {
     updateNotificationBadge();
+    
+    // User ID က ဘယ်ကနေ လာမှာလဲ (ဥပမာ - localStorage ထဲမှာ သိမ်းထားရင်)
+    const currentUserId = localStorage.getItem('user_id'); 
+    if (currentUserId) {
+        syncUserNotifications(currentUserId);
+    }
 });
