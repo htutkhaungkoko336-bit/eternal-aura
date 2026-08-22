@@ -119,14 +119,12 @@ function renderNotificationCards(container, notifications) {
             </div>
         `;
 
-        // Interaction
         card.querySelector('.noti-header').addEventListener('click', (e) => {
             if (e.target.closest('.delete-btn')) return;
             const body = card.querySelector('.noti-body');
             body.style.maxHeight = body.style.maxHeight === '0px' || !body.style.maxHeight ? '1200px' : '0px';
         });
 
-        // Local Storage ထဲကနေသာ ဖယ်ရှားရန် ပြင်ဆင်ထားခြင်း (API မခေါ်တော့ပါ)
         card.querySelector('.delete-btn').addEventListener('click', () => {
             let currentNotis = JSON.parse(localStorage.getItem('app_notifications')) || [];
             currentNotis = currentNotis.filter(n => n.title !== noti.title || n.timeStr !== noti.timeStr);
@@ -140,7 +138,35 @@ function renderNotificationCards(container, notifications) {
 
 
 // ==========================================
-// 2. Registration Submission (Notification Sync ဖြုတ်ပြီး)
+// 2. Status Polling (5 စက္ကန့်တစ်ကြိမ် လှမ်းစစ်ပေးမည့် Function)
+// ==========================================
+
+function startCheckingStatus(registrationId, userId, mode) {
+    const intervalTime = 5000; // ၅ စက္ကန့် (5000 ms) တစ်ကြိမ်
+
+    const timer = setInterval(async () => {
+        try {
+            const response = await fetch(`/api/check-status?registrationId=${registrationId}&userId=${userId}&mode=${mode}`);
+            const result = await response.json();
+
+            if (result.success) {
+                if (result.status === 'CONFIRMED') {
+                    addNotification("Registration Confirmed! 🎉", "Admin က မင်းရဲ့ Register ကို Confirm ပေးလိုက်ပါပြီ။ Key ရရှိသွားပါပြီ။");
+                    clearInterval(timer); 
+                } else if (result.status === 'REJECTED') {
+                    addNotification("Registration Rejected ❌", "တောင်းပန်ပါတယ်၊ မင်းရဲ့ Register ကို Reject လိုက်ပါတယ်။");
+                    clearInterval(timer); 
+                }
+            }
+        } catch (error) {
+            console.error("Polling error:", error);
+        }
+    }, intervalTime);
+}
+
+
+// ==========================================
+// 3. Registration Submission 
 // ==========================================
 
 export async function submitUserRegistration(mode, formData, currentUserId, feedbackElement = null) {
@@ -161,12 +187,15 @@ export async function submitUserRegistration(mode, formData, currentUserId, feed
 
         if (result.success) {
             if (feedbackElement) {
-                feedbackElement.textContent = "Registration successful! Key received.";
+                feedbackElement.textContent = "Registration successful! Waiting for admin confirmation...";
                 feedbackElement.style.color = "#22c55e"; 
-            } else {
-                console.log("Registration successful!");
             }
             
+            // Register တင်ပြီးတာနဲ့ ၅ စက္ကန့်တစ်ကြိမ် Status လှမ်းစစ်မယ့် Function ကို စတင်ခေါ်ပေးလိုက်သည်
+            if (result.registrationId) {
+                startCheckingStatus(result.registrationId, currentUserId, mode);
+            }
+
         } else {
             if (feedbackElement) {
                 feedbackElement.textContent = "Error: " + (result.message || "Registration failed");
@@ -181,23 +210,3 @@ export async function submitUserRegistration(mode, formData, currentUserId, feed
         }
     }
 }
-
-
-// ==========================================
-// 3. Event Listeners Initialization
-// ==========================================
-
-document.addEventListener('DOMContentLoaded', () => {
-    updateNotificationBadge();
-
-    const registerBtn = document.getElementById('register-submit-btn'); 
-    if (registerBtn) {
-        registerBtn.addEventListener('click', async () => {
-            const feedbackText = document.getElementById('status-message'); 
-            const formData = { /* Form Data ထည့်ရန် */ };
-            const userId = localStorage.getItem('user_id');
-
-            await submitUserRegistration('1vs1', formData, userId, feedbackText);
-        });
-    }
-});
