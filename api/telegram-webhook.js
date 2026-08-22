@@ -58,10 +58,9 @@ module.exports = async (req, res) => {
                     [{ text: "🔙 Back", callback_data: `back_${collectionName}_${docId}` }]
                 ];
             }
-            else if (action === 'reason') {
+                else if (action === 'reason') {
                 newStatus = 'REJECTED';
                 
-                // ပြင်ဆင်ချက်: remaining ကို split လုပ်ပြီး reasonKey (ဥပမာ r1, r2) ကို တိကျစွာ ထုတ်ယူခြင်း
                 const parts = remaining.split('_');
                 const reasonKey = parts[0]; 
                 
@@ -76,8 +75,22 @@ module.exports = async (req, res) => {
                 rejectionReasonText = reasonsMap[reasonKey] || 'အခြားအကြောင်းပြချက်ဖြင့် ပယ်ချပါသည်';
                 responseText = `❌ REJECTED\nReason: ${rejectionReasonText}`;
                 updateKeyboard = true;
-            }
-            else if (action === 'back') {
+
+                // ⚠️ အရေးကြီးသည် - Reason ရွေးလိုက်တာနဲ့ Database ထဲသို့ တိုက်ရိုက် Update လုပ်ရန် ဤနေရာတွင် ထည့်ပေးပါ
+                if (collectionName && docId) {
+                    try {
+                        const regDocRef = db.collection(collectionName).doc(docId);
+                        await regDocRef.update({
+                            status: 'REJECTED',
+                            rejectionReason: rejectionReasonText
+                        });
+                        console.log("Firestore status successfully updated to REJECTED with reason:", rejectionReasonText);
+                    } catch (updateErr) {
+                        console.error("Error updating rejection reason in DB:", updateErr);
+                    }
+                }
+            } 
+                else if (action === 'back') {
                 responseText = "⏳ Waiting for admin action...";
                 updateKeyboard = true;
                 newInlineKeyboard = [
