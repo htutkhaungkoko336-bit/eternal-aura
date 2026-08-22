@@ -352,9 +352,11 @@ confirmBtn.addEventListener('click', async () => {
                         console.log("❌ Registration ပယ်ချခံရပါသည်!");
                         const notiTitle = `${displayModeText} Rejected ❌`;
                         
-                        // Database ကလာတဲ့ rejectionReason ကို သုံးပေးမည် (မရှိရင် ပုံမှန်စာသားပြမည်)
+                        // Database ကလာတဲ့ rejectionReason ကို ယူမည်
                         const reason = checkData.rejectionReason || "အခြားအကြောင်းပြချက်ဖြင့် ပယ်ချပါသည်";
-                        const notiMessage = `တောင်းပန်ပါတယ်၊ မင်းရဲ့ Register ကို Reject လိုက်ပါတယ်။\n\n📝 အကြောင်းရင်း: ${reason}`;
+                        
+                        // ညီမလိုချင်တဲ့ Mode နဲ့ Fee ပါတဲ့ စာသားပုံစံ
+                        const notiMessage = `${displayModeText} fee ${totalStr} အတွက် Register ကို ပယ်ချလိုက်ပါသည်။\n\n📝 အကြောင်းရင်း: ${reason}`;
                         
                         addNotification(notiTitle, notiMessage);
                         clearInterval(pollingInterval);
