@@ -46,23 +46,65 @@ module.exports = async (req, res) => {
                 updateKeyboard = true;
             } 
             else if (action === 'reject') {
-                newStatus = 'REJECTED';
-                responseText = "❌ This registration has been REJECTED.";
+                // Reject နှိပ်ရင် အကြောင်းပြချက်ရွေးခိုင်းမည့် ခလုတ်များ ပေါ်လာမည်
+                responseText = "⚠️ ပယ်ချရမည့် အကြောင်းရင်းကို ရွေးချယ်ပါ:";
                 updateKeyboard = true;
-                newInlineKeyboard = []; 
+                newInlineKeyboard = [
+                    [{ text: "🚫 ညစ်ညမ်းပုံ/မသင့်လျော်သောပုံ", callback_data: `select_r1_${collectionName}_${docId}` }],
+                    [{ text: "⚠️ Game Name/ID မှားယွင်း", callback_data: `select_r2_${collectionName}_${docId}` }],
+                    [{ text: "💰 ငွေပမာဏ မမှန်", callback_data: `select_r3_${collectionName}_${docId}` }],
+                    [{ text: "📝 အချက်အလက် မပြည့်စုံ", callback_data: `select_r4_${collectionName}_${docId}` }],
+                    [{ text: "🔄 အကောင့်အမည်/ဖုန်းနံပါတ် မှားယွင်း", callback_data: `select_r5_${collectionName}_${docId}` }],
+                    [{ text: "🔙 Back", callback_data: `back_${collectionName}_${docId}` }]
+                ];
+            }
+            else if (action === 'select') {
+                // အကြောင်းပြချက် တစ်ခုခုကို ရွေးလိုက်သည့်အခါ (select_r1_collection_docId)
+                const firstUnderscoreInRem = remaining.indexOf('_');
+                const reasonKey = remaining.substring(0, firstUnderscoreInRem); // r1, r2 စသည်ဖြင့်
+                const restOfData = remaining.substring(firstUnderscoreInRem + 1); // collection_docId
 
-                // Reject လုပ်လိုက်တာနဲ့ Database ကို ချက်ချင်း Update လုပ်ရန်
-                if (collectionName && docId) {
+                const lastUnderscoreInRest = restOfData.lastIndexOf('_');
+                const actualCollection = restOfData.substring(0, lastUnderscoreInRest);
+                const actualDocId = restOfData.substring(lastUnderscoreInRest + 1);
+
+                const reasonsMap = {
+                    'r1': 'ညစ်ညမ်းပုံ သို့မဟုတ် မသင့်လျော်သော Payment Slip ဖြစ်ပါသည်',
+                    'r2': 'Game Name သို့မဟုတ် Game ID မှားယွင်းနေပါသည်',
+                    'r3': 'ငွေပမာဏ လျော့နည်းနေပါသည် သို့မဟုတ် မမှန်ကန်ပါ',
+                    'r4': 'အချက်အလက်များ မပြည့်စုံပါ',
+                    'r5': 'ငွေလွှဲအကောင့် အမည် သို့မဟုတ် ဖုန်းနံပါတ် မှားယွင်းနေပါသည်'
+                };
+                
+                const rejectionReasonText = reasonsMap[reasonKey] || 'အခြားအကြောင်းပြချက်ဖြင့် ပယ်ချပါသည်';
+                newStatus = 'REJECTED';
+                responseText = `❌ REJECTED\nReason: ${rejectionReasonText}`;
+                updateKeyboard = true;
+                newInlineKeyboard = []; // ခလုတ်များကို ဖယ်ရှားမည်
+
+                // Database ထဲသို့ Status နှင့် Rejection Reason ကို တစ်ခါတည်း Update လုပ်မည်
+                if (actualCollection && actualDocId) {
                     try {
-                        const regDocRef = db.collection(collectionName).doc(docId);
+                        const regDocRef = db.collection(actualCollection).doc(actualDocId);
                         await regDocRef.update({
-                            status: 'REJECTED'
+                            status: 'REJECTED',
+                            rejectionReason: rejectionReasonText
                         });
-                        console.log(`SUCCESS: Database updated ${collectionName}/${docId} to REJECTED`);
+                        console.log(`SUCCESS: Database updated ${actualCollection}/${actualDocId} to REJECTED with reason.`);
                     } catch (dbErr) {
-                        console.error("Database Update Error inside reject action:", dbErr);
+                        console.error("Database Update Error inside select action:", dbErr);
                     }
                 }
+            }
+            else if (action === 'back') {
+                responseText = "⏳ Waiting for admin action...";
+                updateKeyboard = true;
+                newInlineKeyboard = [
+                    [
+                        { text: "✅ Confirm", callback_data: `confirm_${collectionName}_${docId}` },
+                        { text: "❌ Reject", callback_data: `reject_${collectionName}_${docId}` }
+                    ]
+                ];
             }
 
             // Confirm အတွက် Database Update နှင့် User Key ပေါင်းထည့်သည့် အပိုင်း
@@ -147,7 +189,7 @@ module.exports = async (req, res) => {
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ 
                     callback_query_id: callbackQuery.id, 
-                    text: newStatus ? `Successfully ${newStatus.toLowerCase()}!` : "Action processed" 
+                    text: newStatus ? `Successfully ${newStatus.toLowerCase()}!` : "Please select a reason" 
                 })
             });
         }
