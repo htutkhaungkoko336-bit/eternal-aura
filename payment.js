@@ -351,7 +351,11 @@ confirmBtn.addEventListener('click', async () => {
                     } else if (checkData.status === 'REJECTED') {
                         console.log("❌ Registration ပယ်ချခံရပါသည်!");
                         const notiTitle = `${displayModeText} Rejected ❌`;
-                        const notiMessage = `${displayModeText} fee ${totalStr} အတွက် register တင်ပြမှုကို ပယ်ချလိုက်ပါသည်။ Payment Slip (သို့) အချက်အလက်များ ပြန်စစ်ဆေးပေးပါ။`;
+                        
+                        // Database ကလာတဲ့ rejectionReason ကို သုံးပေးမည် (မရှိရင် ပုံမှန်စာသားပြမည်)
+                        const reason = checkData.rejectionReason || "အခြားအကြောင်းပြချက်ဖြင့် ပယ်ချပါသည်";
+                        const notiMessage = `တောင်းပန်ပါတယ်၊ မင်းရဲ့ Register ကို Reject လိုက်ပါတယ်။\n\n📝 အကြောင်းရင်း: ${reason}`;
+                        
                         addNotification(notiTitle, notiMessage);
                         clearInterval(pollingInterval);
                     }
