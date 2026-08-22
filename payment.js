@@ -275,30 +275,24 @@ export function renderPaymentPage(appContent, formData) {
     });  
 
 // Confirm Button Logic
+// Confirm Button Logic
 confirmBtn.addEventListener('click', async () => {
     if (confirmBtn.disabled) return;
 
-    // ၁။ Backend က လက်ခံမည့် mode အမည်ကို အတိအကျ သတ်မှတ်ခြင်း ('1vs1', '5vs5', 'tournament')
-    let modeType = '5vs5'; // Default
+    let modeType = '5vs5'; 
     if (isTournament) {
         modeType = 'tournament';
     } else if (currentMode.toLowerCase().includes('1vs1')) {
         modeType = '1vs1';
     }
 
-    // ၂။ localStorage ထဲက userId ကို ဦးစားပေးယူခြင်း (မရှိမှသာ formData သို့မဟုတ် guest_user သုံးမည်)
     const currentUserId = localStorage.getItem('userId') || localStorage.getItem('activeUserId') || formData.userId || 'guest_user';
-    // ၃။ Backend သို့ ပို့မည့် Payload (Backend မျှော်လင့်ထားသည့် Field အမည်များနှင့် အတိအကျ ကိုက်ညီစေရန်)
-        const requestBody = {
+    
+    const requestBody = {
         mode: modeType,
         data: {
-            // 1. Form အဟောင်းထဲက ပါလာတာတွေ အကုန်ထည့်မည်
             ...formData,
-            
-            // 2. userId ကို အောက်ဆုံးကနေ ထပ်ရေးခြင်းဖြင့် အသစ်ကို အစားထိုးစေရန်
             userId: currentUserId,
-            
-            // --- အခြား ချိန်ညှိချက်များ ---
             logo: formData.logoBase64 || formData.teamLogo || formData.logo || '',
             paymentSlip: base64SS || formData.paymentSlip || '',
             teamLogo: formData.teamLogo || formData.logoBase64 || formData.logo || '',
@@ -309,12 +303,13 @@ confirmBtn.addEventListener('click', async () => {
             selectedGameMode: displayModeText
         }
     };
-    // UI Loading State
+
     confirmBtn.disabled = true;
     confirmBtn.textContent = "Submitting...";
 
+    console.log("🚀 Submitting Register Request...", requestBody);
+
     try {
-        // ၄။ Backend (`/api/register`) သို့ ပို့ခြင်း
         const response = await fetch('/api/register', {
             method: 'POST',
             headers: {
@@ -324,31 +319,57 @@ confirmBtn.addEventListener('click', async () => {
         });
 
         const result = await response.json();
+        console.log("📥 Register Response Result:", result);
 
         if (result.success) {
             const notiTitle = `${displayModeText} Registration Submitted`;
             const notiMessage = `${displayModeText} fee ${totalStr} အတွက် register တင်ထားပါသည်။ Admin မှ စစ်ဆေးပြီးလျှင် noti ပြန်တက်မည်။`;
             
-            // ၁။ ပထမဆုံး တင်လိုက်ကြောင်း Noti တက်မည်
             addNotification(notiTitle, notiMessage);
             alert("စာရင်းပေးသွင်းခြင်း အောင်မြင်ပါသည်ရှင့်!");
 
-            // ၂။ Admin အတည်ပြုချက်ကို စောင့်ရန် Polling စတင်ခြင်း 
-            // (result.registrationId သို့မဟုတ် result.id ကို သုံး၍ စစ်မည်)
             const regId = result.registrationId || result.id;
-            if (regId && typeof startCheckingStatus === 'function') {
-                startCheckingStatus(regId, currentUserId, modeType);
+            console.log("🆔 Registration ID ရရှိပါပြီ:", regId);
+
+            if (regId) {
+                // Polling စတင်ကြောင်း Log ထည့်မည်
+                console.log("⏳ Status စစ်ဆေးခြင်း (Polling) စတင်ပါပြီ...");
+                
+                const pollingInterval = setInterval(async () => {
+                    try {
+                        console.log(`🔍 Checking status for ID: ${regId} ...`);
+                        const checkRes = await fetch(`/api/check-status?id=${regId}`);
+                        const checkData = await checkRes.json();
+                        console.log("📊 Check Status Result:", checkData);
+
+                        if (checkData.status === 'CONFIRMED') {
+                            console.log("✅ Admin အတည်ပြုပြီးပါပြီ!");
+                            addNotification("Registration Confirmed! 🎉", `${displayModeText} ကို Admin မှ အတည်ပြုပေးလိုက်ပါပြီ။`);
+                            clearInterval(pollingInterval);
+                        } else if (checkData.status === 'REJECTED') {
+                            console.log("❌ Registration ပယ်ချခံရပါသည်!");
+                            addNotification("Registration Rejected ❌", `${displayModeText} တင်ပြမှုကို ပယ်ချလိုက်ပါသည်။`);
+                            clearInterval(pollingInterval);
+                        }
+                    } catch (pollErr) {
+                        console.error("⚠️ Polling Error ဖြစ်နေပါသည်:", pollErr);
+                    }
+                }, 5000); // ၅ စက္ကန့်တစ်ကြိမ်
+            } else {
+                console.warn("⚠️ Registration ID မပါလာပါ၊ ထို့ကြောင့် Polling စတင်၍ မရပါ။");
             }
 
-            // ၃။ Mode Screen သို့ ပြန်သွားမည် (သို့မဟုတ် Notification Screen သို့ ပို့မည်)
-            renderModeScreen(appContent);
-                } else {
+            // Screen ပြောင်းချင်ရင် Polling အလုပ်လုပ်တာကို ထိခိုက်နိုင်င်လို့ ခဏစောင့်ခိုင်းပါ (သို့) 
+            // renderModeScreen(appContent); ကို ချက်ချင်းမသွားဘဲ Waiting နေရာမှာ ထားပေးပါ။
+            // ဥပမာ - renderModeScreen(appContent); ကို ဒီအတိုင်းထားရင် Page ပြောင်းသွားလို့ setInterval ရပ်သွားပါမယ်။
+
+        } else {
             alert("အမှားအယွင်းရှိပါသည်: " + (result.message || "Unknown error"));
             confirmBtn.disabled = false;
             confirmBtn.textContent = "Confirm";
         }
     } catch (error) {
-        console.error("Submission Error:", error);
+        console.error("❌ Submission Error:", error);
         alert("ဆာဗာချိတ်ဆက်မှု အဆင်မပြေပါ။ ကျေးဇူးပြု၍ ခဏနေ ထပ်ကြိုးစားပါရှင့်။");
         confirmBtn.disabled = false;
         confirmBtn.textContent = "Confirm";
