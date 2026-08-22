@@ -329,10 +329,20 @@ confirmBtn.addEventListener('click', async () => {
             const notiTitle = `${displayModeText} Registration Submitted`;
             const notiMessage = `${displayModeText} fee ${totalStr} အတွက် register တင်ထားပါသည်။ Admin မှ စစ်ဆေးပြီးလျှင် noti ပြန်တက်မည်။`;
             
+            // ၁။ ပထမဆုံး တင်လိုက်ကြောင်း Noti တက်မည်
             addNotification(notiTitle, notiMessage);
             alert("စာရင်းပေးသွင်းခြင်း အောင်မြင်ပါသည်ရှင့်!");
+
+            // ၂။ Admin အတည်ပြုချက်ကို စောင့်ရန် Polling စတင်ခြင်း 
+            // (result.registrationId သို့မဟုတ် result.id ကို သုံး၍ စစ်မည်)
+            const regId = result.registrationId || result.id;
+            if (regId && typeof startCheckingStatus === 'function') {
+                startCheckingStatus(regId, currentUserId, modeType);
+            }
+
+            // ၃။ Mode Screen သို့ ပြန်သွားမည် (သို့မဟုတ် Notification Screen သို့ ပို့မည်)
             renderModeScreen(appContent);
-        } else {
+                } else {
             alert("အမှားအယွင်းရှိပါသည်: " + (result.message || "Unknown error"));
             confirmBtn.disabled = false;
             confirmBtn.textContent = "Confirm";
