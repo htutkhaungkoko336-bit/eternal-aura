@@ -47,22 +47,32 @@ module.exports = async (req, res) => {
                 updateKeyboard = true;
             } 
             else if (action === 'reject') {
-                // Reject နှိပ်လိုက်ရင် အကြောင်းရင်းရွေးချယ်စရာ ခလုတ်များ ပေါ်လာစေရန်
+                // Short keys များကို အသုံးပြုထားပါသည် (Telegram 64 bytes limit အတွက်)
                 responseText = "⚠️ ပယ်ချရသည့် အကြောင်းရင်းကို ရွေးချယ်ပါ:";
                 updateKeyboard = true;
                 newInlineKeyboard = [
-                    [{ text: "🚫 ညစ်ညမ်းပုံ/မသင့်လျော်သောပုံ တင်ထားခြင်း", callback_data: `reason_ညစ်ညမ်းပုံ သို့မဟုတ် မသင့်လျော်သော Payment Slip ဖြစ်ပါသည်_${collectionName}_${docId}` }],
-                    [{ text: "⚠️ Game Name သို့မဟုတ် Game ID မှားယွင်းခြင်း", callback_data: `reason_Game Name သို့မဟုတ် Game ID မှားယွင်းနေပါသည်_${collectionName}_${docId}` }],
-                    [{ text: "💰 ငွေပမာဏ လျော့နည်းနေခြင်း (သို့) မမှန်ကန်ခြင်း", callback_data: `reason_ငွေပမာဏ လျော့နည်းနေပါသည် သို့မဟုတ် မမှန်ကန်ပါ_${collectionName}_${docId}` }],
-                    [{ text: "📝 အချက်အလက်များ မပြည့်စုံခြင်း", callback_data: `reason_အချက်အလက်များ မပြည့်စုံပါ_${collectionName}_${docId}` }],
-                    [{ text: "🔄 ငွေလွှဲိုင်နာမ် သို့မဟုတ် ဖုန်းနံပါတ် မှားယွင်းခြင်း", callback_data: `reason_ငွေလွှဲအကောင့် အမည် သို့မဟုတ် ဖုန်းနံပါတ် မှားယွင်းနေပါသည်_${collectionName}_${docId}` }],
+                    [{ text: "🚫 ညစ်ညမ်းပုံ/မသင့်လျော်သောပုံ တင်ထားခြင်း", callback_data: `reason_r1_${collectionName}_${docId}` }],
+                    [{ text: "⚠️ Game Name သို့မဟုတ် Game ID မှားယွင်းခြင်း", callback_data: `reason_r2_${collectionName}_${docId}` }],
+                    [{ text: "💰 ငွေပမာဏ လျော့နည်းနေခြင်း (သို့) မမှန်ကန်ခြင်း", callback_data: `reason_r3_${collectionName}_${docId}` }],
+                    [{ text: "📝 အချက်အလက်များ မပြည့်စုံခြင်း", callback_data: `reason_r4_${collectionName}_${docId}` }],
+                    [{ text: "🔄 ငွေလွှဲအကောင့်အမည် သို့မဟုတ် ဖုန်းနံပါတ် မှားယွင်းခြင်း", callback_data: `reason_r5_${collectionName}_${docId}` }],
                     [{ text: "🔙 Back", callback_data: `back_${collectionName}_${docId}` }]
                 ];
             } 
             else if (action === 'reason') {
-                // Admin က အကြောင်းရင်းတစ်ခုကို နှိပ်လိုက်သောအခါ
+                // Admin ရွေးလိုက်သော Short Key (r1, r2, r3 စသည်) ကို စစ်ဆေးပြီး အမှန်တကယ် ပေါ်ရမည့် စာသားသို့ ပြောင်းလဲခြင်း
                 newStatus = 'REJECTED';
-                rejectionReasonText = remaining.substring(0, remaining.lastIndexOf('_' + collectionName + '_' + docId));
+                const reasonKey = remaining.substring(0, remaining.indexOf('_'));
+                
+                const reasonsMap = {
+                    'r1': 'ညစ်ညမ်းပုံ သို့မဟုတ် မသင့်လျော်သော Payment Slip ဖြစ်ပါသည်',
+                    'r2': 'Game Name သို့မဟုတ် Game ID မှားယွင်းနေပါသည်',
+                    'r3': 'ငွေပမာဏ လျော့နည်းနေပါသည် သို့မဟုတ် မမှန်ကန်ပါ',
+                    'r4': 'အချက်အလက်များ မပြည့်စုံပါ',
+                    'r5': 'ငွေလွှဲအကောင့် အမည် သို့မဟုတ် ဖုန်းနံပါတ် မှားယွင်းနေပါသည်'
+                };
+
+                rejectionReasonText = reasonsMap[reasonKey] || 'အခြားအကြောင်းပြချက်ဖြင့် ပယ်ချပါသည်';
                 responseText = `❌ REJECTED\nReason: ${rejectionReasonText}`;
                 updateKeyboard = true;
             }
@@ -81,7 +91,6 @@ module.exports = async (req, res) => {
                 if (collectionName && docId) {
                     const regDocRef = db.collection(collectionName).doc(docId);
 
-                    // Status update လုပ်ခြင်း (Reject ဖြစ်လျှင် rejectionReason ပါ ထည့်မည်)
                     if (newStatus === 'CONFIRMED' || newStatus === 'REJECTED') {
                         const updateData = { status: newStatus };
                         if (newStatus === 'REJECTED' && rejectionReasonText) {
@@ -146,7 +155,6 @@ module.exports = async (req, res) => {
             }
 
             if (updateKeyboard) {
-                // Telegram မက်ဆေ့န်း၏ Caption ကို အပ်ဒိတ်လုပ်ခြင်း
                 let originalCaption = callbackQuery.message.caption || "";
                 if (originalCaption.includes("\n\n*Status:")) {
                     originalCaption = originalCaption.split("\n\n*Status:")[0];
