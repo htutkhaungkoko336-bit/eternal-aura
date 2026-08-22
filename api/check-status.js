@@ -44,7 +44,8 @@ module.exports = async (req, res) => {
 
         return res.status(200).json({
             success: true,
-            status: data.status // 'PENDING', 'CONFIRMED', 'REJECTED'
+            status: data.status, // 'PENDING', 'CONFIRMED', 'REJECTED'
+            rejectionReason: data.rejectionReason || null // Reject ဖြစ်ပါက အကြောင်းရင်းပါ ပူးတွဲပေးပို့ရန်
         });
 
     } catch (error) {

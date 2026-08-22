@@ -142,7 +142,7 @@ function renderNotificationCards(container, notifications) {
 // ==========================================
 
 function startCheckingStatus(registrationId, userId, mode) {
-    const intervalTime = 5000; // ၅ စက္ကန့် (5000 ms) တစ်ကြိမ်
+    const intervalTime = 5000; // ၅ စက္ကန့်တစ်ကြိမ်
 
     const timer = setInterval(async () => {
         try {
@@ -154,7 +154,9 @@ function startCheckingStatus(registrationId, userId, mode) {
                     addNotification("Registration Confirmed! 🎉", "Admin က မင်းရဲ့ Register ကို Confirm ပေးလိုက်ပါပြီ။ Key ရရှိသွားပါပြီ။");
                     clearInterval(timer); 
                 } else if (result.status === 'REJECTED') {
-                    addNotification("Registration Rejected ❌", "တောင်းပန်ပါတယ်၊ မင်းရဲ့ Register ကို Reject လိုက်ပါတယ်။");
+                    // Database ထဲကပါလာတဲ့ rejectionReason ကို ထည့်ပြပေးမည် (မပါလာရင် အထွေထွေအကြောင်းပြချက်ပြမည်)
+                    const reason = result.rejectionReason || "အခြားအကြောင်းပြချက်ဖြင့် ပယ်ချပါသည်";
+                    addNotification("Registration Rejected ❌", `တောင်းပန်ပါတယ်၊ မင်းရဲ့ Register ကို Reject လိုက်ပါတယ်။\n\n📝 အကြောင်းရင်း: ${reason}`);
                     clearInterval(timer); 
                 }
             }
@@ -163,7 +165,6 @@ function startCheckingStatus(registrationId, userId, mode) {
         }
     }, intervalTime);
 }
-
 
 // ==========================================
 // 3. Registration Submission 
