@@ -72,6 +72,7 @@ module.exports = async (req, res) => {
                                 } else if (collectionName === 'tournament_registrations') {
                                     keyFieldToIncrement = "keys.tournament";
                                 } else if (collectionName === '5vs5_registrations') {
+                                    // ညီမလေးရဲ့ 5vs5 key နာမည်တွေမှာ underscore (-) ပါတာနဲ့ (_) ပါတာ နှစ်မျိုးစလုံးကို စစ်ပေးရန်
                                     if (fee.includes('50k')) keyFieldToIncrement = "keys.5vs5_50k";
                                     else if (fee.includes('25k')) keyFieldToIncrement = "keys.5vs5_25k";
                                     else if (fee.includes('15k')) keyFieldToIncrement = "keys.5vs5-15k";
@@ -84,6 +85,7 @@ module.exports = async (req, res) => {
                                         const userRef = db.collection('users').doc(userId);
                                         const userDoc = await userRef.get();
                                         
+                                        // ဥပမာ keys.1vs1-25k ဆိုရင် fieldKeyOnly က 1vs1-25k ဖြစ်ပါမယ်
                                         const fieldKeyOnly = keyFieldToIncrement.split('.')[1];
 
                                         if (!userDoc.exists || !userDoc.data().keys || userDoc.data().keys[fieldKeyOnly] === undefined) {
@@ -94,24 +96,12 @@ module.exports = async (req, res) => {
                                             }, { merge: true });
                                         }
 
-                                        // ၁။ User ရဲ့ Key ကို တိုးပေးခြင်း
                                         await userRef.update({
                                             [keyFieldToIncrement]: FieldValue.increment(1)
                                         });
                                         console.log(`User ${userId} got +1 key for ${keyFieldToIncrement}`);
-
-                                        // ၂။ User ရဲ့ Web App Notification Page မှာ ပေါ်လာအောင် Firestore ထဲသို့ Noti ချက်ချင်းထည့်ခြင်း
-                                        await db.collection('notifications').add({
-                                            userId: userId,
-                                            title: "Key Received! 🎉",
-                                            message: `သင့်ရဲ့ ${collectionName.replace('_registrations', '')} တောင်းဆိုမှုကို Admin မှ အတည်ပြုပေးလိုက်ပါပြီ။ Key အသစ် ရရှိသွားပါပြီ။`,
-                                            createdAt: new Date().toISOString(),
-                                            read: false
-                                        });
-                                        console.log("Notification added to Firestore successfully for user:", userId);
-
                                     } catch (userErr) {
-                                        console.error("Error updating user keys or notifications:", userErr);
+                                        console.error("Error updating user keys (non-blocking):", userErr);
                                     }
                                 }
                             }
