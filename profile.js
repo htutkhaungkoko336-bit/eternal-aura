@@ -1,217 +1,322 @@
-// profile.js - Cyberpunk Theme Profile Screen
+// profile.js - Cyberpunk Theme Profile Screen with Sketch Layout
 
 export function renderProfileScreen(container) {
-    // LocalStorage မှ User အချက်အလက်များကို ရယူခြင်း (မရှိရင် Default သုံးမည်)
+    // LocalStorage မှ အချက်အလက်များ ရယူခြင်း (သို့မဟုတ် Default)
     const userName = localStorage.getItem('userName') || "CyberPlayer";
-    const userId = localStorage.getItem('userId') || "EA-99482";
-    const userAvatar = localStorage.getItem('userAvatar') || "https://i.imgur.com/6YK7mcy.png"; // Default cyberpunk avatar
-    const userKey = localStorage.getItem('userKey') || "KEY-9988-XYZ7";
-    const userBalance = localStorage.getItem('userBalance') || "55,000 Ks";
+    const userId = localStorage.getItem('userId') || "EA-88492";
+    const userAvatar = localStorage.getItem('userAvatar') || ""; // Profile ပုံအတွက် (Base64 or URL)
+    const userKey = localStorage.getItem('userKey') || "EA-KEY-9988-XYZ";
+    
+    // Achievement / Champion အခြေအနေများ (localStorage မှာ သိမ်းမည်)
+    const isChampion = localStorage.getItem('isChampion') === 'true'; // ကြီးတဲ့ဖလား လင်းမလင်း
+    const has1vs1Win = localStorage.getItem('has1vs1Win') === 'true';   // 1vs1 ဖလားသေး
+    const has5vs5Win = localStorage.getItem('has5vs5Win') === 'true';   // 5vs5 ဖလားသေး
 
     container.innerHTML = `
         <style>
-            .cyber-profile-container {
-                padding: 20px;
+            .cyber-profile-wrapper {
+                padding: 16px;
                 color: #f8fafc;
                 font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-                background: radial-gradient(circle at top, #1e1b4b 0%, #0f172a 100%);
+                background: radial-gradient(circle at top, #1e1b4b 0%, #020617 100%);
                 min-height: 100%;
                 box-sizing: border-box;
-                padding-bottom: 40px;
+                padding-bottom: 50px;
             }
-            .cyber-card {
-                background: rgba(15, 23, 42, 0.8);
+            /* Top Header Card (Avatar + Name + ID + Trophies) */
+            .top-profile-card {
+                background: rgba(15, 23, 42, 0.85);
                 border: 1px solid #38bdf8;
                 border-radius: 16px;
-                padding: 16px;
-                margin-bottom: 16px;
-                box-shadow: 0 0 15px rgba(56, 189, 248, 0.15);
-                backdrop-filter: blur(10px);
-            }
-            .profile-header {
+                padding: 14px;
                 display: flex;
                 align-items: center;
-                gap: 16px;
+                justify-content: space-between;
+                box-shadow: 0 0 15px rgba(56, 189, 248, 0.2);
+                backdrop-filter: blur(10px);
+                margin-bottom: 14px;
             }
-            .avatar-box {
+            .profile-left-group {
+                display: flex;
+                align-items: center;
+                gap: 12px;
+            }
+            /* Profile Picture Upload Box (+) */
+            .pf-upload-box {
+                width: 60px;
+                height: 60px;
+                background: #020617;
+                border: 2px dashed #38bdf8;
+                border-radius: 12px;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                cursor: pointer;
                 position: relative;
-                width: 75px;
-                height: 75px;
-                border-radius: 50%;
-                border: 2px solid #38bdf8;
                 overflow: hidden;
-                box-shadow: 0 0 10px #38bdf8;
+                box-shadow: inset 0 0 8px rgba(56, 189, 248, 0.3);
                 flex-shrink: 0;
             }
-            .avatar-box img {
+            .pf-upload-box img {
                 width: 100%;
                 height: 100%;
                 object-fit: cover;
+                position: absolute;
+                top: 0;
+                left: 0;
             }
-            .profile-info h2 {
+            .pf-upload-box span {
+                font-size: 24px;
+                color: #38bdf8;
+                text-shadow: 0 0 5px #38bdf8;
+            }
+            .pf-text-info h3 {
                 margin: 0;
-                font-size: 18px;
+                font-size: 15px;
                 color: #38bdf8;
-                text-shadow: 0 0 8px rgba(56, 189, 248, 0.5);
+                text-shadow: 0 0 5px rgba(56, 189, 248, 0.5);
             }
-            .profile-info p {
-                margin: 4px 0 0 0;
-                font-size: 12px;
+            .pf-text-info p {
+                margin: 3px 0 0 0;
+                font-size: 11px;
                 color: #94a3b8;
+                font-family: monospace;
             }
-            .cyber-badge {
-                display: inline-block;
-                background: rgba(56, 189, 248, 0.1);
-                color: #38bdf8;
-                padding: 2px 8px;
-                border-radius: 4px;
-                font-size: 10px;
-                border: 1px solid rgba(56, 189, 248, 0.3);
-                margin-top: 6px;
+            /* Trophy Section */
+            .trophies-group {
+                display: flex;
+                flex-direction: column;
+                align-items: center;
+                gap: 6px;
             }
-            .stats-grid {
+            /* Big Champion Trophy */
+            .big-trophy {
+                font-size: 26px;
+                filter: grayscale(100%) opacity(0.3);
+                transition: 0.3s;
+            }
+            .big-trophy.active {
+                filter: grayscale(0%) opacity(1);
+                text-shadow: 0 0 15px #facc15, 0 0 30px #facc15;
+                transform: scale(1.1);
+            }
+            /* Small Trophies (1vs1 & 5vs5) */
+            .small-trophies-row {
+                display: flex;
+                gap: 6px;
+            }
+            .small-trophy {
+                font-size: 14px;
+                filter: grayscale(100%) opacity(0.2);
+                transition: 0.3s;
+            }
+            .small-trophy.active {
+                filter: grayscale(0%) opacity(1);
+                text-shadow: 0 0 8px #38bdf8;
+            }
+
+            /* Key & History Buttons Grid */
+            .action-grid {
                 display: grid;
                 grid-template-columns: 1fr 1fr;
-                gap: 10px;
-                margin-bottom: 16px;
+                gap: 12px;
+                margin-bottom: 14px;
             }
-            .stat-box {
-                background: rgba(30, 41, 59, 0.6);
+            .cyber-action-box {
+                background: rgba(15, 23, 42, 0.8);
                 border: 1px solid #1e293b;
                 border-radius: 12px;
-                padding: 12px;
+                padding: 16px;
                 text-align: center;
+                cursor: pointer;
+                transition: 0.2s;
+                box-shadow: 0 4px 10px rgba(0,0,0,0.3);
             }
-            .stat-box span {
-                display: block;
-                font-size: 10px;
-                color: #94a3b8;
+            .cyber-action-box:hover {
+                border-color: #38bdf8;
+                box-shadow: 0 0 12px rgba(56, 189, 248, 0.3);
             }
-            .stat-box strong {
-                font-size: 14px;
-                color: #f43f5e;
-                text-shadow: 0 0 5px rgba(244, 63, 94, 0.4);
-            }
-            .section-title {
-                font-size: 14px;
-                color: #38bdf8;
-                margin-bottom: 10px;
+            .cyber-action-box span {
+                font-size: 13px;
                 font-weight: bold;
+                color: #38bdf8;
+                letter-spacing: 1px;
+            }
+
+            /* Expandable Display Area (Key & History Modal/Box) */
+            .display-panel {
+                background: rgba(15, 23, 42, 0.95);
+                border: 1px solid #38bdf8;
+                border-radius: 12px;
+                padding: 12px;
+                margin-bottom: 14px;
+                display: none;
+                box-shadow: 0 0 10px rgba(56, 189, 248, 0.2);
+                font-size: 12px;
+            }
+            .display-panel.show {
+                display: block;
+            }
+
+            /* Message Section (Cyber City Style) */
+            .message-section {
+                background: rgba(15, 23, 42, 0.85);
+                border: 1px solid #f43f5e;
+                border-radius: 14px;
+                padding: 14px;
+                box-shadow: 0 0 12px rgba(244, 63, 94, 0.2);
+            }
+            .message-title {
+                font-size: 13px;
+                color: #f43f5e;
+                font-weight: bold;
+                margin-bottom: 8px;
                 display: flex;
                 align-items: center;
                 gap: 6px;
             }
-            .winner-card-item {
-                background: linear-gradient(135deg, rgba(244,63,94,0.1), rgba(56,189,248,0.1));
-                border: 1px dashed #f43f5e;
-                border-radius: 10px;
-                padding: 10px;
-                margin-bottom: 8px;
-                font-size: 12px;
-            }
-            .cyber-input {
+            .msg-input {
                 width: 100%;
                 background: #020617;
                 border: 1px solid #1e293b;
-                color: #fff;
-                padding: 10px;
+                color: white;
+                padding: 8px 10px;
                 border-radius: 8px;
-                font-size: 12px;
-                margin-bottom: 10px;
+                font-size: 11px;
+                margin-bottom: 8px;
                 box-sizing: border-box;
             }
-            .cyber-input:focus {
-                border-color: #38bdf8;
+            .msg-input:focus {
+                border-color: #f43f5e;
                 outline: none;
-                box-shadow: 0 0 8px rgba(56, 189, 248, 0.3);
+                box-shadow: 0 0 8px rgba(244, 63, 94, 0.4);
             }
-            .cyber-btn {
-                background: linear-gradient(135deg, #38bdf8, #2563eb);
+            .msg-btn {
+                background: linear-gradient(135deg, #f43f5e, #be123c);
                 color: white;
                 border: none;
-                padding: 10px;
                 width: 100%;
+                padding: 8px;
                 border-radius: 8px;
                 font-weight: bold;
+                font-size: 11px;
                 cursor: pointer;
-                font-size: 12px;
-                box-shadow: 0 0 10px rgba(56, 189, 248, 0.4);
-                transition: 0.2s;
-            }
-            .cyber-btn:active {
-                transform: scale(0.98);
+                box-shadow: 0 0 8px rgba(244, 63, 94, 0.4);
             }
         </style>
 
-        <div class="cyber-profile-container">
-            <!-- Profile Main Card -->
-            <div class="cyber-card">
-                <div class="profile-header">
-                    <div class="avatar-box">
-                        <img src="${userAvatar}" alt="Avatar" id="user-avatar-img">
+        <div class="cyber-profile-wrapper">
+            <!-- 1. Top Section: PF Box (+), Name, ID, Trophies -->
+            <div class="top-profile-card">
+                <div class="profile-left-group">
+                    <label class="pf-upload-box" id="avatar-container" title="ဓာတ်ပုံပြောင်းရန်နှိပ်ပါ">
+                        ${userAvatar ? `<img src="${userAvatar}" id="pf-img">` : `<span>+</span>`}
+                        <input type="file" id="pf-file-input" accept="image/*" style="display: none;">
+                    </label>
+                    <div class="pf-text-info">
+                        <h3>${userName}</h3>
+                        <p>${userId}</p>
                     </div>
-                    <div class="profile-info">
-                        <h2>${userName}</h2>
-                        <p>ID: <span style="color: #38bdf8; font-family: monospace;">${userId}</span></p>
-                        <div class="cyber-badge">⚡ CYBER AGENT</div>
+                </div>
+
+                <!-- Trophies (Champion & Mode Wins) -->
+                <div class="trophies-group">
+                    <div class="big-trophy ${isChampion ? 'active' : ''}" title="Champion Trophy">🏆</div>
+                    <div class="small-trophies-row">
+                        <span class="small-trophy ${has1vs1Win ? 'active' : ''}" title="1vs1 Winner">⚡</span>
+                        <span class="small-trophy ${has5vs5Win ? 'active' : ''}" title="5vs5 Winner">🛡️</span>
                     </div>
                 </div>
             </div>
 
-            <!-- Stats & Keys -->
-            <div class="stats-grid">
-                <div class="stat-box">
-                    <span>SECURITY KEY</span>
-                    <strong style="color: #38bdf8; font-size: 11px; font-family: monospace;">${userKey}</strong>
+            <!-- 2. Key & History Buttons Grid -->
+            <div class="action-grid">
+                <div class="cyber-action-box" id="btn-key">
+                    <span>KEY 🔑</span>
                 </div>
-                <div class="stat-box">
-                    <span>BALANCE / FEE</span>
-                    <strong>${userBalance}</strong>
+                <div class="cyber-action-box" id="btn-history">
+                    <span>HISTORY 📜</span>
                 </div>
             </div>
 
-            <!-- Winner Cards Section -->
-            <div class="cyber-card">
-                <div class="section-title">🏆 Winner Cards & History</div>
-                <div class="winner-card-item">
-                    <div style="color: #38bdf8; font-weight: bold;">🔥 1vs1 Mode Tournament Winner</div>
-                    <div style="color: #94a3b8; font-size: 10px; margin-top: 2px;">Date: 2026-08-20 | Reward: 100,000 Ks</div>
+            <!-- Expandable Panel for Key -->
+            <div class="display-panel" id="panel-key">
+                <div style="color: #38bdf8; font-weight: bold; margin-bottom: 4px;">YOUR SECURITY KEY:</div>
+                <div style="font-family: monospace; background: #020617; padding: 6px; border-radius: 6px; border: 1px solid #1e293b; color: #facc15;">${userKey}</div>
+                <div style="font-size: 10px; color: #94a3b8; margin-top: 4px;">ဒီကုဒ်ကို မည်သူ့ကိုမျှ မပေးပါ။</div>
+            </div>
+
+            <!-- Expandable Panel for History -->
+            <div class="display-panel" id="panel-history">
+                <div style="color: #38bdf8; font-weight: bold; margin-bottom: 6px;">MATCH & REGISTER HISTORY:</div>
+                <div style="background: #020617; padding: 6px 8px; border-radius: 6px; border: 1px solid #1e293b; margin-bottom: 4px;">
+                    🔥 1vs1 Mode Register - <span style="color: #22c55e;">APPROVED</span>
                 </div>
-                <div class="winner-card-item" style="border-color: #38bdf8;">
-                    <div style="color: #f43f5e; font-weight: bold;">🛡️ Squad Match History</div>
-                    <div style="color: #94a3b8; font-size: 10px; margin-top: 2px;">Status: Registered & Verified</div>
+                <div style="background: #020617; padding: 6px 8px; border-radius: 6px; border: 1px solid #1e293b;">
+                    🛡️ 5vs5 Tournament - <span style="color: #38bdf8;">PENDING</span>
                 </div>
             </div>
 
-            <!-- Message, Connect & Refund Request Section -->
-            <div class="cyber-card">
-                <div class="section-title">💬 Message / Connect & Refund</div>
-                <p style="font-size: 11px; color: #94a3b8; margin-bottom: 10px;">
-                    User အချင်းချင်း ချိတ်ဆက်ရန် (သို့) Key / Fee Refund တောင်းဆိုရန် Admin ထံ တိုက်ရိုက်မက်ဆေ့ခ်ျ ပို့နိုင်ပါသည်။
-                </p>
-                <input type="text" id="target-user-id" class="cyber-input" placeholder="Enter Target User ID (e.g. EA-XXXXX)">
-                <textarea id="refund-msg-text" class="cyber-input" rows="3" placeholder="မက်ဆေ့ခ်ျ (သို့) Refund တောင်းဆိုရန် အကြောင်းအရာရေးပါ..."></textarea>
-                <button class="cyber-btn" id="send-cyber-msg-btn">TRANSMIT MESSAGE / REQUEST</button>
+            <!-- 3. Message Section (User to User Connect) -->
+            <div class="message-section">
+                <div class="message-title">💬 ETERNAL AURA NETWORK CHAT</div>
+                <input type="text" class="msg-input" id="peer-id-input" placeholder="Enter Receiver User ID (e.g. EA-12345)">
+                <input type="text" class="msg-input" id="peer-msg-input" placeholder="ရဲဘော်ထံ ပို့မည့်စာသား ရေးပါ...">
+                <button class="msg-btn" id="send-peer-msg-btn">TRANSMIT MESSAGE 🚀</button>
             </div>
         </div>
     `;
 
-    // Event Listener for Message / Refund Button
-    const sendBtn = document.getElementById('send-cyber-msg-btn');
-    if (sendBtn) {
-        sendBtn.addEventListener('click', () => {
-            const targetId = document.getElementById('target-user-id').value.trim();
-            const message = document.getElementById('refund-msg-text').value.trim();
+    // --- JavaScript Logic for Interactivity ---
 
-            if (!message) {
-                alert("ကျေးဇူးပြု၍ ပို့မည့်စာ (သို့) အကြောင်းအရာကို ရေးပါ။");
-                return;
-            }
+    // 1. Profile Photo Upload & LocalStorage Persistence (Database မလိုဘဲ သိမ်းရန်)
+    const fileInput = document.getElementById('pf-file-input');
+    fileInput.addEventListener('change', function(e) {
+        const file = e.target.files[0];
+        if (file) {
+            const reader = new FileReader();
+            reader.onload = function(event) {
+                const base64Image = event.target.result;
+                localStorage.setItem('userAvatar', base64Image); // localStorage မှာ သိမ်းမည်
+                
+                // UI တွင် ချက်ချင်းပြောင်းရန်
+                const avatarContainer = document.getElementById('avatar-container');
+                avatarContainer.innerHTML = `<img src="${base64Image}" id="pf-img"><input type="file" id="pf-file-input" accept="image/*" style="display: none;">`;
+            };
+            reader.readAsDataURL(file);
+        }
+    });
 
-            // ဤနေရာတွင် Message ပို့သည့် Database Logic (သို့) System Notification ထပ်ထည့်နိုင်ပါသည်
-            alert(`✅ မက်ဆေ့ခ်ျ (သို့) တောင်းဆိုမှုကို အောင်မြင်စွာ ပို့ပြီးပါပြီ ရဲဘော်!\nTarget ID: ${targetId || 'Admin'}`);
-            document.getElementById('refund-msg-text').value = '';
-            document.getElementById('target-user-id').value = '';
-        });
-    }
+    // 2. Key Box Toggle
+    const btnKey = document.getElementById('btn-key');
+    const panelKey = document.getElementById('panel-key');
+    const panelHistory = document.getElementById('panel-history');
+
+    btnKey.addEventListener('click', () => {
+        panelKey.classList.toggle('show');
+        panelHistory.classList.remove('show');
+    });
+
+    // 3. History Box Toggle
+    const btnHistory = document.getElementById('btn-history');
+    btnHistory.addEventListener('click', () => {
+        panelHistory.classList.toggle('show');
+        panelKey.classList.remove('show');
+    });
+
+    // 4. Message Send Action
+    const sendMsgBtn = document.getElementById('send-peer-msg-btn');
+    sendMsgBtn.addEventListener('click', () => {
+        const peerId = document.getElementById('peer-id-input').value.trim();
+        const msgText = document.getElementById('peer-msg-input').value.trim();
+
+        if (!msgText) {
+            alert("ကျေးဇူးပြု၍ ပို့မည့်စာသားကို ရေးပါ။");
+            return;
+        }
+
+        alert(`✅ မက်ဆေ့ခ်ျကို ${peerId || 'Network User'} ထံသို့ အောင်မြင်စွာ ပို့ပြီးပါပြီ!`);
+        document.getElementById('peer-msg-input').value = '';
+        document.getElementById('peer-id-input').value = '';
+    });
 }
