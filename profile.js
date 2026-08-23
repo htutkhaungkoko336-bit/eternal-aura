@@ -1,4 +1,4 @@
-// profile.js - Cyberpunk Achievement Badge & Master Card Layout
+// profile.js - MLBB Style Trophy Showcase & Collection System
 
 export function renderProfileScreen(container) {
     const userName = localStorage.getItem('userName') || "CyberPlayer";
@@ -6,9 +6,27 @@ export function renderProfileScreen(container) {
     const userAvatar = localStorage.getItem('userAvatar') || ""; 
     const userKey = localStorage.getItem('userKey') || "EA-KEY-9988-XYZ";
     
-    const isChampion = localStorage.getItem('isChampion') === 'true'; 
-    const has1vs1Win = localStorage.getItem('has1vs1Win') === 'true';   
-    const has5vs5Win = localStorage.getItem('has5vs5Win') === 'true';   
+    // --- Trophy & Fee Data Simulation (localStorage မှ ရယူမည်၊ မရှိရင် Default ထည့်မည်) ---
+    // 1. Champion Trophy (0 သို့မဟုတ် အကြိမ်ရေ)
+    const championCount = parseInt(localStorage.getItem('trophy_champion') || '1'); // ဥပမာ x1
+    
+    // 2. 1vs1 Fee Tiers (5 ခု - ဥပမာ Entry Fee 1000, 3000, 5000, 10000, 20000)
+    const duelCounts = [
+        parseInt(localStorage.getItem('trophy_1v1_tier1') || '3'), // x3
+        parseInt(localStorage.getItem('trophy_1v1_tier2') || '1'), // x1
+        parseInt(localStorage.getItem('trophy_1v1_tier3') || '0'), // 0 ဆိုရင် မရသေးတာ (သို့မဟုတ် အနည်းဆုံး x1 ပြမယ်)
+        parseInt(localStorage.getItem('trophy_1v1_tier4') || '0'),
+        parseInt(localStorage.getItem('trophy_1v1_tier5') || '0'),
+    ];
+
+    // 3. 5vs5 Fee Tiers (5 ခု - ဥပမာ Entry Fee တူညီသော ၅ ဆင့်)
+    const squadCounts = [
+        parseInt(localStorage.getItem('trophy_5v5_tier1') || '2'), // x2
+        parseInt(localStorage.getItem('trophy_5v5_tier2') || '0'),
+        parseInt(localStorage.getItem('trophy_5v5_tier3') || '0'),
+        parseInt(localStorage.getItem('trophy_5v5_tier4') || '0'),
+        parseInt(localStorage.getItem('trophy_5v5_tier5') || '0'),
+    ];
 
     container.innerHTML = `
         <style>
@@ -19,10 +37,10 @@ export function renderProfileScreen(container) {
                 background: radial-gradient(circle at top, #1e1b4b 0%, #020617 100%);
                 min-height: 100%;
                 box-sizing: border-box;
-                padding-bottom: 50px;
+                padding-bottom: 60px;
             }
 
-            /* --- Master Profile Card --- */
+            /* --- Top Profile Card --- */
             .top-profile-card {
                 background: rgba(15, 23, 42, 0.85);
                 border: 1px solid #38bdf8;
@@ -33,7 +51,7 @@ export function renderProfileScreen(container) {
                 gap: 12px;
                 box-shadow: 0 0 15px rgba(56, 189, 248, 0.2);
                 backdrop-filter: blur(10px);
-                margin-bottom: 12px;
+                margin-bottom: 14px;
             }
             .pf-upload-box {
                 width: 60px;
@@ -76,135 +94,141 @@ export function renderProfileScreen(container) {
                 font-family: monospace;
             }
 
-            /* --- Achievement Priority Banner (Champion Card) --- */
-            .achievement-banner {
-                background: linear-gradient(135deg, rgba(30, 41, 59, 0.9), rgba(15, 23, 42, 0.95));
-                border: 1px solid #334155;
-                border-radius: 14px;
-                padding: 12px 16px;
+            /* --- MLBB Trophy Showcase Section --- */
+            .trophy-showcase-container {
+                background: rgba(15, 23, 42, 0.9);
+                border: 1px solid #302b63;
+                border-radius: 16px;
+                padding: 14px;
+                margin-bottom: 14px;
+                box-shadow: 0 0 20px rgba(0, 0, 0, 0.5);
+            }
+            .section-title {
+                font-size: 12px;
+                font-weight: bold;
+                color: #facc15;
+                letter-spacing: 1px;
+                margin-bottom: 12px;
                 display: flex;
                 align-items: center;
                 justify-content: space-between;
-                margin-bottom: 14px;
-                position: relative;
-                overflow: hidden;
-                transition: 0.4s ease;
-            }
-            /* Champion ဖြစ်သွားရင် ဘားတခုလုံး ရွှေရောင်လင်းမည် */
-            .achievement-banner.champion-unlocked {
-                border-color: #facc15;
-                box-shadow: 0 0 20px rgba(250, 204, 21, 0.3), inset 0 0 10px rgba(250, 204, 21, 0.2);
-                background: linear-gradient(135deg, rgba(49, 46, 12, 0.85), rgba(15, 23, 42, 0.95));
+                border-bottom: 1px solid #1e293b;
+                padding-bottom: 6px;
             }
 
-            .ach-left {
+            /* 1. Ultimate Champion Featured Trophy (အလန်းဆုံးနဲ့ အကြီးဆုံး) */
+            .grand-champion-card {
+                background: linear-gradient(135deg, rgba(250, 204, 21, 0.15), rgba(15, 23, 42, 0.9));
+                border: 2px solid #facc15;
+                border-radius: 12px;
+                padding: 12px;
+                display: flex;
+                align-items: center;
+                justify-content: space-between;
+                margin-bottom: 12px;
+                box-shadow: 0 0 15px rgba(250, 204, 21, 0.3);
+            }
+            .gc-left {
                 display: flex;
                 align-items: center;
                 gap: 12px;
             }
-            /* Hexagon Badge Icon Style */
-            .ach-badge-icon {
-                width: 44px;
-                height: 44px;
-                background: #020617;
-                border: 2px solid #475569;
-                border-radius: 10px;
+            .gc-icon-box {
+                width: 48px;
+                height: 48px;
+                background: radial-gradient(circle, #facc15 0%, #ca8a04 100%);
+                border-radius: 12px;
                 display: flex;
                 align-items: center;
                 justify-content: center;
-                color: #475569;
-                font-size: 20px;
-                transition: 0.4s ease;
-            }
-            .achievement-banner.champion-unlocked .ach-badge-icon {
-                border-color: #facc15;
-                color: #facc15;
-                background: rgba(250, 204, 21, 0.1);
+                font-size: 26px;
                 box-shadow: 0 0 12px #facc15;
+                position: relative;
             }
-
-            .ach-info h4 {
-                margin: 0;
-                font-size: 13px;
-                letter-spacing: 0.5px;
-                color: #94a3b8;
-                transition: 0.4s ease;
-            }
-            .achievement-banner.champion-unlocked .ach-info h4 {
+            .stack-badge {
+                position: absolute;
+                bottom: -4px;
+                right: -4px;
+                background: #020617;
                 color: #facc15;
-                text-shadow: 0 0 8px rgba(250, 204, 21, 0.5);
-            }
-            .ach-info p {
-                margin: 2px 0 0 0;
-                font-size: 10px;
-                color: #64748b;
-                font-family: monospace;
-            }
-            .achievement-banner.champion-unlocked .ach-info p {
-                color: #fef08a;
-            }
-
-            /* Status Pill */
-            .ach-status-pill {
+                border: 1px solid #facc15;
                 font-size: 10px;
                 font-weight: bold;
-                padding: 4px 10px;
-                border-radius: 20px;
-                background: #1e293b;
-                color: #64748b;
-                border: 1px solid #334155;
-                letter-spacing: 1px;
+                padding: 1px 5px;
+                border-radius: 8px;
+                box-shadow: 0 0 5px #facc15;
             }
-            .achievement-banner.champion-unlocked .ach-status-pill {
-                background: #facc15;
-                color: #020617;
-                border-color: #fef08a;
-                box-shadow: 0 0 10px #facc15;
+            .gc-info h4 {
+                margin: 0;
+                font-size: 13px;
+                color: #facc15;
+                text-shadow: 0 0 8px rgba(250, 204, 21, 0.5);
+                letter-spacing: 0.5px;
+            }
+            .gc-info p {
+                margin: 2px 0 0 0;
+                font-size: 10px;
+                color: #cbd5e1;
             }
 
-            /* --- Sub-Mode Wins Row (1vs1 & 5vs5) ---. */
-            .sub-wins-grid {
+            /* 2. Grid for 10 Mode Trophies (5 for 1vs1, 5 for 5vs5) */
+            .trophies-grid-section {
                 display: grid;
                 grid-template-columns: 1fr 1fr;
                 gap: 10px;
-                margin-bottom: 14px;
             }
-            .sub-win-card {
-                background: rgba(15, 23, 42, 0.7);
+            .trophy-category-box {
+                background: #020617;
                 border: 1px solid #1e293b;
                 border-radius: 10px;
                 padding: 10px;
+            }
+            .cat-header {
+                font-size: 11px;
+                font-weight: bold;
+                color: #38bdf8;
+                margin-bottom: 8px;
                 display: flex;
                 align-items: center;
-                gap: 8px;
-                opacity: 0.4;
-                transition: 0.3s;
+                gap: 4px;
             }
-            .sub-win-card.active-mode {
-                opacity: 1;
-                border-color: #38bdf8;
-                background: rgba(15, 23, 42, 0.9);
-                box-shadow: 0 0 10px rgba(56, 189, 248, 0.2);
+            .tier-list {
+                display: flex;
+                flex-direction: column;
+                gap: 6px;
             }
-            .sub-win-card.active-5v5 {
-                opacity: 1;
-                border-color: #ec4899;
-                background: rgba(15, 23, 42, 0.9);
-                box-shadow: 0 0 10px rgba(236, 72, 153, 0.2);
+            .tier-item {
+                display: flex;
+                align-items: center;
+                justify-content: space-between;
+                background: rgba(15, 23, 42, 0.8);
+                border: 1px solid #334155;
+                padding: 6px 8px;
+                border-radius: 8px;
             }
-            .sub-icon {
-                font-size: 16px;
+            .tier-info {
+                display: flex;
+                align-items: center;
+                gap: 6px;
             }
-            .sub-text span:first-child {
-                display: block;
+            .tier-trophy-icon {
+                font-size: 14px;
+                filter: drop-shadow(0 0 5px #38bdf8);
+            }
+            .tier-name {
                 font-size: 10px;
                 color: #94a3b8;
                 font-weight: bold;
             }
-            .sub-text span:last-child {
-                display: block;
-                font-size: 11px;
-                color: #f8fafc;
+            .tier-stack {
+                background: #1e293b;
+                color: #38bdf8;
+                border: 1px solid #38bdf8;
+                font-size: 9px;
+                font-weight: bold;
+                padding: 1px 6px;
+                border-radius: 6px;
+                box-shadow: 0 0 5px rgba(56, 189, 248, 0.3);
             }
 
             /* Action Grid & Panels */
@@ -287,7 +311,7 @@ export function renderProfileScreen(container) {
         </style>
 
         <div class="cyber-profile-wrapper">
-            <!-- 1. Top Card (Avatar + Name + ID) -->
+            <!-- 1. Top Card -->
             <div class="top-profile-card">
                 <label class="pf-upload-box" id="avatar-container" title="ဓာတ်ပုံပြောင်းရန်နှိပ်ပါ">
                     ${userAvatar ? `<img src="${userAvatar}" id="pf-img">` : `<span>+</span>`}
@@ -299,41 +323,67 @@ export function renderProfileScreen(container) {
                 </div>
             </div>
 
-            <!-- 2. Achievement Priority Banner (Champion Status Highlight) -->
-            <div class="achievement-banner ${isChampion ? 'champion-unlocked' : ''}">
-                <div class="ach-left">
-                    <div class="ach-badge-icon">
-                        👑
+            <!-- 2. MLBB Style Trophy Showcase (11 Trophies Total) -->
+            <div class="trophy-showcase-container">
+                <div class="section-title">
+                    <span>🏆 TROPHY COLLECTION (11 TIERS)</span>
+                    <span style="color: #38bdf8; font-family: monospace;">TOTAL: ${championCount + duelCounts.reduce((a,b)=>a+b, 0) + squadCounts.reduce((a,b)=>a+b, 0)}</span>
+                </div>
+
+                <!-- Grand Champion Trophy (1st Trophy - Ultimate) -->
+                <div class="grand-champion-card">
+                    <div class="gc-left">
+                        <div class="gc-icon-box">
+                            🏆
+                            <div class="stack-badge">x${championCount}</div>
+                        </div>
+                        <div class="gc-info">
+                            <h4>GRAND CHAMPION</h4>
+                            <p>Ultimate Tournament Crown</p>
+                        </div>
                     </div>
-                    <div class="ach-info">
-                        <h4>TOURNAMENT CHAMPION</h4>
-                        <p>${isChampion ? 'Ultimate Grandmaster Tier' : 'Status: Locked (Unclaimed)'}</p>
+                    <div style="font-size: 11px; color: #facc15; font-weight: bold; background: rgba(250, 204, 21, 0.1); padding: 4px 8px; border-radius: 6px; border: 1px solid rgba(250, 204, 21, 0.4);">
+                        MAX TIER
                     </div>
                 </div>
-                <div class="ach-status-pill">
-                    ${isChampion ? 'UNLOCKED' : 'LOCKED'}
+
+                <!-- 10 Mode Fee Trophies Grid (5 for 1vs1, 5 for 5vs5) -->
+                <div class="trophies-grid-section">
+                    <!-- 1vs1 Fee Tiers (5 Trophies) -->
+                    <div class="trophy-category-box">
+                        <div class="cat-header">⚡ 1vs1 DUEL FEES</div>
+                        <div class="tier-list">
+                            ${duelCounts.map((count, index) => `
+                                <div class="tier-item">
+                                    <div class="tier-info">
+                                        <span class="tier-trophy-icon">🏆</span>
+                                        <span class="tier-name">Fee T-${index + 1}</span>
+                                    </div>
+                                    <div class="tier-stack">x${Math.max(1, count)}</div>
+                                </div>
+                            `).join('')}
+                        </div>
+                    </div>
+
+                    <!-- 5vs5 Fee Tiers (5 Trophies) -->
+                    <div class="trophy-category-box">
+                        <div class="cat-header" style="color: #ec4899;">🛡️ 5vs5 SQUAD FEES</div>
+                        <div class="tier-list">
+                            ${squadCounts.map((count, index) => `
+                                <div class="tier-item" style="border-color: rgba(236, 72, 153, 0.3);">
+                                    <div class="tier-info">
+                                        <span class="tier-trophy-icon" style="filter: drop-shadow(0 0 5px #ec4899);">🏆</span>
+                                        <span class="tier-name">Fee T-${index + 1}</span>
+                                    </div>
+                                    <div class="tier-stack" style="color: #ec4899; border-color: #ec4899;">x${Math.max(1, count)}</div>
+                                </div>
+                            `).join('')}
+                        </div>
+                    </div>
                 </div>
             </div>
 
-            <!-- 3. Sub-Mode Wins Status Grid (1vs1 & 5vs5) -->
-            <div class="sub-wins-grid">
-                <div class="sub-win-card ${has1vs1Win ? 'active-mode' : ''}">
-                    <span class="sub-icon">⚡</span>
-                    <div class="sub-text">
-                        <span>1vs1 DUEL</span>
-                        <span>${has1vs1Win ? 'VICTOR' : 'UNRANKED'}</span>
-                    </div>
-                </div>
-                <div class="sub-win-card ${has5vs5Win ? 'active-5v5' : ''}">
-                    <span class="sub-icon">🛡️</span>
-                    <div class="sub-text">
-                        <span>5vs5 SQUAD</span>
-                        <span>${has5vs5Win ? 'CHAMPION' : 'UNRANKED'}</span>
-                    </div>
-                </div>
-            </div>
-
-            <!-- 4. Action Grid (Key & History) -->
+            <!-- 3. Action Grid (Key & History) -->
             <div class="action-grid">
                 <div class="cyber-action-box" id="btn-key">
                     <span>KEY 🔑</span>
@@ -358,7 +408,7 @@ export function renderProfileScreen(container) {
                 </div>
             </div>
 
-            <!-- 5. Network Message Section -->
+            <!-- 4. Network Message Section -->
             <div class="message-section">
                 <div class="message-title">💬 ETERNAL AURA NETWORK CHAT</div>
                 <input type="text" class="msg-input" id="peer-id-input" placeholder="Enter Receiver User ID (e.g. EA-12345)">
