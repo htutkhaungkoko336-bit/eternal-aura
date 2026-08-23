@@ -1403,6 +1403,10 @@ export function renderTrophyShowcase(containerId, onTrophyClick) {
                 justify-content: center;
                 align-items: center;
             }
+            .twin-blades-img {
+            mix-blend-mode: screen; /* (သို့) lighten */
+            background: transparent;
+            }
 
             .twin-blade-item {
                 position: absolute;
