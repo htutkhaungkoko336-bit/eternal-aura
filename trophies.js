@@ -1,13 +1,13 @@
-// trophies.js - Phoenix Protocol Trophy at the 3rd position in the top row
+// trophies.js - Cyber Vortex Phoenix Trophy at the 4th position in the top row
 
 const trophyDataList = [
     { id: 1, title: "ANGELIC ASCENT", subtitle: "ANGELIC ASCENT", date: "2026-01-15", desc: "Eternal Aura Angelic Halo Trophy.", isCustom: true, styleType: 'angelic-large' },
     { id: 2, title: "CYBER BLADE SHIELD", subtitle: "CYBER BLADE CHAMPION", date: "2026-02-10", desc: "Eternal Aura Cyber Blade Trophy. The Ultimate Cyber Shield." },
-    
-    // တတိယနေရာမှာ အစားထိုးလိုက်သော Phoenix Protocol Trophy (id: 3)
     { id: 3, title: "PHOENIX PROTOCOL", subtitle: "PHOENIX PROTOCOL", date: "2026-03-05", desc: "Eternal Aura Phoenix Shield Trophy.", isCustom: true, styleType: 'phoenix' },
+    
+    // စတုတ္ထနေရာမှာ အစားထိုးလိုက်သော Cyber Vortex Phoenix Trophy (id: 4)
+    { id: 4, title: "VORTEX PROTOCOL", subtitle: "VORTEX PROTOCOL", date: "2026-03-20", desc: "Eternal Aura Cyber Vortex Phoenix Trophy.", isCustom: true, styleType: 'vortex' },
 
-    { id: 4, title: "PRISM PROTOCOL", subtitle: "PRISM PROTOCOL", date: "2026-03-20", desc: "Matrix Crystal Prism Trophy MVP.", isCustom: true, styleType: 'prism' },
     { id: 5, title: "ANGELIC ASCENT", subtitle: "Neon Striker Elite", date: "2026-04-12", desc: "Achieved maximum tactical score in seasonal event." },
     
     // အလယ်အကြီးစား ၁ လုံး (မူလအတိုင်း)
@@ -66,7 +66,7 @@ export function renderTrophyShowcase(containerId, onTrophyClick) {
 
             .pure-trophy-item:hover {
                 transform: scale(1.08) translateY(-4px);
-                filter: drop-shadow(0 0 10px #ec4899);
+                filter: drop-shadow(0 0 10px #00f0ff);
             }
 
             /* --- ပထမဆုံး Trophy (Angelic Large) --- */
@@ -207,7 +207,7 @@ export function renderTrophyShowcase(containerId, onTrophyClick) {
                 max-width: 42px;
             }
 
-            /* --- ဒုတိယနေရာအတွက် Cyber Blade Trophy Styles --- */
+            /* --- ဒုတိယနေရာ (Cyber Blade Trophy Small) --- */
             .crystal-trophy-wrapper-cyber-small {
                 width: 52px;
                 height: 72px;
@@ -335,7 +335,7 @@ export function renderTrophyShowcase(containerId, onTrophyClick) {
                 max-width: 42px;
             }
 
-            /* --- တတိယနေရာအတွက် Phoenix Protocol Trophy Styles (Border ဖြုတ်ပြီး အထဲက animation သက်သက်) --- */
+            /* --- တတိယနေရာ (Phoenix Protocol Small) --- */
             .crystal-trophy-wrapper-phoenix-small {
                 width: 52px;
                 height: 72px;
@@ -485,88 +485,157 @@ export function renderTrophyShowcase(containerId, onTrophyClick) {
                 max-width: 42px;
             }
 
-            /* --- Custom Mini Trophies (၄) --- */
-            .mini-custom-trophy {
+            /* --- စတုတ္ထနေရာ (Cyber Vortex Phoenix Small - Border နှင့် Floating မပါ၊ အထဲက animation သက်သက်) --- */
+            .crystal-trophy-wrapper-vortex-small {
                 width: 52px;
                 height: 72px;
                 background: transparent;
                 border: none;
                 display: flex;
+                align-items: center;
+                justify-content: center;
+                position: relative;
+                flex-shrink: 0;
+            }
+
+            .crystal-trophy-container-vortex-small {
+                width: 48px;
+                height: 68px;
+                position: relative;
+                display: flex;
                 flex-direction: column;
                 align-items: center;
                 justify-content: space-between;
                 padding: 2px 0;
-                position: relative;
             }
 
-            .mini-head {
+            .celestial-head-vortex-small {
                 position: relative;
-                width: 40px;
+                width: 38px;
                 height: 28px;
                 display: flex;
                 justify-content: center;
                 align-items: center;
             }
 
-            .mini-gem {
+            .vortex-core-gem-small {
                 position: absolute;
-                top: 2px;
-                width: 9px;
-                height: 9px;
-                clip-path: polygon(50% 0%, 100% 100%, 0% 100%);
-                background: #a855f7;
-                box-shadow: 0 0 6px #a855f7;
-                z-index: 2;
+                top: 0px;
+                width: 6px;
+                height: 6px;
+                background: linear-gradient(135deg, #ffffff 0%, #00f0ff 100%);
+                transform: rotate(45deg);
+                box-shadow: 0 0 6px #00f0ff, 0 0 10px #8b5cf6;
+                z-index: 4;
             }
 
-            .mini-wing {
+            .vortex-wing-small {
                 position: absolute;
-                width: 16px;
+                width: 15px;
                 height: 22px;
-                background: rgba(168,85,247,0.35);
+                background: linear-gradient(135deg, rgba(0, 240, 255, 0.2) 0%, rgba(139, 92, 246, 0.35) 100%);
+                border: 0.5px solid #00f0ff;
             }
-            .mini-wing.left { left: 2px; top: 4px; clip-path: polygon(10% 0%, 100% 20%, 80% 100%, 0% 70%); }
-            .mini-wing.right { right: 2px; top: 4px; clip-path: polygon(0% 20%, 90% 0%, 100% 70%, 20% 100%); }
 
-            .mini-pillar {
-                width: 10px;
-                height: 18px;
+            .vortex-wing-small.left-wing {
+                left: 2px;
+                top: 4px;
+                clip-path: polygon(0% 15%, 100% 0%, 75% 100%, 15% 85%);
+            }
+
+            .vortex-wing-small.right-wing {
+                right: 2px;
+                top: 4px;
+                clip-path: polygon(100% 15%, 0% 0%, 25% 100%, 85% 85%);
+            }
+
+            .central-hologram-vortex-small {
+                position: relative;
                 display: flex;
                 align-items: center;
                 justify-content: center;
-            }
-            .mini-pillar-line {
-                width: 2px;
-                height: 100%;
-                background: #a855f7;
-                box-shadow: 0 0 5px #a855f7;
+                z-index: 3;
             }
 
-            .mini-base {
+            .pulse-ring-vortex-small {
+                width: 8px;
+                height: 8px;
+                border: 1.2px solid #8b5cf6;
+                border-radius: 50%;
+                box-shadow: 0 0 5px #8b5cf6, inset 0 0 5px #00f0ff;
+                animation: pulseRingVortexSmall 1.6s ease-in-out infinite alternate;
+            }
+
+            @keyframes pulseRingVortexSmall {
+                0% { transform: scale(0.75); opacity: 0.5; }
+                100% { transform: scale(1.25); opacity: 1; }
+            }
+
+            .celestial-pillar-vortex-small {
+                position: relative;
+                width: 10px;
+                height: 18px;
+                background: linear-gradient(180deg, #0f172a 0%, #020617 100%);
+                border: 0.5px solid #00f0ff;
+                border-radius: 2px;
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+                padding: 0 2px;
+            }
+
+            .rail-line-vortex-small {
+                width: 1px;
+                height: 80%;
+                background: #8b5cf6;
+                box-shadow: 0 0 4px #8b5cf6;
+            }
+
+            .rail-core-vortex-small {
+                width: 2px;
+                height: 100%;
+                background: linear-gradient(180deg, #8b5cf6 0%, #00f0ff 100%);
+                box-shadow: 0 0 5px #00f0ff;
+                border-radius: 1px;
+            }
+
+            .celestial-base-vortex-small {
                 position: relative;
                 width: 46px;
                 height: 11px;
-                background: rgba(15, 23, 42, 0.6);
-                border: 0.5px solid rgba(56, 189, 248, 0.4);
+                background: linear-gradient(180deg, #0f172a 0%, #020617 100%);
+                border: 0.5px solid #00f0ff;
+                border-top: 1px solid #8b5cf6;
                 border-radius: 3px;
                 display: flex;
                 align-items: center;
                 justify-content: center;
             }
 
-            .mini-base-title {
-                font-size: 3.2px;
+            .base-glow-rim-vortex-small {
+                position: absolute;
+                top: 1px;
+                width: 32px;
+                height: 0.8px;
+                background: #8b5cf6;
+                box-shadow: 0 0 4px #8b5cf6;
+            }
+
+            .base-title-vortex-small {
+                color: #8b5cf6;
+                font-size: 3px;
                 font-weight: 900;
                 letter-spacing: 0.3px;
+                z-index: 2;
+                text-shadow: 0 0 2px #00f0ff;
                 text-align: center;
                 white-space: nowrap;
                 overflow: hidden;
                 text-overflow: ellipsis;
                 max-width: 42px;
-                color: #facc15;
             }
 
-            /* --- Standard Crystal Trophy --- */
+            /* --- ပဉ္စမနေရာ (Standard Crystal Trophy) --- */
             .crystal-trophy-container {
                 width: 52px;
                 height: 72px;
@@ -874,7 +943,6 @@ export function renderTrophyShowcase(containerId, onTrophyClick) {
         return item;
     };
 
-    // တတိယနေရာအတွက် Border ဖြုတ်ထားသော Phoenix Protocol အသေးစား Element
     const createPhoenixProtocolSmallElement = (trophy) => {
         const item = document.createElement('div');
         item.className = `pure-trophy-item`;
@@ -906,22 +974,31 @@ export function renderTrophyShowcase(containerId, onTrophyClick) {
         return item;
     };
 
-    const createCustomMiniElement = (trophy) => {
+    // စတုတ္ထနေရာအတွက် Border နှင့် Floating ဖြုတ်ထားသော Cyber Vortex Phoenix အသေးစား Element
+    const createVortexProtocolSmallElement = (trophy) => {
         const item = document.createElement('div');
         item.className = `pure-trophy-item`;
         item.title = `${trophy.subtitle} - နှိပ်၍ အသေးစိတ်ကြည့်ရန်`;
         item.innerHTML = `
-            <div class="mini-custom-trophy ${trophy.styleType}">
-                <div class="mini-head">
-                    <div class="mini-gem"></div>
-                    <div class="mini-wing left"></div>
-                    <div class="mini-wing right"></div>
-                </div>
-                <div class="mini-pillar">
-                    <div class="mini-pillar-line"></div>
-                </div>
-                <div class="mini-base">
-                    <span class="mini-base-title">${trophy.subtitle}</span>
+            <div class="crystal-trophy-wrapper-vortex-small">
+                <div class="crystal-trophy-container-vortex-small">
+                    <div class="celestial-head-vortex-small">
+                        <div class="vortex-core-gem-small"></div>
+                        <div class="vortex-wing-small left-wing"></div>
+                        <div class="vortex-wing-small right-wing"></div>
+                        <div class="central-hologram-vortex-small">
+                            <div class="pulse-ring-vortex-small"></div>
+                        </div>
+                    </div>
+                    <div class="celestial-pillar-vortex-small">
+                        <div class="rail-line-vortex-small"></div>
+                        <div class="rail-core-vortex-small"></div>
+                        <div class="rail-line-vortex-small"></div>
+                    </div>
+                    <div class="celestial-base-vortex-small">
+                        <div class="base-glow-rim-vortex-small"></div>
+                        <span class="base-title-vortex-small">VORTEX</span>
+                    </div>
                 </div>
             </div>
         `;
@@ -983,8 +1060,8 @@ export function renderTrophyShowcase(containerId, onTrophyClick) {
     // အပေါ်တန်း (Top Row) တွင် နေရာချခြင်း
     topRow.appendChild(createLargeAngelicElement(trophyDataList[0]));
     topRow.appendChild(createCyberBladeSmallElement(trophyDataList[1]));         // ဒုတိယနေရာ (Cyber Blade)
-    topRow.appendChild(createPhoenixProtocolSmallElement(trophyDataList[2]));   // တတိယနေရာ (Phoenix Protocol - Border ကင်းပြီး animation ပါဝင်သည်)
-    topRow.appendChild(createCustomMiniElement(trophyDataList[3]));             // စတုတ္ထနေရာ (Prism)
+    topRow.appendChild(createPhoenixProtocolSmallElement(trophyDataList[2]));   // တတိယနေရာ (Phoenix Protocol)
+    topRow.appendChild(createVortexProtocolSmallElement(trophyDataList[3]));    // စတုတ္ထနေရာ (Cyber Vortex Phoenix - Border နှင့် floating ဖြုတ်ပြီး အထဲက animation သက်သက်)
     topRow.appendChild(createStandardTrophyElement(trophyDataList[4]));         // ပဉ္စမနေရာ
 
     // အလယ်တန်း (Center Row)
