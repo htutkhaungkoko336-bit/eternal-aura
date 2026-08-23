@@ -162,11 +162,10 @@ export function renderProfileScreen(container) {
                 position: absolute;
                 top: 20px;
                 left: 0;
-                padding: 0 4px;
+                padding: 0 8px;
                 box-sizing: border-box;
                 pointer-events: none;
                 overflow-x: hidden !important;
-                overflow-y: hidden !important;
             }
 
             .box-content-area.open {
@@ -182,10 +181,14 @@ export function renderProfileScreen(container) {
                 width: 100%;
                 max-width: 100%;
                 overflow-x: hidden !important;
-                overflow-y: hidden !important;
                 box-sizing: border-box;
             }
 
+            /* Trophy အသေးများ ဘေးတိုက်မလံထွက်စေရန်နှင့် အကျယ်အဝန်းကို ထိန်းချုပ်ရန် */
+            #trophy-showcase-target * {
+                max-width: 100% !important;
+                box-sizing: border-box !important;
+            }
             /* 3. Key & History Side-by-Side Grid */
             .bottom-grid {
                 display: grid;
