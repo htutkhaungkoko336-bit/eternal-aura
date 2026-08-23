@@ -1,7 +1,7 @@
-// trophies.js - Clean Borderless Floating Trophies with Specific Center Animation
+// trophies.js - Borderless Angelic Trophy with Proper Sizing & Halo Animation
 
 const trophyDataList = [
-    // အပေါ်ဘက် ၅ လုံး (ပထမဆုံးမှာ အသစ်ပေးထားတဲ့ Angelic Halo Trophy ကြီးကို ထည့်သွင်းထားပါတယ်)
+    // အပေါ်ဘက် ၅ လုံး (ပထမဆုံးမှာ ပုံစံတူ အရွယ်အစားညှိထားပြီး Border ဖြုတ်ထားသော Angelic Halo Trophy)
     { id: 1, title: "ANGELIC ASCENT", subtitle: "ANGELIC ASCENT", date: "2026-01-15", desc: "Eternal Aura Angelic Halo Trophy.", isCustom: true, styleType: 'angelic-large' },
     { id: 2, title: "PHOENIX PROTOCOL", subtitle: "PHOENIX PROTOCOL", date: "2026-02-10", desc: "Mythical Phoenix Wing Championship Trophy.", isCustom: true, styleType: 'phoenix' },
     { id: 3, title: "VORTEX PROTOCOL", subtitle: "VORTEX PROTOCOL", date: "2026-03-05", desc: "Undefeated Mecha Vortex Trophy.", isCustom: true, styleType: 'vortex' },
@@ -67,49 +67,35 @@ export function renderTrophyShowcase(containerId, onTrophyClick) {
                 filter: drop-shadow(0 0 10px #facc15);
             }
 
-            /* --- ပထမဆုံး Trophy အကြီးစားအတွက် CSS နဲ့ Animation များ --- */
+            /* --- ပထမဆုံး Trophy (Border ဖြုတ်ပြီး အရွယ်အစား သင့်တင့်အောင် ချိန်ညှိထားသည်) --- */
             .crystal-trophy-wrapper {
-                width: 95px;
-                height: 125px;
-                background: radial-gradient(circle at center, rgba(15, 23, 42, 0.98) 0%, rgba(2, 6, 23, 1) 100%);
-                border: 1.5px solid #38bdf8;
-                border-radius: 12px;
+                width: 52px;
+                height: 72px;
+                background: transparent;
+                border: none;
                 display: flex;
                 align-items: center;
                 justify-content: center;
                 position: relative;
-                box-shadow: 0 0 25px rgba(56, 189, 248, 0.4), inset 0 0 12px rgba(250, 204, 21, 0.2);
-                animation: floatTrophy 4s ease-in-out infinite;
-                overflow: hidden;
+                box-shadow: none;
                 flex-shrink: 0;
             }
 
-            @keyframes floatTrophy {
-                0%, 100% {
-                    transform: translateY(0px);
-                    box-shadow: 0 0 20px rgba(56, 189, 248, 0.4);
-                }
-                50% {
-                    transform: translateY(-5px);
-                    box-shadow: 0 0 32px rgba(250, 204, 21, 0.6);
-                }
-            }
-
             .crystal-trophy-container-large {
-                width: 82px;
-                height: 105px;
+                width: 52px;
+                height: 72px;
                 position: relative;
                 display: flex;
                 flex-direction: column;
                 align-items: center;
                 justify-content: space-between;
-                padding: 4px 0;
+                padding: 2px 0;
             }
 
             .celestial-head-large {
                 position: relative;
-                width: 60px;
-                height: 45px;
+                width: 38px;
+                height: 26px;
                 display: flex;
                 justify-content: center;
                 align-items: center;
@@ -118,11 +104,11 @@ export function renderTrophyShowcase(containerId, onTrophyClick) {
             .angel-halo-large {
                 position: absolute;
                 top: -1px;
-                width: 18px;
-                height: 7px;
-                border: 1.5px solid #facc15;
+                width: 12px;
+                height: 5px;
+                border: 1.2px solid #facc15;
                 border-radius: 50%;
-                box-shadow: 0 0 8px #facc15, 0 0 14px #38bdf8;
+                box-shadow: 0 0 6px #facc15, 0 0 10px #38bdf8;
                 z-index: 4;
                 animation: pulseHalo 2s ease-in-out infinite alternate;
             }
@@ -134,22 +120,22 @@ export function renderTrophyShowcase(containerId, onTrophyClick) {
 
             .angel-wing-large {
                 position: absolute;
-                width: 25px;
-                height: 38px;
-                background: linear-gradient(135deg, rgba(56, 189, 248, 0.25) 0%, rgba(250, 204, 21, 0.2) 100%);
-                border: 0.8px solid #38bdf8;
+                width: 15px;
+                height: 20px;
+                background: linear-gradient(135deg, rgba(56, 189, 248, 0.35) 0%, rgba(250, 204, 21, 0.3) 100%);
+                border: none;
             }
 
             .left-wing-large {
                 left: 1px;
-                top: 5px;
+                top: 3px;
                 clip-path: polygon(20% 0%, 100% 30%, 80% 100%, 0% 70%);
                 transform: rotate(-5deg);
             }
 
             .right-wing-large {
                 right: 1px;
-                top: 5px;
+                top: 3px;
                 clip-path: polygon(0% 30%, 80% 0%, 100% 70%, 20% 100%);
                 transform: rotate(5deg);
             }
@@ -163,62 +149,64 @@ export function renderTrophyShowcase(containerId, onTrophyClick) {
             }
 
             .angel-core-large {
-                width: 10px;
-                height: 10px;
+                width: 6px;
+                height: 6px;
                 background: #ffffff;
                 border-radius: 50%;
-                box-shadow: 0 0 8px #38bdf8, 0 0 14px #facc15;
+                box-shadow: 0 0 6px #38bdf8, 0 0 10px #facc15;
             }
 
             .celestial-pillar-large {
                 position: relative;
-                width: 14px;
-                height: 28px;
-                background: linear-gradient(180deg, #0f172a 0%, #020617 100%);
-                border: 0.8px solid #38bdf8;
-                border-radius: 3px;
+                width: 10px;
+                height: 15px;
+                background: transparent;
+                border: none;
                 display: flex;
                 justify-content: center;
                 align-items: center;
             }
 
             .pillar-beam-large {
-                width: 1.5px;
+                width: 1.2px;
                 height: 100%;
                 background: linear-gradient(180deg, #facc15 0%, #38bdf8 100%);
-                box-shadow: 0 0 6px #38bdf8;
+                box-shadow: 0 0 5px #38bdf8;
             }
 
             .celestial-base-large {
                 position: relative;
-                width: 75px;
-                height: 18px;
-                background: linear-gradient(180deg, #0f172a 0%, #020617 100%);
-                border: 0.8px solid #38bdf8;
-                border-top: 1.5px solid #facc15;
-                border-radius: 4px;
+                width: 48px;
+                height: 11px;
+                background: rgba(15, 23, 42, 0.6);
+                border: 0.6px solid rgba(56, 189, 248, 0.4);
+                border-top: 1.2px solid #facc15;
+                border-radius: 3px;
                 display: flex;
                 align-items: center;
                 justify-content: center;
-                box-shadow: 0 0 10px rgba(56, 189, 248, 0.4);
             }
 
             .base-glow-rim-large {
                 position: absolute;
                 top: 1px;
-                width: 60px;
-                height: 1px;
+                width: 32px;
+                height: 0.6px;
                 background: #facc15;
-                box-shadow: 0 0 5px #facc15;
             }
 
             .base-title-large {
                 color: #facc15;
-                font-size: 3.8px;
+                font-size: 3.6px;
                 font-weight: 900;
-                letter-spacing: 0.8px;
+                letter-spacing: 0.3px;
                 z-index: 2;
-                text-shadow: 0 0 4px #38bdf8;
+                text-shadow: 0 0 2px #38bdf8;
+                text-align: center;
+                white-space: nowrap;
+                overflow: hidden;
+                text-overflow: ellipsis;
+                max-width: 42px;
             }
 
             /* --- Borderless Custom Mini Trophies (၂၊ ၃၊ ၄ လုံးမြောက်) --- */
@@ -415,7 +403,7 @@ export function renderTrophyShowcase(containerId, onTrophyClick) {
                 max-width: 42px;
             }
 
-            /* --- အလယ်က Cyber Angelic Shield Trophy --- */
+            /* --- အလယ်က Cyber Angelic Shield Trophy (Animation ပါသည့်တစ်ခုတည်းသောဖလား) --- */
             .pure-trophy-item.center-shield-item {
                 cursor: pointer;
                 transition: transform 0.25s ease;
@@ -550,13 +538,8 @@ export function renderTrophyShowcase(containerId, onTrophyClick) {
         </style>
 
         <div class="layout-wrapper">
-            <!-- အပေါ်ဘက် တန်း (၅ လုံး) -->
             <div class="trophy-row" id="top-row"></div>
-
-            <!-- အလယ်တည့်တည့် (Cyber Angelic Shield Trophy) -->
             <div class="center-highlight-row" id="center-row"></div>
-
-            <!-- အောက်ဘက် တန်း (၅ လုံး) -->
             <div class="trophy-row" id="bottom-row"></div>
         </div>
     `;
@@ -565,7 +548,6 @@ export function renderTrophyShowcase(containerId, onTrophyClick) {
     const centerRow = document.getElementById('center-row');
     const bottomRow = document.getElementById('bottom-row');
 
-    // 1. ပထမဆုံး Trophy အကြီးစား (Angelic Halo Trophy) ဖန်တီးရန်
     const createLargeAngelicElement = (trophy) => {
         const item = document.createElement('div');
         item.className = `pure-trophy-item`;
@@ -602,7 +584,6 @@ export function renderTrophyShowcase(containerId, onTrophyClick) {
         return item;
     };
 
-    // 2. Custom Mini Trophies ဖန်တီးရန် (၂၊ ၃၊ ၄ လုံးမြောက်)
     const createCustomMiniElement = (trophy) => {
         const item = document.createElement('div');
         item.className = `pure-trophy-item`;
@@ -633,7 +614,6 @@ export function renderTrophyShowcase(containerId, onTrophyClick) {
         return item;
     };
 
-    // 3. သာမန်ဖလားများ ဖန်တီးရန်
     const createStandardTrophyElement = (trophy) => {
         const item = document.createElement('div');
         item.className = `pure-trophy-item`;
@@ -668,7 +648,6 @@ export function renderTrophyShowcase(containerId, onTrophyClick) {
         return item;
     };
 
-    // 4. အလယ်က Shield Trophy ဖန်တီးရန် (Animation ပါဝင်သော တစ်ခုတည်းသော Trophy)
     const createShieldCenterElement = (trophy) => {
         const item = document.createElement('div');
         item.className = `pure-trophy-item center-shield-item`;
@@ -700,19 +679,14 @@ export function renderTrophyShowcase(containerId, onTrophyClick) {
         return item;
     };
 
-    // --- တန်းများထဲသို့ ထည့်သွင်းခြင်း ---
-    
-    // အပေါ်တန်း (၁ လုံးမြောက် Angelic Large, ၂ မှ ၄ လုံး Custom Minis, ၅ လုံးမြောက် Standard)
     topRow.appendChild(createLargeAngelicElement(trophyDataList[0]));
     for (let i = 1; i < 4; i++) {
         topRow.appendChild(createCustomMiniElement(trophyDataList[i]));
     }
     topRow.appendChild(createStandardTrophyElement(trophyDataList[4]));
 
-    // အလယ်တန်း (Shield Trophy - ဤအရာတစ်ခုတည်းသာ အတက်အကျ animation လှုပ်ရှားမည်)
     centerRow.appendChild(createShieldCenterElement(trophyDataList[5]));
 
-    // အောက်တန်း (ကျန်တဲ့ ၅ လုံး)
     for (let i = 6; i < 11; i++) {
         bottomRow.appendChild(createStandardTrophyElement(trophyDataList[i]));
     }
