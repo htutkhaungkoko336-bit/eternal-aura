@@ -1,4 +1,4 @@
-// profile.js - Profile Shell with Smooth Fade Trophy Toggle
+// profile.js - Profile Shell with Fixed Trophy Scrollbar
 import { renderTrophyShowcase } from './trophies.js';
 
 export function renderProfileScreen(container) {
@@ -72,7 +72,7 @@ export function renderProfileScreen(container) {
                 font-family: monospace;
             }
 
-            /* 2. Cyber Stage (Cube & Trophies Container) */
+            /* 2. Cyber Stage (Cube & Trophies) */
             .cyber-stage {
                 background: rgba(15, 23, 42, 0.95);
                 border-radius: 16px;
@@ -136,7 +136,7 @@ export function renderProfileScreen(container) {
             .cube-face.top    { transform: rotateX(90deg) translateZ(35px); }
             .cube-face.bottom { transform: rotateX(-90deg) translateZ(35px); }
 
-            /* Trophy Box Content Area (Smooth Fade & Slow Transition - Scroll မဖြစ်တော့ပါ) */
+            /* Trophy Box Content Area (Scroll bar လုံးဝမပေါ်အောင် ထိန်းချုပ်ခြင်း) */
             .box-content-area {
                 opacity: 0;
                 visibility: hidden;
@@ -146,9 +146,10 @@ export function renderProfileScreen(container) {
                 position: absolute;
                 top: 20px;
                 left: 0;
-                padding: 0 16px;
+                padding: 0 8px;
                 box-sizing: border-box;
                 pointer-events: none;
+                overflow: hidden; /* Scroll bar များကို ဖြတ်တောက်ရန် */
             }
 
             .box-content-area.open {
@@ -158,6 +159,12 @@ export function renderProfileScreen(container) {
                 position: relative;
                 top: 0;
                 pointer-events: auto;
+            }
+
+            /* Trophy Showcase Target အတွင်းသားများ အလွန်အကျွံမထွက်စေရန် */
+            #trophy-showcase-target {
+                width: 100%;
+                overflow: hidden;
             }
 
             /* 3. Key & History Side-by-Side Grid */
@@ -291,7 +298,7 @@ export function renderProfileScreen(container) {
                 isTrophiesOpen = false;
                 trophyBoxContent.classList.remove('open');
                 cyberCubeTrigger.classList.remove('hidden');
-            }, 150); // ပိုမိုသဘာဝကျပြီး တည်ငြိမ်စေရန်
+            }, 150);
         }
     });
 
