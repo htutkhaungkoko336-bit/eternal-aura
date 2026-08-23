@@ -111,8 +111,21 @@ export function renderProfileScreen(container) {
                 position: relative;
                 box-shadow: 0 0 20px rgba(6, 182, 212, 0.4), inset 0 0 10px rgba(236, 72, 153, 0.3);
                 flex-shrink: 0;
+                /* လေထဲမှာ မျောနေသလို အပေါ်အောက်လှုပ်ရှားမယ့် animation */
+                animation: shieldFloat 3s ease-in-out infinite;
             }
-            .cyber-shield-wrapper::before {
+
+            @keyframes shieldFloat {
+                0%, 100% {
+                    transform: translateY(0px) rotate(0deg);
+                    box-shadow: 0 0 15px rgba(6, 182, 212, 0.4), inset 0 0 10px rgba(236, 72, 153, 0.3);
+                }
+                50% {
+                    transform: translateY(-6px) rotate(1deg);
+                    box-shadow: 0 0 25px rgba(6, 182, 212, 0.7), inset 0 0 15px rgba(236, 72, 153, 0.5);
+                }
+            }
+                cyber-shield-wrapper::before {
                 content: '';
                 position: absolute;
                 top: 4px; left: 4px; right: 4px; bottom: 4px;
