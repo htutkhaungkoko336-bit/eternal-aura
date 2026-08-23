@@ -1,4 +1,4 @@
-// profile.js - Perfect 3D Cyber Cube without Outer Border & Smooth Toggle
+// profile.js - Profile Shell with Clean 3D Cyber Cube & Trophy Toggle
 import { renderTrophyShowcase } from './trophies.js';
 
 export function renderProfileScreen(container) {
@@ -72,7 +72,7 @@ export function renderProfileScreen(container) {
                 font-family: monospace;
             }
 
-            /* 2. Cyber Stage (Cube & Trophies Container - Border လုံးဝမပါတော့ပါ) */
+            /* 2. Cyber Stage (Cube & Trophies - No Outer Border) */
             .cyber-stage {
                 background: rgba(15, 23, 42, 0.95);
                 border-radius: 16px;
@@ -80,7 +80,7 @@ export function renderProfileScreen(container) {
                 margin-bottom: 16px;
                 text-align: center;
                 position: relative;
-                min-height: 160px;
+                min-height: 140px;
                 display: flex;
                 flex-direction: column;
                 align-items: center;
@@ -129,7 +129,6 @@ export function renderProfileScreen(container) {
                 box-shadow: inset 0 0 12px rgba(56, 189, 248, 0.3);
             }
 
-            /* သေသပ်မှန်ကန်သော 3D ထောင့်မှန်စတုဂံ မျက်နှာပြင်များ */
             .cube-face.front  { transform: translateZ(35px); }
             .cube-face.back   { transform: rotateY(180deg) translateZ(35px); }
             .cube-face.right  { transform: rotateY(90deg) translateZ(35px); }
@@ -137,7 +136,7 @@ export function renderProfileScreen(container) {
             .cube-face.top    { transform: rotateX(90deg) translateZ(35px); }
             .cube-face.bottom { transform: rotateX(-90deg) translateZ(35px); }
 
-            /* Trophy Box Content Area (Trophies တွေပေါ်လာမည့်နေရာ) */
+            /* Trophy Box Content Area */
             .box-content-area {
                 max-height: 0;
                 overflow: hidden;
@@ -185,37 +184,6 @@ export function renderProfileScreen(container) {
                 color: #38bdf8;
                 letter-spacing: 1px;
             }
-
-            /* Detail View Box */
-            .detail-view-box {
-                background: rgba(15, 23, 42, 0.95);
-                border: 1px solid #334155;
-                border-radius: 12px;
-                padding: 12px;
-                font-size: 11px;
-                font-family: monospace;
-                color: #38bdf8;
-                word-break: break-all;
-                min-height: 70px;
-                box-sizing: border-box;
-            }
-
-            .history-row {
-                padding: 5px 0;
-                border-bottom: 1px solid #1e293b;
-                display: flex;
-                justify-content: space-between;
-                color: #94a3b8;
-            }
-
-            .history-row:last-child {
-                border-bottom: none;
-            }
-
-            .status-success {
-                color: #4ade80;
-                font-weight: bold;
-            }
         </style>
 
         <div class="profile-wrapper" id="profile-main-wrapper">
@@ -231,7 +199,7 @@ export function renderProfileScreen(container) {
                 </div>
             </div>
 
-            <!-- Cyber Stage (Cube & Trophies - No Outer Border) -->
+            <!-- Cyber Stage (Cube & Trophies) -->
             <div class="cyber-stage" id="cyber-stage-box">
                 <!-- Perfect 3D Cyber Cubic -->
                 <div class="cubic-wrapper" id="cyber-cube-trigger" title="Cube ကိုနှိပ်၍ Trophy များဖွင့်ပါ">
@@ -262,13 +230,6 @@ export function renderProfileScreen(container) {
                 <div class="action-card" id="history-card-btn">
                     <div class="icon">📜</div>
                     <div class="title">HISTORY</div>
-                </div>
-            </div>
-
-            <!-- Interactive Detail Container -->
-            <div class="detail-view-box" id="detail-display-area">
-                <div style="color: #64748b; text-align: center; padding-top: 10px;">
-                    Tap the Cyber Cubic above to view your trophies.
                 </div>
             </div>
         </div>
@@ -311,7 +272,7 @@ export function renderProfileScreen(container) {
 
     // 2. ဘေးနေရာတစ်ခုခုကို ထောက်လိုက်သောအခါ (Trophies ပျောက်ပြီး Cube ပြန်ပေါ်လာခြင်း)
     profileWrapper.addEventListener('click', (e) => {
-        if (isTrophiesOpen && !e.target.closest('#trophy-showcase-target') && !e.target.closest('.bottom-grid') && !e.target.closest('.top-banner') && !e.target.closest('.detail-view-box')) {
+        if (isTrophiesOpen && !e.target.closest('#trophy-showcase-target') && !e.target.closest('.bottom-grid') && !e.target.closest('.top-banner')) {
             isTrophiesOpen = false;
             
             trophyBoxContent.classList.remove('open');
@@ -321,36 +282,16 @@ export function renderProfileScreen(container) {
 
     // Render Trophy Showcase inside the Box using trophies.js module function
     renderTrophyShowcase('trophy-showcase-target', (trophy) => {
-        const area = document.getElementById('detail-display-area');
-        if (area) {
-            area.innerHTML = `
-                <div style="color: #facc15; font-weight: bold; margin-bottom: 4px;">🏆 ${trophy.subtitle} (${trophy.date})</div>
-                <div style="color: #f8fafc; margin-bottom: 4px;">${trophy.desc}</div>
-                <div class="history-row"><span>Status</span><span class="status-success">VERIFIED UNLOCKED</span></div>
-            `;
-        }
+        // Modal သို့မဟုတ် Notification ဖြင့်ပြသရန် လိုအပ်ပါက ဤနေရာတွင် ထည့်နိုင်ပါသည်
     });
 
     // Key Button Action
     document.getElementById('key-card-btn').addEventListener('click', () => {
-        const area = document.getElementById('detail-display-area');
-        if (area) {
-            area.innerHTML = `
-                <div style="color: #38bdf8; font-weight: bold; margin-bottom: 4px;">SECURITY KEY VERIFIED:</div>
-                <div>${userKey}</div>
-            `;
-        }
+        alert(`SECURITY KEY: ${userKey}`);
     });
 
     // History Button Action
     document.getElementById('history-card-btn').addEventListener('click', () => {
-        const area = document.getElementById('detail-display-area');
-        if (area) {
-            area.innerHTML = `
-                <div style="color: #38bdf8; font-weight: bold; margin-bottom: 4px;">ACTIVITY LOGS:</div>
-                <div class="history-row"><span>Cubic State</span><span class="status-success">ACTIVE & ROTATING</span></div>
-                <div class="history-row"><span>Profile Status</span><span class="status-success">SECURE</span></div>
-            `;
-        }
+        alert("ACTIVITY LOGS: Active & Secure");
     });
 }
