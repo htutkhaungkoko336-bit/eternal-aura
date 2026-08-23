@@ -1,4 +1,4 @@
-// profile.js - Pure Cyber Cubic with Shatter Animation & Trophy Box
+// profile.js - Perfect 3D Cyber Cube without Outer Border & Smooth Toggle
 import { renderTrophyShowcase } from './trophies.js';
 
 export function renderProfileScreen(container) {
@@ -72,53 +72,47 @@ export function renderProfileScreen(container) {
                 font-family: monospace;
             }
 
-            /* 2. Cubic & Showcase Area */
+            /* 2. Cyber Stage (Cube & Trophies Container - Border လုံးဝမပါတော့ပါ) */
             .cyber-stage {
                 background: rgba(15, 23, 42, 0.95);
-                border: 1.5px solid #0ea5e9;
                 border-radius: 16px;
                 padding: 24px 16px;
                 margin-bottom: 16px;
                 text-align: center;
-                box-shadow: 0 0 30px rgba(14, 165, 233, 0.25);
                 position: relative;
-                min-height: 140px;
+                min-height: 160px;
                 display: flex;
                 flex-direction: column;
                 align-items: center;
                 justify-content: center;
             }
 
-            /* Pure Cyber Cubic (စာသား၊ border အပြင်အဆင် မပါ) */
+            /* Perfect 3D Cyber Cubic */
             .cubic-wrapper {
-                perspective: 800px;
-                width: 90px;
-                height: 90px;
+                perspective: 900px;
+                width: 110px;
+                height: 110px;
                 cursor: pointer;
-                transition: transform 0.4s ease, opacity 0.4s ease;
+                transition: opacity 0.3s ease, transform 0.3s ease;
+                display: flex;
+                align-items: center;
+                justify-content: center;
             }
 
             .cubic-wrapper.hidden {
-                transform: scale(0) rotate(720deg);
                 opacity: 0;
+                transform: scale(0.8);
                 pointer-events: none;
                 position: absolute;
+                display: none;
             }
 
             .cyber-cube {
-                width: 100%;
-                height: 100%;
+                width: 70px;
+                height: 70px;
                 position: relative;
                 transform-style: preserve-3d;
-                animation: rotateCube 7s infinite linear;
-            }
-
-            .cyber-cube.shattering {
-                animation: shatterAnim 0.8s forwards cubic-bezier(0.25, 1, 0.5, 1);
-            }
-
-            .cyber-cube.assembling {
-                animation: assembleAnim 0.8s forwards cubic-bezier(0.25, 1, 0.5, 1);
+                animation: rotateCube 10s infinite linear;
             }
 
             @keyframes rotateCube {
@@ -126,38 +120,28 @@ export function renderProfileScreen(container) {
                 100% { transform: rotateX(360deg) rotateY(360deg); }
             }
 
-            @keyframes shatterAnim {
-                0% { transform: rotateX(0deg) rotateY(0deg) scale(1); filter: brightness(1); }
-                50% { transform: rotateX(540deg) rotateY(540deg) scale(1.6); filter: brightness(2); opacity: 0.8; }
-                100% { transform: rotateX(1080deg) rotateY(1080deg) scale(0); filter: brightness(3); opacity: 0; }
-            }
-
-            @keyframes assembleAnim {
-                0% { transform: rotateX(1080deg) rotateY(1080deg) scale(0); filter: brightness(3); opacity: 0; }
-                100% { transform: rotateX(0deg) rotateY(0deg) scale(1); filter: brightness(1); opacity: 1; }
-            }
-
             .cube-face {
                 position: absolute;
-                width: 90px;
-                height: 90px;
-                background: rgba(14, 165, 233, 0.12);
-                border: 1px solid rgba(56, 189, 248, 0.6);
-                box-shadow: inset 0 0 15px rgba(56, 189, 248, 0.3);
+                width: 70px;
+                height: 70px;
+                background: rgba(14, 165, 233, 0.08);
+                border: 1.5px solid #38bdf8;
+                box-shadow: inset 0 0 12px rgba(56, 189, 248, 0.3);
             }
 
-            .cube-face.front  { transform: translateZ(45px); }
-            .cube-face.back   { transform: rotateY(180deg) translateZ(45px); }
-            .cube-face.right  { transform: rotateY(90deg) translateZ(45px); }
-            .cube-face.left   { transform: rotateY(-90deg) translateZ(45px); }
-            .cube-face.top    { transform: rotateX(90deg) translateZ(45px); }
-            .cube-face.bottom { transform: rotateX(-90deg) translateZ(45px); }
+            /* သေသပ်မှန်ကန်သော 3D ထောင့်မှန်စတုဂံ မျက်နှာပြင်များ */
+            .cube-face.front  { transform: translateZ(35px); }
+            .cube-face.back   { transform: rotateY(180deg) translateZ(35px); }
+            .cube-face.right  { transform: rotateY(90deg) translateZ(35px); }
+            .cube-face.left   { transform: rotateY(-90deg) translateZ(35px); }
+            .cube-face.top    { transform: rotateX(90deg) translateZ(35px); }
+            .cube-face.bottom { transform: rotateX(-90deg) translateZ(35px); }
 
-            /* Trophy Box Content Area (ဖလားများ ပေါ်လာမည့်နေရာ) */
+            /* Trophy Box Content Area (Trophies တွေပေါ်လာမည့်နေရာ) */
             .box-content-area {
                 max-height: 0;
                 overflow: hidden;
-                transition: max-height 0.5s ease-in-out, opacity 0.4s ease-in-out;
+                transition: max-height 0.4s ease-in-out, opacity 0.3s ease-in-out;
                 opacity: 0;
                 width: 100%;
             }
@@ -247,11 +231,11 @@ export function renderProfileScreen(container) {
                 </div>
             </div>
 
-            <!-- Cyber Stage (Cube & Trophies) -->
+            <!-- Cyber Stage (Cube & Trophies - No Outer Border) -->
             <div class="cyber-stage" id="cyber-stage-box">
-                <!-- Pure Cyber Cubic -->
+                <!-- Perfect 3D Cyber Cubic -->
                 <div class="cubic-wrapper" id="cyber-cube-trigger" title="Cube ကိုနှိပ်၍ Trophy များဖွင့်ပါ">
-                    <div class="cyber-cube" id="rotating-cube">
+                    <div class="cyber-cube">
                         <div class="cube-face front"></div>
                         <div class="cube-face back"></div>
                         <div class="cube-face right"></div>
@@ -284,7 +268,7 @@ export function renderProfileScreen(container) {
             <!-- Interactive Detail Container -->
             <div class="detail-view-box" id="detail-display-area">
                 <div style="color: #64748b; text-align: center; padding-top: 10px;">
-                    Tap the Cyber Cubic above to shatter and reveal trophies.
+                    Tap the Cyber Cubic above to view your trophies.
                 </div>
             </div>
         </div>
@@ -309,44 +293,29 @@ export function renderProfileScreen(container) {
         });
     }
 
-    // Elements for Animation
+    // Elements for Toggle Logic
     const cyberCubeTrigger = document.getElementById('cyber-cube-trigger');
-    const rotatingCube = document.getElementById('rotating-cube');
     const trophyBoxContent = document.getElementById('trophy-box-content');
     const profileWrapper = document.getElementById('profile-main-wrapper');
     let isTrophiesOpen = false;
 
-    // 1. Cube ကို နှိပ်လိုက်သောအခါ (Shatter ဖြစ်ပြီး Trophies ပေါ်လာခြင်း)
+    // 1. Cube ကို နှိပ်လိုက်သောအခါ (Cube ပျောက်ပြီး Trophies ပေါ်လာခြင်း)
     cyberCubeTrigger.addEventListener('click', (e) => {
-        e.stopPropagation(); // Click event ပျံ့နှံ့မှုကို တားဆီးခြင်း
+        e.stopPropagation();
         if (isTrophiesOpen) return;
 
         isTrophiesOpen = true;
-        rotatingCube.classList.add('shattering');
-
-        setTimeout(() => {
-            cyberCubeTrigger.classList.add('hidden');
-            rotatingCube.classList.remove('shattering');
-            trophyBoxContent.classList.add('open');
-        }, 600);
+        cyberCubeTrigger.classList.add('hidden');
+        trophyBoxContent.classList.add('open');
     });
 
-    // 2. ဘေးနေရာတစ်ခုခုကို ထောက်လိုက်သောအခါ (Trophies ပျောက်ပြီး Cube ပြန်ဆက်သွားခြင်း)
+    // 2. ဘေးနေရာတစ်ခုခုကို ထောက်လိုက်သောအခါ (Trophies ပျောက်ပြီး Cube ပြန်ပေါ်လာခြင်း)
     profileWrapper.addEventListener('click', (e) => {
-        // အကယ်၍ Trophies ပွင့်နေပြီး၊ နှိပ်လိုက်တဲ့နေရာက Trophy သို့မဟုတ် Control ကဒ်တွေ မဟုတ်ဘူးဆိုရင်
         if (isTrophiesOpen && !e.target.closest('#trophy-showcase-target') && !e.target.closest('.bottom-grid') && !e.target.closest('.top-banner') && !e.target.closest('.detail-view-box')) {
             isTrophiesOpen = false;
             
-            // Trophies များကို ဖျောက်မည်
             trophyBoxContent.classList.remove('open');
-            
-            // Cube ကို ပြန်ပေါ်လာစေပြီး Assemble (ပြန်ဆက်) သည့် Animation ထည့်မည်
             cyberCubeTrigger.classList.remove('hidden');
-            rotatingCube.classList.add('assembling');
-
-            setTimeout(() => {
-                rotatingCube.classList.remove('assembling');
-            }, 800);
         }
     });
 
@@ -379,7 +348,7 @@ export function renderProfileScreen(container) {
         if (area) {
             area.innerHTML = `
                 <div style="color: #38bdf8; font-weight: bold; margin-bottom: 4px;">ACTIVITY LOGS:</div>
-                <div class="history-row"><span>Cubic State</span><span class="status-success">READY / ASSEMBLED</span></div>
+                <div class="history-row"><span>Cubic State</span><span class="status-success">ACTIVE & ROTATING</span></div>
                 <div class="history-row"><span>Profile Status</span><span class="status-success">SECURE</span></div>
             `;
         }
