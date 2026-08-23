@@ -1,4 +1,4 @@
-// trophies.js - Updated with working inner animations for No. 9 and No. 10
+// trophies.js - Updated with Twin Blades for No. 11 (Border & Float removed, inner animations intact)
 
 const trophyDataList = [
     { id: 1, title: "ANGELIC ASCENT", subtitle: "ANGELIC ASCENT", date: "2026-01-15", desc: "Eternal Aura Angelic Halo Trophy.", isCustom: true, styleType: 'angelic-large' },
@@ -15,7 +15,7 @@ const trophyDataList = [
     { id: 8, title: "PHOENIX ASCENDANT", subtitle: "PHOENIX ASCENDANT", date: "2026-05-25", desc: "Celestial Phoenix Blade & Shield Trophy.", isCustom: true, styleType: 'phoenix-blade-small' },
     { id: 9, title: "DRAGON MECH", subtitle: "DRAGON MECH", date: "2026-06-10", desc: "Cyber Dragon Mech Trophy. Ultimate high-tech power core.", isCustom: true, styleType: 'dragon-mech-small' },
     { id: 10, title: "CRESCENT ECLIPSE", subtitle: "CRESCENT ECLIPSE", date: "2026-07-02", desc: "Cyber Crescent Eclipse Trophy with Diamond Core Edition.", isCustom: true, styleType: 'eclipse-small' },
-    { id: 11, title: "ANGELIC ASCENT", subtitle: "Eternal Champion", date: "2026-07-20", desc: "Anniversary championship grand trophy." }
+    { id: 11, title: "ANGELIC ASCENT", subtitle: "TWIN BLADES", date: "2026-07-20", desc: "Quantum Twin Blades Trophy." }
 ];
 
 export function renderTrophyShowcase(containerId, onTrophyClick) {
@@ -1049,7 +1049,7 @@ export function renderTrophyShowcase(containerId, onTrophyClick) {
                 max-width: 42px;
             }
 
-            /* --- နံပါတ် ၉ နေရာ (Dragon Mech Trophy Small - အထဲက Core နဲ့ Wing လှုပ်ရှားမှုများ ပါရှိသည်) --- */
+            /* --- နံပါတ် ၉ နေရာ (Dragon Mech Trophy Small) --- */
             .dragon-trophy-wrapper-small {
                 width: 52px;
                 height: 72px;
@@ -1189,7 +1189,7 @@ export function renderTrophyShowcase(containerId, onTrophyClick) {
                 max-width: 42px;
             }
 
-            /* --- နံပါတ် ၁၀ နေရာ (Crescent Eclipse Trophy Small - အထဲက Moon နဲ့ Diamond Core လှုပ်ရှားမှုများ ပါရှိသည်) --- */
+            /* --- နံပါတ် ၁၀ နေရာ (Crescent Eclipse Trophy Small) --- */
             .eclipse-trophy-wrapper-small {
                 width: 52px;
                 height: 72px;
@@ -1368,6 +1368,146 @@ export function renderTrophyShowcase(containerId, onTrophyClick) {
             @keyframes glowDeckSmall {
                 0% { opacity: 0.5; transform: scaleX(0.85); }
                 100% { opacity: 1; transform: scaleX(1.1); }
+            }
+
+            /* --- နံပါတ် ၁၁ နေရာ (Quantum Twin Blades Trophy - Border နဲ့ Floating ဖြုတ်ထားပြီး Inner Animation များနှင့်) --- */
+            .twin-blades-wrapper-small {
+                width: 52px;
+                height: 72px;
+                background: radial-gradient(circle at center, #260f15 0%, #020617 100%);
+                border: none;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                position: relative;
+                flex-shrink: 0;
+                overflow: hidden;
+            }
+
+            .twin-blades-container-small {
+                width: 48px;
+                height: 68px;
+                position: relative;
+                display: flex;
+                flex-direction: column;
+                align-items: center;
+                justify-content: space-between;
+                padding: 2px 0;
+            }
+
+            .celestial-head-twin-small {
+                position: relative;
+                width: 38px;
+                height: 28px;
+                display: flex;
+                justify-content: center;
+                align-items: center;
+            }
+
+            .twin-blade-item {
+                position: absolute;
+                width: 7px;
+                height: 24px;
+                background: linear-gradient(180deg, #ffffff 0%, #ef4444 50%, #b91c1c 100%);
+                clip-path: polygon(50% 0%, 100% 15%, 70% 100%, 30% 100%, 0% 15%);
+                box-shadow: 0 0 6px #ef4444;
+                z-index: 2;
+            }
+
+            .left-twin-blade {
+                left: 10px;
+                top: 1px;
+                transform: rotate(-15deg);
+                animation: crossBladeLeftSmall 2s ease-in-out infinite alternate;
+            }
+
+            .right-twin-blade {
+                right: 10px;
+                top: 1px;
+                transform: rotate(15deg);
+                animation: crossBladeRightSmall 2s ease-in-out infinite alternate;
+            }
+
+            @keyframes crossBladeLeftSmall {
+                0% { transform: rotate(-15deg) translateY(0px); }
+                100% { transform: rotate(-25deg) translateY(-2px); }
+            }
+
+            @keyframes crossBladeRightSmall {
+                0% { transform: rotate(15deg) translateY(0px); }
+                100% { transform: rotate(25deg) translateY(-2px); }
+            }
+
+            .central-energy-orb-small {
+                position: absolute;
+                width: 8px;
+                height: 8px;
+                background: radial-gradient(circle at 30% 30%, #ffffff 0%, #f59e0b 50%, #ef4444 100%);
+                border-radius: 50%;
+                box-shadow: 0 0 6px #f59e0b, 0 0 10px #ef4444;
+                z-index: 3;
+                animation: pulseOrbSmall 1.5s ease-in-out infinite alternate;
+            }
+
+            @keyframes pulseOrbSmall {
+                0% { transform: scale(0.9); }
+                100% { transform: scale(1.15); }
+            }
+
+            .celestial-pillar-twin-small {
+                position: relative;
+                width: 10px;
+                height: 18px;
+                background: linear-gradient(180deg, #260f15 0%, #020617 100%);
+                border: 0.5px solid #ef4444;
+                border-radius: 2px;
+                display: flex;
+                justify-content: center;
+                align-items: center;
+            }
+
+            .twin-laser-beam-small {
+                width: 1.2px;
+                height: 100%;
+                background: linear-gradient(180deg, #f59e0b 0%, #ef4444 100%);
+                box-shadow: 0 0 4px #ef4444;
+                border-radius: 1px;
+            }
+
+            .celestial-base-twin-small {
+                position: relative;
+                width: 46px;
+                height: 11px;
+                background: linear-gradient(180deg, #260f15 0%, #020617 100%);
+                border: 0.5px solid #ef4444;
+                border-top: 1px solid #f59e0b;
+                border-radius: 3px;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+            }
+
+            .base-blade-line-small {
+                position: absolute;
+                top: 1px;
+                width: 32px;
+                height: 0.8px;
+                background: #f59e0b;
+                box-shadow: 0 0 4px #f59e0b;
+            }
+
+            .base-title-twin-small {
+                color: #fca5a5;
+                font-size: 2.8px;
+                font-weight: 900;
+                letter-spacing: 0.5px;
+                z-index: 2;
+                text-shadow: 0 0 2px #ef4444;
+                text-align: center;
+                white-space: nowrap;
+                overflow: hidden;
+                text-overflow: ellipsis;
+                max-width: 42px;
             }
 
             /* --- မူလ အလယ်အကြီးစား Trophy (Cyber Angelic Shield) --- */
@@ -1776,6 +1916,32 @@ export function renderTrophyShowcase(containerId, onTrophyClick) {
         return item;
     };
 
+    const createTwinBladesSmallElement = (trophy) => {
+        const item = document.createElement('div');
+        item.className = `pure-trophy-item`;
+        item.title = `${trophy.subtitle} - နှိပ်၍ အသေးစိတ်ကြည့်ရန်`;
+        item.innerHTML = `
+            <div class="twin-blades-wrapper-small">
+                <div class="twin-blades-container-small">
+                    <div class="celestial-head-twin-small">
+                        <div class="twin-blade-item left-twin-blade"></div>
+                        <div class="twin-blade-item right-twin-blade"></div>
+                        <div class="central-energy-orb-small"></div>
+                    </div>
+                    <div class="celestial-pillar-twin-small">
+                        <div class="twin-laser-beam-small"></div>
+                    </div>
+                    <div class="celestial-base-twin-small">
+                        <div class="base-blade-line-small"></div>
+                        <span class="base-title-twin-small">TWIN BLADES</span>
+                    </div>
+                </div>
+            </div>
+        `;
+        item.addEventListener('click', () => { if (typeof onTrophyClick === 'function') onTrophyClick(trophy, item.innerHTML); });
+        return item;
+    };
+
     const createShieldCenterElement = (trophy) => {
         const item = document.createElement('div');
         item.className = `pure-trophy-item center-shield-item`;
@@ -1820,33 +1986,8 @@ export function renderTrophyShowcase(containerId, onTrophyClick) {
             bottomRow.appendChild(createDragonMechSmallElement(trophyDataList[i]));
         } else if (i === 9) {
             bottomRow.appendChild(createCrescentEclipseSmallElement(trophyDataList[i]));
-        } else {
-            const standardItem = document.createElement('div');
-            standardItem.className = `pure-trophy-item`;
-            standardItem.title = `${trophyDataList[i].subtitle} - နှိပ်၍ အသေးစိတ်ကြည့်ရန်`;
-            standardItem.innerHTML = `
-                <div class="crystal-trophy-wrapper-first">
-                    <div class="crystal-trophy-container-large">
-                        <div class="celestial-head-large">
-                            <div class="angel-halo-large"></div>
-                            <div class="angel-wing-large left-wing-large"></div>
-                            <div class="angel-wing-large right-wing-large"></div>
-                            <div class="central-hologram-large">
-                                <div class="angel-core-large"></div>
-                            </div>
-                        </div>
-                        <div class="celestial-pillar-large">
-                            <div class="pillar-beam-large"></div>
-                        </div>
-                        <div class="celestial-base-large">
-                            <div class="base-glow-rim-large"></div>
-                            <span class="base-title-large">${trophyDataList[i].subtitle}</span>
-                        </div>
-                    </div>
-                </div>
-            `;
-            standardItem.addEventListener('click', () => { if (typeof onTrophyClick === 'function') onTrophyClick(trophyDataList[i], standardItem.innerHTML); });
-            bottomRow.appendChild(standardItem);
+        } else if (i === 10) {
+            bottomRow.appendChild(createTwinBladesSmallElement(trophyDataList[i]));
         }
     }
 }
