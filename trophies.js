@@ -1,4 +1,4 @@
-// trophies.js - Updated with Feather-Matrix Trophy at the 7th position (id: 7)
+// trophies.js - Updated with Celestial Phoenix Blade & Shield at the 8th position (id: 8)
 
 const trophyDataList = [
     { id: 1, title: "ANGELIC ASCENT", subtitle: "ANGELIC ASCENT", date: "2026-01-15", desc: "Eternal Aura Angelic Halo Trophy.", isCustom: true, styleType: 'angelic-large' },
@@ -7,12 +7,15 @@ const trophyDataList = [
     { id: 4, title: "VORTEX PROTOCOL", subtitle: "VORTEX PROTOCOL", date: "2026-03-20", desc: "Eternal Aura Cyber Vortex Phoenix Trophy.", isCustom: true, styleType: 'vortex' },
     { id: 5, title: "PRISM PROTOCOL", subtitle: "PRISM PROTOCOL", date: "2026-04-12", desc: "Eternal Aura Cyber Prism Trophy.", isCustom: true, styleType: 'prism' },
     
-    // အလယ်အကြီးစား ၁ လုံး (မူလအတိုင်း)
+    // အလယ်အကြီးစား ၁ လုံး
     { id: 6, title: "ETERNAL SUPREME", subtitle: "M7 HALO CHAMPION", date: "2026-08-23", desc: "The Ultimate Cyber Angelic Shield Trophy. Undisputed king of all tournaments." },
 
-    // အောက်ဘက် ၅ လုံး (နံပါတ် ၇ နေရာတွင် Border & Floating ဖြုတ်ထားသော Feather Nexus Trophy အသေးစား)
+    // အောက်ဘက် ၅ လုံး
     { id: 7, title: "FEATHER NEXUS", subtitle: "FEATHER NEXUS", date: "2026-05-01", desc: "Eternal Aura Feather Matrix Trophy.", isCustom: true, styleType: 'feather-small' },
-    { id: 8, title: "ANGELIC ASCENT", subtitle: "Apex Legend Trophy", date: "2026-05-25", desc: "Top 10 leaderboard dominance recognition." },
+    
+    // နံပါတ် ၈ နေရာတွင် Border & Floating ဖြုတ်ထားသော Celestial Phoenix Trophy အသေးစား
+    { id: 8, title: "PHOENIX ASCENDANT", subtitle: "PHOENIX ASCENDANT", date: "2026-05-25", desc: "Celestial Phoenix Blade & Shield Trophy.", isCustom: true, styleType: 'phoenix-blade-small' },
+    
     { id: 9, title: "ANGELIC ASCENT", subtitle: "Vector Vanguard", date: "2026-06-10", desc: "Special community event design & combat winner." },
     { id: 10, title: "ANGELIC ASCENT", subtitle: "Quantum Guardian", date: "2026-07-02", desc: "Secured base defense record in tactical matches." },
     { id: 11, title: "ANGELIC ASCENT", subtitle: "Eternal Champion", date: "2026-07-20", desc: "Anniversary championship grand trophy." }
@@ -774,7 +777,7 @@ export function renderTrophyShowcase(containerId, onTrophyClick) {
                 max-width: 42px;
             }
 
-            /* --- နံပါတ် ၇ နေရာ (Feather Nexus Small - Border နှင့် Floating လုံးဝမပါ၊ Flapping Animation သက်သက်ပါဝင်သည်) --- */
+            /* --- နံပါတ် ၇ နေရာ (Feather Nexus Small) --- */
             .crystal-trophy-wrapper-feather-small {
                 width: 52px;
                 height: 72px;
@@ -901,6 +904,153 @@ export function renderTrophyShowcase(containerId, onTrophyClick) {
                 letter-spacing: 0.5px;
                 z-index: 2;
                 text-shadow: 0 0 2px #a855f7;
+                text-align: center;
+                white-space: nowrap;
+                overflow: hidden;
+                text-overflow: ellipsis;
+                max-width: 42px;
+            }
+
+            /* --- နံပါတ် ၈ နေရာ (Celestial Phoenix Blade & Shield Small - Border နှင့် Floating ဖြုတ်ထားသည်) --- */
+            .phoenix-blade-wrapper-small {
+                width: 52px;
+                height: 72px;
+                background: radial-gradient(circle at center, rgba(30, 41, 59, 0.98) 0%, rgba(15, 23, 42, 1) 100%);
+                border: none;
+                border-radius: 6px;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                position: relative;
+                box-shadow: 0 0 12px rgba(245, 158, 11, 0.3);
+                overflow: hidden;
+                flex-shrink: 0;
+            }
+
+            .phoenix-blade-container-small {
+                width: 48px;
+                height: 68px;
+                position: relative;
+                display: flex;
+                flex-direction: column;
+                align-items: center;
+                justify-content: space-between;
+                padding: 2px 0;
+            }
+
+            .celestial-head-phoenix-blade-small {
+                position: relative;
+                width: 38px;
+                height: 28px;
+                display: flex;
+                justify-content: center;
+                align-items: center;
+            }
+
+            .phoenix-wings-container-small {
+                position: absolute;
+                width: 100%;
+                height: 100%;
+                display: flex;
+                justify-content: center;
+                align-items: center;
+                z-index: 2;
+            }
+
+            .phoenix-wing-small-item-v2 {
+                position: absolute;
+                width: 18px;
+                height: 26px;
+                background: linear-gradient(135deg, rgba(245, 158, 11, 0.3) 0%, rgba(253, 224, 71, 0.5) 100%);
+                clip-path: polygon(50% 0%, 100% 20%, 85% 100%, 50% 85%, 15% 100%, 0% 20%);
+                box-shadow: 0 0 6px #f59e0b;
+            }
+
+            .phoenix-wing-small-item-v2.left {
+                left: 1px;
+                top: 2px;
+                transform: rotate(-10deg);
+            }
+
+            .phoenix-wing-small-item-v2.right {
+                right: 1px;
+                top: 2px;
+                transform: rotate(10deg);
+            }
+
+            .central-blade-hologram-small {
+                position: relative;
+                width: 12px;
+                height: 26px;
+                display: flex;
+                justify-content: center;
+                align-items: center;
+                z-index: 3;
+            }
+
+            .blade-glow-core-small {
+                width: 5px;
+                height: 24px;
+                background: linear-gradient(180deg, #ffffff 0%, #fde047 30%, #f59e0b 70%, #b45309 100%);
+                clip-path: polygon(50% 0%, 100% 10%, 90% 90%, 50% 100%, 10% 90%, 0% 10%);
+                box-shadow: 0 0 6px #ffffff, 0 0 10px #f59e0b;
+                animation: pulseBladeSmall 1.5s ease-in-out infinite alternate;
+            }
+
+            @keyframes pulseBladeSmall {
+                0% { opacity: 0.8; transform: scaleY(0.95); }
+                100% { opacity: 1; transform: scaleY(1); }
+            }
+
+            .celestial-pillar-phoenix-blade-small {
+                position: relative;
+                width: 10px;
+                height: 16px;
+                background: linear-gradient(180deg, #1e293b 0%, #0f172a 100%);
+                border: 0.5px solid #f59e0b;
+                border-radius: 2px;
+                display: flex;
+                justify-content: center;
+                align-items: center;
+            }
+
+            .plasma-energy-line-small {
+                width: 1.5px;
+                height: 85%;
+                background: linear-gradient(180deg, #fde047 0%, #f59e0b 100%);
+                box-shadow: 0 0 4px #f59e0b;
+                border-radius: 1px;
+            }
+
+            .celestial-base-phoenix-blade-small {
+                position: relative;
+                width: 46px;
+                height: 11px;
+                background: linear-gradient(180deg, #1e293b 0%, #0f172a 100%);
+                border: 0.5px solid #f59e0b;
+                border-top: 1px solid #fde047;
+                border-radius: 3px;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+            }
+
+            .base-glow-rim-small-v2 {
+                position: absolute;
+                top: 1px;
+                width: 32px;
+                height: 0.8px;
+                background: #fde047;
+                box-shadow: 0 0 4px #fde047;
+            }
+
+            .base-title-phoenix-blade-small {
+                color: #fde047;
+                font-size: 2.8px;
+                font-weight: 900;
+                letter-spacing: 0.3px;
+                z-index: 2;
+                text-shadow: 0 0 2px #f59e0b;
                 text-align: center;
                 white-space: nowrap;
                 overflow: hidden;
@@ -1199,7 +1349,6 @@ export function renderTrophyShowcase(containerId, onTrophyClick) {
         return item;
     };
 
-    // နံပါတ် ၇ နေရာအတွက် Border နှင့် Floating လုံးဝမပါ၊ Flapping Animation သက်သက်ပါသော Feather Nexus အသေးစား Element
     const createFeatherProtocolSmallElement = (trophy) => {
         const item = document.createElement('div');
         item.className = `pure-trophy-item`;
@@ -1218,6 +1367,37 @@ export function renderTrophyShowcase(containerId, onTrophyClick) {
                     <div class="feather-base-small">
                         <div class="base-top-glow-small"></div>
                         <span class="base-title-feather-small">FEATHER</span>
+                    </div>
+                </div>
+            </div>
+        `;
+        item.addEventListener('click', () => { if (typeof onTrophyClick === 'function') onTrophyClick(trophy, item.innerHTML); });
+        return item;
+    };
+
+    // နံပါတ် ၈ နေရာအတွက် Border နှင့် Floating ဖြုတ်ထားသော Celestial Phoenix Blade Trophy အသေးစား Element
+    const createPhoenixBladeSmallElement = (trophy) => {
+        const item = document.createElement('div');
+        item.className = `pure-trophy-item`;
+        item.title = `${trophy.subtitle} - နှိပ်၍ အသေးစိတ်ကြည့်ရန်`;
+        item.innerHTML = `
+            <div class="phoenix-blade-wrapper-small">
+                <div class="phoenix-blade-container-small">
+                    <div class="celestial-head-phoenix-blade-small">
+                        <div class="phoenix-wings-container-small">
+                            <div class="phoenix-wing-small-item-v2 left"></div>
+                            <div class="phoenix-wing-small-item-v2 right"></div>
+                        </div>
+                        <div class="central-blade-hologram-small">
+                            <div class="blade-glow-core-small"></div>
+                        </div>
+                    </div>
+                    <div class="celestial-pillar-phoenix-blade-small">
+                        <div class="plasma-energy-line-small"></div>
+                    </div>
+                    <div class="celestial-base-phoenix-blade-small">
+                        <div class="base-glow-rim-small-v2"></div>
+                        <span class="base-title-phoenix-blade-small">PHOENIX</span>
                     </div>
                 </div>
             </div>
@@ -1260,10 +1440,12 @@ export function renderTrophyShowcase(containerId, onTrophyClick) {
     // အလယ်တန်း (Center Row)
     centerRow.appendChild(createShieldCenterElement(trophyDataList[5]));
 
-    // အောက်တန်း (Bottom Row) တွင် ၇ ကို Feather Nexus ဖြင့် အစားထိုးခြင်း
+    // အောက်တန်း (Bottom Row) တွင် ၇ ကို Feather Nexus ဖြင့်၊ ၈ ကို Celestial Phoenix Blade ဖြင့် အစားထိုးခြင်း
     for (let i = 6; i < 11; i++) {
         if (i === 6) {
             bottomRow.appendChild(createFeatherProtocolSmallElement(trophyDataList[i]));
+        } else if (i === 7) {
+            bottomRow.appendChild(createPhoenixBladeSmallElement(trophyDataList[i]));
         } else {
             const standardItem = document.createElement('div');
             standardItem.className = `pure-trophy-item`;
