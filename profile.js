@@ -1,4 +1,4 @@
-// profile.js - Profile Shell with Exact Trophy Element Zoom
+// profile.js - Profile Shell with Extra Large Zoom & Persistent Trophy View
 import { renderTrophyShowcase } from './trophies.js';
 
 export function renderProfileScreen(container) {
@@ -206,7 +206,7 @@ export function renderProfileScreen(container) {
                 letter-spacing: 1px;
             }
 
-            /* Exact Trophy Zoom Modal Overlay */
+            /* Extra Large Trophy Zoom Modal Overlay */
             .trophy-zoom-modal {
                 position: fixed;
                 top: 0; left: 0;
@@ -231,12 +231,12 @@ export function renderProfileScreen(container) {
                 background: rgba(15, 23, 42, 0.95);
                 border: 2px solid #38bdf8;
                 border-radius: 20px;
-                padding: 30px 24px;
+                padding: 40px 30px;
                 width: 90%;
-                max-width: 320px;
+                max-width: 360px;
                 text-align: center;
-                box-shadow: 0 0 35px rgba(56, 189, 248, 0.5);
-                transform: scale(0.7);
+                box-shadow: 0 0 45px rgba(56, 189, 248, 0.6);
+                transform: scale(0.6);
                 transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
                 position: relative;
                 display: flex;
@@ -249,10 +249,10 @@ export function renderProfileScreen(container) {
                 transform: scale(1);
             }
 
-            /* Modal ထဲတွင် ထည့်မည့် Trophy ကို ပုံစံမပျက်ဘဲ အကြီးစားဖြစ်စေရန် Styles များ */
+            /* Trophy ကို အခုထက် ပိုကြီးအောင် ပိုမိုချဲ့ထွင်ခြင်း (Scale 2.8) */
             .zoomed-trophy-container {
-                transform: scale(1.8); /* ကြီးမားလာစေရန် ဆတိုးချဲ့ခြင်း */
-                margin: 30px 0;
+                transform: scale(2.8);
+                margin: 50px 0;
                 display: flex;
                 flex-direction: column;
                 align-items: center;
@@ -264,13 +264,13 @@ export function renderProfileScreen(container) {
                 border: none;
                 border-radius: 10px;
                 color: white;
-                padding: 10px 28px;
+                padding: 10px 32px;
                 font-size: 12px;
                 font-weight: bold;
                 cursor: pointer;
-                box-shadow: 0 0 12px rgba(14, 165, 233, 0.4);
+                box-shadow: 0 0 15px rgba(14, 165, 233, 0.5);
                 transition: opacity 0.2s ease;
-                margin-top: 10px;
+                margin-top: 15px;
             }
 
             .zoom-close-btn:hover {
@@ -305,11 +305,9 @@ export function renderProfileScreen(container) {
                     </div>
                 </div>
 
-                <!-- Trophy Box Content Area (Trophies ၁၁ လုံး) -->
+                <!-- Trophy Box Content Area -->
                 <div class="box-content-area" id="trophy-box-content">
-                    <div id="trophy-showcase-target">
-                        <!-- trophies.js မှ ဖလား ၁၁ လုံး ဤနေရာသို့ ဝင်ရောက်မည် -->
-                    </div>
+                    <div id="trophy-showcase-target"></div>
                 </div>
             </div>
 
@@ -326,12 +324,10 @@ export function renderProfileScreen(container) {
             </div>
         </div>
 
-        <!-- Exact Trophy Zoom Modal Overlay -->
+        <!-- Trophy Zoom Modal Overlay -->
         <div class="trophy-zoom-modal" id="trophy-zoom-modal">
             <div class="trophy-zoom-content">
-                <div class="zoomed-trophy-container" id="zoomed-trophy-wrapper">
-                    <!-- ထိလိုက်သော Trophy အစိတ်အပိုင်းများ ဤနေရာသို့ တိုက်ရိုက်ရောက်ရှိမည် -->
-                </div>
+                <div class="zoomed-trophy-container" id="zoomed-trophy-wrapper"></div>
                 <button class="zoom-close-btn" id="zoom-close-btn">OK</button>
             </div>
         </div>
@@ -366,7 +362,7 @@ export function renderProfileScreen(container) {
     const zoomedTrophyWrapper = document.getElementById('zoomed-trophy-wrapper');
     const zoomCloseBtn = document.getElementById('zoom-close-btn');
 
-    // 1. Cube ကို နှိပ်မှသာ Trophy များ နှေးကွေးချောမွေ့စွာ ပွင့်မည်
+    // 1. Cube ကိုနှိပ်မှ Trophy များဖွင့်မည်
     cyberCubeTrigger.addEventListener('click', (e) => {
         e.stopPropagation();
         if (isTrophiesOpen) return;
@@ -376,15 +372,16 @@ export function renderProfileScreen(container) {
         trophyBoxContent.classList.add('open');
     });
 
-    // 2. Trophy ကိုယ်တိုင် သို့မဟုတ် Cube ကို မထိဘဲ အပြင်ဘက် သို့မဟုတ် အလွတ်နေရာများကို ထိမှသာ Trophy နှေးကွေးစွာ ပြန်ပိတ်မည်
+    // 2. Trophy Showcase ဖွင့်ထားစဉ် အပြင်ဘက်ကိုနှိပ်မှသာ Cube ပြန်ပေါ်လာမည် (Modal ဖွင့်နေစဉ် မပိတ်စေရန် ကာကွယ်ထားသည်)
     document.addEventListener('click', (e) => {
         if (!isTrophiesOpen) return;
-        if (zoomModal.classList.contains('active')) return;
+        if (zoomModal.classList.contains('active')) return; // Modal ပွင့်နေရင် Cube ဆီ မပြန်စေရန် တားဆီးသည်
 
         const clickedInsideTrophy = e.target.closest('#trophy-showcase-target');
         const clickedCube = e.target.closest('#cyber-cube-trigger');
+        const clickedModal = e.target.closest('#trophy-zoom-modal');
 
-        if (!clickedInsideTrophy && !clickedCube) {
+        if (!clickedInsideTrophy && !clickedCube && !clickedModal) {
             setTimeout(() => {
                 isTrophiesOpen = false;
                 trophyBoxContent.classList.remove('open');
@@ -393,13 +390,11 @@ export function renderProfileScreen(container) {
         }
     });
 
-    // Render Trophy Showcase inside the Box with Exact Element Zoom Callback
+    // Render Trophy Showcase
     renderTrophyShowcase('trophy-showcase-target', (trophy, elementHTML) => {
-        // ထိလိုက်တဲ့ Trophy ရဲ့ တကယ့် HTML structure ကို ယူပြီး Modal ထဲထည့်ကာ ကြီးမားအောင်ပြပေးမည်
         if (elementHTML) {
             zoomedTrophyWrapper.innerHTML = elementHTML;
         } else {
-            // Fallback အနေနဲ့ အချက်အလက်ထုတ်ပေးရန်
             zoomedTrophyWrapper.innerHTML = `
                 <div style="text-align: center; color: #38bdf8;">
                     <div style="font-size: 50px;">${trophy.icon || '🏆'}</div>
@@ -410,12 +405,12 @@ export function renderProfileScreen(container) {
         zoomModal.classList.add('active');
     });
 
-    // Close Zoom Modal Button Action
+    // OK ခလုတ်နှိပ်ပါက Modal သာပိတ်မည်၊ Trophy Showcase မျက်နှာပြင်ပေါ်တွင်သာ ဆက်ရှိနေမည်
     zoomCloseBtn.addEventListener('click', () => {
         zoomModal.classList.remove('active');
     });
 
-    // Modal နောက်ခံ အမှောင်နေရာကို နှိပ်၍ ပိတ်နိုင်ရန်
+    // Modal နောက်ခံအမှောင်ကို နှိပ်၍ပိတ်သည့်အခါလည်း Trophy Showcase မှာပဲ ဆက်ရှိနေမည်
     zoomModal.addEventListener('click', (e) => {
         if (e.target === zoomModal) {
             zoomModal.classList.remove('active');
