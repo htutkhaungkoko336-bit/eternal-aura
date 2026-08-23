@@ -1,8 +1,8 @@
-// playing.js - Cyber Profile & Gaming Status Page
+// profile.js - Cyber Profile & Gaming Status Page
 
-export function renderPlayingScreen(container) {
-    const userName = localStorage.getItem('user_profile_name') || "CyberPlayer";
-    const userId = localStorage.getItem('user_profile_id') || "EA-99821";
+export function renderProfileScreen(container) {
+    const userName = localStorage.getItem('user_profile_name') || localStorage.getItem('userName') || "CyberPlayer";
+    const userId = localStorage.getItem('user_profile_id') || localStorage.getItem('userId') || "EA-99821";
     const userKey = localStorage.getItem('user_profile_key') || "EA-KEY-5599-CYBER-99X";
     const savedAvatar = localStorage.getItem('user_profile_avatar') || "";
 
@@ -224,16 +224,18 @@ export function renderPlayingScreen(container) {
     const fileInput = document.getElementById('file-input');
     const avatarContainer = document.getElementById('avatar-container');
 
-    fileInput.addEventListener('change', function(e) {
-        const file = e.target.files[0];
-        if (file) {
-            const reader = new FileReader();
-            reader.onload = function(event) {
-                const base64Img = event.target.result;
-                localStorage.setItem('user_profile_avatar', base64Img);
-                avatarContainer.innerHTML = `<img src="${base64Img}"><input type="file" id="file-input" accept="image/*" style="display: none;">`;
-            };
-            reader.readAsDataURL(file);
-        }
-    });
+    if (fileInput && avatarContainer) {
+        fileInput.addEventListener('change', function(e) {
+            const file = e.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function(event) {
+                    const base64Img = event.target.result;
+                    localStorage.setItem('user_profile_avatar', base64Img);
+                    avatarContainer.innerHTML = `<img src="${base64Img}"><input type="file" id="file-input" accept="image/*" style="display: none;">`;
+                };
+                reader.readAsDataURL(file);
+            }
+        });
+    }
 }
