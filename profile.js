@@ -1,4 +1,4 @@
-// profile.js - Profile Shell with Mobile Trophy Scrollbar Fix
+// profile.js - Profile Shell with Trophy Zoom Modal Feature
 import { renderTrophyShowcase } from './trophies.js';
 
 export function renderProfileScreen(container) {
@@ -86,7 +86,7 @@ export function renderProfileScreen(container) {
                 flex-direction: column;
                 align-items: center;
                 justify-content: center;
-                overflow: hidden; /* ဖုန်းစခရင်ပါ မကျော်လွန်စေရန် ထိန်းချုပ်ခြင်း */
+                overflow: hidden;
             }
 
             /* Perfect 3D Cyber Cubic */
@@ -138,7 +138,7 @@ export function renderProfileScreen(container) {
             .cube-face.top    { transform: rotateX(90deg) translateZ(35px); }
             .cube-face.bottom { transform: rotateX(-90deg) translateZ(35px); }
 
-            /* Trophy Box Content Area (ဖုန်းများပါ အလွန်အကျွံ Scroll မဖြစ်စေရန် အပြည့်အဝ ဖျောက်ပေးခြင်း) */
+            /* Trophy Box Content Area */
             .box-content-area {
                 opacity: 0;
                 visibility: hidden;
@@ -164,17 +164,11 @@ export function renderProfileScreen(container) {
                 pointer-events: auto;
             }
 
-            /* trophies.js မှလာသော element များ ဖုန်းစခရင်အတွင်း အံဝင်ခွင်ကျဖြစ်စေရန် */
             #trophy-showcase-target {
                 width: 100%;
                 max-width: 100%;
                 overflow-x: hidden !important;
                 overflow-y: hidden !important;
-            }
-
-            #trophy-showcase-target * {
-                max-width: 100% !important;
-                box-sizing: border-box !important;
             }
 
             /* 3. Key & History Side-by-Side Grid */
@@ -210,6 +204,83 @@ export function renderProfileScreen(container) {
                 font-weight: bold;
                 color: #38bdf8;
                 letter-spacing: 1px;
+            }
+
+            /* Trophy Zoom Modal Overlay */
+            .trophy-zoom-modal {
+                position: fixed;
+                top: 0; left: 0;
+                width: 100%; height: 100%;
+                background: rgba(2, 6, 23, 0.85);
+                backdrop-filter: blur(8px);
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                z-index: 9999;
+                opacity: 0;
+                visibility: hidden;
+                transition: opacity 0.3s ease, visibility 0.3s ease;
+            }
+
+            .trophy-zoom-modal.active {
+                opacity: 1;
+                visibility: visible;
+            }
+
+            .trophy-zoom-content {
+                background: rgba(15, 23, 42, 0.95);
+                border: 2px solid #38bdf8;
+                border-radius: 20px;
+                padding: 24px;
+                width: 90%;
+                max-width: 340px;
+                text-align: center;
+                box-shadow: 0 0 30px rgba(56, 189, 248, 0.4);
+                transform: scale(0.8);
+                transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+                position: relative;
+            }
+
+            .trophy-zoom-modal.active .trophy-zoom-content {
+                transform: scale(1);
+            }
+
+            .zoom-trophy-icon {
+                font-size: 64px;
+                margin-bottom: 12px;
+                filter: drop-shadow(0 0 15px rgba(56, 189, 248, 0.6));
+            }
+
+            .zoom-trophy-title {
+                font-size: 16px;
+                font-weight: bold;
+                color: #38bdf8;
+                margin-bottom: 8px;
+                letter-spacing: 1px;
+            }
+
+            .zoom-trophy-desc {
+                font-size: 12px;
+                color: #94a3b8;
+                margin-bottom: 20px;
+                line-height: 1.5;
+            }
+
+            .zoom-close-btn {
+                background: linear-gradient(135deg, #0ea5e9, #2563eb);
+                border: none;
+                border-radius: 10px;
+                color: white;
+                padding: 10px 24px;
+                font-size: 12px;
+                font-weight: bold;
+                cursor: pointer;
+                box-shadow: 0 0 12px rgba(14, 165, 233, 0.4);
+                transition: opacity 0.2s ease;
+            }
+
+            .zoom-close-btn:hover {
+                opacity: 0.9;
             }
         </style>
 
@@ -260,6 +331,16 @@ export function renderProfileScreen(container) {
                 </div>
             </div>
         </div>
+
+        <!-- Trophy Zoom Modal Overlay -->
+        <div class="trophy-zoom-modal" id="trophy-zoom-modal">
+            <div class="trophy-zoom-content">
+                <div class="zoom-trophy-icon" id="zoom-modal-icon">🏆</div>
+                <div class="zoom-trophy-title" id="zoom-modal-title">TROPHY NAME</div>
+                <div class="zoom-trophy-desc" id="zoom-modal-desc">Trophy description details will appear here.</div>
+                <button class="zoom-close-btn" id="zoom-close-btn">OK</button>
+            </div>
+        </div>
     `;
 
     // Avatar Upload Logic
@@ -286,6 +367,13 @@ export function renderProfileScreen(container) {
     const trophyBoxContent = document.getElementById('trophy-box-content');
     let isTrophiesOpen = false;
 
+    // Modal Elements
+    const zoomModal = document.getElementById('trophy-zoom-modal');
+    const zoomModalIcon = document.getElementById('zoom-modal-icon');
+    const zoomModalTitle = document.getElementById('zoom-modal-title');
+    const zoomModalDesc = document.getElementById('zoom-modal-desc');
+    const zoomCloseBtn = document.getElementById('zoom-close-btn');
+
     // 1. Cube ကို နှိပ်မှသာ Trophy များ နှေးကွေးချောမွေ့စွာ ပွင့်မည်
     cyberCubeTrigger.addEventListener('click', (e) => {
         e.stopPropagation();
@@ -296,9 +384,10 @@ export function renderProfileScreen(container) {
         trophyBoxContent.classList.add('open');
     });
 
-    // 2. Trophy ကိုယ်တိုင် သို့မဟုတ် Cube ကို မထိဘဲ အပြင်ဘက် သို့မဟုတ် အလွတ်နေရာများကို ထိမှသာ Trophy နှေးကွေးစွာ ပြန်ပိတ်မည်
+    // 2. Trophy ကိုယ်တိုင် သို့မဟုတ် Cube ကို မထိဘဲ အပြင်ဘက် သို့မဟုတ် အလွတ်နေရာများကို ထိမှသာ Trophy နှေးကွေးစွာ ပြန်ပိတ်မည် (Modal ပွင့်နေချိန်တွင် မပိတ်စေရန် ကာကွယ်ခြင်း)
     document.addEventListener('click', (e) => {
         if (!isTrophiesOpen) return;
+        if (zoomModal.classList.contains('active')) return; // Modal ပွင့်နေရင် အပြင်ကလစ်ကို လျစ်လျူရှုမည်
 
         const clickedInsideTrophy = e.target.closest('#trophy-showcase-target');
         const clickedCube = e.target.closest('#cyber-cube-trigger');
@@ -312,9 +401,25 @@ export function renderProfileScreen(container) {
         }
     });
 
-    // Render Trophy Showcase inside the Box using trophies.js module function
+    // Render Trophy Showcase inside the Box with Zoom Callback
     renderTrophyShowcase('trophy-showcase-target', (trophy) => {
-        // Trophy ကို နှိပ်သည့်အခါ ဆက်လက်ကြည့်ရှုနိုင်ရန်
+        // Trophy တစ်ခုခုကို နှိပ်လိုက်သောအခါ ဤနေရာမှ Modal ကို အကြီးစားပုံစံဖြင့် ဖော်ပြပေးမည်
+        zoomModalIcon.innerHTML = trophy.icon || '🏆';
+        zoomModalTitle.textContent = trophy.name || 'CYBER TROPHY';
+        zoomModalDesc.textContent = trophy.description || 'Exclusive achievement unlocked in the cyber universe.';
+        zoomModal.classList.add('active');
+    });
+
+    // Close Zoom Modal Button Action
+    zoomCloseBtn.addEventListener('click', () => {
+        zoomModal.classList.remove('active');
+    });
+
+    // Modal ရဲ့ နောက်ခံ အမှောင်နေရာကို နှိပ်၍လည်း ပိတ်နိုင်ရန်
+    zoomModal.addEventListener('click', (e) => {
+        if (e.target === zoomModal) {
+            zoomModal.classList.remove('active');
+        }
     });
 
     // Key Button Action
