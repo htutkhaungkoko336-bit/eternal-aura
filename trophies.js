@@ -1,11 +1,11 @@
-// trophies.js - Cyber Vortex Phoenix Trophy at the 4th position in the top row
+// trophies.js - Cyber Vortex Trophy updated at the 4th position in the top row
 
 const trophyDataList = [
     { id: 1, title: "ANGELIC ASCENT", subtitle: "ANGELIC ASCENT", date: "2026-01-15", desc: "Eternal Aura Angelic Halo Trophy.", isCustom: true, styleType: 'angelic-large' },
     { id: 2, title: "CYBER BLADE SHIELD", subtitle: "CYBER BLADE CHAMPION", date: "2026-02-10", desc: "Eternal Aura Cyber Blade Trophy. The Ultimate Cyber Shield." },
     { id: 3, title: "PHOENIX PROTOCOL", subtitle: "PHOENIX PROTOCOL", date: "2026-03-05", desc: "Eternal Aura Phoenix Shield Trophy.", isCustom: true, styleType: 'phoenix' },
     
-    // စတုတ္ထနေရာမှာ အစားထိုးလိုက်သော Cyber Vortex Phoenix Trophy (id: 4)
+    // စတုတ္ထနေရာမှာ Border နှင့် Floating ဖြုတ်ထားသော Cyber Vortex Phoenix Trophy (id: 4)
     { id: 4, title: "VORTEX PROTOCOL", subtitle: "VORTEX PROTOCOL", date: "2026-03-20", desc: "Eternal Aura Cyber Vortex Phoenix Trophy.", isCustom: true, styleType: 'vortex' },
 
     { id: 5, title: "ANGELIC ASCENT", subtitle: "Neon Striker Elite", date: "2026-04-12", desc: "Achieved maximum tactical score in seasonal event." },
@@ -485,7 +485,7 @@ export function renderTrophyShowcase(containerId, onTrophyClick) {
                 max-width: 42px;
             }
 
-            /* --- စတုတ္ထနေရာ (Cyber Vortex Phoenix Small - Border နှင့် Floating မပါ၊ အထဲက animation သက်သက်) --- */
+            /* --- စတုတ္ထနေရာ (Cyber Vortex Phoenix Small - Border နှင့် Floating လုံးဝမပါ၊ အထဲက animation သက်သက်) --- */
             .crystal-trophy-wrapper-vortex-small {
                 width: 52px;
                 height: 72px;
@@ -974,7 +974,7 @@ export function renderTrophyShowcase(containerId, onTrophyClick) {
         return item;
     };
 
-    // စတုတ္ထနေရာအတွက် Border နှင့် Floating ဖြုတ်ထားသော Cyber Vortex Phoenix အသေးစား Element
+    // စတုတ္ထနေရာအတွက် Border နှင့် Floating လုံးဝမပါသော Cyber Vortex Phoenix အသေးစား Element
     const createVortexProtocolSmallElement = (trophy) => {
         const item = document.createElement('div');
         item.className = `pure-trophy-item`;
@@ -1059,9 +1059,9 @@ export function renderTrophyShowcase(containerId, onTrophyClick) {
 
     // အပေါ်တန်း (Top Row) တွင် နေရာချခြင်း
     topRow.appendChild(createLargeAngelicElement(trophyDataList[0]));
-    topRow.appendChild(createCyberBladeSmallElement(trophyDataList[1]));         // ဒုတိယနေရာ (Cyber Blade)
-    topRow.appendChild(createPhoenixProtocolSmallElement(trophyDataList[2]));   // တတိယနေရာ (Phoenix Protocol)
-    topRow.appendChild(createVortexProtocolSmallElement(trophyDataList[3]));    // စတုတ္ထနေရာ (Cyber Vortex Phoenix - Border နှင့် floating ဖြုတ်ပြီး အထဲက animation သက်သက်)
+    topRow.appendChild(createCyberBladeSmallElement(trophyDataList[1]));         // ဒုတိယနေရာ
+    topRow.appendChild(createPhoenixProtocolSmallElement(trophyDataList[2]));   // တတိယနေရာ
+    topRow.appendChild(createVortexProtocolSmallElement(trophyDataList[3]));    // စတုတ္ထနေရာ (Cyber Vortex - Border နှင့် Floating ဖြုတ်ပြီးသား)
     topRow.appendChild(createStandardTrophyElement(trophyDataList[4]));         // ပဉ္စမနေရာ
 
     // အလယ်တန်း (Center Row)
