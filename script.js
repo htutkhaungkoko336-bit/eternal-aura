@@ -2,8 +2,7 @@
 import { initAuth } from './auth.js';
 import { renderModeScreen } from './mode.js';
 import { addNotification, renderNotificationScreen } from './notification.js';
-import { renderProfileScreen } from './profile.js'; // Profile Screen ကို Import လုပ်ခြင်း
-import { renderPlayingScreen } from './playing.js'; // Playing Screen ကို Import လုပ်ခြင်း
+import { renderProfileScreen } from './profile.js';
 
 // DOM Elements များကို ရယူခြင်း
 const formContent = document.getElementById('form-content');
@@ -110,11 +109,11 @@ function handleLoginSuccess(data) {
             if (tab === 'mode') {
                 renderModeScreen(targetContent);
             } else if (tab === 'match') {
-                renderPlayingScreen(targetContent); // Match Tab မှာ playing.js ကို ခေါ်သုံးခြင်း
+                targetContent.innerHTML = `<div style="color: white; text-align: center; margin-top: 50px; font-weight: 600;">MATCH SCREEN COMING SOON</div>`;
             } else if (tab === 'notification') {
                 renderNotificationScreen(targetContent);
             } else if (tab === 'profile') {
-                renderProfileScreen(targetContent); // Profile Screen ကို ချိတ်ဆက်ပေးခြင်း
+                renderProfileScreen(targetContent);
             } else {
                 targetContent.innerHTML = `<div style="color: white; text-align: center; margin-top: 50px; font-weight: 600;">${tab.toUpperCase()} Screen Coming Soon</div>`;
             }
