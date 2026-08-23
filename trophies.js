@@ -288,7 +288,8 @@ export function renderTrophyShowcase(containerId, onTrophyClick) {
 
         item.addEventListener('click', () => {
             if (typeof onTrophyClick === 'function') {
-                onTrophyClick(trophy);
+                // Trophy အချက်အလက်နှင့်အတူ တကယ့် HTML ကိုပါ ပို့ပေးလိုက်သည်
+                onTrophyClick(trophy, item.innerHTML);
             }
         });
 
