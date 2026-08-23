@@ -19,35 +19,49 @@ export function renderProfileScreen(container) {
                 position: relative;
             }
 
-            /* --- Cyberpunk Grid Header & Profile --- */
+            /* --- Profile Header Layout (Top Info + Trophy Side by Side) --- */
+            .profile-header-grid {
+                display: flex;
+                gap: 12px;
+                align-items: center;
+                margin-bottom: 14px;
+            }
+
             .cyber-top-card {
                 background: rgba(15, 23, 42, 0.85);
                 border: 1px solid #ec4899;
                 border-radius: 16px;
                 padding: 14px;
                 display: flex;
-                align-items: center;
-                gap: 12px;
+                flex-direction: column;
+                justify-content: center;
+                gap: 10px;
                 box-shadow: 0 0 20px rgba(236, 72, 153, 0.25);
                 backdrop-filter: blur(10px);
-                margin-bottom: 14px;
                 position: relative;
                 overflow: hidden;
+                flex: 1;
+                min-height: 110px;
             }
             .cyber-top-card::after {
                 content: '';
                 position: absolute;
                 top: 0; right: 0;
-                width: 60px; height: 60px;
+                width: 50px; height: 50px;
                 background: linear-gradient(135deg, rgba(236, 72, 153, 0.2), transparent);
                 border-bottom-left-radius: 100%;
             }
+            .pf-row-group {
+                display: flex;
+                align-items: center;
+                gap: 10px;
+            }
             .pf-upload-box {
-                width: 60px;
-                height: 60px;
+                width: 50px;
+                height: 50px;
                 background: #020617;
                 border: 2px dashed #ec4899;
-                border-radius: 12px;
+                border-radius: 10px;
                 display: flex;
                 align-items: center;
                 justify-content: center;
@@ -66,22 +80,115 @@ export function renderProfileScreen(container) {
                 left: 0;
             }
             .pf-upload-box span {
-                font-size: 24px;
+                font-size: 20px;
                 color: #ec4899;
                 text-shadow: 0 0 8px #ec4899;
             }
             .pf-text-info h3 {
                 margin: 0;
-                font-size: 15px;
+                font-size: 14px;
                 color: #f472b6;
                 text-shadow: 0 0 8px rgba(244, 114, 182, 0.5);
                 letter-spacing: 0.5px;
             }
             .pf-text-info p {
-                margin: 3px 0 0 0;
-                font-size: 11px;
+                margin: 2px 0 0 0;
+                font-size: 10px;
                 color: #94a3b8;
                 font-family: monospace;
+            }
+
+            /* --- Cyber Shield Trophy Mini Widget (Placed beside Profile) --- */
+            .cyber-shield-wrapper {
+                width: 110px;
+                height: 125px;
+                background: linear-gradient(135deg, rgba(15, 23, 42, 0.95), rgba(3, 7, 18, 0.98));
+                border: 1.5px solid #06b6d4;
+                clip-path: polygon(50% 0%, 100% 15%, 100% 75%, 50% 100%, 0% 75%, 0% 15%);
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                position: relative;
+                box-shadow: 0 0 20px rgba(6, 182, 212, 0.4), inset 0 0 10px rgba(236, 72, 153, 0.3);
+                flex-shrink: 0;
+            }
+            .cyber-shield-wrapper::before {
+                content: '';
+                position: absolute;
+                top: 4px; left: 4px; right: 4px; bottom: 4px;
+                border: 1px dashed rgba(236, 72, 153, 0.6);
+                clip-path: polygon(50% 0%, 100% 15%, 100% 75%, 50% 100%, 0% 75%, 0% 15%);
+                pointer-events: none;
+                z-index: 10;
+            }
+            .cybercity-trophy-container {
+                width: 90px;
+                height: 100px;
+                background: radial-gradient(circle at center, #1e1b4b 0%, #020617 100%);
+                border: 1px solid rgba(6, 182, 212, 0.4);
+                border-radius: 4px;
+                position: relative;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                overflow: hidden;
+                z-index: 2;
+            }
+            .holo-wing {
+                position: absolute;
+                width: 25px;
+                height: 45px;
+                background: linear-gradient(135deg, #06b6d4 0%, #ec4899 100%);
+                top: 22px;
+                opacity: 0.85;
+            }
+            .left-holo {
+                left: 8px;
+                clip-path: polygon(100% 0, 10% 25%, 30% 100%, 90% 75%);
+                transform: skewY(-8deg);
+            }
+            .right-holo {
+                right: 8px;
+                clip-path: polygon(0 0, 90% 25%, 70% 100%, 10% 75%);
+                transform: skewY(8deg);
+            }
+            .cyber-cup-body {
+                position: absolute;
+                width: 20px;
+                height: 40px;
+                background: linear-gradient(180deg, #38bdf8 0%, #0f172a 60%, #020617 100%);
+                border: 0.5px solid #22d3ee;
+                top: 24px;
+                clip-path: polygon(25% 0%, 75% 0%, 100% 35%, 85% 100%, 15% 100%, 0% 35%);
+                z-index: 2;
+            }
+            .circuit-line {
+                position: absolute;
+                top: 6px;
+                left: 8px;
+                width: 3px;
+                height: 24px;
+                background: #f472b6;
+            }
+            .cyber-base {
+                position: absolute;
+                bottom: 16px;
+                width: 45px;
+                height: 11px;
+                background: #090d16;
+                border: 0.5px solid #ec4899;
+                border-radius: 2px;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                z-index: 3;
+            }
+            .cyber-badge-text {
+                color: #22d3ee;
+                font-size: 5px;
+                font-weight: 900;
+                letter-spacing: 1px;
+                z-index: 4;
             }
 
             /* --- Cyber City Achievements Section --- */
@@ -190,7 +297,7 @@ export function renderProfileScreen(container) {
                 display: block;
             }
 
-            /* --- Floating Cyber Message Icon Button ---. */
+            /* --- Floating Cyber Message Icon Button --- */
             .floating-msg-btn {
                 position: fixed;
                 bottom: 75px;
@@ -283,19 +390,38 @@ export function renderProfileScreen(container) {
         </style>
 
         <div class="cyber-profile-wrapper">
-            <!-- 1. Top Card -->
-            <div class="cyber-top-card">
-                <label class="pf-upload-box" id="avatar-container" title="ဓာတ်ပုံပြောင်းရန်နှိပ်ပါ">
-                    ${userAvatar ? `<img src="${userAvatar}" id="pf-img">` : `<span>+</span>`}
-                    <input type="file" id="pf-file-input" accept="image/*" style="display: none;">
-                </label>
-                <div class="pf-text-info">
-                    <h3>${userName}</h3>
-                    <p>${userId}</p>
+            <!-- Header Grid: Profile Card & Cyber Shield Trophy side-by-side -->
+            <div class="profile-header-grid">
+                <!-- 1. Top Card -->
+                <div class="cyber-top-card">
+                    <div class="pf-row-group">
+                        <label class="pf-upload-box" id="avatar-container" title="ဓာတ်ပုံပြောင်းရန်နှိပ်ပါ">
+                            ${userAvatar ? `<img src="${userAvatar}" id="pf-img">` : `<span>+</span>`}
+                            <input type="file" id="pf-file-input" accept="image/*" style="display: none;">
+                        </label>
+                        <div class="pf-text-info">
+                            <h3>${userName}</h3>
+                            <p>${userId}</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 2. Cyber Shield Trophy Widget (Placed on the side) -->
+                <div class="cyber-shield-wrapper" title="M7 Cyber City Champion Trophy">
+                    <div class="cybercity-trophy-container">
+                        <div class="holo-wing left-holo"></div>
+                        <div class="holo-wing right-holo"></div>
+                        <div class="cyber-cup-body">
+                            <div class="circuit-line"></div>
+                        </div>
+                        <div class="cyber-base">
+                            <span class="cyber-badge-text">M7 TROPHY</span>
+                        </div>
+                    </div>
                 </div>
             </div>
 
-            <!-- 2. Cyber City Achievements -->
+            <!-- 3. Cyber City Achievements Section -->
             <div class="cyber-achievements-box">
                 <div class="ach-header">
                     <span>⚡ CYBER CITY ACHIEVEMENTS</span>
@@ -326,7 +452,7 @@ export function renderProfileScreen(container) {
                 </div>
             </div>
 
-            <!-- 3. Action Grid (Key & History) -->
+            <!-- 4. Action Grid (Key & History) -->
             <div class="action-grid">
                 <div class="cyber-action-box" id="btn-key">
                     <span>KEY 🔑</span>
@@ -351,7 +477,7 @@ export function renderProfileScreen(container) {
                 </div>
             </div>
 
-            <!-- 4. Floating Message Icon Button -->
+            <!-- 5. Floating Message Icon Button -->
             <div class="floating-msg-btn" id="open-msg-modal" title="ရဲဘော်များထံ မက်ဆေ့ခ်ျပို့ရန်">
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
                     <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
