@@ -1,4 +1,4 @@
-// trophies.js - Updated with Twin Blades for No. 11 (Fixed background black box issue)
+// trophies.js - Updated with Twin Blades for No. 11 (Background and border removed)[cite: 4]
 
 const trophyDataList = [
     { id: 1, title: "ANGELIC ASCENT", subtitle: "ANGELIC ASCENT", date: "2026-01-15", desc: "Eternal Aura Angelic Halo Trophy.", isCustom: true, styleType: 'angelic-large' },
@@ -1370,7 +1370,7 @@ export function renderTrophyShowcase(containerId, onTrophyClick) {
                 100% { opacity: 1; transform: scaleX(1.1); }
             }
 
-            /* --- နံပါတ် ၁၁ နေရာ (Quantum Twin Blades Trophy - Fixed background box issue) --- */
+            /* --- နံပါတ် ၁၁ နေရာ (Quantum Twin Blades Trophy - Background box and border removed) --- */
             .twin-blades-wrapper-small {
                 width: 52px;
                 height: 72px;
@@ -1386,17 +1386,14 @@ export function renderTrophyShowcase(containerId, onTrophyClick) {
             .twin-blades-container-small {
                 width: 48px;
                 height: 68px;
-                background: radial-gradient(circle at center, #260f15 0%, #020617 100%);
-                border: 0.5px solid #ef4444;
-                border-radius: 6px;
+                background: transparent; /* Background box ဖျောက်ထားသည် */
+                border: none; /* Border ဖျောက်ထားသည် */
                 position: relative;
                 display: flex;
                 flex-direction: column;
                 align-items: center;
                 justify-content: space-between;
                 padding: 2px 0;
-                overflow: hidden;
-                box-shadow: 0 0 8px rgba(239, 68, 68, 0.4);
             }
 
             .celestial-head-twin-small {
