@@ -1,19 +1,17 @@
-// trophies.js - Updated with Cyber Prism Trophy at the 5th position
+// trophies.js - Updated with Feather-Matrix Trophy at the 7th position (id: 7)
 
 const trophyDataList = [
     { id: 1, title: "ANGELIC ASCENT", subtitle: "ANGELIC ASCENT", date: "2026-01-15", desc: "Eternal Aura Angelic Halo Trophy.", isCustom: true, styleType: 'angelic-large' },
     { id: 2, title: "CYBER BLADE SHIELD", subtitle: "CYBER BLADE CHAMPION", date: "2026-02-10", desc: "Eternal Aura Cyber Blade Trophy. The Ultimate Cyber Shield." },
     { id: 3, title: "PHOENIX PROTOCOL", subtitle: "PHOENIX PROTOCOL", date: "2026-03-05", desc: "Eternal Aura Phoenix Shield Trophy.", isCustom: true, styleType: 'phoenix' },
     { id: 4, title: "VORTEX PROTOCOL", subtitle: "VORTEX PROTOCOL", date: "2026-03-20", desc: "Eternal Aura Cyber Vortex Phoenix Trophy.", isCustom: true, styleType: 'vortex' },
-    
-    // ပဉ္စမနေရာမှာ Border နှင့် Floating ဖြုတ်ထားသော Cyber Prism Trophy အသေးစား (id: 5)
     { id: 5, title: "PRISM PROTOCOL", subtitle: "PRISM PROTOCOL", date: "2026-04-12", desc: "Eternal Aura Cyber Prism Trophy.", isCustom: true, styleType: 'prism' },
     
     // အလယ်အကြီးစား ၁ လုံး (မူလအတိုင်း)
     { id: 6, title: "ETERNAL SUPREME", subtitle: "M7 HALO CHAMPION", date: "2026-08-23", desc: "The Ultimate Cyber Angelic Shield Trophy. Undisputed king of all tournaments." },
 
-    // အောက်ဘက် ၅ လုံး
-    { id: 7, title: "ANGELIC ASCENT", subtitle: "Celestial Conqueror", date: "2026-05-01", desc: "Conquered all regional qualifiers without a loss." },
+    // အောက်ဘက် ၅ လုံး (နံပါတ် ၇ နေရာတွင် Border & Floating ဖြုတ်ထားသော Feather Nexus Trophy အသေးစား)
+    { id: 7, title: "FEATHER NEXUS", subtitle: "FEATHER NEXUS", date: "2026-05-01", desc: "Eternal Aura Feather Matrix Trophy.", isCustom: true, styleType: 'feather-small' },
     { id: 8, title: "ANGELIC ASCENT", subtitle: "Apex Legend Trophy", date: "2026-05-25", desc: "Top 10 leaderboard dominance recognition." },
     { id: 9, title: "ANGELIC ASCENT", subtitle: "Vector Vanguard", date: "2026-06-10", desc: "Special community event design & combat winner." },
     { id: 10, title: "ANGELIC ASCENT", subtitle: "Quantum Guardian", date: "2026-07-02", desc: "Secured base defense record in tactical matches." },
@@ -634,7 +632,7 @@ export function renderTrophyShowcase(containerId, onTrophyClick) {
                 max-width: 42px;
             }
 
-            /* --- ပဉ္စမနေရာ (Cyber Prism Small - Border နှင့် Floating ဖြုတ်ပြီးသား) --- */
+            /* --- ပဉ္စမနေရာ (Cyber Prism Small) --- */
             .crystal-trophy-wrapper-prism-small {
                 width: 52px;
                 height: 72px;
@@ -767,6 +765,140 @@ export function renderTrophyShowcase(containerId, onTrophyClick) {
                 font-size: 3px;
                 font-weight: 900;
                 letter-spacing: 0.3px;
+                z-index: 2;
+                text-shadow: 0 0 2px #a855f7;
+                text-align: center;
+                white-space: nowrap;
+                overflow: hidden;
+                text-overflow: ellipsis;
+                max-width: 42px;
+            }
+
+            /* --- နံပါတ် ၇ နေရာ (Feather Nexus Small - Border နှင့် Floating လုံးဝမပါ၊ Flapping Animation သက်သက်ပါဝင်သည်) --- */
+            .crystal-trophy-wrapper-feather-small {
+                width: 52px;
+                height: 72px;
+                background: transparent;
+                border: none;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                position: relative;
+                flex-shrink: 0;
+            }
+
+            .crystal-trophy-container-feather-small {
+                width: 48px;
+                height: 68px;
+                position: relative;
+                display: flex;
+                flex-direction: column;
+                align-items: center;
+                justify-content: space-between;
+                padding: 2px 0;
+            }
+
+            .feather-head-small {
+                position: relative;
+                width: 38px;
+                height: 28px;
+                display: flex;
+                justify-content: center;
+                align-items: center;
+            }
+
+            .feather-wing-small-item {
+                position: absolute;
+                top: 2px;
+                width: 16px;
+                height: 22px;
+                background: linear-gradient(135deg, rgba(168, 85, 247, 0.35) 0%, rgba(6, 182, 212, 0.3) 100%);
+                border: 0.5px solid #a855f7;
+                box-shadow: inset 0 0 6px rgba(168, 85, 247, 0.5);
+                z-index: 3;
+            }
+
+            .feather-wing-small-item.left {
+                left: 1px;
+                clip-path: polygon(25% 0%, 100% 20%, 90% 100%, 10% 70%);
+                transform-origin: right center;
+                animation: flapFeatherLeftSmall 1.3s ease-in-out infinite alternate;
+            }
+
+            @keyframes flapFeatherLeftSmall {
+                0% { transform: rotate(-10deg) scaleX(0.9); }
+                100% { transform: rotate(4deg) scaleX(1.05); }
+            }
+
+            .feather-wing-small-item.right {
+                right: 1px;
+                clip-path: polygon(0% 20%, 75% 0%, 90% 70%, 10% 100%);
+                transform-origin: left center;
+                animation: flapFeatherRightSmall 1.3s ease-in-out infinite alternate;
+            }
+
+            @keyframes flapFeatherRightSmall {
+                0% { transform: rotate(10deg) scaleX(0.9); }
+                100% { transform: rotate(-4deg) scaleX(1.05); }
+            }
+
+            .feather-core-gem-small {
+                position: relative;
+                width: 6px;
+                height: 6px;
+                background: #ffffff;
+                transform: rotate(45deg);
+                box-shadow: 0 0 6px #a855f7, 0 0 10px #06b6d4;
+                z-index: 4;
+            }
+
+            .feather-pillar-small {
+                position: relative;
+                width: 10px;
+                height: 18px;
+                background: linear-gradient(180deg, #0f172a 0%, #020617 100%);
+                border: 0.5px solid #a855f7;
+                border-radius: 2px;
+                display: flex;
+                justify-content: center;
+                align-items: center;
+            }
+
+            .pillar-plasma-beam-small {
+                width: 1.5px;
+                height: 100%;
+                background: linear-gradient(180deg, #06b6d4 0%, #a855f7 100%);
+                box-shadow: 0 0 5px #a855f7;
+                border-radius: 1px;
+            }
+
+            .feather-base-small {
+                position: relative;
+                width: 46px;
+                height: 11px;
+                background: linear-gradient(180deg, #0f172a 0%, #020617 100%);
+                border: 0.5px solid #a855f7;
+                border-top: 1px solid #06b6d4;
+                border-radius: 3px;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+            }
+
+            .base-top-glow-small {
+                position: absolute;
+                top: 1px;
+                width: 32px;
+                height: 0.8px;
+                background: #06b6d4;
+                box-shadow: 0 0 4px #06b6d4;
+            }
+
+            .base-title-feather-small {
+                color: #06b6d4;
+                font-size: 3px;
+                font-weight: 900;
+                letter-spacing: 0.5px;
                 z-index: 2;
                 text-shadow: 0 0 2px #a855f7;
                 text-align: center;
@@ -1038,7 +1170,6 @@ export function renderTrophyShowcase(containerId, onTrophyClick) {
         return item;
     };
 
-    // ပဉ္စမနေရာအတွက် Border နှင့် Floating လုံးဝမပါသော Cyber Prism အသေးစား Element
     const createPrismProtocolSmallElement = (trophy) => {
         const item = document.createElement('div');
         item.className = `pure-trophy-item`;
@@ -1060,6 +1191,33 @@ export function renderTrophyShowcase(containerId, onTrophyClick) {
                     <div class="celestial-base-prism-small">
                         <div class="base-glow-rim-prism-small"></div>
                         <span class="base-title-prism-small">PRISM</span>
+                    </div>
+                </div>
+            </div>
+        `;
+        item.addEventListener('click', () => { if (typeof onTrophyClick === 'function') onTrophyClick(trophy, item.innerHTML); });
+        return item;
+    };
+
+    // နံပါတ် ၇ နေရာအတွက် Border နှင့် Floating လုံးဝမပါ၊ Flapping Animation သက်သက်ပါသော Feather Nexus အသေးစား Element
+    const createFeatherProtocolSmallElement = (trophy) => {
+        const item = document.createElement('div');
+        item.className = `pure-trophy-item`;
+        item.title = `${trophy.subtitle} - နှိပ်၍ အသေးစိတ်ကြည့်ရန်`;
+        item.innerHTML = `
+            <div class="crystal-trophy-wrapper-feather-small">
+                <div class="crystal-trophy-container-feather-small">
+                    <div class="feather-head-small">
+                        <div class="feather-wing-small-item left"></div>
+                        <div class="feather-wing-small-item right"></div>
+                        <div class="feather-core-gem-small"></div>
+                    </div>
+                    <div class="feather-pillar-small">
+                        <div class="pillar-plasma-beam-small"></div>
+                    </div>
+                    <div class="feather-base-small">
+                        <div class="base-top-glow-small"></div>
+                        <span class="base-title-feather-small">FEATHER</span>
                     </div>
                 </div>
             </div>
@@ -1097,38 +1255,42 @@ export function renderTrophyShowcase(containerId, onTrophyClick) {
     topRow.appendChild(createCyberBladeSmallElement(trophyDataList[1]));
     topRow.appendChild(createPhoenixProtocolSmallElement(trophyDataList[2]));
     topRow.appendChild(createVortexProtocolSmallElement(trophyDataList[3]));
-    topRow.appendChild(createPrismProtocolSmallElement(trophyDataList[4]));   // ပဉ္စမနေရာ (Cyber Prism - Border နှင့် Floating ဖြုတ်ပြီးသား)
+    topRow.appendChild(createPrismProtocolSmallElement(trophyDataList[4]));
 
     // အလယ်တန်း (Center Row)
     centerRow.appendChild(createShieldCenterElement(trophyDataList[5]));
 
-    // အောက်တန်း (Bottom Row)
+    // အောက်တန်း (Bottom Row) တွင် ၇ ကို Feather Nexus ဖြင့် အစားထိုးခြင်း
     for (let i = 6; i < 11; i++) {
-        const standardItem = document.createElement('div');
-        standardItem.className = `pure-trophy-item`;
-        standardItem.title = `${trophyDataList[i].subtitle} - နှိပ်၍ အသေးစိတ်ကြည့်ရန်`;
-        standardItem.innerHTML = `
-            <div class="crystal-trophy-wrapper-first">
-                <div class="crystal-trophy-container-large">
-                    <div class="celestial-head-large">
-                        <div class="angel-halo-large"></div>
-                        <div class="angel-wing-large left-wing-large"></div>
-                        <div class="angel-wing-large right-wing-large"></div>
-                        <div class="central-hologram-large">
-                            <div class="angel-core-large"></div>
+        if (i === 6) {
+            bottomRow.appendChild(createFeatherProtocolSmallElement(trophyDataList[i]));
+        } else {
+            const standardItem = document.createElement('div');
+            standardItem.className = `pure-trophy-item`;
+            standardItem.title = `${trophyDataList[i].subtitle} - နှိပ်၍ အသေးစိတ်ကြည့်ရန်`;
+            standardItem.innerHTML = `
+                <div class="crystal-trophy-wrapper-first">
+                    <div class="crystal-trophy-container-large">
+                        <div class="celestial-head-large">
+                            <div class="angel-halo-large"></div>
+                            <div class="angel-wing-large left-wing-large"></div>
+                            <div class="angel-wing-large right-wing-large"></div>
+                            <div class="central-hologram-large">
+                                <div class="angel-core-large"></div>
+                            </div>
+                        </div>
+                        <div class="celestial-pillar-large">
+                            <div class="pillar-beam-large"></div>
+                        </div>
+                        <div class="celestial-base-large">
+                            <div class="base-glow-rim-large"></div>
+                            <span class="base-title-large">${trophyDataList[i].subtitle}</span>
                         </div>
                     </div>
-                    <div class="celestial-pillar-large">
-                        <div class="pillar-beam-large"></div>
-                    </div>
-                    <div class="celestial-base-large">
-                        <div class="base-glow-rim-large"></div>
-                        <span class="base-title-large">${trophyDataList[i].subtitle}</span>
-                    </div>
                 </div>
-            </div>
-        `;
-        standardItem.addEventListener('click', () => { if (typeof onTrophyClick === 'function') onTrophyClick(trophyDataList[i], standardItem.innerHTML); });
-        bottomRow.appendChild(standardItem);
+            `;
+            standardItem.addEventListener('click', () => { if (typeof onTrophyClick === 'function') onTrophyClick(trophyDataList[i], standardItem.innerHTML); });
+            bottomRow.appendChild(standardItem);
+        }
     }
 }
