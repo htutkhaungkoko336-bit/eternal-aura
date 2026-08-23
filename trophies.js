@@ -1,4 +1,4 @@
-// trophies.js - Top 5, Bottom 5, Center Giant Layout
+// trophies.js - Top 5, Bottom 5, Center Shield Halo Layout
 
 const trophyDataList = [
     // အပေါ်ဘက် ၅ လုံး
@@ -8,8 +8,8 @@ const trophyDataList = [
     { id: 4, title: "ANGELIC ASCENT", subtitle: "Aura Cup Champion", date: "2026-03-20", desc: "Squad tournament grand finals MVP trophy." },
     { id: 5, title: "ANGELIC ASCENT", subtitle: "Neon Striker Elite", date: "2026-04-12", desc: "Achieved maximum tactical score in seasonal event." },
     
-    // အလယ်အကြီးစား ၁ လုံး (Main Crown Trophy)
-    { id: 6, title: "ETERNAL SUPREME", subtitle: "GOD OF AURA CHAMPION", date: "2026-08-23", desc: "The Ultimate Grandmaster Trophy. Undisputed king of all seasons." },
+    // အလယ်အကြီးစား ၁ လုံး (Cyber Angelic Shield Trophy)
+    { id: 6, title: "ETERNAL SUPREME", subtitle: "M7 HALO CHAMPION", date: "2026-08-23", desc: "The Ultimate Cyber Angelic Shield Trophy. Undisputed king of all tournaments." },
 
     // အောက်ဘက် ၅ လုံး
     { id: 7, title: "ANGELIC ASCENT", subtitle: "Celestial Conqueror", date: "2026-05-01", desc: "Conquered all regional qualifiers without a loss." },
@@ -28,16 +28,16 @@ export function renderTrophyShowcase(containerId, onTrophyClick) {
             .layout-wrapper {
                 display: flex;
                 flex-direction: column;
-                gap: 12px;
+                gap: 10px;
                 align-items: center;
                 width: 100%;
-                padding: 6px 0;
+                padding: 4px 0;
             }
 
             .trophy-row {
                 display: flex;
                 justify-content: center;
-                gap: 8px;
+                gap: 6px;
                 width: 100%;
                 flex-wrap: nowrap;
                 overflow-x: auto;
@@ -49,10 +49,10 @@ export function renderTrophyShowcase(containerId, onTrophyClick) {
                 justify-content: center;
                 align-items: center;
                 width: 100%;
-                margin: 4px 0;
+                margin: 2px 0;
             }
 
-            /* ဖလားသီးသန့် စတိုင် (အသေးစား - အပေါ်/အောက်အတွက်) */
+            /* အပေါ်/အောက် သာမန်ဖလားများအတွက် စတိုင် */
             .pure-trophy-item {
                 display: flex;
                 flex-direction: column;
@@ -68,19 +68,10 @@ export function renderTrophyShowcase(containerId, onTrophyClick) {
                 filter: drop-shadow(0 0 8px #facc15);
             }
 
-            /* အလယ်က အကြီးစား ဖလားအတွက် စတိုင် */
-            .pure-trophy-item.center-giant {
-                transform: scale(1.3);
-            }
-            .pure-trophy-item.center-giant:hover {
-                transform: scale(1.4);
-                filter: drop-shadow(0 0 14px #facc15);
-            }
-
-            /* Crystal Trophy Structural CSS များ */
+            /* Crystal Trophy Structural CSS များ (အပေါ်/အောက်အတွက်) */
             .crystal-trophy-container {
-                width: 55px;
-                height: 75px;
+                width: 52px;
+                height: 72px;
                 position: relative;
                 display: flex;
                 flex-direction: column;
@@ -89,22 +80,13 @@ export function renderTrophyShowcase(containerId, onTrophyClick) {
                 padding: 2px 0;
             }
 
-            .center-giant .crystal-trophy-container {
-                width: 85px;
-                height: 110px;
-            }
-
             .celestial-head {
                 position: relative;
-                width: 40px;
-                height: 28px;
+                width: 38px;
+                height: 26px;
                 display: flex;
                 justify-content: center;
                 align-items: center;
-            }
-            .center-giant .celestial-head {
-                width: 65px;
-                height: 45px;
             }
 
             .angel-halo {
@@ -118,10 +100,6 @@ export function renderTrophyShowcase(containerId, onTrophyClick) {
                 z-index: 4;
                 animation: pulseHalo 2s ease-in-out infinite alternate;
             }
-            .center-giant .angel-halo {
-                width: 20px;
-                height: 8px;
-            }
 
             @keyframes pulseHalo {
                 0% { transform: scale(0.9); opacity: 0.8; }
@@ -130,14 +108,10 @@ export function renderTrophyShowcase(containerId, onTrophyClick) {
 
             .angel-wing {
                 position: absolute;
-                width: 16px;
-                height: 22px;
+                width: 15px;
+                height: 20px;
                 background: linear-gradient(135deg, rgba(56, 189, 248, 0.25) 0%, rgba(250, 204, 21, 0.2) 100%);
                 border: 0.6px solid #38bdf8;
-            }
-            .center-giant .angel-wing {
-                width: 26px;
-                height: 36px;
             }
 
             .left-wing {
@@ -169,25 +143,17 @@ export function renderTrophyShowcase(containerId, onTrophyClick) {
                 border-radius: 50%;
                 box-shadow: 0 0 5px #38bdf8, 0 0 8px #facc15;
             }
-            .center-giant .angel-core {
-                width: 10px;
-                height: 10px;
-            }
 
             .celestial-pillar {
                 position: relative;
                 width: 10px;
-                height: 16px;
+                height: 15px;
                 background: linear-gradient(180deg, #0f172a 0%, #020617 100%);
                 border: 0.6px solid #38bdf8;
                 border-radius: 2px;
                 display: flex;
                 justify-content: center;
                 align-items: center;
-            }
-            .center-giant .celestial-pillar {
-                width: 14px;
-                height: 25px;
             }
 
             .pillar-beam {
@@ -199,7 +165,7 @@ export function renderTrophyShowcase(containerId, onTrophyClick) {
 
             .celestial-base {
                 position: relative;
-                width: 50px;
+                width: 48px;
                 height: 11px;
                 background: linear-gradient(180deg, #0f172a 0%, #020617 100%);
                 border: 0.6px solid #38bdf8;
@@ -210,25 +176,18 @@ export function renderTrophyShowcase(containerId, onTrophyClick) {
                 justify-content: center;
                 box-shadow: 0 0 5px rgba(56, 189, 248, 0.3);
             }
-            .center-giant .celestial-base {
-                width: 78px;
-                height: 16px;
-            }
 
             .base-glow-rim {
                 position: absolute;
                 top: 1px;
-                width: 35px;
+                width: 32px;
                 height: 0.6px;
                 background: #facc15;
-            }
-            .center-giant .base-glow-rim {
-                width: 60px;
             }
 
             .base-title {
                 color: #facc15;
-                font-size: 3.8px;
+                font-size: 3.6px;
                 font-weight: 900;
                 letter-spacing: 0.3px;
                 z-index: 2;
@@ -237,11 +196,148 @@ export function renderTrophyShowcase(containerId, onTrophyClick) {
                 white-space: nowrap;
                 overflow: hidden;
                 text-overflow: ellipsis;
-                max-width: 44px;
+                max-width: 42px;
             }
-            .center-giant .base-title {
-                font-size: 5.5px;
-                max-width: 70px;
+
+            /* --- အလယ်က Cyber Angelic Shield Trophy CSS များ --- */
+            .pure-trophy-item.center-shield-item {
+                cursor: pointer;
+                transition: transform 0.25s ease;
+            }
+            .pure-trophy-item.center-shield-item:hover {
+                transform: scale(1.12);
+            }
+
+            .cyber-shield-wrapper-halo {
+                width: 95px;
+                height: 110px;
+                background: linear-gradient(135deg, rgba(15, 23, 42, 0.98), rgba(3, 7, 18, 1));
+                border: 1.5px solid #38bdf8;
+                clip-path: polygon(50% 0%, 100% 15%, 100% 75%, 50% 100%, 0% 75%, 0% 15%);
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                position: relative;
+                box-shadow: 0 0 22px rgba(56, 189, 248, 0.5), inset 0 0 10px rgba(250, 204, 21, 0.3);
+                flex-shrink: 0;
+                animation: shieldFloatHalo 3s ease-in-out infinite;
+            }
+
+            @keyframes shieldFloatHalo {
+                0%, 100% {
+                    transform: translateY(0px);
+                    box-shadow: 0 0 18px rgba(56, 189, 248, 0.5);
+                }
+                50% {
+                    transform: translateY(-4px);
+                    box-shadow: 0 0 30px rgba(250, 204, 21, 0.7);
+                }
+            }
+
+            .cybercity-trophy-container-halo {
+                width: 79px;
+                height: 92px;
+                background: radial-gradient(circle at center, #1e1b4b 0%, #020617 100%);
+                border: 1px solid rgba(56, 189, 248, 0.5);
+                clip-path: polygon(50% 0%, 100% 15%, 100% 75%, 50% 100%, 0% 75%, 0% 15%);
+                position: relative;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                overflow: hidden;
+                z-index: 2;
+            }
+
+            .angel-halo-crown {
+                position: absolute;
+                top: 4px;
+                width: 22px;
+                height: 8px;
+                border: 2px solid #facc15;
+                border-radius: 50%;
+                box-shadow: 0 0 8px #facc15, 0 0 12px #38bdf8;
+                z-index: 6;
+                animation: pulseHaloCrown 2s ease-in-out infinite alternate;
+            }
+
+            @keyframes pulseHaloCrown {
+                0% { transform: scale(0.9); opacity: 0.8; }
+                100% { transform: scale(1.15); opacity: 1; }
+            }
+
+            .blade-wing {
+                position: absolute;
+                width: 26px;
+                height: 44px;
+                background: linear-gradient(135deg, #38bdf8 0%, #a855f7 100%);
+                top: 14px;
+                box-shadow: 0 0 8px #38bdf8;
+            }
+
+            .left-blade {
+                left: 3px;
+                clip-path: polygon(0% 0%, 100% 20%, 60% 100%, 10% 80%);
+            }
+
+            .right-blade {
+                right: 3px;
+                clip-path: polygon(0% 20%, 100% 0%, 90% 80%, 40% 100%);
+            }
+
+            .laser-beam {
+                position: absolute;
+                top: 8px;
+                width: 2px;
+                height: 46px;
+                background: #ffffff;
+                box-shadow: 0 0 6px #38bdf8, 0 0 10px #facc15;
+                z-index: 4;
+            }
+
+            .cyber-cup-body-v2 {
+                position: absolute;
+                width: 20px;
+                height: 34px;
+                background: linear-gradient(180deg, rgba(168, 85, 247, 0.8) 0%, #0f172a 80%);
+                border: 1px solid #38bdf8;
+                top: 22px;
+                clip-path: polygon(50% 0%, 100% 25%, 80% 100%, 20% 100%, 0% 25%);
+                z-index: 3;
+                display: flex;
+                justify-content: center;
+                align-items: center;
+            }
+
+            .glow-dot {
+                width: 5px;
+                height: 5px;
+                background: #ffffff;
+                border-radius: 50%;
+                box-shadow: 0 0 6px #38bdf8;
+            }
+
+            .cyber-base-v2 {
+                position: absolute;
+                bottom: 12px;
+                width: 46px;
+                height: 11px;
+                background: #090d16;
+                border: 1px solid #38bdf8;
+                border-top: 1.5px solid #facc15;
+                border-radius: 3px;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                z-index: 5;
+                box-shadow: 0 0 8px rgba(56, 189, 248, 0.5);
+            }
+
+            .cyber-badge-text-v2 {
+                color: #facc15;
+                font-size: 4px;
+                font-weight: 900;
+                letter-spacing: 0.6px;
+                text-shadow: 0 0 3px #38bdf8;
             }
         </style>
 
@@ -249,7 +345,7 @@ export function renderTrophyShowcase(containerId, onTrophyClick) {
             <!-- အပေါ်ဘက် တန်း (၅ လုံး) -->
             <div class="trophy-row" id="top-row"></div>
 
-            <!-- အလယ်တည့်တည့် (အကြီးစား ၁ လုံး) -->
+            <!-- အလယ်တည့်တည့် (Cyber Angelic Shield Trophy) -->
             <div class="center-highlight-row" id="center-row"></div>
 
             <!-- အောက်ဘက် တန်း (၅ လုံး) -->
@@ -261,9 +357,10 @@ export function renderTrophyShowcase(containerId, onTrophyClick) {
     const centerRow = document.getElementById('center-row');
     const bottomRow = document.getElementById('bottom-row');
 
-    const createTrophyElement = (trophy, isGiant = false) => {
+    // 1. သာမန်ဖလားများ ဖန်တီးရန် (အပေါ်/အောက် တန်းများအတွက်)
+    const createStandardTrophyElement = (trophy) => {
         const item = document.createElement('div');
-        item.className = `pure-trophy-item ${isGiant ? 'center-giant' : ''}`;
+        item.className = `pure-trophy-item`;
         item.title = `${trophy.subtitle} - နှိပ်၍ အသေးစိတ်ကြည့်ရန်`;
 
         item.innerHTML = `
@@ -288,7 +385,6 @@ export function renderTrophyShowcase(containerId, onTrophyClick) {
 
         item.addEventListener('click', () => {
             if (typeof onTrophyClick === 'function') {
-                // Trophy အချက်အလက်နှင့်အတူ တကယ့် HTML ကိုပါ ပို့ပေးလိုက်သည်
                 onTrophyClick(trophy, item.innerHTML);
             }
         });
@@ -296,16 +392,48 @@ export function renderTrophyShowcase(containerId, onTrophyClick) {
         return item;
     };
 
-    // ၁။ အပေါ်တန်း (အညွှန်း ၀ မှ ၄ ထိ - ၅ လုံး)
+    // 2. အလယ်က Shield Trophy ဖန်တီးရန်
+    const createShieldCenterElement = (trophy) => {
+        const item = document.createElement('div');
+        item.className = `pure-trophy-item center-shield-item`;
+        item.title = `${trophy.subtitle} - နှိပ်၍ အသေးစိတ်ကြည့်ရန်`;
+
+        item.innerHTML = `
+            <div class="cyber-shield-wrapper-halo">
+                <div class="cybercity-trophy-container-halo">
+                    <div class="angel-halo-crown"></div>
+                    <div class="blade-wing left-blade"></div>
+                    <div class="blade-wing right-blade"></div>
+                    <div class="laser-beam"></div>
+                    <div class="cyber-cup-body-v2">
+                        <div class="glow-dot"></div>
+                    </div>
+                    <div class="cyber-base-v2">
+                        <span class="cyber-badge-text-v2">M7 HALO CHAMPION</span>
+                    </div>
+                </div>
+            </div>
+        `;
+
+        item.addEventListener('click', () => {
+            if (typeof onTrophyClick === 'function') {
+                onTrophyClick(trophy, item.innerHTML);
+            }
+        });
+
+        return item;
+    };
+
+    // ၁။ အပေါ်တန်း (၅ လုံး)
     for (let i = 0; i < 5; i++) {
-        topRow.appendChild(createTrophyElement(trophyDataList[i]));
+        topRow.appendChild(createStandardTrophyElement(trophyDataList[i]));
     }
 
-    // ၂။ အလယ် (အညွှန်း ၅ - အကြီးစား ၁ လုံး)
-    centerRow.appendChild(createTrophyElement(trophyDataList[5], true));
+    // ၂။ အလယ် (Cyber Angelic Shield Trophy ၁ လုံး)
+    centerRow.appendChild(createShieldCenterElement(trophyDataList[5]));
 
-    // ၃။ အောက်တန်း (အညွှန်း ၆ မှ ၁၀ ထိ - ၅ လုံး)
+    // ၃။ အောက်တန်း (၅ လုံး)
     for (let i = 6; i < 11; i++) {
-        bottomRow.appendChild(createTrophyElement(trophyDataList[i]));
+        bottomRow.appendChild(createStandardTrophyElement(trophyDataList[i]));
     }
 }
