@@ -1,4 +1,4 @@
-// profile.js - Custom Image Trophy Version
+// profile.js - Cyberpunk Achievement Badge & Master Card Layout
 
 export function renderProfileScreen(container) {
     const userName = localStorage.getItem('userName') || "CyberPlayer";
@@ -9,9 +9,6 @@ export function renderProfileScreen(container) {
     const isChampion = localStorage.getItem('isChampion') === 'true'; 
     const has1vs1Win = localStorage.getItem('has1vs1Win') === 'true';   
     const has5vs5Win = localStorage.getItem('has5vs5Win') === 'true';   
-
-    // Champion နေရာမှာ ထည့်ချင်တဲ့ ပုံလင့်ခ် (သို့) Base64 ကို ဒီနေရာမှာ ထည့်ပါ
-    const championImageUrl = "champion.jpg"; // ဥပမာ ပုံလင့်ခ် (ညီမကြိုက်တဲ့ပုံနဲ့ လဲလို့ရပါတယ်)
 
     container.innerHTML = `
         <style>
@@ -24,6 +21,8 @@ export function renderProfileScreen(container) {
                 box-sizing: border-box;
                 padding-bottom: 50px;
             }
+
+            /* --- Master Profile Card --- */
             .top-profile-card {
                 background: rgba(15, 23, 42, 0.85);
                 border: 1px solid #38bdf8;
@@ -31,15 +30,10 @@ export function renderProfileScreen(container) {
                 padding: 14px;
                 display: flex;
                 align-items: center;
-                justify-content: space-between;
+                gap: 12px;
                 box-shadow: 0 0 15px rgba(56, 189, 248, 0.2);
                 backdrop-filter: blur(10px);
-                margin-bottom: 14px;
-            }
-            .profile-left-group {
-                display: flex;
-                align-items: center;
-                gap: 12px;
+                margin-bottom: 12px;
             }
             .pf-upload-box {
                 width: 60px;
@@ -82,57 +76,135 @@ export function renderProfileScreen(container) {
                 font-family: monospace;
             }
 
-            /* --- Custom Image Trophy Styling --- */
-            .trophies-group {
-                display: flex;
-                flex-direction: column;
-                align-items: flex-end;
-                gap: 8px;
-            }
-            
-            /* Custom Champion Image Box */
-            .cyber-trophy-big {
-                width: 42px;
-                height: 42px;
+            /* --- Achievement Priority Banner (Champion Card) --- */
+            .achievement-banner {
+                background: linear-gradient(135deg, rgba(30, 41, 59, 0.9), rgba(15, 23, 42, 0.95));
+                border: 1px solid #334155;
+                border-radius: 14px;
+                padding: 12px 16px;
                 display: flex;
                 align-items: center;
-                justify-content: center;
+                justify-content: space-between;
+                margin-bottom: 14px;
+                position: relative;
+                overflow: hidden;
                 transition: 0.4s ease;
-                /* မရသေးရင် အရိပ်လို မှိန်နေပြီး မှုန်နေမယ် */
-                filter: grayscale(100%) brightness(40%) opacity(0.3);
             }
-            .cyber-trophy-big.active {
-                /* Champion ရရင် လင်းလက်ပြီး ရွှေရောင်အရိပ်ထွက်မည် */
-                filter: grayscale(0%) brightness(120%) drop-shadow(0 0 10px #facc15) drop-shadow(0 0 20px #eab308);
-                transform: scale(1.1);
-            }
-            .cyber-trophy-big img {
-                width: 100%;
-                height: 100%;
-                object-fit: contain;
+            /* Champion ဖြစ်သွားရင် ဘားတခုလုံး ရွှေရောင်လင်းမည် */
+            .achievement-banner.champion-unlocked {
+                border-color: #facc15;
+                box-shadow: 0 0 20px rgba(250, 204, 21, 0.3), inset 0 0 10px rgba(250, 204, 21, 0.2);
+                background: linear-gradient(135deg, rgba(49, 46, 12, 0.85), rgba(15, 23, 42, 0.95));
             }
 
-            /* Small Mode Trophies */
-            .small-trophies-row {
+            .ach-left {
                 display: flex;
-                gap: 8px;
+                align-items: center;
+                gap: 12px;
             }
-            .cyber-trophy-small {
-                width: 22px;
-                height: 22px;
+            /* Hexagon Badge Icon Style */
+            .ach-badge-icon {
+                width: 44px;
+                height: 44px;
+                background: #020617;
+                border: 2px solid #475569;
+                border-radius: 10px;
                 display: flex;
                 align-items: center;
                 justify-content: center;
-                color: #334155;
+                color: #475569;
+                font-size: 20px;
                 transition: 0.4s ease;
             }
-            .cyber-trophy-small.active-1v1 {
-                color: #38bdf8;
-                filter: drop-shadow(0 0 6px #38bdf8);
+            .achievement-banner.champion-unlocked .ach-badge-icon {
+                border-color: #facc15;
+                color: #facc15;
+                background: rgba(250, 204, 21, 0.1);
+                box-shadow: 0 0 12px #facc15;
             }
-            .cyber-trophy-small.active-5v5 {
-                color: #ec4899;
-                filter: drop-shadow(0 0 6px #ec4899);
+
+            .ach-info h4 {
+                margin: 0;
+                font-size: 13px;
+                letter-spacing: 0.5px;
+                color: #94a3b8;
+                transition: 0.4s ease;
+            }
+            .achievement-banner.champion-unlocked .ach-info h4 {
+                color: #facc15;
+                text-shadow: 0 0 8px rgba(250, 204, 21, 0.5);
+            }
+            .ach-info p {
+                margin: 2px 0 0 0;
+                font-size: 10px;
+                color: #64748b;
+                font-family: monospace;
+            }
+            .achievement-banner.champion-unlocked .ach-info p {
+                color: #fef08a;
+            }
+
+            /* Status Pill */
+            .ach-status-pill {
+                font-size: 10px;
+                font-weight: bold;
+                padding: 4px 10px;
+                border-radius: 20px;
+                background: #1e293b;
+                color: #64748b;
+                border: 1px solid #334155;
+                letter-spacing: 1px;
+            }
+            .achievement-banner.champion-unlocked .ach-status-pill {
+                background: #facc15;
+                color: #020617;
+                border-color: #fef08a;
+                box-shadow: 0 0 10px #facc15;
+            }
+
+            /* --- Sub-Mode Wins Row (1vs1 & 5vs5) ---. */
+            .sub-wins-grid {
+                display: grid;
+                grid-template-columns: 1fr 1fr;
+                gap: 10px;
+                margin-bottom: 14px;
+            }
+            .sub-win-card {
+                background: rgba(15, 23, 42, 0.7);
+                border: 1px solid #1e293b;
+                border-radius: 10px;
+                padding: 10px;
+                display: flex;
+                align-items: center;
+                gap: 8px;
+                opacity: 0.4;
+                transition: 0.3s;
+            }
+            .sub-win-card.active-mode {
+                opacity: 1;
+                border-color: #38bdf8;
+                background: rgba(15, 23, 42, 0.9);
+                box-shadow: 0 0 10px rgba(56, 189, 248, 0.2);
+            }
+            .sub-win-card.active-5v5 {
+                opacity: 1;
+                border-color: #ec4899;
+                background: rgba(15, 23, 42, 0.9);
+                box-shadow: 0 0 10px rgba(236, 72, 153, 0.2);
+            }
+            .sub-icon {
+                font-size: 16px;
+            }
+            .sub-text span:first-child {
+                display: block;
+                font-size: 10px;
+                color: #94a3b8;
+                font-weight: bold;
+            }
+            .sub-text span:last-child {
+                display: block;
+                font-size: 11px;
+                color: #f8fafc;
             }
 
             /* Action Grid & Panels */
@@ -146,7 +218,7 @@ export function renderProfileScreen(container) {
                 background: rgba(15, 23, 42, 0.8);
                 border: 1px solid #1e293b;
                 border-radius: 12px;
-                padding: 16px;
+                padding: 14px;
                 text-align: center;
                 cursor: pointer;
                 transition: 0.2s;
@@ -157,7 +229,7 @@ export function renderProfileScreen(container) {
                 box-shadow: 0 0 12px rgba(56, 189, 248, 0.3);
             }
             .cyber-action-box span {
-                font-size: 13px;
+                font-size: 12px;
                 font-weight: bold;
                 color: #38bdf8;
                 letter-spacing: 1px;
@@ -185,13 +257,10 @@ export function renderProfileScreen(container) {
                 box-shadow: 0 0 12px rgba(244, 63, 94, 0.2);
             }
             .message-title {
-                font-size: 13px;
+                font-size: 12px;
                 color: #f43f5e;
                 font-weight: bold;
                 margin-bottom: 8px;
-                display: flex;
-                align-items: center;
--gap: 6px;
             }
             .msg-input {
                 width: 100%;
@@ -204,11 +273,6 @@ export function renderProfileScreen(container) {
                 margin-bottom: 8px;
                 box-sizing: border-box;
             }
-            .msg-input:focus {
-                border-color: #f43f5e;
-                outline: none;
-                box-shadow: 0 0 8px rgba(244, 63, 94, 0.4);
-            }
             .msg-btn {
                 background: linear-gradient(135deg, #f43f5e, #be123c);
                 color: white;
@@ -219,48 +283,57 @@ export function renderProfileScreen(container) {
                 font-weight: bold;
                 font-size: 11px;
                 cursor: pointer;
-                box-shadow: 0 0 8px rgba(244, 63, 94, 0.4);
             }
         </style>
 
         <div class="cyber-profile-wrapper">
-            <!-- Top Card -->
+            <!-- 1. Top Card (Avatar + Name + ID) -->
             <div class="top-profile-card">
-                <div class="profile-left-group">
-                    <label class="pf-upload-box" id="avatar-container" title="ဓာတ်ပုံပြောင်းရန်နှိပ်ပါ">
-                        ${userAvatar ? `<img src="${userAvatar}" id="pf-img">` : `<span>+</span>`}
-                        <input type="file" id="pf-file-input" accept="image/*" style="display: none;">
-                    </label>
-                    <div class="pf-text-info">
-                        <h3>${userName}</h3>
-                        <p>${userId}</p>
+                <label class="pf-upload-box" id="avatar-container" title="ဓာတ်ပုံပြောင်းရန်နှိပ်ပါ">
+                    ${userAvatar ? `<img src="${userAvatar}" id="pf-img">` : `<span>+</span>`}
+                    <input type="file" id="pf-file-input" accept="image/*" style="display: none;">
+                </label>
+                <div class="pf-text-info">
+                    <h3>${userName}</h3>
+                    <p>${userId}</p>
+                </div>
+            </div>
+
+            <!-- 2. Achievement Priority Banner (Champion Status Highlight) -->
+            <div class="achievement-banner ${isChampion ? 'champion-unlocked' : ''}">
+                <div class="ach-left">
+                    <div class="ach-badge-icon">
+                        👑
+                    </div>
+                    <div class="ach-info">
+                        <h4>TOURNAMENT CHAMPION</h4>
+                        <p>${isChampion ? 'Ultimate Grandmaster Tier' : 'Status: Locked (Unclaimed)'}</p>
                     </div>
                 </div>
+                <div class="ach-status-pill">
+                    ${isChampion ? 'UNLOCKED' : 'LOCKED'}
+                </div>
+            </div>
 
-                <!-- Custom Image Trophy Area -->
-                <div class="trophies-group">
-                    <!-- Champion Image Box -->
-                    <div class="cyber-trophy-big ${isChampion ? 'active' : ''}" title="Champion Trophy">
-                        <img src="${championImageUrl}" alt="Champion Trophy">
+            <!-- 3. Sub-Mode Wins Status Grid (1vs1 & 5vs5) -->
+            <div class="sub-wins-grid">
+                <div class="sub-win-card ${has1vs1Win ? 'active-mode' : ''}">
+                    <span class="sub-icon">⚡</span>
+                    <div class="sub-text">
+                        <span>1vs1 DUEL</span>
+                        <span>${has1vs1Win ? 'VICTOR' : 'UNRANKED'}</span>
                     </div>
-
-                    <!-- Small Trophies (1vs1 & 5vs5) -->
-                    <div class="small-trophies-row">
-                        <div class="cyber-trophy-small ${has1vs1Win ? 'active-1v1' : ''}" title="1vs1 Winner">
-                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" width="100%" height="100%">
-                                <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"></polygon>
-                            </svg>
-                        </div>
-                        <div class="cyber-trophy-small ${has5vs5Win ? 'active-5v5' : ''}" title="5vs5 Winner">
-                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" width="100%" height="100%">
-                                <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path>
-                            </svg>
-                        </div>
+                </div>
+                <div class="sub-win-card ${has5vs5Win ? 'active-5v5' : ''}">
+                    <span class="sub-icon">🛡️</span>
+                    <div class="sub-text">
+                        <span>5vs5 SQUAD</span>
+                        <span>${has5vs5Win ? 'CHAMPION' : 'UNRANKED'}</span>
                     </div>
                 </div>
             </div>
 
-            <!-- Action Grid -->
+            <!-- 4. Action Grid (Key & History) -->
             <div class="action-grid">
                 <div class="cyber-action-box" id="btn-key">
                     <span>KEY 🔑</span>
@@ -285,7 +358,7 @@ export function renderProfileScreen(container) {
                 </div>
             </div>
 
-            <!-- Message Section -->
+            <!-- 5. Network Message Section -->
             <div class="message-section">
                 <div class="message-title">💬 ETERNAL AURA NETWORK CHAT</div>
                 <input type="text" class="msg-input" id="peer-id-input" placeholder="Enter Receiver User ID (e.g. EA-12345)">
@@ -295,7 +368,7 @@ export function renderProfileScreen(container) {
         </div>
     `;
 
-    // --- Logic ---
+    // --- Logic Interactivity ---
     const fileInput = document.getElementById('pf-file-input');
     fileInput.addEventListener('change', function(e) {
         const file = e.target.files[0];
@@ -330,12 +403,10 @@ export function renderProfileScreen(container) {
     sendMsgBtn.addEventListener('click', () => {
         const peerId = document.getElementById('peer-id-input').value.trim();
         const msgText = document.getElementById('peer-msg-input').value.trim();
-
         if (!msgText) {
             alert("ကျေးဇူးပြု၍ ပို့မည့်စာသားကို ရေးပါ။");
             return;
         }
-
         alert(`✅ မက်ဆေ့ခ်ျကို ${peerId || 'Network User'} ထံသို့ အောင်မြင်စွာ ပို့ပြီးပါပြီ!`);
         document.getElementById('peer-msg-input').value = '';
         document.getElementById('peer-id-input').value = '';
