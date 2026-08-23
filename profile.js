@@ -1,4 +1,4 @@
-// profile.js - Cyber Profile & Trophy-First Layout
+// profile.js - Profile Shell with Interactive Trophy Box Showcase
 import { renderTrophyShowcase } from './trophies.js';
 
 export function renderProfileScreen(container) {
@@ -76,26 +76,69 @@ export function renderProfileScreen(container) {
                 font-family: monospace;
             }
 
-            /* 2. Main Trophy Showcase Section (ဦးစားပေးနေရာကြီး) */
-            .main-showcase-section {
-                background: rgba(15, 23, 42, 0.9);
-                border: 1px solid #0ea5e9;
+            /* 2. Trophy Box Section (ဂိမ်းဆန်ဆန် Box ပုံစံ) */
+            .trophy-box-container {
+                background: rgba(15, 23, 42, 0.95);
+                border: 1.5px solid #facc15;
                 border-radius: 16px;
                 padding: 16px;
                 margin-bottom: 16px;
-                box-shadow: 0 0 25px rgba(14, 165, 233, 0.2);
+                box-shadow: 0 0 30px rgba(250, 204, 21, 0.25), inset 0 0 15px rgba(56, 189, 248, 0.15);
+                position: relative;
+                overflow: hidden;
             }
 
-            .showcase-header {
+            .box-header {
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+                cursor: pointer;
+                user-select: none;
+            }
+
+            .box-title-area {
                 font-size: 12px;
-                font-weight: bold;
+                font-weight: 900;
                 color: #facc15;
                 letter-spacing: 1.5px;
-                margin-bottom: 14px;
-                text-shadow: 0 0 8px rgba(250, 204, 21, 0.4);
+                text-shadow: 0 0 8px rgba(250, 204, 21, 0.5);
                 display: flex;
                 align-items: center;
                 gap: 8px;
+            }
+
+            .toggle-btn {
+                background: linear-gradient(135deg, #facc15 0%, #ca8a04 100%);
+                color: #020617;
+                border: none;
+                border-radius: 8px;
+                padding: 5px 12px;
+                font-size: 10px;
+                font-weight: bold;
+                cursor: pointer;
+                box-shadow: 0 0 10px rgba(250, 204, 21, 0.4);
+                transition: transform 0.2s ease;
+            }
+
+            .toggle-btn:active {
+                transform: scale(0.95);
+            }
+
+            /* Box အထဲက ဖလားတွေပေါ်လာမည့် Area (Animation ပါဝင်သည်) */
+            .box-content-area {
+                max-height: 0;
+                overflow: hidden;
+                transition: max-height 0.4s ease-in-out, opacity 0.3s ease-in-out;
+                opacity: 0;
+                margin-top: 0;
+            }
+
+            .box-content-area.open {
+                max-height: 1200px;
+                opacity: 1;
+                margin-top: 14px;
+                border-top: 1px dashed rgba(250, 204, 21, 0.4);
+                padding-top: 14px;
             }
 
             /* 3. Key & History Side-by-Side Grid */
@@ -178,13 +221,19 @@ export function renderProfileScreen(container) {
                 </div>
             </div>
 
-            <!-- Main Trophy Showcase (Profile ဝင်လိုက်တာနဲ့ Trophy (၁၁) လုံး တန်းပေါ်နေမည့်နေရာ) -->
-            <div class="main-showcase-section">
-                <div class="showcase-header">
-                    🏆 ACHIEVEMENT SHOWCASE (TROPHY COLLECTION)
+            <!-- Trophy Box Component (Box ဖွင့်ပိတ် လုပ်လို့ရသော ပုံစံ) -->
+            <div class="trophy-box-container">
+                <div class="box-header" id="trophy-box-toggle">
+                    <div class="box-title-area">
+                        🎁 ELITE TROPHY BOX (11 UNLOCKED)
+                    </div>
+                    <button class="toggle-btn" id="box-action-btn">OPEN BOX</button>
                 </div>
-                <div id="trophy-showcase-target">
-                    <!-- trophies.js မှ ဖလားများ ဤနေရာသို့ ဝင်ရောက်မည် -->
+                
+                <div class="box-content-area" id="trophy-box-content">
+                    <div id="trophy-showcase-target">
+                        <!-- trophies.js မှ ဖလားများ (အပေါ်၅၊ အောက်၅၊ အလယ်ကြီး၁) ဤနေရာသို့ ဝင်ရောက်မည် -->
+                    </div>
                 </div>
             </div>
 
@@ -203,7 +252,7 @@ export function renderProfileScreen(container) {
             <!-- Interactive Detail Container -->
             <div class="detail-view-box" id="detail-display-area">
                 <div style="color: #64748b; text-align: center; padding-top: 10px;">
-                    Tap any trophy above to view specific details.
+                    Open the Trophy Box above and tap any trophy to view specific details.
                 </div>
             </div>
         </div>
@@ -228,9 +277,24 @@ export function renderProfileScreen(container) {
         });
     }
 
-    const detailArea = refDetailArea => document.getElementById('detail-display-area');
+    // Trophy Box Toggle Logic (Box ဖွင့်ပိတ်လုပ်သည့် Function)
+    const boxToggleHeader = document.getElementById('trophy-box-toggle');
+    const boxContentArea = document.getElementById('trophy-box-content');
+    const boxActionBtn = document.getElementById('box-action-btn');
+    let isBoxOpen = false;
 
-    // Render Trophy Showcase using trophies.js module function
+    boxToggleHeader.addEventListener('click', () => {
+        isBoxOpen = !isBoxOpen;
+        if (isBoxOpen) {
+            boxContentArea.classList.add('open');
+            boxActionBtn.textContent = 'CLOSE BOX';
+        } else {
+            boxContentArea.classList.remove('open');
+            boxActionBtn.textContent = 'OPEN BOX';
+        }
+    });
+
+    // Render Trophy Showcase inside the Box using trophies.js module function
     renderTrophyShowcase('trophy-showcase-target', (trophy) => {
         const area = document.getElementById('detail-display-area');
         if (area) {
@@ -259,7 +323,7 @@ export function renderProfileScreen(container) {
         if (area) {
             area.innerHTML = `
                 <div style="color: #38bdf8; font-weight: bold; margin-bottom: 4px;">ACTIVITY LOGS:</div>
-                <div class="history-row"><span>1vs1 Match Registered</span><span class="status-success">SUCCESS</span></div>
+                <div class="history-row"><span>Trophy Box State</span><span class="status-success">READY</span></div>
                 <div class="history-row"><span>Profile Data Updated</span><span class="status-success">COMPLETED</span></div>
             `;
         }
