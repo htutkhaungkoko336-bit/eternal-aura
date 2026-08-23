@@ -1,4 +1,4 @@
-// trophies.js - Updated with borders completely removed for both No. 2 and No. 8
+// trophies.js - Updated with background and box-shadow completely removed for No. 2 and No. 8
 
 const trophyDataList = [
     { id: 1, title: "ANGELIC ASCENT", subtitle: "ANGELIC ASCENT", date: "2026-01-15", desc: "Eternal Aura Angelic Halo Trophy.", isCustom: true, styleType: 'angelic-large' },
@@ -204,19 +204,19 @@ export function renderTrophyShowcase(containerId, onTrophyClick) {
                 max-width: 42px;
             }
 
-            /* --- ဒုတိယနေရာ (Cyber Blade Trophy Small - Border ဖြုတ်ထားသည်) --- */
+            /* --- ဒုတိယနေရာ (Cyber Blade Small - Background, Border & Shadow ဖြုတ်ထားသည်) --- */
             .crystal-trophy-wrapper-cyber-small {
                 width: 52px;
                 height: 72px;
-                background: radial-gradient(circle at center, rgba(15, 23, 42, 0.98) 0%, rgba(2, 6, 23, 1) 100%);
-                border: none; /* border ဖြုတ်ထားသည် */
-                border-radius: 6px;
+                background: transparent;
+                border: none;
+                border-radius: 0;
                 display: flex;
                 align-items: center;
                 justify-content: center;
                 position: relative;
-                box-shadow: 0 0 12px rgba(6, 182, 212, 0.3);
-                overflow: hidden;
+                box-shadow: none;
+                overflow: visible;
                 flex-shrink: 0;
             }
 
@@ -908,19 +908,19 @@ export function renderTrophyShowcase(containerId, onTrophyClick) {
                 max-width: 42px;
             }
 
-            /* --- နံပါတ် ၈ နေရာ (Celestial Phoenix Blade Small - Border နှင့် Floating လုံးဝဖြုတ်ထားသည်) --- */
+            /* --- နံပါတ် ၈ နေရာ (Celestial Phoenix Blade Small - Background, Border & Shadow ဖြုတ်ထားသည်) --- */
             .phoenix-blade-wrapper-small {
                 width: 52px;
                 height: 72px;
-                background: radial-gradient(circle at center, rgba(30, 41, 59, 0.98) 0%, rgba(15, 23, 42, 1) 100%);
-                border: none; /* border ဖြုတ်ထားသည် */
-                border-radius: 6px;
+                background: transparent;
+                border: none;
+                border-radius: 0;
                 display: flex;
                 align-items: center;
                 justify-content: center;
                 position: relative;
-                box-shadow: 0 0 12px rgba(245, 158, 11, 0.3);
-                overflow: hidden;
+                box-shadow: none;
+                overflow: visible;
                 flex-shrink: 0;
             }
 
