@@ -18,27 +18,26 @@ export function renderProfileScreen(container) {
                 font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
             }
 
-            /* 1. Top Unified Banner (Avatar + Info + Champion Trophy) */
+            /* 1. Top Unified Banner (Avatar + Name/ID only) */
             .top-banner {
                 background: rgba(15, 23, 42, 0.85);
-                border: 1px solid #ec4899;
+                border: 1px solid #0ea5e9;
                 border-radius: 16px;
-                padding: 12px;
-                display: grid;
-                grid-template-columns: auto 1fr auto;
-                gap: 12px;
+                padding: 14px;
+                display: flex;
                 align-items: center;
-                box-shadow: 0 0 20px rgba(236, 72, 153, 0.25);
+                gap: 14px;
+                box-shadow: 0 0 20px rgba(14, 165, 233, 0.25);
                 backdrop-filter: blur(10px);
                 margin-bottom: 14px;
             }
 
             .avatar-box {
-                width: 50px;
-                height: 50px;
+                width: 55px;
+                height: 55px;
                 background: #020617;
-                border: 2px dashed #ec4899;
-                border-radius: 10px;
+                border: 2px solid #38bdf8;
+                border-radius: 12px;
                 display: flex;
                 align-items: center;
                 justify-content: center;
@@ -46,6 +45,19 @@ export function renderProfileScreen(container) {
                 position: relative;
                 overflow: hidden;
                 flex-shrink: 0;
+                box-shadow: 0 0 12px rgba(56, 189, 248, 0.6), inset 0 0 8px rgba(56, 189, 248, 0.4);
+                animation: electricGlow 2s infinite alternate;
+            }
+
+            @keyframes electricGlow {
+                0% {
+                    border-color: #38bdf8;
+                    box-shadow: 0 0 8px rgba(56, 189, 248, 0.5), inset 0 0 5px rgba(56, 189, 248, 0.3);
+                }
+                100% {
+                    border-color: #7dd3fc;
+                    box-shadow: 0 0 16px rgba(125, 211, 252, 0.9), inset 0 0 10px rgba(125, 211, 252, 0.6);
+                }
             }
 
             .avatar-box img {
@@ -57,15 +69,21 @@ export function renderProfileScreen(container) {
             }
 
             .avatar-box span {
-                font-size: 20px;
-                color: #ec4899;
+                font-size: 22px;
+                color: #38bdf8;
+                text-shadow: 0 0 8px #38bdf8;
+            }
+
+            .profile-info {
+                flex-grow: 1;
+                overflow: hidden;
             }
 
             .profile-info h3 {
                 margin: 0;
                 font-size: 14px;
-                color: #f472b6;
-                text-shadow: 0 0 8px rgba(244, 114, 182, 0.5);
+                color: #38bdf8;
+                text-shadow: 0 0 8px rgba(56, 189, 248, 0.5);
                 white-space: nowrap;
                 overflow: hidden;
                 text-overflow: ellipsis;
@@ -78,54 +96,27 @@ export function renderProfileScreen(container) {
                 font-family: monospace;
             }
 
-            .champion-trophy-box {
-                width: 55px;
-                height: 55px;
-                background: linear-gradient(135deg, rgba(15, 23, 42, 0.95), rgba(3, 7, 18, 0.98));
-                border: 1.5px solid #06b6d4;
-                border-radius: 10px;
-                display: flex;
-                flex-direction: column;
-                align-items: center;
-                justify-content: center;
-                box-shadow: 0 0 12px rgba(6, 182, 212, 0.4);
-                cursor: pointer;
-            }
-
-            .champion-trophy-box span:first-child {
-                font-size: 20px;
-                filter: drop-shadow(0 0 6px #22d3ee);
-            }
-
-            .champion-trophy-box span:last-child {
-                font-size: 7px;
-                font-weight: 900;
-                color: #22d3ee;
-                margin-top: 2px;
-                letter-spacing: 0.5px;
-            }
-
             /* 2. Trophy Collection Middle Button */
             .trophy-collection-btn {
                 width: 100%;
-                background: rgba(30, 41, 59, 0.9);
-                border: 1px solid #a855f7;
+                background: rgba(15, 23, 42, 0.9);
+                border: 1px solid #0ea5e9;
                 border-radius: 12px;
                 padding: 12px;
                 text-align: center;
-                color: #d8b4fe;
+                color: #38bdf8;
                 font-size: 12px;
                 font-weight: bold;
                 letter-spacing: 1px;
                 cursor: pointer;
-                box-shadow: 0 0 15px rgba(168, 85, 247, 0.2);
+                box-shadow: 0 0 15px rgba(14, 165, 233, 0.2);
                 margin-bottom: 14px;
                 transition: all 0.2s ease;
             }
 
             .trophy-collection-btn:hover {
-                background: rgba(168, 85, 247, 0.15);
-                box-shadow: 0 0 20px rgba(168, 85, 247, 0.4);
+                background: rgba(14, 165, 233, 0.15);
+                box-shadow: 0 0 20px rgba(14, 165, 233, 0.4);
             }
 
             /* 3. Key & History Side-by-Side Grid */
@@ -164,10 +155,10 @@ export function renderProfileScreen(container) {
                 letter-spacing: 1px;
             }
 
-            /* Dynamic Detail View Box (Popup/Container for Key or History details) */
+            /* Dynamic Detail View Box */
             .detail-view-box {
                 background: rgba(15, 23, 42, 0.95);
-                border: 1px solid #475569;
+                border: 1px solid #334155;
                 border-radius: 12px;
                 padding: 12px;
                 font-size: 11px;
@@ -197,7 +188,7 @@ export function renderProfileScreen(container) {
         </style>
 
         <div class="profile-wrapper">
-            <!-- Top Banner: Avatar, Name/ID, Champion Trophy -->
+            <!-- Top Banner: Avatar and Name/ID only -->
             <div class="top-banner">
                 <label class="avatar-box" id="avatar-container" title="ဓာတ်ပုံပြောင်းရန် နှိပ်ပါ">
                     ${savedAvatar ? `<img src="${savedAvatar}">` : `<span id="avatar-plus">+</span>`}
@@ -206,10 +197,6 @@ export function renderProfileScreen(container) {
                 <div class="profile-info">
                     <h3>${userName}</h3>
                     <p>ID: ${userId}</p>
-                </div>
-                <div class="champion-trophy-box" id="champ-trophy-btn" title="Champion Trophy">
-                    <span>🏆</span>
-                    <span>TROPHY</span>
                 </div>
             </div>
 
@@ -233,7 +220,7 @@ export function renderProfileScreen(container) {
             <!-- Interactive Detail Container -->
             <div class="detail-view-box" id="detail-display-area">
                 <div style="color: #64748b; text-align: center; padding-top: 15px;">
-                    Select an option above (Key or History) to view details.
+                    Select an option above to view details.
                 </div>
             </div>
         </div>
@@ -263,32 +250,26 @@ export function renderProfileScreen(container) {
     
     document.getElementById('key-card-btn').addEventListener('click', () => {
         detailArea.innerHTML = `
-            <div style="color: #a855f7; font-weight: bold; margin-bottom: 6px;">SECURITY KEY VERIFIED:</div>
+            <div style="color: #38bdf8; font-weight: bold; margin-bottom: 6px;">SECURITY KEY VERIFIED:</div>
             <div>${userKey}</div>
         `;
     });
 
     document.getElementById('history-card-btn').addEventListener('click', () => {
         detailArea.innerHTML = `
-            <div style="color: #d8b4fe; font-weight: bold; margin-bottom: 6px;">ACTIVITY LOGS:</div>
+            <div style="color: #38bdf8; font-weight: bold; margin-bottom: 6px;">ACTIVITY LOGS:</div>
             <div class="history-row"><span>1vs1 Match Registered</span><span class="status-success">SUCCESS</span></div>
             <div class="history-row"><span>Profile Data Updated</span><span class="status-success">COMPLETED</span></div>
             <div class="history-row"><span>System Login Connection</span><span style="color: #38bdf8;">ONLINE</span></div>
         `;
     });
 
+    // Trophy Collection Button - Blank initially, shows trophies when clicked
     document.getElementById('trophy-collection-trigger').addEventListener('click', () => {
         detailArea.innerHTML = `
-            <div style="color: #22d3ee; font-weight: bold; margin-bottom: 6px;">TROPHY COLLECTION:</div>
+            <div style="color: #38bdf8; font-weight: bold; margin-bottom: 6px;">TROPHY COLLECTION:</div>
             <div class="history-row"><span>M7 World Championship</span><span class="status-success">UNLOCKED</span></div>
             <div class="history-row"><span>Season 25 Glory</span><span class="status-success">UNLOCKED</span></div>
-        `;
-    });
-
-    document.getElementById('champ-trophy-btn').addEventListener('click', () => {
-        detailArea.innerHTML = `
-            <div style="color: #f472b6; font-weight: bold; margin-bottom: 6px;">CHAMPION TROPHY STATUS:</div>
-            <div>Elite Tier Badge Active. Verified tournament winner credentials loaded.</div>
         `;
     });
 }
