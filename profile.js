@@ -1,4 +1,3 @@
-// profile.js - Profile Shell with Extra Large Zoom & Persistent Trophy View
 import { renderTrophyShowcase } from './trophies.js';
 
 export function renderProfileScreen(container) {
@@ -9,6 +8,12 @@ export function renderProfileScreen(container) {
 
     container.innerHTML = `
         <style>
+            /* ဖုန်းစခရင်မ်များတွင် ဘေးတိုက် scroll လုံးဝမပေါ်စေရန် ကာကွယ်ခြင်း */
+            html, body {
+                max-width: 100%;
+                overflow-x: hidden !important;
+            }
+
             .profile-wrapper {
                 width: 100%;
                 max-width: 600px;
@@ -18,7 +23,7 @@ export function renderProfileScreen(container) {
                 color: #f8fafc;
                 font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
                 position: relative;
-                overflow-x: hidden;
+                overflow-x: hidden !important;
             }
 
             /* 1. Top Compact Banner */
@@ -33,6 +38,7 @@ export function renderProfileScreen(container) {
                 box-shadow: 0 0 20px rgba(14, 165, 233, 0.25);
                 backdrop-filter: blur(10px);
                 margin-bottom: 16px;
+                box-sizing: border-box;
             }
 
             .avatar-box {
@@ -59,11 +65,18 @@ export function renderProfileScreen(container) {
                 top: 0; left: 0;
             }
 
+            .profile-info {
+                overflow: hidden;
+            }
+
             .profile-info h3 {
                 margin: 0;
                 font-size: 14px;
                 color: #38bdf8;
                 text-shadow: 0 0 8px rgba(56, 189, 248, 0.5);
+                white-space: nowrap;
+                overflow: hidden;
+                text-overflow: ellipsis;
             }
 
             .profile-info p {
@@ -86,7 +99,8 @@ export function renderProfileScreen(container) {
                 flex-direction: column;
                 align-items: center;
                 justify-content: center;
-                overflow: hidden;
+                overflow: hidden !important;
+                box-sizing: border-box;
             }
 
             /* Perfect 3D Cyber Cubic */
@@ -169,6 +183,7 @@ export function renderProfileScreen(container) {
                 max-width: 100%;
                 overflow-x: hidden !important;
                 overflow-y: hidden !important;
+                box-sizing: border-box;
             }
 
             /* 3. Key & History Side-by-Side Grid */
@@ -177,6 +192,7 @@ export function renderProfileScreen(container) {
                 grid-template-columns: 1fr 1fr;
                 gap: 12px;
                 margin-bottom: 14px;
+                box-sizing: border-box;
             }
 
             .action-card {
@@ -187,6 +203,7 @@ export function renderProfileScreen(container) {
                 text-align: center;
                 cursor: pointer;
                 transition: all 0.2s ease;
+                box-sizing: border-box;
             }
 
             .action-card:hover {
@@ -220,6 +237,8 @@ export function renderProfileScreen(container) {
                 opacity: 0;
                 visibility: hidden;
                 transition: opacity 0.3s ease, visibility 0.3s ease;
+                box-sizing: border-box;
+                overflow: hidden;
             }
 
             .trophy-zoom-modal.active {
@@ -243,13 +262,13 @@ export function renderProfileScreen(container) {
                 flex-direction: column;
                 align-items: center;
                 justify-content: center;
+                box-sizing: border-box;
             }
 
             .trophy-zoom-modal.active .trophy-zoom-content {
                 transform: scale(1);
             }
 
-            /* Trophy ကို အခုထက် ပိုကြီးအောင် ပိုမိုချဲ့ထွင်ခြင်း (Scale 2.8) */
             .zoomed-trophy-container {
                 transform: scale(2.8);
                 margin: 50px 0;
@@ -372,10 +391,10 @@ export function renderProfileScreen(container) {
         trophyBoxContent.classList.add('open');
     });
 
-    // 2. Trophy Showcase ဖွင့်ထားစဉ် အပြင်ဘက်ကိုနှိပ်မှသာ Cube ပြန်ပေါ်လာမည် (Modal ဖွင့်နေစဉ် မပိတ်စေရန် ကာကွယ်ထားသည်)
+    // 2. Trophy Showcase ဖွင့်ထားစဉ် အပြင်ဘက်ကိုနှိပ်မှသာ Cube ပြန်ပေါ်လာမည်
     document.addEventListener('click', (e) => {
         if (!isTrophiesOpen) return;
-        if (zoomModal.classList.contains('active')) return; // Modal ပွင့်နေရင် Cube ဆီ မပြန်စေရန် တားဆီးသည်
+        if (zoomModal.classList.contains('active')) return;
 
         const clickedInsideTrophy = e.target.closest('#trophy-showcase-target');
         const clickedCube = e.target.closest('#cyber-cube-trigger');
@@ -405,12 +424,12 @@ export function renderProfileScreen(container) {
         zoomModal.classList.add('active');
     });
 
-    // OK ခလုတ်နှိပ်ပါက Modal သာပိတ်မည်၊ Trophy Showcase မျက်နှာပြင်ပေါ်တွင်သာ ဆက်ရှိနေမည်
+    // OK ခလုတ်နှိပ်ပါက Modal သာပိတ်မည်
     zoomCloseBtn.addEventListener('click', () => {
         zoomModal.classList.remove('active');
     });
 
-    // Modal နောက်ခံအမှောင်ကို နှိပ်၍ပိတ်သည့်အခါလည်း Trophy Showcase မှာပဲ ဆက်ရှိနေမည်
+    // Modal နောက်ခံအမှောင်ကို နှိပ်၍ပိတ်သည့်အခါ
     zoomModal.addEventListener('click', (e) => {
         if (e.target === zoomModal) {
             zoomModal.classList.remove('active');
