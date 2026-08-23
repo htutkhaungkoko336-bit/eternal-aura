@@ -1,4 +1,4 @@
-// profile.js - Profile Shell with Clean 3D Cyber Cube & Trophy Toggle
+// profile.js - Profile Shell with Smart Outside-Click Trophy Toggle
 import { renderTrophyShowcase } from './trophies.js';
 
 export function renderProfileScreen(container) {
@@ -72,7 +72,7 @@ export function renderProfileScreen(container) {
                 font-family: monospace;
             }
 
-            /* 2. Cyber Stage (Cube & Trophies - No Outer Border) */
+            /* 2. Cyber Stage (Cube & Trophies) */
             .cyber-stage {
                 background: rgba(15, 23, 42, 0.95);
                 border-radius: 16px;
@@ -92,11 +92,11 @@ export function renderProfileScreen(container) {
                 perspective: 900px;
                 width: 110px;
                 height: 110px;
-                cursor: pointer;
-                transition: opacity 0.3s ease, transform 0.3s ease;
                 display: flex;
                 align-items: center;
                 justify-content: center;
+                cursor: pointer;
+                transition: opacity 0.4s ease, transform 0.4s ease;
             }
 
             .cubic-wrapper.hidden {
@@ -140,7 +140,7 @@ export function renderProfileScreen(container) {
             .box-content-area {
                 max-height: 0;
                 overflow: hidden;
-                transition: max-height 0.4s ease-in-out, opacity 0.3s ease-in-out;
+                transition: max-height 0.5s ease-in-out, opacity 0.4s ease-in-out;
                 opacity: 0;
                 width: 100%;
             }
@@ -257,10 +257,10 @@ export function renderProfileScreen(container) {
     // Elements for Toggle Logic
     const cyberCubeTrigger = document.getElementById('cyber-cube-trigger');
     const trophyBoxContent = document.getElementById('trophy-box-content');
-    const profileWrapper = document.getElementById('profile-main-wrapper');
+    const cyberStageBox = document.getElementById('cyber-stage-box');
     let isTrophiesOpen = false;
 
-    // 1. Cube ကို နှိပ်လိုက်သောအခါ (Cube ပျောက်ပြီး Trophies ပေါ်လာခြင်း)
+    // 1. Cube ကို နှိပ်မှသာ Trophy များ ပွင့်မည်
     cyberCubeTrigger.addEventListener('click', (e) => {
         e.stopPropagation();
         if (isTrophiesOpen) return;
@@ -270,19 +270,26 @@ export function renderProfileScreen(container) {
         trophyBoxContent.classList.add('open');
     });
 
-    // 2. ဘေးနေရာတစ်ခုခုကို ထောက်လိုက်သောအခါ (Trophies ပျောက်ပြီး Cube ပြန်ပေါ်လာခြင်း)
-    profileWrapper.addEventListener('click', (e) => {
-        if (isTrophiesOpen && !e.target.closest('#trophy-showcase-target') && !e.target.closest('.bottom-grid') && !e.target.closest('.top-banner')) {
-            isTrophiesOpen = false;
-            
-            trophyBoxContent.classList.remove('open');
-            cyberCubeTrigger.classList.remove('hidden');
+    // 2. Trophy တွေပွင့်နေစဉ် Trophy ကိုယ်တိုင် သို့မဟုတ် Cube ကို မထိဘဲ Stage Box ရဲ့ အလွတ်နေရာ သို့မဟုတ် အပြင်ဘက်ကို ထိမှသာ Trophy ပြန်သိမ်းမည် (Delay ဖြင့် ချောမွေ့စေရန်)
+    document.addEventListener('click', (e) => {
+        if (!isTrophiesOpen) return;
+
+        // အကယ်၍ နှိပ်လိုက်တဲ့နေရာသည် Trophy တစ်ခုချင်းစီ (သို့မဟုတ် အထဲက Element တွေ) မဟုတ်ဘူးဆိုလျှင်
+        const clickedInsideTrophy = e.target.closest('#trophy-showcase-target');
+        const clickedCube = e.target.closest('#cyber-cube-trigger');
+
+        if (!clickedInsideTrophy && !clickedCube) {
+            setTimeout(() => {
+                isTrophiesOpen = false;
+                trophyBoxContent.classList.remove('open');
+                cyberCubeTrigger.classList.remove('hidden');
+            }, 100); // အနည်းငယ် ကြာချိန်ပေးထားခြင်းဖြင့် ပိုမိုသဘာဝကျစေသည်
         }
     });
 
     // Render Trophy Showcase inside the Box using trophies.js module function
     renderTrophyShowcase('trophy-showcase-target', (trophy) => {
-        // Modal သို့မဟုတ် Notification ဖြင့်ပြသရန် လိုအပ်ပါက ဤနေရာတွင် ထည့်နိုင်ပါသည်
+        // Trophy ကို နှိပ်၍ အချက်အလက်ကြည့်သည့်အခါ ပွင့်နေမှုကို ဆက်ထိန်းထားရန်
     });
 
     // Key Button Action
