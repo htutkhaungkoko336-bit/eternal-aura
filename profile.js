@@ -1,4 +1,4 @@
-// profile.js - Pro Esports Badge & Trophy System
+// profile.js - 3D Esports Trophy Showcase System
 
 export function renderProfileScreen(container) {
     const userName = localStorage.getItem('userName') || "CyberPlayer";
@@ -88,31 +88,31 @@ export function renderProfileScreen(container) {
                 font-family: monospace;
             }
 
-            /* --- Pro Esports Trophy Showcase --- */
-            .esports-vault {
-                background: linear-gradient(135deg, rgba(15, 23, 42, 0.95), rgba(2, 6, 23, 0.95));
-                border: 1px solid rgba(56, 189, 248, 0.3);
+            /* --- 3D Esports Trophy Vault Section --- */
+            .esports-trophy-vault {
+                background: linear-gradient(135deg, rgba(15, 23, 42, 0.98), rgba(2, 6, 23, 0.98));
+                border: 1px solid rgba(250, 204, 21, 0.4);
                 border-radius: 16px;
                 padding: 14px;
                 margin-bottom: 14px;
-                box-shadow: 0 0 25px rgba(0, 0, 0, 0.6);
+                box-shadow: 0 0 30px rgba(0, 0, 0, 0.8), inset 0 0 15px rgba(250, 204, 21, 0.05);
             }
             .vault-header {
                 display: flex;
                 justify-content: space-between;
                 align-items: center;
-                margin-bottom: 12px;
+                margin-bottom: 14px;
                 border-bottom: 1px solid #1e293b;
                 padding-bottom: 8px;
             }
             .vault-title {
-                font-size: 11px;
+                font-size: 12px;
                 font-weight: 900;
                 color: #facc15;
                 letter-spacing: 1.5px;
-                text-shadow: 0 0 8px rgba(250, 204, 21, 0.4);
+                text-shadow: 0 0 10px rgba(250, 204, 21, 0.5);
             }
-            .vault-count {
+            .vault-total {
                 font-size: 11px;
                 color: #38bdf8;
                 font-family: monospace;
@@ -122,133 +122,157 @@ export function renderProfileScreen(container) {
                 border: 1px solid rgba(56, 189, 248, 0.3);
             }
 
-            /* Epic Grand Champion Banner */
-            .epic-champion-banner {
-                background: linear-gradient(135deg, #451a03 0%, #171923 100%);
-                border: 2px solid #f59e0b;
-                border-radius: 12px;
-                padding: 12px;
+            /* 1. Grand Champion Ultimate 3D Trophy Showcase */
+            .grand-trophy-showcase {
+                background: linear-gradient(135deg, rgba(250, 204, 21, 0.12) 0%, rgba(15, 23, 42, 0.95) 100%);
+                border: 2px solid #facc15;
+                border-radius: 14px;
+                padding: 14px;
                 display: flex;
                 align-items: center;
-                justify-content: space-between;
-                margin-bottom: 12px;
-                box-shadow: 0 0 20px rgba(245, 158, 11, 0.35), inset 0 0 10px rgba(245, 158, 11, 0.2);
+                gap: 14px;
+                margin-bottom: 14px;
+                box-shadow: 0 0 25px rgba(250, 204, 21, 0.3), inset 0 0 12px rgba(250, 204, 21, 0.2);
                 position: relative;
                 overflow: hidden;
             }
-            .ec-left {
-                display: flex;
-                align-items: center;
-                gap: 12px;
-            }
-            .ec-icon {
-                width: 44px;
-                height: 44px;
-                background: linear-gradient(135deg, #f59e0b, #d97706);
-                border-radius: 10px;
+            .trophy-3d-icon {
+                width: 60px;
+                height: 60px;
+                background: radial-gradient(circle, #facc15 0%, #b45309 100%);
+                border-radius: 12px;
                 display: flex;
                 align-items: center;
                 justify-content: center;
-                color: #020617;
-                box-shadow: 0 0 12px #f59e0b;
+                box-shadow: 0 0 20px #facc15;
+                flex-shrink: 0;
                 position: relative;
+                border: 1px solid #fef08a;
             }
-            .ec-badge-stack {
+            .trophy-3d-icon svg {
+                width: 36px;
+                height: 36px;
+                color: #020617;
+                filter: drop-shadow(0 2px 4px rgba(0,0,0,0.5));
+            }
+            .trophy-stack-tag {
                 position: absolute;
                 bottom: -4px;
                 right: -4px;
                 background: #020617;
-                color: #f59e0b;
-                border: 1px solid #f59e0b;
-                font-size: 9px;
-                font-weight: bold;
-                padding: 0 4px;
-                border-radius: 4px;
-            }
-            .ec-text h4 {
-                margin: 0;
-                font-size: 13px;
+                color: #facc15;
+                border: 1px solid #facc15;
+                font-size: 10px;
                 font-weight: 900;
-                color: #fef08a;
-                letter-spacing: 0.5px;
-                text-shadow: 0 0 8px rgba(254, 240, 138, 0.5);
+                padding: 1px 6px;
+                border-radius: 6px;
+                box-shadow: 0 0 8px #facc15;
             }
-            .ec-text p {
-                margin: 2px 0 0 0;
+            .grand-trophy-info h4 {
+                margin: 0;
+                font-size: 14px;
+                font-weight: 900;
+                color: #facc15;
+                letter-spacing: 0.5px;
+                text-shadow: 0 0 8px rgba(250, 204, 21, 0.6);
+            }
+            .grand-trophy-info p {
+                margin: 3px 0 0 0;
                 font-size: 10px;
                 color: #cbd5e1;
             }
-            .ec-tag {
-                background: rgba(245, 158, 11, 0.2);
-                color: #f59e0b;
-                border: 1px solid #f59e0b;
+            .max-badge-pill {
+                margin-left: auto;
+                background: rgba(250, 204, 21, 0.2);
+                color: #facc15;
+                border: 1px solid #facc15;
                 font-size: 9px;
                 font-weight: 900;
-                padding: 4px 8px;
+                padding: 5px 8px;
                 border-radius: 6px;
                 letter-spacing: 1px;
+                box-shadow: 0 0 10px rgba(250, 204, 21, 0.3);
             }
 
-            /* Dual Fee Tiers Grid (1vs1 & 5vs5) */
-            .tiers-container {
+            /* 2. Mode Trophies Grid (10 Trophies: 1vs1 & 5vs5) */
+            .mode-trophies-section {
                 display: grid;
                 grid-template-columns: 1fr 1fr;
                 gap: 10px;
             }
-            .tier-group {
+            .mode-column {
                 background: #020617;
                 border: 1px solid #1e293b;
-                border-radius: 10px;
-                padding: 8px;
+                border-radius: 12px;
+                padding: 10px;
             }
-            .tier-group-title {
+            .mode-col-title {
                 font-size: 10px;
                 font-weight: 900;
                 color: #38bdf8;
-                margin-bottom: 6px;
+                margin-bottom: 8px;
                 letter-spacing: 0.5px;
                 display: flex;
                 align-items: center;
-                gap: 4px;
+                gap: 5px;
+                border-bottom: 1px solid #0f172a;
+                padding-bottom: 4px;
             }
-            .tier-row-list {
+            .trophy-card-list {
                 display: flex;
                 flex-direction: column;
-                gap: 4px;
+                gap: 6px;
             }
-            .tier-pill {
+            .trophy-mini-card {
+                background: rgba(15, 23, 42, 0.9);
+                border: 1px solid #334155;
+                border-radius: 8px;
+                padding: 6px 8px;
                 display: flex;
                 align-items: center;
                 justify-content: space-between;
-                background: rgba(15, 23, 42, 0.9);
-                border: 1px solid #334155;
-                padding: 4px 6px;
-                border-radius: 6px;
+                position: relative;
+                transition: 0.2s;
             }
-            .tier-pill-left {
+            .trophy-mini-card:hover {
+                border-color: #38bdf8;
+                box-shadow: 0 0 8px rgba(56, 189, 248, 0.3);
+            }
+            .tmc-left {
                 display: flex;
                 align-items: center;
-                gap: 5px;
+                gap: 8px;
             }
-            .tier-svg-icon {
-                width: 12px;
-                height: 12px;
-                color: #38bdf8;
+            .tmc-icon-wrapper {
+                width: 26px;
+                height: 26px;
+                background: linear-gradient(135deg, #38bdf8, #0369a1);
+                border-radius: 6px;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                box-shadow: 0 0 8px rgba(56, 189, 248, 0.4);
+                flex-shrink: 0;
             }
-            .tier-label {
-                font-size: 9px;
-                color: #94a3b8;
+            .tmc-icon-wrapper svg {
+                width: 15px;
+                height: 15px;
+                color: #020617;
+            }
+            .tmc-name {
+                font-size: 10px;
+                color: #f1f5f9;
                 font-weight: bold;
             }
-            .tier-count-badge {
-                background: #1e293b;
+            .tmc-count {
+                background: #020617;
                 color: #38bdf8;
                 border: 1px solid #38bdf8;
-                font-size: 8px;
+                font-size: 9px;
                 font-weight: 900;
-                padding: 1px 5px;
-                border-radius: 4px;
-                box-shadow: 0 0 5px rgba(56, 189, 248, 0.3);
+                padding: 1px 6px;
+                border-radius: 6px;
+                box-shadow: 0 0 6px rgba(56, 189, 248, 0.3);
             }
 
             /* Action Grid & Panels */
@@ -343,68 +367,80 @@ export function renderProfileScreen(container) {
                 </div>
             </div>
 
-            <!-- 2. Pro Esports Trophy Showcase (11 Tiers) -->
-            <div class="esports-vault">
+            <!-- 2. 3D Esports Trophy Vault (11 Trophies Showcase) -->
+            <div class="esports-trophy-vault">
                 <div class="vault-header">
-                    <span class="vault-title">⚔️ HALL OF FAME (11 TIERS)</span>
-                    <span class="vault-count">TOTAL: ${championCount + duelCounts.reduce((a,b)=>a+b, 0) + squadCounts.reduce((a,b)=>a+b, 0)}</span>
+                    <span class="vault-title">🏆 3D ESPORTS TROPHY VAULT</span>
+                    <span class="vault-total">TOTAL: ${championCount + duelCounts.reduce((a,b)=>a+b, 0) + squadCounts.reduce((a,b)=>a+b, 0)}</span>
                 </div>
 
-                <!-- Epic Grand Champion Crown -->
-                <div class="epic-champion-banner">
-                    <div class="ec-left">
-                        <div class="ec-icon">
-                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" width="22" height="22">
-                                <path d="M6 9H4.5a2.5 2.5 0 0 1 0-5H6"></path>
-                                <path d="M18 9h1.5a2.5 2.5 0 0 0 0-5H18"></path>
-                                <path d="M4 22h16"></path>
-                                <path d="M10 14.66V17c0 .55-.47.98-.97 1.21C7.85 18.75 7 20.24 7 22"></path>
-                                <path d="M14 14.66V17c0 .55.47.98.97 1.21C16.15 18.75 17 20.24 17 22"></path>
-                                <path d="M18 2H6v7a6 6 0 0 0 12 0V2Z"></path>
-                            </svg>
-                            <div class="ec-badge-stack">x${championCount}</div>
-                        </div>
-                        <div class="ec-text">
-                            <h4>GRAND CHAMPION</h4>
-                            <p>Ultimate Crown Badge</p>
-                        </div>
+                <!-- Grand Champion Ultimate 3D Cup -->
+                <div class="grand-trophy-showcase">
+                    <div class="trophy-3d-icon">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M6 9H4.5a2.5 2.5 0 0 1 0-5H6"></path>
+                            <path d="M18 9h1.5a2.5 2.5 0 0 0 0-5H18"></path>
+                            <path d="M4 22h16"></path>
+                            <path d="M10 14.66V17c0 .55-.47.98-.97 1.21C7.85 18.75 7 20.24 7 22"></path>
+                            <path d="M14 14.66V17c0 .55.47.98.97 1.21C16.15 18.75 17 20.24 17 22"></path>
+                            <path d="M18 2H6v7a6 6 0 0 0 12 0V2Z"></path>
+                        </svg>
+                        <div class="trophy-stack-tag">x${championCount}</div>
                     </div>
-                    <div class="ec-tag">MYTHIC</div>
+                    <div class="grand-trophy-info">
+                        <h4>GRAND CHAMPION CUP</h4>
+                        <p>Ultimate World Championship Trophy</p>
+                    </div>
+                    <div class="max-badge-pill">PREMIER</div>
                 </div>
 
-                <!-- Dual Fee Tiers Grid (1vs1 & 5vs5 Compact Badges) -->
-                <div class="tiers-container">
+                <!-- 10 Mode Trophies (5 for 1vs1, 5 for 5vs5) -->
+                <div class="mode-trophies-section">
                     <!-- 1vs1 Tiers -->
-                    <div class="tier-group">
-                        <div class="tier-group-title">⚡ 1vs1 DUEL TIERS</div>
-                        <div class="tier-row-list">
+                    <div class="mode-column">
+                        <div class="mode-col-title">⚡ 1vs1 DUEL CUPS</div>
+                        <div class="trophy-card-list">
                             ${duelCounts.map((count, index) => `
-                                <div class="tier-pill">
-                                    <div class="tier-pill-left">
-                                        <svg class="tier-svg-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-                                            <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"></polygon>
-                                        </svg>
-                                        <span class="tier-label">Fee T-${index + 1}</span>
+                                <div class="trophy-mini-card">
+                                    <div class="tmc-left">
+                                        <div class="tmc-icon-wrapper">
+                                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                                                <path d="M6 9H4.5a2.5 2.5 0 0 1 0-5H6"></path>
+                                                <path d="M18 9h1.5a2.5 2.5 0 0 0 0-5H18"></path>
+                                                <path d="M4 22h16"></path>
+                                                <path d="M10 14.66V17c0 .55-.47.98-.97 1.21C7.85 18.75 7 20.24 7 22"></path>
+                                                <path d="M14 14.66V17c0 .55.47.98.97 1.21C16.15 18.75 17 20.24 17 22"></path>
+                                                <path d="M18 2H6v7a6 6 0 0 0 12 0V2Z"></path>
+                                            </svg>
+                                        </div>
+                                        <span class="tmc-name">Fee T-${index + 1}</span>
                                     </div>
-                                    <div class="tier-count-badge">x${Math.max(1, count)}</div>
+                                    <div class="tmc-count">x${Math.max(1, count)}</div>
                                 </div>
                             `).join('')}
                         </div>
                     </div>
 
                     <!-- 5vs5 Tiers -->
-                    <div class="tier-group">
-                        <div class="tier-group-title" style="color: #ec4899;">🛡️ 5vs5 SQUAD TIERS</div>
-                        <div class="tier-row-list">
+                    <div class="mode-column">
+                        <div class="mode-col-title" style="color: #ec4899;">🛡️ 5vs5 SQUAD CUPS</div>
+                        <div class="trophy-card-list">
                             ${squadCounts.map((count, index) => `
-                                <div class="tier-pill" style="border-color: rgba(236, 72, 153, 0.3);">
-                                    <div class="tier-pill-left">
-                                        <svg class="tier-svg-icon" style="color: #ec4899;" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-                                            <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path>
-                                        </svg>
-                                        <span class="tier-label">Fee T-${index + 1}</span>
+                                <div class="trophy-mini-card" style="border-color: rgba(236, 72, 153, 0.3);">
+                                    <div class="tmc-left">
+                                        <div class="tmc-icon-wrapper" style="background: linear-gradient(135deg, #ec4899, #9d174d); box-shadow: 0 0 8px rgba(236, 72, 153, 0.4);">
+                                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                                                <path d="M6 9H4.5a2.5 2.5 0 0 1 0-5H6"></path>
+                                                <path d="M18 9h1.5a2.5 2.5 0 0 0 0-5H18"></path>
+                                                <path d="M4 22h16"></path>
+                                                <path d="M10 14.66V17c0 .55-.47.98-.97 1.21C7.85 18.75 7 20.24 7 22"></path>
+                                                <path d="M14 14.66V17c0 .55.47.98.97 1.21C16.15 18.75 17 20.24 17 22"></path>
+                                                <path d="M18 2H6v7a6 6 0 0 0 12 0V2Z"></path>
+                                            </svg>
+                                        </div>
+                                        <span class="tmc-name">Fee T-${index + 1}</span>
                                     </div>
-                                    <div class="tier-count-badge" style="color: #ec4899; border-color: #ec4899;">x${Math.max(1, count)}</div>
+                                    <div class="tmc-count" style="color: #ec4899; border-color: #ec4899; box-shadow: 0 0 6px rgba(236, 72, 153, 0.3);">x${Math.max(1, count)}</div>
                                 </div>
                             `).join('')}
                         </div>
