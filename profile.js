@@ -1,27 +1,10 @@
-// profile.js - 3D Esports Trophy Showcase System
+// profile.js - Cyberpunk City Style Profile & Achievements
 
 export function renderProfileScreen(container) {
     const userName = localStorage.getItem('userName') || "CyberPlayer";
     const userId = localStorage.getItem('userId') || "EA-88492";
     const userAvatar = localStorage.getItem('userAvatar') || ""; 
     const userKey = localStorage.getItem('userKey') || "EA-KEY-9988-XYZ";
-    
-    // Trophies Data
-    const championCount = parseInt(localStorage.getItem('trophy_champion') || '1');
-    const duelCounts = [
-        parseInt(localStorage.getItem('trophy_1v1_tier1') || '3'),
-        parseInt(localStorage.getItem('trophy_1v1_tier2') || '1'),
-        parseInt(localStorage.getItem('trophy_1v1_tier3') || '0'),
-        parseInt(localStorage.getItem('trophy_1v1_tier4') || '0'),
-        parseInt(localStorage.getItem('trophy_1v1_tier5') || '0'),
-    ];
-    const squadCounts = [
-        parseInt(localStorage.getItem('trophy_5v5_tier1') || '2'),
-        parseInt(localStorage.getItem('trophy_5v5_tier2') || '0'),
-        parseInt(localStorage.getItem('trophy_5v5_tier3') || '0'),
-        parseInt(localStorage.getItem('trophy_5v5_tier4') || '0'),
-        parseInt(localStorage.getItem('trophy_5v5_tier5') || '0'),
-    ];
 
     container.innerHTML = `
         <style>
@@ -29,30 +12,41 @@ export function renderProfileScreen(container) {
                 padding: 16px;
                 color: #f8fafc;
                 font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-                background: radial-gradient(circle at top, #1e1b4b 0%, #020617 100%);
+                background: radial-gradient(circle at top, #311042 0%, #030712 100%);
                 min-height: 100%;
                 box-sizing: border-box;
-                padding-bottom: 60px;
+                padding-bottom: 70px;
+                position: relative;
             }
 
-            /* --- Top Profile Card --- */
-            .top-profile-card {
+            /* --- Cyberpunk Grid Header & Profile --- */
+            .cyber-top-card {
                 background: rgba(15, 23, 42, 0.85);
-                border: 1px solid #38bdf8;
+                border: 1px solid #ec4899;
                 border-radius: 16px;
                 padding: 14px;
                 display: flex;
                 align-items: center;
                 gap: 12px;
-                box-shadow: 0 0 15px rgba(56, 189, 248, 0.2);
+                box-shadow: 0 0 20px rgba(236, 72, 153, 0.25);
                 backdrop-filter: blur(10px);
                 margin-bottom: 14px;
+                position: relative;
+                overflow: hidden;
+            }
+            .cyber-top-card::after {
+                content: '';
+                position: absolute;
+                top: 0; right: 0;
+                width: 60px; height: 60px;
+                background: linear-gradient(135deg, rgba(236, 72, 153, 0.2), transparent);
+                border-bottom-left-radius: 100%;
             }
             .pf-upload-box {
                 width: 60px;
                 height: 60px;
                 background: #020617;
-                border: 2px dashed #38bdf8;
+                border: 2px dashed #ec4899;
                 border-radius: 12px;
                 display: flex;
                 align-items: center;
@@ -60,7 +54,7 @@ export function renderProfileScreen(container) {
                 cursor: pointer;
                 position: relative;
                 overflow: hidden;
-                box-shadow: inset 0 0 8px rgba(56, 189, 248, 0.3);
+                box-shadow: inset 0 0 10px rgba(236, 72, 153, 0.4);
                 flex-shrink: 0;
             }
             .pf-upload-box img {
@@ -73,13 +67,15 @@ export function renderProfileScreen(container) {
             }
             .pf-upload-box span {
                 font-size: 24px;
-                color: #38bdf8;
+                color: #ec4899;
+                text-shadow: 0 0 8px #ec4899;
             }
             .pf-text-info h3 {
                 margin: 0;
                 font-size: 15px;
-                color: #38bdf8;
-                text-shadow: 0 0 5px rgba(56, 189, 248, 0.5);
+                color: #f472b6;
+                text-shadow: 0 0 8px rgba(244, 114, 182, 0.5);
+                letter-spacing: 0.5px;
             }
             .pf-text-info p {
                 margin: 3px 0 0 0;
@@ -88,194 +84,72 @@ export function renderProfileScreen(container) {
                 font-family: monospace;
             }
 
-            /* --- 3D Esports Trophy Vault Section --- */
-            .esports-trophy-vault {
-                background: linear-gradient(135deg, rgba(15, 23, 42, 0.98), rgba(2, 6, 23, 0.98));
-                border: 1px solid rgba(250, 204, 21, 0.4);
+            /* --- Cyber City Achievements Section --- */
+            .cyber-achievements-box {
+                background: rgba(15, 23, 42, 0.9);
+                border: 1px solid #06b6d4;
                 border-radius: 16px;
                 padding: 14px;
                 margin-bottom: 14px;
-                box-shadow: 0 0 30px rgba(0, 0, 0, 0.8), inset 0 0 15px rgba(250, 204, 21, 0.05);
+                box-shadow: 0 0 25px rgba(6, 182, 212, 0.2);
             }
-            .vault-header {
-                display: flex;
-                justify-content: space-between;
-                align-items: center;
-                margin-bottom: 14px;
-                border-bottom: 1px solid #1e293b;
-                padding-bottom: 8px;
-            }
-            .vault-title {
-                font-size: 12px;
-                font-weight: 900;
-                color: #facc15;
-                letter-spacing: 1.5px;
-                text-shadow: 0 0 10px rgba(250, 204, 21, 0.5);
-            }
-            .vault-total {
+            .ach-header {
                 font-size: 11px;
-                color: #38bdf8;
-                font-family: monospace;
-                background: rgba(56, 189, 248, 0.1);
-                padding: 2px 8px;
-                border-radius: 6px;
-                border: 1px solid rgba(56, 189, 248, 0.3);
-            }
-
-            /* 1. Grand Champion Ultimate 3D Trophy Showcase */
-            .grand-trophy-showcase {
-                background: linear-gradient(135deg, rgba(250, 204, 21, 0.12) 0%, rgba(15, 23, 42, 0.95) 100%);
-                border: 2px solid #facc15;
-                border-radius: 14px;
-                padding: 14px;
-                display: flex;
-                align-items: center;
-                gap: 14px;
-                margin-bottom: 14px;
-                box-shadow: 0 0 25px rgba(250, 204, 21, 0.3), inset 0 0 12px rgba(250, 204, 21, 0.2);
-                position: relative;
-                overflow: hidden;
-            }
-            .trophy-3d-icon {
-                width: 60px;
-                height: 60px;
-                background: radial-gradient(circle, #facc15 0%, #b45309 100%);
-                border-radius: 12px;
-                display: flex;
-                align-items: center;
-                justify-content: center;
-                box-shadow: 0 0 20px #facc15;
-                flex-shrink: 0;
-                position: relative;
-                border: 1px solid #fef08a;
-            }
-            .trophy-3d-icon svg {
-                width: 36px;
-                height: 36px;
-                color: #020617;
-                filter: drop-shadow(0 2px 4px rgba(0,0,0,0.5));
-            }
-            .trophy-stack-tag {
-                position: absolute;
-                bottom: -4px;
-                right: -4px;
-                background: #020617;
-                color: #facc15;
-                border: 1px solid #facc15;
-                font-size: 10px;
                 font-weight: 900;
-                padding: 1px 6px;
-                border-radius: 6px;
-                box-shadow: 0 0 8px #facc15;
-            }
-            .grand-trophy-info h4 {
-                margin: 0;
-                font-size: 14px;
-                font-weight: 900;
-                color: #facc15;
-                letter-spacing: 0.5px;
-                text-shadow: 0 0 8px rgba(250, 204, 21, 0.6);
-            }
-            .grand-trophy-info p {
-                margin: 3px 0 0 0;
-                font-size: 10px;
-                color: #cbd5e1;
-            }
-            .max-badge-pill {
-                margin-left: auto;
-                background: rgba(250, 204, 21, 0.2);
-                color: #facc15;
-                border: 1px solid #facc15;
-                font-size: 9px;
-                font-weight: 900;
-                padding: 5px 8px;
-                border-radius: 6px;
-                letter-spacing: 1px;
-                box-shadow: 0 0 10px rgba(250, 204, 21, 0.3);
-            }
-
-            /* 2. Mode Trophies Grid (10 Trophies: 1vs1 & 5vs5) */
-            .mode-trophies-section {
-                display: grid;
-                grid-template-columns: 1fr 1fr;
-                gap: 10px;
-            }
-            .mode-column {
-                background: #020617;
-                border: 1px solid #1e293b;
-                border-radius: 12px;
-                padding: 10px;
-            }
-            .mode-col-title {
-                font-size: 10px;
-                font-weight: 900;
-                color: #38bdf8;
-                margin-bottom: 8px;
-                letter-spacing: 0.5px;
-                display: flex;
-                align-items: center;
-                gap: 5px;
-                border-bottom: 1px solid #0f172a;
-                padding-bottom: 4px;
-            }
-            .trophy-card-list {
-                display: flex;
-                flex-direction: column;
-                gap: 6px;
-            }
-            .trophy-mini-card {
-                background: rgba(15, 23, 42, 0.9);
-                border: 1px solid #334155;
-                border-radius: 8px;
-                padding: 6px 8px;
+                color: #22d3ee;
+                letter-spacing: 1.5px;
+                margin-bottom: 12px;
                 display: flex;
                 align-items: center;
                 justify-content: space-between;
-                position: relative;
-                transition: 0.2s;
+                border-bottom: 1px solid #1e293b;
+                padding-bottom: 6px;
+                text-shadow: 0 0 8px rgba(34, 211, 238, 0.4);
             }
-            .trophy-mini-card:hover {
-                border-color: #38bdf8;
-                box-shadow: 0 0 8px rgba(56, 189, 248, 0.3);
-            }
-            .tmc-left {
-                display: flex;
-                align-items: center;
+            .ach-grid {
+                display: grid;
+                grid-template-columns: 1fr;
                 gap: 8px;
             }
-            .tmc-icon-wrapper {
-                width: 26px;
-                height: 26px;
-                background: linear-gradient(135deg, #38bdf8, #0369a1);
-                border-radius: 6px;
+            .ach-item {
+                background: linear-gradient(90deg, rgba(6, 182, 212, 0.08), rgba(15, 23, 42, 0.8));
+                border: 1px solid rgba(6, 182, 212, 0.3);
+                border-radius: 10px;
+                padding: 10px 12px;
                 display: flex;
                 align-items: center;
-                justify-content: center;
-                box-shadow: 0 0 8px rgba(56, 189, 248, 0.4);
-                flex-shrink: 0;
+                justify-content: space-between;
+                transition: 0.2s;
             }
-            .tmc-icon-wrapper svg {
-                width: 15px;
-                height: 15px;
-                color: #020617;
+            .ach-item:hover {
+                border-color: #22d3ee;
+                box-shadow: 0 0 10px rgba(34, 211, 238, 0.3);
             }
-            .tmc-name {
-                font-size: 10px;
-                color: #f1f5f9;
+            .ach-info-left h5 {
+                margin: 0;
+                font-size: 12px;
+                color: #f8fafc;
                 font-weight: bold;
+                letter-spacing: 0.5px;
             }
-            .tmc-count {
-                background: #020617;
-                color: #38bdf8;
-                border: 1px solid #38bdf8;
+            .ach-info-left p {
+                margin: 2px 0 0 0;
+                font-size: 10px;
+                color: #94a3b8;
+            }
+            .ach-status-tag {
+                background: rgba(34, 211, 238, 0.15);
+                color: #22d3ee;
+                border: 1px solid #22d3ee;
                 font-size: 9px;
                 font-weight: 900;
-                padding: 1px 6px;
+                padding: 3px 8px;
                 border-radius: 6px;
-                box-shadow: 0 0 6px rgba(56, 189, 248, 0.3);
+                letter-spacing: 1px;
+                box-shadow: 0 0 6px rgba(34, 211, 238, 0.3);
             }
 
-            /* Action Grid & Panels */
+            /* Action Grid (Key & History) */
             .action-grid {
                 display: grid;
                 grid-template-columns: 1fr 1fr;
@@ -284,56 +158,109 @@ export function renderProfileScreen(container) {
             }
             .cyber-action-box {
                 background: rgba(15, 23, 42, 0.8);
-                border: 1px solid #1e293b;
+                border: 1px solid #334155;
                 border-radius: 12px;
                 padding: 14px;
                 text-align: center;
                 cursor: pointer;
                 transition: 0.2s;
-                box-shadow: 0 4px 10px rgba(0,0,0,0.3);
             }
             .cyber-action-box:hover {
-                border-color: #38bdf8;
-                box-shadow: 0 0 12px rgba(56, 189, 248, 0.3);
+                border-color: #a855f7;
+                box-shadow: 0 0 12px rgba(168, 85, 247, 0.3);
             }
             .cyber-action-box span {
                 font-size: 12px;
                 font-weight: bold;
-                color: #38bdf8;
+                color: #d8b4fe;
                 letter-spacing: 1px;
             }
 
             .display-panel {
                 background: rgba(15, 23, 42, 0.95);
-                border: 1px solid #38bdf8;
+                border: 1px solid #a855f7;
                 border-radius: 12px;
                 padding: 12px;
                 margin-bottom: 14px;
                 display: none;
-                box-shadow: 0 0 10px rgba(56, 189, 248, 0.2);
+                box-shadow: 0 0 12px rgba(168, 85, 247, 0.2);
                 font-size: 12px;
             }
             .display-panel.show {
                 display: block;
             }
 
-            .message-section {
-                background: rgba(15, 23, 42, 0.85);
-                border: 1px solid #f43f5e;
-                border-radius: 14px;
-                padding: 14px;
-                box-shadow: 0 0 12px rgba(244, 63, 94, 0.2);
+            /* --- Floating Cyber Message Icon Button ---. */
+            .floating-msg-btn {
+                position: fixed;
+                bottom: 75px;
+                right: 20px;
+                width: 50px;
+                height: 50px;
+                background: linear-gradient(135deg, #ec4899, #8b5cf6);
+                border: 2px solid #f472b6;
+                border-radius: 50%;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                cursor: pointer;
+                box-shadow: 0 0 20px rgba(236, 72, 153, 0.6);
+                z-index: 100;
+                transition: transform 0.2s;
             }
-            .message-title {
+            .floating-msg-btn:hover {
+                transform: scale(1.1);
+            }
+            .floating-msg-btn svg {
+                width: 22px;
+                height: 22px;
+                color: white;
+            }
+
+            /* Cyber Message Modal Popup */
+            .cyber-modal {
+                position: fixed;
+                top: 0; left: 0; width: 100%; height: 100%;
+                background: rgba(2, 6, 23, 0.8);
+                backdrop-filter: blur(5px);
+                display: none;
+                align-items: center;
+                justify-content: center;
+                z-index: 200;
+                padding: 16px;
+                box-sizing: border-box;
+            }
+            .cyber-modal.show {
+                display: flex;
+            }
+            .cyber-modal-content {
+                background: #0f172a;
+                border: 1px solid #ec4899;
+                border-radius: 16px;
+                padding: 16px;
+                width: 100%;
+                max-width: 320px;
+                box-shadow: 0 0 25px rgba(236, 72, 153, 0.4);
+            }
+            .modal-title {
                 font-size: 12px;
-                color: #f43f5e;
-                font-weight: bold;
-                margin-bottom: 8px;
+                font-weight: 900;
+                color: #f472b6;
+                margin-bottom: 12px;
+                letter-spacing: 1px;
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+            }
+            .modal-close {
+                cursor: pointer;
+                font-size: 14px;
+                color: #94a3b8;
             }
             .msg-input {
                 width: 100%;
                 background: #020617;
-                border: 1px solid #1e293b;
+                border: 1px solid #334155;
                 color: white;
                 padding: 8px 10px;
                 border-radius: 8px;
@@ -342,7 +269,7 @@ export function renderProfileScreen(container) {
                 box-sizing: border-box;
             }
             .msg-btn {
-                background: linear-gradient(135deg, #f43f5e, #be123c);
+                background: linear-gradient(135deg, #ec4899, #be123c);
                 color: white;
                 border: none;
                 width: 100%;
@@ -351,12 +278,13 @@ export function renderProfileScreen(container) {
                 font-weight: bold;
                 font-size: 11px;
                 cursor: pointer;
+                box-shadow: 0 0 10px rgba(236, 72, 153, 0.4);
             }
         </style>
 
         <div class="cyber-profile-wrapper">
             <!-- 1. Top Card -->
-            <div class="top-profile-card">
+            <div class="cyber-top-card">
                 <label class="pf-upload-box" id="avatar-container" title="ဓာတ်ပုံပြောင်းရန်နှိပ်ပါ">
                     ${userAvatar ? `<img src="${userAvatar}" id="pf-img">` : `<span>+</span>`}
                     <input type="file" id="pf-file-input" accept="image/*" style="display: none;">
@@ -367,83 +295,33 @@ export function renderProfileScreen(container) {
                 </div>
             </div>
 
-            <!-- 2. 3D Esports Trophy Vault (11 Trophies Showcase) -->
-            <div class="esports-trophy-vault">
-                <div class="vault-header">
-                    <span class="vault-title">🏆 3D ESPORTS TROPHY VAULT</span>
-                    <span class="vault-total">TOTAL: ${championCount + duelCounts.reduce((a,b)=>a+b, 0) + squadCounts.reduce((a,b)=>a+b, 0)}</span>
+            <!-- 2. Cyber City Achievements -->
+            <div class="cyber-achievements-box">
+                <div class="ach-header">
+                    <span>⚡ CYBER CITY ACHIEVEMENTS</span>
+                    <span style="color: #06b6d4; font-family: monospace;">UNLOCKED: 3/3</span>
                 </div>
-
-                <!-- Grand Champion Ultimate 3D Cup -->
-                <div class="grand-trophy-showcase">
-                    <div class="trophy-3d-icon">
-                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
-                            <path d="M6 9H4.5a2.5 2.5 0 0 1 0-5H6"></path>
-                            <path d="M18 9h1.5a2.5 2.5 0 0 0 0-5H18"></path>
-                            <path d="M4 22h16"></path>
-                            <path d="M10 14.66V17c0 .55-.47.98-.97 1.21C7.85 18.75 7 20.24 7 22"></path>
-                            <path d="M14 14.66V17c0 .55.47.98.97 1.21C16.15 18.75 17 20.24 17 22"></path>
-                            <path d="M18 2H6v7a6 6 0 0 0 12 0V2Z"></path>
-                        </svg>
-                        <div class="trophy-stack-tag">x${championCount}</div>
-                    </div>
-                    <div class="grand-trophy-info">
-                        <h4>GRAND CHAMPION CUP</h4>
-                        <p>Ultimate World Championship Trophy</p>
-                    </div>
-                    <div class="max-badge-pill">PREMIER</div>
-                </div>
-
-                <!-- 10 Mode Trophies (5 for 1vs1, 5 for 5vs5) -->
-                <div class="mode-trophies-section">
-                    <!-- 1vs1 Tiers -->
-                    <div class="mode-column">
-                        <div class="mode-col-title">⚡ 1vs1 DUEL CUPS</div>
-                        <div class="trophy-card-list">
-                            ${duelCounts.map((count, index) => `
-                                <div class="trophy-mini-card">
-                                    <div class="tmc-left">
-                                        <div class="tmc-icon-wrapper">
-                                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-                                                <path d="M6 9H4.5a2.5 2.5 0 0 1 0-5H6"></path>
-                                                <path d="M18 9h1.5a2.5 2.5 0 0 0 0-5H18"></path>
-                                                <path d="M4 22h16"></path>
-                                                <path d="M10 14.66V17c0 .55-.47.98-.97 1.21C7.85 18.75 7 20.24 7 22"></path>
-                                                <path d="M14 14.66V17c0 .55.47.98.97 1.21C16.15 18.75 17 20.24 17 22"></path>
-                                                <path d="M18 2H6v7a6 6 0 0 0 12 0V2Z"></path>
-                                            </svg>
-                                        </div>
-                                        <span class="tmc-name">Fee T-${index + 1}</span>
-                                    </div>
-                                    <div class="tmc-count">x${Math.max(1, count)}</div>
-                                </div>
-                            `).join('')}
+                <div class="ach-grid">
+                    <div class="ach-item">
+                        <div class="ach-info-left">
+                            <h5>NEON PIONEER</h5>
+                            <p>Connected to the Cyber Grid network</p>
                         </div>
+                        <div class="ach-status-tag">ACTIVE</div>
                     </div>
-
-                    <!-- 5vs5 Tiers -->
-                    <div class="mode-column">
-                        <div class="mode-col-title" style="color: #ec4899;">🛡️ 5vs5 SQUAD CUPS</div>
-                        <div class="trophy-card-list">
-                            ${squadCounts.map((count, index) => `
-                                <div class="trophy-mini-card" style="border-color: rgba(236, 72, 153, 0.3);">
-                                    <div class="tmc-left">
-                                        <div class="tmc-icon-wrapper" style="background: linear-gradient(135deg, #ec4899, #9d174d); box-shadow: 0 0 8px rgba(236, 72, 153, 0.4);">
-                                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-                                                <path d="M6 9H4.5a2.5 2.5 0 0 1 0-5H6"></path>
-                                                <path d="M18 9h1.5a2.5 2.5 0 0 0 0-5H18"></path>
-                                                <path d="M4 22h16"></path>
-                                                <path d="M10 14.66V17c0 .55-.47.98-.97 1.21C7.85 18.75 7 20.24 7 22"></path>
-                                                <path d="M14 14.66V17c0 .55.47.98.97 1.21C16.15 18.75 17 20.24 17 22"></path>
-                                                <path d="M18 2H6v7a6 6 0 0 0 12 0V2Z"></path>
-                                            </svg>
-                                        </div>
-                                        <span class="tmc-name">Fee T-${index + 1}</span>
-                                    </div>
-                                    <div class="tmc-count" style="color: #ec4899; border-color: #ec4899; box-shadow: 0 0 6px rgba(236, 72, 153, 0.3);">x${Math.max(1, count)}</div>
-                                </div>
-                            `).join('')}
+                    <div class="ach-item">
+                        <div class="ach-info-left">
+                            <h5>DUEL MASTER</h5>
+                            <p>Completed 1vs1 tactical matches</p>
                         </div>
+                        <div class="ach-status-tag">COMPLETED</div>
+                    </div>
+                    <div class="ach-item">
+                        <div class="ach-info-left">
+                            <h5>SQUAD COMMANDER</h5>
+                            <p>Registered 5vs5 elite operations</p>
+                        </div>
+                        <div class="ach-status-tag">ELITE</div>
                     </div>
                 </div>
             </div>
@@ -459,31 +337,43 @@ export function renderProfileScreen(container) {
             </div>
 
             <div class="display-panel" id="panel-key">
-                <div style="color: #38bdf8; font-weight: bold; margin-bottom: 4px;">YOUR SECURITY KEY:</div>
-                <div style="font-family: monospace; background: #020617; padding: 6px; border-radius: 6px; border: 1px solid #1e293b; color: #facc15;">${userKey}</div>
+                <div style="color: #d8b4fe; font-weight: bold; margin-bottom: 4px;">YOUR SECURITY KEY:</div>
+                <div style="font-family: monospace; background: #020617; padding: 6px; border-radius: 6px; border: 1px solid #334155; color: #facc15;">${userKey}</div>
             </div>
 
             <div class="display-panel" id="panel-history">
-                <div style="color: #38bdf8; font-weight: bold; margin-bottom: 6px;">MATCH & REGISTER HISTORY:</div>
-                <div style="background: #020617; padding: 6px 8px; border-radius: 6px; border: 1px solid #1e293b; margin-bottom: 4px;">
+                <div style="color: #d8b4fe; font-weight: bold; margin-bottom: 6px;">MATCH & REGISTER HISTORY:</div>
+                <div style="background: #020617; padding: 6px 8px; border-radius: 6px; border: 1px solid #334155; margin-bottom: 4px;">
                     🔥 1vs1 Mode Register - <span style="color: #22c55e;">APPROVED</span>
                 </div>
-                <div style="background: #020617; padding: 6px 8px; border-radius: 6px; border: 1px solid #1e293b;">
+                <div style="background: #020617; padding: 6px 8px; border-radius: 6px; border: 1px solid #334155;">
                     🛡️ 5vs5 Tournament - <span style="color: #38bdf8;">PENDING</span>
                 </div>
             </div>
 
-            <!-- 4. Network Message Section -->
-            <div class="message-section">
-                <div class="message-title">💬 ETERNAL AURA NETWORK CHAT</div>
-                <input type="text" class="msg-input" id="peer-id-input" placeholder="Enter Receiver User ID (e.g. EA-12345)">
-                <input type="text" class="msg-input" id="peer-msg-input" placeholder="ရဲဘော်ထံ ပို့မည့်စာသား ရေးပါ...">
-                <button class="msg-btn" id="send-peer-msg-btn">TRANSMIT MESSAGE 🚀</button>
+            <!-- 4. Floating Message Icon Button -->
+            <div class="floating-msg-btn" id="open-msg-modal" title="ရဲဘော်များထံ မက်ဆေ့ခ်ျပို့ရန်">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
+                </svg>
+            </div>
+
+            <!-- Modal Popup for Messaging -->
+            <div class="cyber-modal" id="msg-modal">
+                <div class="cyber-modal-content">
+                    <div class="modal-title">
+                        <span>💬 CYBER NETWORK CHAT</span>
+                        <span class="modal-close" id="close-msg-modal">✕</span>
+                    </div>
+                    <input type="text" class="msg-input" id="peer-id-input" placeholder="Receiver User ID (e.g. EA-12345)">
+                    <input type="text" class="msg-input" id="peer-msg-input" placeholder="ရဲဘော်ထံ ပို့မည့်စာသား...">
+                    <button class="msg-btn" id="send-peer-msg-btn">TRANSMIT 🚀</button>
+                </div>
             </div>
         </div>
     `;
 
-    // --- Logic ---
+    // --- Logic Interactivity ---
     const fileInput = document.getElementById('pf-file-input');
     fileInput.addEventListener('change', function(e) {
         const file = e.target.files[0];
@@ -514,6 +404,21 @@ export function renderProfileScreen(container) {
         panelKey.classList.remove('show');
     });
 
+    // Modal Control
+    const modal = document.getElementById('msg-modal');
+    const openModalBtn = document.getElementById('open-msg-modal');
+    const closeModalBtn = document.getElementById('close-msg-modal');
+
+    openModalBtn.addEventListener('click', () => {
+        modal.classList.add('show');
+    });
+    closeModalBtn.addEventListener('click', () => {
+        modal.classList.remove('show');
+    });
+    modal.addEventListener('click', (e) => {
+        if (e.target === modal) modal.classList.remove('show');
+    });
+
     const sendMsgBtn = document.getElementById('send-peer-msg-btn');
     sendMsgBtn.addEventListener('click', () => {
         const peerId = document.getElementById('peer-id-input').value.trim();
@@ -525,5 +430,6 @@ export function renderProfileScreen(container) {
         alert(`✅ မက်ဆေ့ခ်ျကို ${peerId || 'Network User'} ထံသို့ အောင်မြင်စွာ ပို့ပြီးပါပြီ!`);
         document.getElementById('peer-msg-input').value = '';
         document.getElementById('peer-id-input').value = '';
+        modal.classList.remove('show');
     });
 }
