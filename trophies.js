@@ -1,4 +1,4 @@
-// trophies.js - Updated with Crescent Eclipse Trophy at No. 10 and static Dragon Mech at No. 9
+// trophies.js - Updated with working inner animations for No. 9 and No. 10
 
 const trophyDataList = [
     { id: 1, title: "ANGELIC ASCENT", subtitle: "ANGELIC ASCENT", date: "2026-01-15", desc: "Eternal Aura Angelic Halo Trophy.", isCustom: true, styleType: 'angelic-large' },
@@ -1049,7 +1049,7 @@ export function renderTrophyShowcase(containerId, onTrophyClick) {
                 max-width: 42px;
             }
 
-            /* --- နံပါတ် ၉ နေရာ (Dragon Mech Trophy Small - လုံးဝ မလှုပ်အောင် Animation ဖြုတ်ထားသည်) --- */
+            /* --- နံပါတ် ၉ နေရာ (Dragon Mech Trophy Small - အထဲက Core နဲ့ Wing လှုပ်ရှားမှုများ ပါရှိသည်) --- */
             .dragon-trophy-wrapper-small {
                 width: 52px;
                 height: 72px;
@@ -1095,14 +1095,26 @@ export function renderTrophyShowcase(containerId, onTrophyClick) {
                 left: 1px;
                 top: 2px;
                 clip-path: polygon(10% 0%, 100% 20%, 70% 100%, 0% 60%);
-                transform: rotate(-10deg);
+                transform-origin: right center;
+                animation: dragonWingLeftSmall 1.5s ease-in-out infinite alternate;
+            }
+
+            @keyframes dragonWingLeftSmall {
+                0% { transform: rotate(-12deg) scaleX(0.95); }
+                100% { transform: rotate(-5deg) scaleX(1.05); }
             }
 
             .right-mech-wing-small {
                 right: 1px;
                 top: 2px;
                 clip-path: polygon(0% 20%, 90% 0%, 100% 60%, 30% 100%);
-                transform: rotate(10deg);
+                transform-origin: left center;
+                animation: dragonWingRightSmall 1.5s ease-in-out infinite alternate;
+            }
+
+            @keyframes dragonWingRightSmall {
+                0% { transform: rotate(12deg) scaleX(0.95); }
+                100% { transform: rotate(5deg) scaleX(1.05); }
             }
 
             .dragon-fire-core-small {
@@ -1113,6 +1125,12 @@ export function renderTrophyShowcase(containerId, onTrophyClick) {
                 border-radius: 50%;
                 box-shadow: 0 0 6px #eab308, 0 0 10px #ec4899;
                 z-index: 3;
+                animation: dragonCorePulseSmall 1.2s ease-in-out infinite alternate;
+            }
+
+            @keyframes dragonCorePulseSmall {
+                0% { transform: scale(0.85); opacity: 0.7; }
+                100% { transform: scale(1.2); opacity: 1; }
             }
 
             .celestial-pillar-dragon-small {
@@ -1171,7 +1189,7 @@ export function renderTrophyShowcase(containerId, onTrophyClick) {
                 max-width: 42px;
             }
 
-            /* --- နံပါတ် ၁၀ နေရာ (Crescent Eclipse Trophy Small - Border ဖြုတ်ထားပြီး ညီညာသောအရွယ်အစား) --- */
+            /* --- နံပါတ် ၁၀ နေရာ (Crescent Eclipse Trophy Small - အထဲက Moon နဲ့ Diamond Core လှုပ်ရှားမှုများ ပါရှိသည်) --- */
             .eclipse-trophy-wrapper-small {
                 width: 52px;
                 height: 72px;
@@ -1218,12 +1236,24 @@ export function renderTrophyShowcase(containerId, onTrophyClick) {
                 left: 2px;
                 top: 2px;
                 transform: rotate(-15deg);
+                animation: pulseMoonLeftSmall 2s ease-in-out infinite alternate;
             }
 
             .right-moon-small {
                 right: 2px;
                 top: 2px;
                 transform: scaleX(-1) rotate(-15deg);
+                animation: pulseMoonRightSmall 2s ease-in-out infinite alternate;
+            }
+
+            @keyframes pulseMoonLeftSmall {
+                0% { transform: rotate(-15deg) scale(0.95); }
+                100% { transform: rotate(-22deg) scale(1.05); }
+            }
+
+            @keyframes pulseMoonRightSmall {
+                0% { transform: scaleX(-1) rotate(-15deg) scale(0.95); }
+                100% { transform: scaleX(-1) rotate(-22deg) scale(1.05); }
             }
 
             .eclipse-diamond-core-small {
@@ -1237,6 +1267,12 @@ export function renderTrophyShowcase(containerId, onTrophyClick) {
                 clip-path: polygon(50% 0%, 100% 50%, 50% 100%, 0% 50%);
                 box-shadow: 0 0 6px #3b82f6, 0 0 10px #ec4899;
                 z-index: 3;
+                animation: pulseDiamondCoreSmall 1.4s ease-in-out infinite alternate;
+            }
+
+            @keyframes pulseDiamondCoreSmall {
+                0% { transform: translate(-50%, -50%) scale(0.85) rotate(0deg); }
+                100% { transform: translate(-50%, -50%) scale(1.15) rotate(45deg); }
             }
 
             .celestial-pillar-eclipse-small {
@@ -1326,6 +1362,12 @@ export function renderTrophyShowcase(containerId, onTrophyClick) {
                 height: 1.5px;
                 background: linear-gradient(90deg, #3b82f6, #ec4899, #3b82f6);
                 clip-path: polygon(0 0, 100% 0, 95% 100%, 5% 100%);
+                animation: glowDeckSmall 1.5s ease-in-out infinite alternate;
+            }
+
+            @keyframes glowDeckSmall {
+                0% { opacity: 0.5; transform: scaleX(0.85); }
+                100% { opacity: 1; transform: scaleX(1.1); }
             }
 
             /* --- မူလ အလယ်အကြီးစား Trophy (Cyber Angelic Shield) --- */
