@@ -8,6 +8,19 @@ export function renderProfileScreen(container) {
 
     container.innerHTML = `
         <style>
+            /* Scroll bar အားလုံးကို လုံးဝဖျောက်ရန် (Chrome, Safari, Opera) */
+            ::-webkit-scrollbar {
+                display: none;
+                width: 0px;
+                height: 0px;
+            }
+
+            /* Scroll bar အားလုံးကို ဖျောက်ရန် (Firefox, IE, Edge) */
+            * {
+                -ms-overflow-style: none;  /* IE and Edge */
+                scrollbar-width: none;  /* Firefox */
+            }
+
             /* ဖုန်းစခရင်မ်များတွင် ဘေးတိုက် scroll လုံးဝမပေါ်စေရန် ကာကွယ်ခြင်း */
             html, body {
                 max-width: 100%;
@@ -165,7 +178,7 @@ export function renderProfileScreen(container) {
                 padding: 0 8px;
                 box-sizing: border-box;
                 pointer-events: none;
-                overflow-x: hidden !important;
+                overflow: hidden !important;
             }
 
             .box-content-area.open {
@@ -180,7 +193,7 @@ export function renderProfileScreen(container) {
             #trophy-showcase-target {
                 width: 100%;
                 max-width: 100%;
-                overflow-x: hidden !important;
+                overflow: hidden !important;
                 box-sizing: border-box;
             }
 
@@ -189,6 +202,7 @@ export function renderProfileScreen(container) {
                 max-width: 100% !important;
                 box-sizing: border-box !important;
             }
+
             /* 3. Key & History Side-by-Side Grid */
             .bottom-grid {
                 display: grid;
