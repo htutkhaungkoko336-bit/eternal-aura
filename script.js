@@ -3,6 +3,7 @@ import { initAuth } from './auth.js';
 import { renderModeScreen } from './mode.js';
 import { addNotification, renderNotificationScreen } from './notification.js';
 import { renderProfileScreen } from './profile.js'; // Profile Screen ကို Import လုပ်ခြင်း
+import { renderPlayingScreen } from './playing.js'; // Playing Screen ကို Import လုပ်ခြင်း
 
 // DOM Elements များကို ရယူခြင်း
 const formContent = document.getElementById('form-content');
@@ -108,6 +109,8 @@ function handleLoginSuccess(data) {
 
             if (tab === 'mode') {
                 renderModeScreen(targetContent);
+            } else if (tab === 'match') {
+                renderPlayingScreen(targetContent); // Match Tab မှာ playing.js ကို ခေါ်သုံးခြင်း
             } else if (tab === 'notification') {
                 renderNotificationScreen(targetContent);
             } else if (tab === 'profile') {
