@@ -1,4 +1,5 @@
-// profile.js - Cyber Profile & Gaming Status Page (Custom Layout)
+// profile.js - Cyber Profile & Trophy-First Layout
+import { renderTrophyShowcase } from './trophies.js';
 
 export function renderProfileScreen(container) {
     const userName = localStorage.getItem('user_profile_name') || localStorage.getItem('userName') || "CyberPlayer";
@@ -10,7 +11,7 @@ export function renderProfileScreen(container) {
         <style>
             .profile-wrapper {
                 width: 100%;
-                max-width: 400px;
+                max-width: 600px;
                 margin: 0 auto;
                 padding: 16px;
                 box-sizing: border-box;
@@ -18,23 +19,23 @@ export function renderProfileScreen(container) {
                 font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
             }
 
-            /* 1. Top Unified Banner (Avatar + Name/ID only) */
+            /* 1. Top Compact Banner (Avatar + Name/ID) */
             .top-banner {
                 background: rgba(15, 23, 42, 0.85);
                 border: 1px solid #0ea5e9;
                 border-radius: 16px;
-                padding: 14px;
+                padding: 12px 16px;
                 display: flex;
                 align-items: center;
                 gap: 14px;
                 box-shadow: 0 0 20px rgba(14, 165, 233, 0.25);
                 backdrop-filter: blur(10px);
-                margin-bottom: 14px;
+                margin-bottom: 16px;
             }
 
             .avatar-box {
-                width: 55px;
-                height: 55px;
+                width: 50px;
+                height: 50px;
                 background: #020617;
                 border: 2px solid #38bdf8;
                 border-radius: 12px;
@@ -45,19 +46,7 @@ export function renderProfileScreen(container) {
                 position: relative;
                 overflow: hidden;
                 flex-shrink: 0;
-                box-shadow: 0 0 12px rgba(56, 189, 248, 0.6), inset 0 0 8px rgba(56, 189, 248, 0.4);
-                animation: electricGlow 2s infinite alternate;
-            }
-
-            @keyframes electricGlow {
-                0% {
-                    border-color: #38bdf8;
-                    box-shadow: 0 0 8px rgba(56, 189, 248, 0.5), inset 0 0 5px rgba(56, 189, 248, 0.3);
-                }
-                100% {
-                    border-color: #7dd3fc;
-                    box-shadow: 0 0 16px rgba(125, 211, 252, 0.9), inset 0 0 10px rgba(125, 211, 252, 0.6);
-                }
+                box-shadow: 0 0 12px rgba(56, 189, 248, 0.6);
             }
 
             .avatar-box img {
@@ -69,14 +58,8 @@ export function renderProfileScreen(container) {
             }
 
             .avatar-box span {
-                font-size: 22px;
+                font-size: 20px;
                 color: #38bdf8;
-                text-shadow: 0 0 8px #38bdf8;
-            }
-
-            .profile-info {
-                flex-grow: 1;
-                overflow: hidden;
             }
 
             .profile-info h3 {
@@ -84,39 +67,35 @@ export function renderProfileScreen(container) {
                 font-size: 14px;
                 color: #38bdf8;
                 text-shadow: 0 0 8px rgba(56, 189, 248, 0.5);
-                white-space: nowrap;
-                overflow: hidden;
-                text-overflow: ellipsis;
             }
 
             .profile-info p {
-                margin: 4px 0 0 0;
+                margin: 3px 0 0 0;
                 font-size: 11px;
                 color: #94a3b8;
                 font-family: monospace;
             }
 
-            /* 2. Trophy Collection Middle Button */
-            .trophy-collection-btn {
-                width: 100%;
+            /* 2. Main Trophy Showcase Section (ဦးစားပေးနေရာကြီး) */
+            .main-showcase-section {
                 background: rgba(15, 23, 42, 0.9);
                 border: 1px solid #0ea5e9;
-                border-radius: 12px;
-                padding: 12px;
-                text-align: center;
-                color: #38bdf8;
-                font-size: 12px;
-                font-weight: bold;
-                letter-spacing: 1px;
-                cursor: pointer;
-                box-shadow: 0 0 15px rgba(14, 165, 233, 0.2);
-                margin-bottom: 14px;
-                transition: all 0.2s ease;
+                border-radius: 16px;
+                padding: 16px;
+                margin-bottom: 16px;
+                box-shadow: 0 0 25px rgba(14, 165, 233, 0.2);
             }
 
-            .trophy-collection-btn:hover {
-                background: rgba(14, 165, 233, 0.15);
-                box-shadow: 0 0 20px rgba(14, 165, 233, 0.4);
+            .showcase-header {
+                font-size: 12px;
+                font-weight: bold;
+                color: #facc15;
+                letter-spacing: 1.5px;
+                margin-bottom: 14px;
+                text-shadow: 0 0 8px rgba(250, 204, 21, 0.4);
+                display: flex;
+                align-items: center;
+                gap: 8px;
             }
 
             /* 3. Key & History Side-by-Side Grid */
@@ -131,10 +110,9 @@ export function renderProfileScreen(container) {
                 background: rgba(15, 23, 42, 0.9);
                 border: 1px solid #334155;
                 border-radius: 12px;
-                padding: 14px;
+                padding: 12px;
                 text-align: center;
                 cursor: pointer;
-                box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
                 transition: all 0.2s ease;
             }
 
@@ -144,18 +122,18 @@ export function renderProfileScreen(container) {
             }
 
             .action-card .icon {
-                font-size: 20px;
-                margin-bottom: 6px;
+                font-size: 18px;
+                margin-bottom: 4px;
             }
 
             .action-card .title {
-                font-size: 11px;
+                font-size: 10px;
                 font-weight: bold;
                 color: #38bdf8;
                 letter-spacing: 1px;
             }
 
-            /* Dynamic Detail View Box */
+            /* Detail View Box */
             .detail-view-box {
                 background: rgba(15, 23, 42, 0.95);
                 border: 1px solid #334155;
@@ -165,12 +143,12 @@ export function renderProfileScreen(container) {
                 font-family: monospace;
                 color: #38bdf8;
                 word-break: break-all;
-                min-height: 80px;
+                min-height: 70px;
                 box-sizing: border-box;
             }
 
             .history-row {
-                padding: 6px 0;
+                padding: 5px 0;
                 border-bottom: 1px solid #1e293b;
                 display: flex;
                 justify-content: space-between;
@@ -188,7 +166,7 @@ export function renderProfileScreen(container) {
         </style>
 
         <div class="profile-wrapper">
-            <!-- Top Banner: Avatar and Name/ID only -->
+            <!-- Top Banner: Avatar and Name/ID -->
             <div class="top-banner">
                 <label class="avatar-box" id="avatar-container" title="ဓာတ်ပုံပြောင်းရန် နှိပ်ပါ">
                     ${savedAvatar ? `<img src="${savedAvatar}">` : `<span id="avatar-plus">+</span>`}
@@ -200,12 +178,17 @@ export function renderProfileScreen(container) {
                 </div>
             </div>
 
-            <!-- Trophy Collection Button -->
-            <div class="trophy-collection-btn" id="trophy-collection-trigger">
-                🏆 TROPHY COLLECTION
+            <!-- Main Trophy Showcase (Profile ဝင်လိုက်တာနဲ့ Trophy (၁၁) လုံး တန်းပေါ်နေမည့်နေရာ) -->
+            <div class="main-showcase-section">
+                <div class="showcase-header">
+                    🏆 ACHIEVEMENT SHOWCASE (TROPHY COLLECTION)
+                </div>
+                <div id="trophy-showcase-target">
+                    <!-- trophies.js မှ ဖလားများ ဤနေရာသို့ ဝင်ရောက်မည် -->
+                </div>
             </div>
 
-            <!-- Key & History Side-by-Side Cards -->
+            <!-- Key & History Cards -->
             <div class="bottom-grid">
                 <div class="action-card" id="key-card-btn">
                     <div class="icon">🔑</div>
@@ -219,8 +202,8 @@ export function renderProfileScreen(container) {
 
             <!-- Interactive Detail Container -->
             <div class="detail-view-box" id="detail-display-area">
-                <div style="color: #64748b; text-align: center; padding-top: 15px;">
-                    Select an option above to view details.
+                <div style="color: #64748b; text-align: center; padding-top: 10px;">
+                    Tap any trophy above to view specific details.
                 </div>
             </div>
         </div>
@@ -245,31 +228,40 @@ export function renderProfileScreen(container) {
         });
     }
 
-    // Interactive Button Actions
-    const detailArea = document.getElementById('detail-display-area');
-    
+    const detailArea = refDetailArea => document.getElementById('detail-display-area');
+
+    // Render Trophy Showcase using trophies.js module function
+    renderTrophyShowcase('trophy-showcase-target', (trophy) => {
+        const area = document.getElementById('detail-display-area');
+        if (area) {
+            area.innerHTML = `
+                <div style="color: #facc15; font-weight: bold; margin-bottom: 4px;">🏆 ${trophy.subtitle} (${trophy.date})</div>
+                <div style="color: #f8fafc; margin-bottom: 4px;">${trophy.desc}</div>
+                <div class="history-row"><span>Status</span><span class="status-success">VERIFIED UNLOCKED</span></div>
+            `;
+        }
+    });
+
+    // Key Button Action
     document.getElementById('key-card-btn').addEventListener('click', () => {
-        detailArea.innerHTML = `
-            <div style="color: #38bdf8; font-weight: bold; margin-bottom: 6px;">SECURITY KEY VERIFIED:</div>
-            <div>${userKey}</div>
-        `;
+        const area = document.getElementById('detail-display-area');
+        if (area) {
+            area.innerHTML = `
+                <div style="color: #38bdf8; font-weight: bold; margin-bottom: 4px;">SECURITY KEY VERIFIED:</div>
+                <div>${userKey}</div>
+            `;
+        }
     });
 
+    // History Button Action
     document.getElementById('history-card-btn').addEventListener('click', () => {
-        detailArea.innerHTML = `
-            <div style="color: #38bdf8; font-weight: bold; margin-bottom: 6px;">ACTIVITY LOGS:</div>
-            <div class="history-row"><span>1vs1 Match Registered</span><span class="status-success">SUCCESS</span></div>
-            <div class="history-row"><span>Profile Data Updated</span><span class="status-success">COMPLETED</span></div>
-            <div class="history-row"><span>System Login Connection</span><span style="color: #38bdf8;">ONLINE</span></div>
-        `;
-    });
-
-    // Trophy Collection Button - Blank initially, shows trophies when clicked
-    document.getElementById('trophy-collection-trigger').addEventListener('click', () => {
-        detailArea.innerHTML = `
-            <div style="color: #38bdf8; font-weight: bold; margin-bottom: 6px;">TROPHY COLLECTION:</div>
-            <div class="history-row"><span>M7 World Championship</span><span class="status-success">UNLOCKED</span></div>
-            <div class="history-row"><span>Season 25 Glory</span><span class="status-success">UNLOCKED</span></div>
-        `;
+        const area = document.getElementById('detail-display-area');
+        if (area) {
+            area.innerHTML = `
+                <div style="color: #38bdf8; font-weight: bold; margin-bottom: 4px;">ACTIVITY LOGS:</div>
+                <div class="history-row"><span>1vs1 Match Registered</span><span class="status-success">SUCCESS</span></div>
+                <div class="history-row"><span>Profile Data Updated</span><span class="status-success">COMPLETED</span></div>
+            `;
+        }
     });
 }
