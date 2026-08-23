@@ -1,4 +1,4 @@
-// trophies.js - Updated with background and box-shadow completely removed for No. 2 and No. 8
+// trophies.js - Updated with Dragon Mech Trophy at No. 9 (No border, background or box-shadow on wrapper, keeping clean pure style)
 
 const trophyDataList = [
     { id: 1, title: "ANGELIC ASCENT", subtitle: "ANGELIC ASCENT", date: "2026-01-15", desc: "Eternal Aura Angelic Halo Trophy.", isCustom: true, styleType: 'angelic-large' },
@@ -13,7 +13,7 @@ const trophyDataList = [
     // အောက်ဘက် ၅ လုံး
     { id: 7, title: "FEATHER NEXUS", subtitle: "FEATHER NEXUS", date: "2026-05-01", desc: "Eternal Aura Feather Matrix Trophy.", isCustom: true, styleType: 'feather-small' },
     { id: 8, title: "PHOENIX ASCENDANT", subtitle: "PHOENIX ASCENDANT", date: "2026-05-25", desc: "Celestial Phoenix Blade & Shield Trophy.", isCustom: true, styleType: 'phoenix-blade-small' },
-    { id: 9, title: "ANGELIC ASCENT", subtitle: "Vector Vanguard", date: "2026-06-10", desc: "Special community event design & combat winner." },
+    { id: 9, title: "DRAGON MECH", subtitle: "DRAGON MECH", date: "2026-06-10", desc: "Cyber Dragon Mech Trophy. Ultimate high-tech power core.", isCustom: true, styleType: 'dragon-mech-small' },
     { id: 10, title: "ANGELIC ASCENT", subtitle: "Quantum Guardian", date: "2026-07-02", desc: "Secured base defense record in tactical matches." },
     { id: 11, title: "ANGELIC ASCENT", subtitle: "Eternal Champion", date: "2026-07-20", desc: "Anniversary championship grand trophy." }
 ];
@@ -204,7 +204,7 @@ export function renderTrophyShowcase(containerId, onTrophyClick) {
                 max-width: 42px;
             }
 
-            /* --- ဒုတိယနေရာ (Cyber Blade Small - Background, Border & Shadow ဖြုတ်ထားသည်) --- */
+            /* --- ဒုတိယနေရာ (Cyber Blade Small) --- */
             .crystal-trophy-wrapper-cyber-small {
                 width: 52px;
                 height: 72px;
@@ -908,7 +908,7 @@ export function renderTrophyShowcase(containerId, onTrophyClick) {
                 max-width: 42px;
             }
 
-            /* --- နံပါတ် ၈ နေရာ (Celestial Phoenix Blade Small - Background, Border & Shadow ဖြုတ်ထားသည်) --- */
+            /* --- နံပါတ် ၈ နေရာ (Celestial Phoenix Blade Small) --- */
             .phoenix-blade-wrapper-small {
                 width: 52px;
                 height: 72px;
@@ -1048,6 +1048,155 @@ export function renderTrophyShowcase(containerId, onTrophyClick) {
                 letter-spacing: 0.3px;
                 z-index: 2;
                 text-shadow: 0 0 2px #f59e0b;
+                text-align: center;
+                white-space: nowrap;
+                overflow: hidden;
+                text-overflow: ellipsis;
+                max-width: 42px;
+            }
+
+            /* --- နံပါတ် ၉ နေရာ (Dragon Mech Trophy Small - Background နှင့် Border ဖြုတ်ထားပြီး ညီညာသောအရွယ်အစားနှင့် Animation ထည့်သွင်းထားသည်) --- */
+            .dragon-trophy-wrapper-small {
+                width: 52px;
+                height: 72px;
+                background: transparent;
+                border: none;
+                border-radius: 0;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                position: relative;
+                box-shadow: none;
+                overflow: visible;
+                flex-shrink: 0;
+                animation: floatDragonSmall 3.6s ease-in-out infinite;
+            }
+
+            @keyframes floatDragonSmall {
+                0%, 100% { transform: translateY(0px); }
+                50% { transform: translateY(-4px); }
+            }
+
+            .dragon-trophy-container-small {
+                width: 48px;
+                height: 68px;
+                position: relative;
+                display: flex;
+                flex-direction: column;
+                align-items: center;
+                justify-content: space-between;
+                padding: 2px 0;
+            }
+
+            .celestial-head-dragon-small {
+                position: relative;
+                width: 38px;
+                height: 28px;
+                display: flex;
+                justify-content: center;
+                align-items: center;
+            }
+
+            .dragon-wing-small {
+                position: absolute;
+                width: 16px;
+                height: 22px;
+                background: linear-gradient(135deg, #ec4899 0%, #7c3aed 100%);
+                box-shadow: 0 0 6px #ec4899;
+                z-index: 1;
+            }
+
+            .left-mech-wing-small {
+                left: 1px;
+                top: 2px;
+                clip-path: polygon(10% 0%, 100% 20%, 70% 100%, 0% 60%);
+                transform: rotate(-10deg);
+                animation: flapLeftWingSmall 2s ease-in-out infinite alternate;
+            }
+
+            .right-mech-wing-small {
+                right: 1px;
+                top: 2px;
+                clip-path: polygon(0% 20%, 90% 0%, 100% 60%, 30% 100%);
+                transform: rotate(10deg);
+                animation: flapRightWingSmall 2s ease-in-out infinite alternate;
+            }
+
+            @keyframes flapLeftWingSmall {
+                0% { transform: rotate(-10deg) scale(0.95); }
+                100% { transform: rotate(-16deg) scale(1.05); }
+            }
+
+            @keyframes flapRightWingSmall {
+                0% { transform: rotate(10deg) scale(0.95); }
+                100% { transform: rotate(16deg) scale(1.05); }
+            }
+
+            .dragon-fire-core-small {
+                position: absolute;
+                width: 8px;
+                height: 8px;
+                background: radial-gradient(circle at 30% 30%, #ffffff 0%, #eab308 50%, #ec4899 100%);
+                border-radius: 50%;
+                box-shadow: 0 0 6px #eab308, 0 0 10px #ec4899;
+                z-index: 3;
+                animation: pulseFireSmall 1.4s ease-in-out infinite alternate;
+            }
+
+            @keyframes pulseFireSmall {
+                0% { transform: scale(0.85); }
+                100% { transform: scale(1.15); }
+            }
+
+            .celestial-pillar-dragon-small {
+                position: relative;
+                width: 10px;
+                height: 18px;
+                background: linear-gradient(180deg, #2e1065 0%, #020617 100%);
+                border: 0.5px solid #ec4899;
+                border-radius: 2px;
+                display: flex;
+                justify-content: center;
+                align-items: center;
+            }
+
+            .dragon-laser-beam-small {
+                width: 1.5px;
+                height: 100%;
+                background: linear-gradient(180deg, #eab308 0%, #ec4899 100%);
+                box-shadow: 0 0 4px #ec4899;
+                border-radius: 1px;
+            }
+
+            .celestial-base-dragon-small {
+                position: relative;
+                width: 46px;
+                height: 11px;
+                background: linear-gradient(180deg, #2e1065 0%, #020617 100%);
+                border: 0.5px solid #ec4899;
+                border-top: 1px solid #eab308;
+                border-radius: 3px;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+            }
+
+            .base-dragon-line-small {
+                position: absolute;
+                top: 1px;
+                width: 32px;
+                height: 0.8px;
+                background: #eab308;
+                box-shadow: 0 0 4px #eab308;
+            }
+
+            .base-title-dragon-small {
+                color: #fbcfe8;
+                font-size: 3px;
+                font-weight: 900;
+                letter-spacing: 0.3px;
+                z-index: 2;
+                text-shadow: 0 0 2px #ec4899;
                 text-align: center;
                 white-space: nowrap;
                 overflow: hidden;
@@ -1402,6 +1551,32 @@ export function renderTrophyShowcase(containerId, onTrophyClick) {
         return item;
     };
 
+    const createDragonMechSmallElement = (trophy) => {
+        const item = document.createElement('div');
+        item.className = `pure-trophy-item`;
+        item.title = `${trophy.subtitle} - နှိပ်၍ အသေးစိတ်ကြည့်ရန်`;
+        item.innerHTML = `
+            <div class="dragon-trophy-wrapper-small">
+                <div class="dragon-trophy-container-small">
+                    <div class="celestial-head-dragon-small">
+                        <div class="dragon-wing-small left-mech-wing-small"></div>
+                        <div class="dragon-wing-small right-mech-wing-small"></div>
+                        <div class="dragon-fire-core-small"></div>
+                    </div>
+                    <div class="celestial-pillar-dragon-small">
+                        <div class="dragon-laser-beam-small"></div>
+                    </div>
+                    <div class="celestial-base-dragon-small">
+                        <div class="base-dragon-line-small"></div>
+                        <span class="base-title-dragon-small">DRAGON MECH</span>
+                    </div>
+                </div>
+            </div>
+        `;
+        item.addEventListener('click', () => { if (typeof onTrophyClick === 'function') onTrophyClick(trophy, item.innerHTML); });
+        return item;
+    };
+
     const createShieldCenterElement = (trophy) => {
         const item = document.createElement('div');
         item.className = `pure-trophy-item center-shield-item`;
@@ -1442,6 +1617,8 @@ export function renderTrophyShowcase(containerId, onTrophyClick) {
             bottomRow.appendChild(createFeatherProtocolSmallElement(trophyDataList[i]));
         } else if (i === 7) {
             bottomRow.appendChild(createPhoenixBladeSmallElement(trophyDataList[i]));
+        } else if (i === 8) {
+            bottomRow.appendChild(createDragonMechSmallElement(trophyDataList[i]));
         } else {
             const standardItem = document.createElement('div');
             standardItem.className = `pure-trophy-item`;
