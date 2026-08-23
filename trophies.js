@@ -1,4 +1,4 @@
-// trophies.js - Updated with Celestial Phoenix Blade & Shield at the 8th position (id: 8)
+// trophies.js - Updated with borders completely removed for both No. 2 and No. 8
 
 const trophyDataList = [
     { id: 1, title: "ANGELIC ASCENT", subtitle: "ANGELIC ASCENT", date: "2026-01-15", desc: "Eternal Aura Angelic Halo Trophy.", isCustom: true, styleType: 'angelic-large' },
@@ -12,10 +12,7 @@ const trophyDataList = [
 
     // အောက်ဘက် ၅ လုံး
     { id: 7, title: "FEATHER NEXUS", subtitle: "FEATHER NEXUS", date: "2026-05-01", desc: "Eternal Aura Feather Matrix Trophy.", isCustom: true, styleType: 'feather-small' },
-    
-    // နံပါတ် ၈ နေရာတွင် Border & Floating ဖြုတ်ထားသော Celestial Phoenix Trophy အသေးစား
     { id: 8, title: "PHOENIX ASCENDANT", subtitle: "PHOENIX ASCENDANT", date: "2026-05-25", desc: "Celestial Phoenix Blade & Shield Trophy.", isCustom: true, styleType: 'phoenix-blade-small' },
-    
     { id: 9, title: "ANGELIC ASCENT", subtitle: "Vector Vanguard", date: "2026-06-10", desc: "Special community event design & combat winner." },
     { id: 10, title: "ANGELIC ASCENT", subtitle: "Quantum Guardian", date: "2026-07-02", desc: "Secured base defense record in tactical matches." },
     { id: 11, title: "ANGELIC ASCENT", subtitle: "Eternal Champion", date: "2026-07-20", desc: "Anniversary championship grand trophy." }
@@ -207,18 +204,18 @@ export function renderTrophyShowcase(containerId, onTrophyClick) {
                 max-width: 42px;
             }
 
-            /* --- ဒုတိယနေရာ (Cyber Blade Trophy Small) --- */
+            /* --- ဒုတိယနေရာ (Cyber Blade Trophy Small - Border ဖြုတ်ထားသည်) --- */
             .crystal-trophy-wrapper-cyber-small {
                 width: 52px;
                 height: 72px;
                 background: radial-gradient(circle at center, rgba(15, 23, 42, 0.98) 0%, rgba(2, 6, 23, 1) 100%);
-                border: 1px solid #06b6d4;
+                border: none; /* border ဖြုတ်ထားသည် */
                 border-radius: 6px;
                 display: flex;
                 align-items: center;
                 justify-content: center;
                 position: relative;
-                box-shadow: 0 0 12px rgba(6, 182, 212, 0.4);
+                box-shadow: 0 0 12px rgba(6, 182, 212, 0.3);
                 overflow: hidden;
                 flex-shrink: 0;
             }
@@ -911,12 +908,12 @@ export function renderTrophyShowcase(containerId, onTrophyClick) {
                 max-width: 42px;
             }
 
-            /* --- နံပါတ် ၈ နေရာ (Celestial Phoenix Blade & Shield Small - Border နှင့် Floating ဖြုတ်ထားသည်) --- */
+            /* --- နံပါတ် ၈ နေရာ (Celestial Phoenix Blade Small - Border နှင့် Floating လုံးဝဖြုတ်ထားသည်) --- */
             .phoenix-blade-wrapper-small {
                 width: 52px;
                 height: 72px;
                 background: radial-gradient(circle at center, rgba(30, 41, 59, 0.98) 0%, rgba(15, 23, 42, 1) 100%);
-                border: none;
+                border: none; /* border ဖြုတ်ထားသည် */
                 border-radius: 6px;
                 display: flex;
                 align-items: center;
@@ -1375,7 +1372,6 @@ export function renderTrophyShowcase(containerId, onTrophyClick) {
         return item;
     };
 
-    // နံပါတ် ၈ နေရာအတွက် Border နှင့် Floating ဖြုတ်ထားသော Celestial Phoenix Blade Trophy အသေးစား Element
     const createPhoenixBladeSmallElement = (trophy) => {
         const item = document.createElement('div');
         item.className = `pure-trophy-item`;
@@ -1430,7 +1426,7 @@ export function renderTrophyShowcase(containerId, onTrophyClick) {
         return item;
     };
 
-    // အပေါ်တန်း (Top Row) တွင် နေရာချခြင်း (၁ မှ ၅ အထိ)
+    // အပေါ်တန်း (Top Row)
     topRow.appendChild(createLargeAngelicElement(trophyDataList[0]));
     topRow.appendChild(createCyberBladeSmallElement(trophyDataList[1]));
     topRow.appendChild(createPhoenixProtocolSmallElement(trophyDataList[2]));
@@ -1440,7 +1436,7 @@ export function renderTrophyShowcase(containerId, onTrophyClick) {
     // အလယ်တန်း (Center Row)
     centerRow.appendChild(createShieldCenterElement(trophyDataList[5]));
 
-    // အောက်တန်း (Bottom Row) တွင် ၇ ကို Feather Nexus ဖြင့်၊ ၈ ကို Celestial Phoenix Blade ဖြင့် အစားထိုးခြင်း
+    // အောက်တန်း (Bottom Row)
     for (let i = 6; i < 11; i++) {
         if (i === 6) {
             bottomRow.appendChild(createFeatherProtocolSmallElement(trophyDataList[i]));
