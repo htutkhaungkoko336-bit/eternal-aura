@@ -1,4 +1,4 @@
-// trophies.js - Updated with Twin Blades for No. 11 (Border & Float removed, inner animations intact)
+// trophies.js - Updated with Twin Blades for No. 11 (Fixed background black box issue)
 
 const trophyDataList = [
     { id: 1, title: "ANGELIC ASCENT", subtitle: "ANGELIC ASCENT", date: "2026-01-15", desc: "Eternal Aura Angelic Halo Trophy.", isCustom: true, styleType: 'angelic-large' },
@@ -1370,29 +1370,33 @@ export function renderTrophyShowcase(containerId, onTrophyClick) {
                 100% { opacity: 1; transform: scaleX(1.1); }
             }
 
-            /* --- နံပါတ် ၁၁ နေရာ (Quantum Twin Blades Trophy - Border နဲ့ Floating ဖြုတ်ထားပြီး Inner Animation များနှင့်) --- */
+            /* --- နံပါတ် ၁၁ နေရာ (Quantum Twin Blades Trophy - Fixed background box issue) --- */
             .twin-blades-wrapper-small {
                 width: 52px;
                 height: 72px;
-                background: radial-gradient(circle at center, #260f15 0%, #020617 100%);
+                background: transparent;
                 border: none;
                 display: flex;
                 align-items: center;
                 justify-content: center;
                 position: relative;
                 flex-shrink: 0;
-                overflow: hidden;
             }
 
             .twin-blades-container-small {
                 width: 48px;
                 height: 68px;
+                background: radial-gradient(circle at center, #260f15 0%, #020617 100%);
+                border: 0.5px solid #ef4444;
+                border-radius: 6px;
                 position: relative;
                 display: flex;
                 flex-direction: column;
                 align-items: center;
                 justify-content: space-between;
                 padding: 2px 0;
+                overflow: hidden;
+                box-shadow: 0 0 8px rgba(239, 68, 68, 0.4);
             }
 
             .celestial-head-twin-small {
@@ -1402,10 +1406,6 @@ export function renderTrophyShowcase(containerId, onTrophyClick) {
                 display: flex;
                 justify-content: center;
                 align-items: center;
-            }
-            .twin-blades-img {
-            mix-blend-mode: screen; /* (သို့) lighten */
-            background: transparent;
             }
 
             .twin-blade-item {
