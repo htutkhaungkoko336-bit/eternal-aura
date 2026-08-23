@@ -1,14 +1,16 @@
-// trophies.js - Borderless Angelic Trophy with Proper Sizing & Halo Animation
+// trophies.js - Cyber Blade Trophy at the 2nd position in the top row
 
 const trophyDataList = [
-    // အပေါ်ဘက် ၅ လုံး (ပထမဆုံးမှာ ပုံစံတူ အရွယ်အစားညှိထားပြီး Border ဖြုတ်ထားသော Angelic Halo Trophy)
     { id: 1, title: "ANGELIC ASCENT", subtitle: "ANGELIC ASCENT", date: "2026-01-15", desc: "Eternal Aura Angelic Halo Trophy.", isCustom: true, styleType: 'angelic-large' },
-    { id: 2, title: "PHOENIX PROTOCOL", subtitle: "PHOENIX PROTOCOL", date: "2026-02-10", desc: "Mythical Phoenix Wing Championship Trophy.", isCustom: true, styleType: 'phoenix' },
+    
+    // ဒုတိယနေရာမှာ အစားထိုးလိုက်သော Cyber Blade Trophy (id: 2)
+    { id: 2, title: "CYBER BLADE SHIELD", subtitle: "CYBER BLADE CHAMPION", date: "2026-02-10", desc: "Eternal Aura Cyber Blade Trophy. The Ultimate Cyber Shield." },
+
     { id: 3, title: "VORTEX PROTOCOL", subtitle: "VORTEX PROTOCOL", date: "2026-03-05", desc: "Undefeated Mecha Vortex Trophy.", isCustom: true, styleType: 'vortex' },
     { id: 4, title: "PRISM PROTOCOL", subtitle: "PRISM PROTOCOL", date: "2026-03-20", desc: "Matrix Crystal Prism Trophy MVP.", isCustom: true, styleType: 'prism' },
     { id: 5, title: "ANGELIC ASCENT", subtitle: "Neon Striker Elite", date: "2026-04-12", desc: "Achieved maximum tactical score in seasonal event." },
     
-    // အလယ်အကြီးစား ၁ လုံး (Cyber Angelic Shield Trophy)
+    // အလယ်အကြီးစား ၁ လုံး (မူလအတိုင်း)
     { id: 6, title: "ETERNAL SUPREME", subtitle: "M7 HALO CHAMPION", date: "2026-08-23", desc: "The Ultimate Cyber Angelic Shield Trophy. Undisputed king of all tournaments." },
 
     // အောက်ဘက် ၅ လုံး
@@ -64,11 +66,11 @@ export function renderTrophyShowcase(containerId, onTrophyClick) {
 
             .pure-trophy-item:hover {
                 transform: scale(1.08) translateY(-4px);
-                filter: drop-shadow(0 0 10px #facc15);
+                filter: drop-shadow(0 0 10px #06b6d4);
             }
 
-            /* --- ပထမဆုံး Trophy (Border ဖြုတ်ပြီး အရွယ်အစား သင့်တင့်အောင် ချိန်ညှိထားသည်) --- */
-            .crystal-trophy-wrapper {
+            /* --- ပထမဆုံး Trophy (Angelic Large) --- */
+            .crystal-trophy-wrapper-first {
                 width: 52px;
                 height: 72px;
                 background: transparent;
@@ -77,7 +79,6 @@ export function renderTrophyShowcase(containerId, onTrophyClick) {
                 align-items: center;
                 justify-content: center;
                 position: relative;
-                box-shadow: none;
                 flex-shrink: 0;
             }
 
@@ -123,7 +124,6 @@ export function renderTrophyShowcase(containerId, onTrophyClick) {
                 width: 15px;
                 height: 20px;
                 background: linear-gradient(135deg, rgba(56, 189, 248, 0.35) 0%, rgba(250, 204, 21, 0.3) 100%);
-                border: none;
             }
 
             .left-wing-large {
@@ -160,8 +160,6 @@ export function renderTrophyShowcase(containerId, onTrophyClick) {
                 position: relative;
                 width: 10px;
                 height: 15px;
-                background: transparent;
-                border: none;
                 display: flex;
                 justify-content: center;
                 align-items: center;
@@ -209,7 +207,7 @@ export function renderTrophyShowcase(containerId, onTrophyClick) {
                 max-width: 42px;
             }
 
-            /* --- Borderless Custom Mini Trophies (၂၊ ၃၊ ၄ လုံးမြောက်) --- */
+            /* --- Custom Mini Trophies (၃၊ ၄) --- */
             .mini-custom-trophy {
                 width: 52px;
                 height: 72px;
@@ -240,7 +238,6 @@ export function renderTrophyShowcase(containerId, onTrophyClick) {
                 transform: rotate(45deg);
                 z-index: 2;
             }
-            .phoenix .mini-gem { background: #ec4899; box-shadow: 0 0 6px #ec4899; }
             .vortex .mini-gem { background: #00f0ff; box-shadow: 0 0 6px #00f0ff; }
             .prism .mini-gem { background: #a855f7; width: 9px; height: 9px; clip-path: polygon(50% 0%, 100% 100%, 0% 100%); transform: none; box-shadow: 0 0 6px #a855f7; }
 
@@ -249,7 +246,6 @@ export function renderTrophyShowcase(containerId, onTrophyClick) {
                 width: 16px;
                 height: 22px;
             }
-            .phoenix .mini-wing { background: rgba(236,72,153,0.35); }
             .vortex .mini-wing { background: rgba(0,240,255,0.3); }
             .prism .mini-wing { background: rgba(168,85,247,0.35); }
 
@@ -267,7 +263,6 @@ export function renderTrophyShowcase(containerId, onTrophyClick) {
                 width: 2px;
                 height: 100%;
             }
-            .phoenix .mini-pillar-line { background: #ec4899; box-shadow: 0 0 5px #ec4899; }
             .vortex .mini-pillar-line { background: #00f0ff; box-shadow: 0 0 5px #00f0ff; }
             .prism .mini-pillar-line { background: #a855f7; box-shadow: 0 0 5px #a855f7; }
 
@@ -295,7 +290,7 @@ export function renderTrophyShowcase(containerId, onTrophyClick) {
                 color: #facc15;
             }
 
-            /* --- Standard Crystal Trophy (ကျန်တဲ့အသေးများ) --- */
+            /* --- Standard Crystal Trophy --- */
             .crystal-trophy-container {
                 width: 52px;
                 height: 72px;
@@ -403,7 +398,141 @@ export function renderTrophyShowcase(containerId, onTrophyClick) {
                 max-width: 42px;
             }
 
-            /* --- အလယ်က Cyber Angelic Shield Trophy (Animation ပါသည့်တစ်ခုတည်းသောဖလား) --- */
+            /* --- အပေါ်တန်း ဒုတိယနေရာအတွက် Cyber Blade Trophy Styles (အရွယ်အစားသေးငယ်အောင် ချိန်ညှိထားသည်) --- */
+            .crystal-trophy-wrapper-cyber-small {
+                width: 52px;
+                height: 72px;
+                background: radial-gradient(circle at center, rgba(15, 23, 42, 0.98) 0%, rgba(2, 6, 23, 1) 100%);
+                border: 1px solid #06b6d4;
+                border-radius: 6px;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                position: relative;
+                box-shadow: 0 0 12px rgba(6, 182, 212, 0.4);
+                animation: floatTrophySmall 3s ease-in-out infinite;
+                overflow: hidden;
+                flex-shrink: 0;
+            }
+
+            @keyframes floatTrophySmall {
+                0%, 100% { transform: translateY(0px); }
+                50% { transform: translateY(-3px); }
+            }
+
+            .crystal-trophy-container-cyber-small {
+                width: 48px;
+                height: 68px;
+                position: relative;
+                display: flex;
+                flex-direction: column;
+                align-items: center;
+                justify-content: space-between;
+                padding: 2px 0;
+            }
+
+            .celestial-head-cyber-small {
+                position: relative;
+                width: 38px;
+                height: 28px;
+                display: flex;
+                justify-content: center;
+                align-items: center;
+            }
+
+            .blade-tip-small {
+                position: absolute;
+                top: 0px;
+                width: 6px;
+                height: 10px;
+                background: linear-gradient(180deg, #ffffff 0%, #06b6d4 100%);
+                clip-path: polygon(50% 0%, 100% 40%, 100% 100%, 0% 100%, 0% 40%);
+                box-shadow: 0 0 6px #06b6d4;
+                z-index: 4;
+            }
+
+            .cyber-shield-wing-small {
+                position: absolute;
+                width: 15px;
+                height: 22px;
+                background: linear-gradient(135deg, rgba(6, 182, 212, 0.2) 0%, rgba(56, 189, 248, 0.35) 100%);
+                border: 0.5px solid #06b6d4;
+            }
+
+            .cyber-shield-wing-small.left-wing {
+                left: 2px;
+                top: 4px;
+                clip-path: polygon(0 0%, 100% 15%, 85% 100%, 0% 85%);
+            }
+
+            .cyber-shield-wing-small.right-wing {
+                right: 2px;
+                top: 4px;
+                clip-path: polygon(0 15%, 100% 0%, 100% 85%, 15% 100%);
+            }
+
+            .energy-core-pulse-small {
+                width: 8px;
+                height: 8px;
+                background: radial-gradient(circle, #ffffff 0%, #06b6d4 60%, transparent 100%);
+                border-radius: 50%;
+                box-shadow: 0 0 6px #06b6d4;
+                animation: pulseCoreSmall 1.5s ease-in-out infinite alternate;
+                z-index: 3;
+            }
+
+            @keyframes pulseCoreSmall {
+                0% { transform: scale(0.85); opacity: 0.7; }
+                100% { transform: scale(1.15); opacity: 1; }
+            }
+
+            .celestial-pillar-cyber-small {
+                position: relative;
+                width: 10px;
+                height: 18px;
+                background: linear-gradient(180deg, #0f172a 0%, #020617 100%);
+                border: 0.5px solid #06b6d4;
+                border-radius: 2px;
+                display: flex;
+                justify-content: center;
+                align-items: center;
+            }
+
+            .pillar-laser-line-small {
+                width: 1.5px;
+                height: 100%;
+                background: #38bdf8;
+                box-shadow: 0 0 5px #06b6d4;
+            }
+
+            .celestial-base-cyber-small {
+                position: relative;
+                width: 46px;
+                height: 11px;
+                background: linear-gradient(180deg, #0f172a 0%, #020617 100%);
+                border: 0.5px solid #06b6d4;
+                border-top: 1px solid #38bdf8;
+                border-radius: 3px;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+            }
+
+            .base-title-cyber-small {
+                color: #38bdf8;
+                font-size: 3px;
+                font-weight: 900;
+                letter-spacing: 0.3px;
+                z-index: 2;
+                text-shadow: 0 0 2px #06b6d4;
+                text-align: center;
+                white-space: nowrap;
+                overflow: hidden;
+                text-overflow: ellipsis;
+                max-width: 42px;
+            }
+
+            /* --- မူလ အလယ်အကြီးစား Trophy (Cyber Angelic Shield) --- */
             .pure-trophy-item.center-shield-item {
                 cursor: pointer;
                 transition: transform 0.25s ease;
@@ -552,9 +681,8 @@ export function renderTrophyShowcase(containerId, onTrophyClick) {
         const item = document.createElement('div');
         item.className = `pure-trophy-item`;
         item.title = `${trophy.subtitle} - နှိပ်၍ အသေးစိတ်ကြည့်ရန်`;
-
         item.innerHTML = `
-            <div class="crystal-trophy-wrapper">
+            <div class="crystal-trophy-wrapper-first">
                 <div class="crystal-trophy-container-large">
                     <div class="celestial-head-large">
                         <div class="angel-halo-large"></div>
@@ -574,13 +702,34 @@ export function renderTrophyShowcase(containerId, onTrophyClick) {
                 </div>
             </div>
         `;
+        item.addEventListener('click', () => { if (typeof onTrophyClick === 'function') onTrophyClick(trophy, item.innerHTML); });
+        return item;
+    };
 
-        item.addEventListener('click', () => {
-            if (typeof onTrophyClick === 'function') {
-                onTrophyClick(trophy, item.innerHTML);
-            }
-        });
-
+    // အပေါ်တန်း ဒုတိယနေရာအတွက် အသေးစား Cyber Blade Trophy ဖန်တီးခြင်း
+    const createCyberBladeSmallElement = (trophy) => {
+        const item = document.createElement('div');
+        item.className = `pure-trophy-item`;
+        item.title = `${trophy.subtitle} - နှိပ်၍ အသေးစိတ်ကြည့်ရန်`;
+        item.innerHTML = `
+            <div class="crystal-trophy-wrapper-cyber-small">
+                <div class="crystal-trophy-container-cyber-small">
+                    <div class="celestial-head-cyber-small">
+                        <div class="blade-tip-small"></div>
+                        <div class="cyber-shield-wing-small left-wing"></div>
+                        <div class="cyber-shield-wing-small right-wing"></div>
+                        <div class="energy-core-pulse-small"></div>
+                    </div>
+                    <div class="celestial-pillar-cyber-small">
+                        <div class="pillar-laser-line-small"></div>
+                    </div>
+                    <div class="celestial-base-cyber-small">
+                        <span class="base-title-cyber-small">CYBER BLADE</span>
+                    </div>
+                </div>
+            </div>
+        `;
+        item.addEventListener('click', () => { if (typeof onTrophyClick === 'function') onTrophyClick(trophy, item.innerHTML); });
         return item;
     };
 
@@ -588,7 +737,6 @@ export function renderTrophyShowcase(containerId, onTrophyClick) {
         const item = document.createElement('div');
         item.className = `pure-trophy-item`;
         item.title = `${trophy.subtitle} - နှိပ်၍ အသေးစိတ်ကြည့်ရန်`;
-
         item.innerHTML = `
             <div class="mini-custom-trophy ${trophy.styleType}">
                 <div class="mini-head">
@@ -604,13 +752,7 @@ export function renderTrophyShowcase(containerId, onTrophyClick) {
                 </div>
             </div>
         `;
-
-        item.addEventListener('click', () => {
-            if (typeof onTrophyClick === 'function') {
-                onTrophyClick(trophy, item.innerHTML);
-            }
-        });
-
+        item.addEventListener('click', () => { if (typeof onTrophyClick === 'function') onTrophyClick(trophy, item.innerHTML); });
         return item;
     };
 
@@ -618,7 +760,6 @@ export function renderTrophyShowcase(containerId, onTrophyClick) {
         const item = document.createElement('div');
         item.className = `pure-trophy-item`;
         item.title = `${trophy.subtitle} - နှိပ်၍ အသေးစိတ်ကြည့်ရန်`;
-
         item.innerHTML = `
             <div class="crystal-trophy-container">
                 <div class="celestial-head">
@@ -638,13 +779,7 @@ export function renderTrophyShowcase(containerId, onTrophyClick) {
                 </div>
             </div>
         `;
-
-        item.addEventListener('click', () => {
-            if (typeof onTrophyClick === 'function') {
-                onTrophyClick(trophy, item.innerHTML);
-            }
-        });
-
+        item.addEventListener('click', () => { if (typeof onTrophyClick === 'function') onTrophyClick(trophy, item.innerHTML); });
         return item;
     };
 
@@ -652,7 +787,6 @@ export function renderTrophyShowcase(containerId, onTrophyClick) {
         const item = document.createElement('div');
         item.className = `pure-trophy-item center-shield-item`;
         item.title = `${trophy.subtitle} - နှိပ်၍ အသေးစိတ်ကြည့်ရန်`;
-
         item.innerHTML = `
             <div class="cyber-shield-wrapper-halo">
                 <div class="cybercity-trophy-container-halo">
@@ -669,24 +803,21 @@ export function renderTrophyShowcase(containerId, onTrophyClick) {
                 </div>
             </div>
         `;
-
-        item.addEventListener('click', () => {
-            if (typeof onTrophyClick === 'function') {
-                onTrophyClick(trophy, item.innerHTML);
-            }
-        });
-
+        item.addEventListener('click', () => { if (typeof onTrophyClick === 'function') onTrophyClick(trophy, item.innerHTML); });
         return item;
     };
 
+    // အပေါ်တန်း (Top Row) တွင် နေရာချခြင်း (ဒုတိယနေရာတွင် Cyber Blade သို့မဟုတ် အသေးစားပုံစံဖြင့် ဝင်မည်)
     topRow.appendChild(createLargeAngelicElement(trophyDataList[0]));
-    for (let i = 1; i < 4; i++) {
-        topRow.appendChild(createCustomMiniElement(trophyDataList[i]));
-    }
-    topRow.appendChild(createStandardTrophyElement(trophyDataList[4]));
+    topRow.appendChild(createCyberBladeSmallElement(trophyDataList[1])); // ဒုတိယနေရာ
+    topRow.appendChild(createCustomMiniElement(trophyDataList[2]));      // တတိယနေရာ
+    topRow.appendChild(createCustomMiniElement(trophyDataList[3]));      // စတုတ္ထနေရာ
+    topRow.appendChild(createStandardTrophyElement(trophyDataList[4]));  // ပဉ္စမနေရာ
 
+    // အလယ်တန်း (Center Row)
     centerRow.appendChild(createShieldCenterElement(trophyDataList[5]));
 
+    // အောက်တန်း (Bottom Row)
     for (let i = 6; i < 11; i++) {
         bottomRow.appendChild(createStandardTrophyElement(trophyDataList[i]));
     }
