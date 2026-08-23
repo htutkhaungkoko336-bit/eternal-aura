@@ -1,4 +1,4 @@
-// profile.js - Cyber Profile & Gaming Status Page
+// profile.js - Cyber Profile & Gaming Status Page (Custom Layout)
 
 export function renderProfileScreen(container) {
     const userName = localStorage.getItem('user_profile_name') || localStorage.getItem('userName') || "CyberPlayer";
@@ -8,7 +8,7 @@ export function renderProfileScreen(container) {
 
     container.innerHTML = `
         <style>
-            .playing-wrapper {
+            .profile-wrapper {
                 width: 100%;
                 max-width: 400px;
                 margin: 0 auto;
@@ -18,36 +18,27 @@ export function renderProfileScreen(container) {
                 font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
             }
 
-            /* Profile & Trophy Top Grid */
-            .top-grid {
-                display: grid;
-                grid-template-columns: 1fr auto;
-                gap: 12px;
-                align-items: center;
-                margin-bottom: 14px;
-            }
-
-            /* Profile Card */
-            .profile-card {
+            /* 1. Top Unified Banner (Avatar + Info + Champion Trophy) */
+            .top-banner {
                 background: rgba(15, 23, 42, 0.85);
                 border: 1px solid #ec4899;
                 border-radius: 16px;
-                padding: 14px;
-                display: flex;
-                align-items: center;
+                padding: 12px;
+                display: grid;
+                grid-template-columns: auto 1fr auto;
                 gap: 12px;
+                align-items: center;
                 box-shadow: 0 0 20px rgba(236, 72, 153, 0.25);
                 backdrop-filter: blur(10px);
-                min-height: 90px;
-                box-sizing: border-box;
+                margin-bottom: 14px;
             }
 
             .avatar-box {
-                width: 55px;
-                height: 55px;
+                width: 50px;
+                height: 50px;
                 background: #020617;
                 border: 2px dashed #ec4899;
-                border-radius: 12px;
+                border-radius: 10px;
                 display: flex;
                 align-items: center;
                 justify-content: center;
@@ -66,15 +57,18 @@ export function renderProfileScreen(container) {
             }
 
             .avatar-box span {
-                font-size: 22px;
+                font-size: 20px;
                 color: #ec4899;
             }
 
             .profile-info h3 {
                 margin: 0;
-                font-size: 15px;
+                font-size: 14px;
                 color: #f472b6;
                 text-shadow: 0 0 8px rgba(244, 114, 182, 0.5);
+                white-space: nowrap;
+                overflow: hidden;
+                text-overflow: ellipsis;
             }
 
             .profile-info p {
@@ -84,137 +78,162 @@ export function renderProfileScreen(container) {
                 font-family: monospace;
             }
 
-            /* Trophy Widget Box */
-            .trophy-box {
-                width: 90px;
-                height: 100px;
+            .champion-trophy-box {
+                width: 55px;
+                height: 55px;
                 background: linear-gradient(135deg, rgba(15, 23, 42, 0.95), rgba(3, 7, 18, 0.98));
                 border: 1.5px solid #06b6d4;
-                border-radius: 12px;
+                border-radius: 10px;
                 display: flex;
                 flex-direction: column;
                 align-items: center;
                 justify-content: center;
-                box-shadow: 0 0 15px rgba(6, 182, 212, 0.4);
-                position: relative;
+                box-shadow: 0 0 12px rgba(6, 182, 212, 0.4);
+                cursor: pointer;
             }
 
-            .trophy-icon {
-                font-size: 28px;
-                margin-bottom: 4px;
-                filter: drop-shadow(0 0 8px #22d3ee);
+            .champion-trophy-box span:first-child {
+                font-size: 20px;
+                filter: drop-shadow(0 0 6px #22d3ee);
             }
 
-            .trophy-title {
-                font-size: 8px;
+            .champion-trophy-box span:last-child {
+                font-size: 7px;
                 font-weight: 900;
                 color: #22d3ee;
-                letter-spacing: 1px;
+                margin-top: 2px;
+                letter-spacing: 0.5px;
             }
 
-            /* Sections Box (Key & History) */
-            .section-card {
+            /* 2. Trophy Collection Middle Button */
+            .trophy-collection-btn {
+                width: 100%;
+                background: rgba(30, 41, 59, 0.9);
+                border: 1px solid #a855f7;
+                border-radius: 12px;
+                padding: 12px;
+                text-align: center;
+                color: #d8b4fe;
+                font-size: 12px;
+                font-weight: bold;
+                letter-spacing: 1px;
+                cursor: pointer;
+                box-shadow: 0 0 15px rgba(168, 85, 247, 0.2);
+                margin-bottom: 14px;
+                transition: all 0.2s ease;
+            }
+
+            .trophy-collection-btn:hover {
+                background: rgba(168, 85, 247, 0.15);
+                box-shadow: 0 0 20px rgba(168, 85, 247, 0.4);
+            }
+
+            /* 3. Key & History Side-by-Side Grid */
+            .bottom-grid {
+                display: grid;
+                grid-template-columns: 1fr 1fr;
+                gap: 12px;
+                margin-bottom: 14px;
+            }
+
+            .action-card {
                 background: rgba(15, 23, 42, 0.9);
                 border: 1px solid #334155;
-                border-radius: 14px;
+                border-radius: 12px;
                 padding: 14px;
-                margin-bottom: 12px;
-                box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+                text-align: center;
+                cursor: pointer;
+                box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+                transition: all 0.2s ease;
             }
 
-            .section-title {
+            .action-card:hover {
+                border-color: #38bdf8;
+                box-shadow: 0 0 15px rgba(56, 189, 248, 0.3);
+            }
+
+            .action-card .icon {
+                font-size: 20px;
+                margin-bottom: 6px;
+            }
+
+            .action-card .title {
                 font-size: 11px;
                 font-weight: bold;
-                color: #d8b4fe;
+                color: #38bdf8;
                 letter-spacing: 1px;
-                margin-bottom: 8px;
-                display: flex;
-                justify-content: space-between;
-                align-items: center;
             }
 
-            .content-box {
-                background: #020617;
+            /* Dynamic Detail View Box (Popup/Container for Key or History details) */
+            .detail-view-box {
+                background: rgba(15, 23, 42, 0.95);
                 border: 1px solid #475569;
-                border-radius: 8px;
-                padding: 10px;
-                font-size: 12px;
+                border-radius: 12px;
+                padding: 12px;
+                font-size: 11px;
                 font-family: monospace;
                 color: #38bdf8;
                 word-break: break-all;
+                min-height: 80px;
+                box-sizing: border-box;
             }
 
-            .history-item {
+            .history-row {
                 padding: 6px 0;
                 border-bottom: 1px solid #1e293b;
-                font-size: 11px;
-                color: #94a3b8;
                 display: flex;
                 justify-content: space-between;
+                color: #94a3b8;
             }
 
-            .history-item:last-child {
+            .history-row:last-child {
                 border-bottom: none;
             }
 
-            .highlight-text {
+            .status-success {
                 color: #4ade80;
                 font-weight: bold;
             }
         </style>
 
-        <div class="playing-wrapper">
-            <!-- Top Grid: Profile Card & Trophy -->
-            <div class="top-grid">
-                <!-- Profile Information Card -->
-                <div class="profile-card">
-                    <label class="avatar-box" id="avatar-container" title="ဓာတ်ပုံပြောင်းရန် နှိပ်ပါ">
-                        ${savedAvatar ? `<img src="${savedAvatar}">` : `<span id="avatar-plus">+</span>`}
-                        <input type="file" id="file-input" accept="image/*" style="display: none;">
-                    </label>
-                    <div class="profile-info">
-                        <h3>${userName}</h3>
-                        <p>ID: ${userId}</p>
-                    </div>
+        <div class="profile-wrapper">
+            <!-- Top Banner: Avatar, Name/ID, Champion Trophy -->
+            <div class="top-banner">
+                <label class="avatar-box" id="avatar-container" title="ဓာတ်ပုံပြောင်းရန် နှိပ်ပါ">
+                    ${savedAvatar ? `<img src="${savedAvatar}">` : `<span id="avatar-plus">+</span>`}
+                    <input type="file" id="file-input" accept="image/*" style="display: none;">
+                </label>
+                <div class="profile-info">
+                    <h3>${userName}</h3>
+                    <p>ID: ${userId}</p>
                 </div>
-
-                <!-- Trophy Section -->
-                <div class="trophy-box" title="Trophies Earned">
-                    <div class="trophy-icon">🏆</div>
-                    <div class="trophy-title">M7 TROPHY</div>
+                <div class="champion-trophy-box" id="champ-trophy-btn" title="Champion Trophy">
+                    <span>🏆</span>
+                    <span>TROPHY</span>
                 </div>
             </div>
 
-            <!-- Key Section -->
-            <div class="section-card">
-                <div class="section-title">
-                    <span>🔑 SECURITY KEY</span>
-                    <span style="font-size: 9px; color: #a855f7;">VERIFIED</span>
+            <!-- Trophy Collection Button -->
+            <div class="trophy-collection-btn" id="trophy-collection-trigger">
+                🏆 TROPHY COLLECTION
+            </div>
+
+            <!-- Key & History Side-by-Side Cards -->
+            <div class="bottom-grid">
+                <div class="action-card" id="key-card-btn">
+                    <div class="icon">🔑</div>
+                    <div class="title">KEY</div>
                 </div>
-                <div class="content-box">
-                    ${userKey}
+                <div class="action-card" id="history-card-btn">
+                    <div class="icon">📜</div>
+                    <div class="title">HISTORY</div>
                 </div>
             </div>
 
-            <!-- History Section -->
-            <div class="section-card">
-                <div class="section-title">
-                    <span>📜 ACTIVITY HISTORY</span>
-                    <span style="font-size: 9px; color: #a855f7;">LOGS</span>
-                </div>
-                <div class="content-box">
-                    <div class="history-item">
-                        <span>1vs1 Match Registered</span>
-                        <span class="highlight-text">SUCCESS</span>
-                    </div>
-                    <div class="history-item">
-                        <span>Profile Data Updated</span>
-                        <span class="highlight-text">COMPLETED</span>
-                    </div>
-                    <div class="history-item">
-                        <span>System Login Connection</span>
-                        <span style="color: #38bdf8;">ONLINE</span>
-                    </div>
+            <!-- Interactive Detail Container -->
+            <div class="detail-view-box" id="detail-display-area">
+                <div style="color: #64748b; text-align: center; padding-top: 15px;">
+                    Select an option above (Key or History) to view details.
                 </div>
             </div>
         </div>
@@ -238,4 +257,38 @@ export function renderProfileScreen(container) {
             }
         });
     }
+
+    // Interactive Button Actions
+    const detailArea = document.getElementById('detail-display-area');
+    
+    document.getElementById('key-card-btn').addEventListener('click', () => {
+        detailArea.innerHTML = `
+            <div style="color: #a855f7; font-weight: bold; margin-bottom: 6px;">SECURITY KEY VERIFIED:</div>
+            <div>${userKey}</div>
+        `;
+    });
+
+    document.getElementById('history-card-btn').addEventListener('click', () => {
+        detailArea.innerHTML = `
+            <div style="color: #d8b4fe; font-weight: bold; margin-bottom: 6px;">ACTIVITY LOGS:</div>
+            <div class="history-row"><span>1vs1 Match Registered</span><span class="status-success">SUCCESS</span></div>
+            <div class="history-row"><span>Profile Data Updated</span><span class="status-success">COMPLETED</span></div>
+            <div class="history-row"><span>System Login Connection</span><span style="color: #38bdf8;">ONLINE</span></div>
+        `;
+    });
+
+    document.getElementById('trophy-collection-trigger').addEventListener('click', () => {
+        detailArea.innerHTML = `
+            <div style="color: #22d3ee; font-weight: bold; margin-bottom: 6px;">TROPHY COLLECTION:</div>
+            <div class="history-row"><span>M7 World Championship</span><span class="status-success">UNLOCKED</span></div>
+            <div class="history-row"><span>Season 25 Glory</span><span class="status-success">UNLOCKED</span></div>
+        `;
+    });
+
+    document.getElementById('champ-trophy-btn').addEventListener('click', () => {
+        detailArea.innerHTML = `
+            <div style="color: #f472b6; font-weight: bold; margin-bottom: 6px;">CHAMPION TROPHY STATUS:</div>
+            <div>Elite Tier Badge Active. Verified tournament winner credentials loaded.</div>
+        `;
+    });
 }
