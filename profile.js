@@ -1,4 +1,4 @@
-// profile.js - Profile Shell with Interactive Trophy Box Showcase
+// profile.js - Profile Shell with Interactive Cyber Cubic & Trophy Box
 import { renderTrophyShowcase } from './trophies.js';
 
 export function renderProfileScreen(container) {
@@ -19,7 +19,7 @@ export function renderProfileScreen(container) {
                 font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
             }
 
-            /* 1. Top Compact Banner (Avatar + Name/ID) */
+            /* 1. Top Compact Banner */
             .top-banner {
                 background: rgba(15, 23, 42, 0.85);
                 border: 1px solid #0ea5e9;
@@ -57,11 +57,6 @@ export function renderProfileScreen(container) {
                 top: 0; left: 0;
             }
 
-            .avatar-box span {
-                font-size: 20px;
-                color: #38bdf8;
-            }
-
             .profile-info h3 {
                 margin: 0;
                 font-size: 14px;
@@ -76,59 +71,90 @@ export function renderProfileScreen(container) {
                 font-family: monospace;
             }
 
-            /* 2. Trophy Box Section (ဂိမ်းဆန်ဆန် Box ပုံစံ) */
-            .trophy-box-container {
+            /* 2. Cyber Cubic Section (3D Rotating Cube) */
+            .cyber-cubic-section {
                 background: rgba(15, 23, 42, 0.95);
-                border: 1.5px solid #facc15;
+                border: 1.5px solid #0ea5e9;
                 border-radius: 16px;
-                padding: 16px;
+                padding: 20px 16px;
                 margin-bottom: 16px;
-                box-shadow: 0 0 30px rgba(250, 204, 21, 0.25), inset 0 0 15px rgba(56, 189, 248, 0.15);
+                text-align: center;
+                box-shadow: 0 0 30px rgba(14, 165, 233, 0.25), inset 0 0 15px rgba(250, 204, 21, 0.1);
                 position: relative;
                 overflow: hidden;
             }
 
-            .box-header {
-                display: flex;
-                justify-content: space-between;
-                align-items: center;
+            .cubic-wrapper {
+                perspective: 800px;
+                width: 100px;
+                height: 100px;
+                margin: 10px auto 16px auto;
                 cursor: pointer;
-                user-select: none;
             }
 
-            .box-title-area {
-                font-size: 12px;
-                font-weight: 900;
+            .cyber-cube {
+                width: 100%;
+                height: 100%;
+                position: relative;
+                transform-style: preserve-3d;
+                animation: rotateCube 8s infinite linear;
+            }
+
+            .cyber-cube.clicked {
+                animation: rotateCubeFast 1.5s infinite linear;
+            }
+
+            @keyframes rotateCube {
+                0% { transform: rotateX(0deg) rotateY(0deg); }
+                100% { transform: rotateX(360deg) rotateY(360deg); }
+            }
+
+            @keyframes rotateCubeFast {
+                0% { transform: rotateX(0deg) rotateY(0deg); }
+                100% { transform: rotateX(720deg) rotateY(720deg); }
+            }
+
+            .cube-face {
+                position: absolute;
+                width: 100px;
+                height: 100px;
+                background: rgba(14, 165, 233, 0.15);
+                border: 2px solid #38bdf8;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                font-size: 28px;
+                box-shadow: inset 0 0 15px rgba(56, 189, 248, 0.4);
+                backdrop-filter: blur(4px);
+            }
+
+            /* 3D Cube Face Positions */
+            .cube-face.front  { transform: translateZ(50px); }
+            .cube-face.back   { transform: rotateY(180deg) translateZ(50px); }
+            .cube-face.right  { transform: rotateY(90deg) translateZ(50px); }
+            .cube-face.left   { transform: rotateY(-90deg) translateZ(50px); }
+            .cube-face.top    { transform: rotateX(90deg) translateZ(50px); }
+            .cube-face.bottom { transform: rotateX(-90deg) translateZ(50px); }
+
+            .cubic-instruction {
+                font-size: 11px;
                 color: #facc15;
-                letter-spacing: 1.5px;
-                text-shadow: 0 0 8px rgba(250, 204, 21, 0.5);
-                display: flex;
-                align-items: center;
-                gap: 8px;
-            }
-
-            .toggle-btn {
-                background: linear-gradient(135deg, #facc15 0%, #ca8a04 100%);
-                color: #020617;
-                border: none;
-                border-radius: 8px;
-                padding: 5px 12px;
-                font-size: 10px;
                 font-weight: bold;
-                cursor: pointer;
-                box-shadow: 0 0 10px rgba(250, 204, 21, 0.4);
-                transition: transform 0.2s ease;
+                letter-spacing: 1px;
+                text-shadow: 0 0 8px rgba(250, 204, 21, 0.5);
+                animation: pulseText 2s infinite;
             }
 
-            .toggle-btn:active {
-                transform: scale(0.95);
+            @keyframes pulseText {
+                0%, 100% { opacity: 0.7; }
+                50% { opacity: 1; }
             }
 
-            /* Box အထဲက ဖလားတွေပေါ်လာမည့် Area (Animation ပါဝင်သည်) */
+            /* Trophy Box Content Area (ဖလားများ ဘွားခနဲ ပေါ်လာမည့်နေရာ) */
             .box-content-area {
                 max-height: 0;
                 overflow: hidden;
-                transition: max-height 0.4s ease-in-out, opacity 0.3s ease-in-out;
+                transition: max-height 0.5s ease-in-out, opacity 0.4s ease-in-out, margin-top 0.4s ease-in-out;
                 opacity: 0;
                 margin-top: 0;
             }
@@ -136,9 +162,9 @@ export function renderProfileScreen(container) {
             .box-content-area.open {
                 max-height: 1200px;
                 opacity: 1;
-                margin-top: 14px;
+                margin-top: 16px;
                 border-top: 1px dashed rgba(250, 204, 21, 0.4);
-                padding-top: 14px;
+                padding-top: 16px;
             }
 
             /* 3. Key & History Side-by-Side Grid */
@@ -221,18 +247,24 @@ export function renderProfileScreen(container) {
                 </div>
             </div>
 
-            <!-- Trophy Box Component (Box ဖွင့်ပိတ် လုပ်လို့ရသော ပုံစံ) -->
-            <div class="trophy-box-container">
-                <div class="box-header" id="trophy-box-toggle">
-                    <div class="box-title-area">
-                        🎁 ELITE TROPHY BOX (11 UNLOCKED)
+            <!-- Cyber Cubic & Trophy Box Section -->
+            <div class="cyber-cubic-section" id="cubic-section-box">
+                <div class="cubic-wrapper" id="cyber-cube-trigger" title="နှိပ်၍ တံဆိပ်ဖလားများ ဖွင့်ပါ">
+                    <div class="cyber-cube" id="rotating-cube">
+                        <div class="cube-face front">🏆</div>
+                        <div class="cube-face back">⭐</div>
+                        <div class="cube-face right">💎</div>
+                        <div class="cube-face left">🔥</div>
+                        <div class="cube-face top">⚡</div>
+                        <div class="cube-face bottom">👑</div>
                     </div>
-                    <button class="toggle-btn" id="box-action-btn">OPEN BOX</button>
                 </div>
+                <div class="cubic-instruction" id="cubic-text">✨ TAP CYBER CUBE TO UNLOCK TROPHIES ✨</div>
                 
+                <!-- Box Content Area: 11 Trophies (အပေါ်၅၊ အောက်၅၊ အလယ်ကြီး၁) -->
                 <div class="box-content-area" id="trophy-box-content">
                     <div id="trophy-showcase-target">
-                        <!-- trophies.js မှ ဖလားများ (အပေါ်၅၊ အောက်၅၊ အလယ်ကြီး၁) ဤနေရာသို့ ဝင်ရောက်မည် -->
+                        <!-- trophies.js မှ ဖလား ၁၁ လုံး ဤနေရာသို့ ဝင်ရောက်မည် -->
                     </div>
                 </div>
             </div>
@@ -252,7 +284,7 @@ export function renderProfileScreen(container) {
             <!-- Interactive Detail Container -->
             <div class="detail-view-box" id="detail-display-area">
                 <div style="color: #64748b; text-align: center; padding-top: 10px;">
-                    Open the Trophy Box above and tap any trophy to view specific details.
+                    Tap the spinning Cyber Cubic above to reveal your elite trophies.
                 </div>
             </div>
         </div>
@@ -277,20 +309,30 @@ export function renderProfileScreen(container) {
         });
     }
 
-    // Trophy Box Toggle Logic (Box ဖွင့်ပိတ်လုပ်သည့် Function)
-    const boxToggleHeader = document.getElementById('trophy-box-toggle');
-    const boxContentArea = document.getElementById('trophy-box-content');
-    const boxActionBtn = document.getElementById('box-action-btn');
+    // Cyber Cubic & Trophy Box Toggle Logic
+    const cyberCubeTrigger = document.getElementById('cyber-cube-trigger');
+    const rotatingCube = document.getElementById('rotating-cube');
+    const trophyBoxContent = document.getElementById('trophy-box-content');
+    const cubicText = document.getElementById('cubic-text');
     let isBoxOpen = false;
 
-    boxToggleHeader.addEventListener('click', () => {
+    cyberCubeTrigger.addEventListener('click', () => {
         isBoxOpen = !isBoxOpen;
+        
+        // Cube လည်တဲ့အရှိန်ကို ပိုမြန်သွားစေရန် Class ခေတ္တထည့်ခြင်း
+        rotatingCube.classList.add('clicked');
+        setTimeout(() => {
+            rotatingCube.classList.remove('clicked');
+        }, 1500);
+
         if (isBoxOpen) {
-            boxContentArea.classList.add('open');
-            boxActionBtn.textContent = 'CLOSE BOX';
+            trophyBoxContent.classList.add('open');
+            cubicText.textContent = '▼ ELITE TROPHIES UNLOCKED (TAP CUBE TO CLOSE) ▼';
+            cubicText.style.color = '#38bdf8';
         } else {
-            boxContentArea.classList.remove('open');
-            boxActionBtn.textContent = 'OPEN BOX';
+            trophyBoxContent.classList.remove('open');
+            cubicText.textContent = '✨ TAP CYBER CUBE TO UNLOCK TROPHIES ✨';
+            cubicText.style.color = '#facc15';
         }
     });
 
@@ -323,8 +365,8 @@ export function renderProfileScreen(container) {
         if (area) {
             area.innerHTML = `
                 <div style="color: #38bdf8; font-weight: bold; margin-bottom: 4px;">ACTIVITY LOGS:</div>
-                <div class="history-row"><span>Trophy Box State</span><span class="status-success">READY</span></div>
-                <div class="history-row"><span>Profile Data Updated</span><span class="status-success">COMPLETED</span></div>
+                <div class="history-row"><span>Cyber Cubic State</span><span class="status-success">ACTIVE ROTATION</span></div>
+                <div class="history-row"><span>Profile Sync</span><span class="status-success">ONLINE</span></div>
             `;
         }
     });
