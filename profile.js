@@ -1,4 +1,4 @@
-// profile.js - Profile Shell with Fixed Trophy Scrollbar
+// profile.js - Profile Shell with Mobile Trophy Scrollbar Fix
 import { renderTrophyShowcase } from './trophies.js';
 
 export function renderProfileScreen(container) {
@@ -18,6 +18,7 @@ export function renderProfileScreen(container) {
                 color: #f8fafc;
                 font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
                 position: relative;
+                overflow-x: hidden;
             }
 
             /* 1. Top Compact Banner */
@@ -76,7 +77,7 @@ export function renderProfileScreen(container) {
             .cyber-stage {
                 background: rgba(15, 23, 42, 0.95);
                 border-radius: 16px;
-                padding: 24px 16px;
+                padding: 24px 8px;
                 margin-bottom: 16px;
                 text-align: center;
                 position: relative;
@@ -85,6 +86,7 @@ export function renderProfileScreen(container) {
                 flex-direction: column;
                 align-items: center;
                 justify-content: center;
+                overflow: hidden; /* ဖုန်းစခရင်ပါ မကျော်လွန်စေရန် ထိန်းချုပ်ခြင်း */
             }
 
             /* Perfect 3D Cyber Cubic */
@@ -136,7 +138,7 @@ export function renderProfileScreen(container) {
             .cube-face.top    { transform: rotateX(90deg) translateZ(35px); }
             .cube-face.bottom { transform: rotateX(-90deg) translateZ(35px); }
 
-            /* Trophy Box Content Area (Scroll bar လုံးဝမပေါ်အောင် ထိန်းချုပ်ခြင်း) */
+            /* Trophy Box Content Area (ဖုန်းများပါ အလွန်အကျွံ Scroll မဖြစ်စေရန် အပြည့်အဝ ဖျောက်ပေးခြင်း) */
             .box-content-area {
                 opacity: 0;
                 visibility: hidden;
@@ -146,10 +148,11 @@ export function renderProfileScreen(container) {
                 position: absolute;
                 top: 20px;
                 left: 0;
-                padding: 0 8px;
+                padding: 0 4px;
                 box-sizing: border-box;
                 pointer-events: none;
-                overflow: hidden; /* Scroll bar များကို ဖြတ်တောက်ရန် */
+                overflow-x: hidden !important;
+                overflow-y: hidden !important;
             }
 
             .box-content-area.open {
@@ -161,10 +164,17 @@ export function renderProfileScreen(container) {
                 pointer-events: auto;
             }
 
-            /* Trophy Showcase Target အတွင်းသားများ အလွန်အကျွံမထွက်စေရန် */
+            /* trophies.js မှလာသော element များ ဖုန်းစခရင်အတွင်း အံဝင်ခွင်ကျဖြစ်စေရန် */
             #trophy-showcase-target {
                 width: 100%;
-                overflow: hidden;
+                max-width: 100%;
+                overflow-x: hidden !important;
+                overflow-y: hidden !important;
+            }
+
+            #trophy-showcase-target * {
+                max-width: 100% !important;
+                box-sizing: border-box !important;
             }
 
             /* 3. Key & History Side-by-Side Grid */
