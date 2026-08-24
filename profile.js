@@ -297,19 +297,20 @@ export function renderProfileScreen(container) {
                 z-index: 0;
             }
 
-            /* Trophy Box Content Area (Flexbox အလယ်တည့်တည့်ကျစေရန် ပြင်ဆင်ပြီး) */
+            /* Trophy Box Content Area */
             .box-content-area {
                 opacity: 0;
                 visibility: hidden;
                 transform: scale(0.95);
-                transition: opacity 0.5s ease, transform 0.5s ease, visibility 0.5s ease;
+                transition: opacity 0.7s ease, transform 0.7s ease, visibility 0.7s ease;
                 width: 100%;
-                display: none;
-                flex-direction: column;
-                align-items: center;
-                justify-content: center;
+                position: absolute;
+                top: 20px;
+                left: 0;
                 padding: 0 8px;
                 box-sizing: border-box;
+                pointer-events: none;
+                overflow: hidden !important;
                 z-index: 4;
             }
 
@@ -317,7 +318,9 @@ export function renderProfileScreen(container) {
                 opacity: 1;
                 visibility: visible;
                 transform: scale(1);
-                display: flex;
+                position: relative;
+                top: 0;
+                pointer-events: auto;
             }
 
             #trophy-showcase-target {
@@ -356,6 +359,17 @@ export function renderProfileScreen(container) {
             .action-card:hover {
                 border-color: #c084fc;
                 box-shadow: 0 0 18px rgba(192, 132, 252, 0.4);
+            }
+
+            /* မှိန်နေပြီး နှိပ်မရမည့် ပုံစံ (Disabled Card) */
+            .action-card.disabled {
+                opacity: 0.4;
+                cursor: not-allowed;
+                pointer-events: none;
+            }
+            .action-card.disabled:hover {
+                border-color: #334155;
+                box-shadow: none;
             }
 
             .action-card .icon {
@@ -483,13 +497,13 @@ export function renderProfileScreen(container) {
                 </div>
             </div>
 
-            <!-- Key & History Cards -->
+            <!-- Key & History Cards (disabled class ထည့်ထားသည်) -->
             <div class="bottom-grid">
-                <div class="action-card" id="key-card-btn">
+                <div class="action-card disabled" id="key-card-btn">
                     <div class="icon">🔑</div>
                     <div class="title">KEY</div>
                 </div>
-                <div class="action-card" id="history-card-btn">
+                <div class="action-card disabled" id="history-card-btn">
                     <div class="icon">📜</div>
                     <div class="title">HISTORY</div>
                 </div>
@@ -585,13 +599,5 @@ export function renderProfileScreen(container) {
 
     zoomModal.addEventListener('click', (e) => {
         e.target === zoomModal && zoomModal.classList.remove('active');
-    });
-
-    document.getElementById('key-card-btn').addEventListener('click', () => {
-        alert(`SECURITY KEY: ${userKey}`);
-    });
-
-    document.getElementById('history-card-btn').addEventListener('click', () => {
-        alert("ACTIVITY LOGS: Active & Secure");
     });
 }
