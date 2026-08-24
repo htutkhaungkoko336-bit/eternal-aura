@@ -88,7 +88,7 @@ export function renderProfileScreen(container) {
                 font-family: monospace;
             }
 
-            /* Cyber Stage (Background နဲ့ Border ဖြုတ်ထားသည်) */
+            /* Cyber Stage (Background & Border ဖြုတ်ထားသည်) */
             .cyber-stage {
                 background: transparent;
                 border: none;
@@ -108,7 +108,7 @@ export function renderProfileScreen(container) {
                 perspective: 1000px;
             }
 
-            /* Nested Cubes Wrapper (အကြီးထဲ အသေးထည့်ရန်) */
+            /* Single Cube Wrapper (အရောင်သစ် Purple/Cyan သို့ ပြောင်းထားသည်) */
             .nested-cubic-wrapper {
                 perspective: 900px;
                 width: 110px;
@@ -143,8 +143,8 @@ export function renderProfileScreen(container) {
                 bottom: -24px;
                 width: 3px;
                 height: 24px;
-                background: #38bdf8;
-                box-shadow: 0 0 12px #38bdf8, 0 0 25px #0284c7, 0 0 35px #ffffff;
+                background: #c084fc;
+                box-shadow: 0 0 12px #c084fc, 0 0 25px #9333ea, 0 0 35px #ffffff;
                 opacity: 0.9;
                 animation: beamPulse 1.6s ease-in-out infinite;
             }
@@ -154,7 +154,7 @@ export function renderProfileScreen(container) {
                 50% { opacity: 1; height: 28px; }
             }
 
-            /* Outer Cube (Cube အကြီး) */
+            /* Outer Cube (Cube တစ်ခုတည်းကိုသာ ထားရှိပြီး အရောင်ပြောင်းထားသည်) */
             .cyber-cube.outer-cube {
                 width: 85px;
                 height: 85px;
@@ -171,8 +171,8 @@ export function renderProfileScreen(container) {
             .cyber-cube.outer-cube .cube-face {
                 width: 85px;
                 height: 85px;
-                background: rgba(2, 6, 23, 0.45);
-                border: 1px solid rgba(56, 189, 248, 0.3);
+                background: rgba(15, 23, 42, 0.5);
+                border: 1px solid rgba(192, 132, 252, 0.4);
             }
 
             .cyber-cube.outer-cube .cube-face.front  { transform: translateZ(42.5px); }
@@ -182,51 +182,7 @@ export function renderProfileScreen(container) {
             .cyber-cube.outer-cube .cube-face.top    { transform: rotateX(90deg) translateZ(42.5px); }
             .cyber-cube.outer-cube .cube-face.bottom { transform: rotateX(-90deg) translateZ(42.5px); }
 
-            /* Inner Cube (Cube အသေး) */
-            .cyber-cube.inner-cube {
-                width: 42px;
-                height: 42px;
-                position: absolute;
-                top: 50%;
-                left: 50%;
-                margin-top: -21px;
-                margin-left: -21px;
-                transform-style: preserve-3d;
-                animation: rotateInnerCube 8s infinite linear reverse;
-            }
-
-            @keyframes rotateInnerCube {
-                0% { transform: rotateX(0deg) rotateY(0deg); }
-                100% { transform: rotateX(360deg) rotateY(-360deg); }
-            }
-
-            .cyber-cube.inner-cube .cube-face {
-                width: 42px;
-                height: 42px;
-                background: rgba(244, 63, 94, 0.4);
-                border: 1px solid rgba(244, 63, 94, 0.6);
-            }
-
-            .cyber-cube.inner-cube .cube-face::before {
-                background: conic-gradient(
-                    transparent 0deg, 
-                    transparent 60deg, 
-                    #f43f5e 75%, 
-                    #ffffff 85%, 
-                    #f43f5e 95%, 
-                    transparent 100%
-                ) !important;
-                filter: drop-shadow(0 0 8px #ffffff) drop-shadow(0 0 4px #f43f5e) !important;
-            }
-
-            .cyber-cube.inner-cube .cube-face.front  { transform: translateZ(21px); }
-            .cyber-cube.inner-cube .cube-face.back   { transform: rotateY(180deg) translateZ(21px); }
-            .cyber-cube.inner-cube .cube-face.right  { transform: rotateY(90deg) translateZ(21px); }
-            .cyber-cube.inner-cube .cube-face.left   { transform: rotateY(-90deg) translateZ(21px); }
-            .cyber-cube.inner-cube .cube-face.top    { transform: rotateX(90deg) translateZ(21px); }
-            .cyber-cube.inner-cube .cube-face.bottom { transform: rotateX(-90deg) translateZ(21px); }
-
-            /* Common Cube Face Design */
+            /* Common Cube Face Design (Purple & Cyan Glow) */
             .cube-face {
                 position: absolute;
                 box-sizing: border-box;
@@ -241,13 +197,13 @@ export function renderProfileScreen(container) {
                 background: conic-gradient(
                     transparent 0deg, 
                     transparent 60deg, 
-                    #38bdf8 75%, 
-                    #ffffff 85%, 
-                    #38bdf8 95%, 
+                    #c084fc 75%, 
+                    #38bdf8 85%, 
+                    #c084fc 95%, 
                     transparent 100%
                 );
                 animation: electricCornerFlow 1.8s linear infinite;
-                filter: drop-shadow(0 0 12px #ffffff) drop-shadow(0 0 6px #38bdf8);
+                filter: drop-shadow(0 0 12px #c084fc) drop-shadow(0 0 6px #38bdf8);
             }
 
             .cube-face::after {
@@ -255,9 +211,9 @@ export function renderProfileScreen(container) {
                 position: absolute;
                 top: 2px; left: 2px;
                 right: 2px; bottom: 2px;
-                background: rgba(15, 23, 42, 0.85);
-                border: 1px solid rgba(56, 189, 248, 0.4);
-                box-shadow: inset 0 0 10px rgba(56, 189, 248, 0.3);
+                background: rgba(15, 23, 42, 0.9);
+                border: 1px solid rgba(192, 132, 252, 0.5);
+                box-shadow: inset 0 0 12px rgba(192, 132, 252, 0.4);
             }
 
             @keyframes electricCornerFlow {
@@ -265,7 +221,7 @@ export function renderProfileScreen(container) {
                 100% { transform: rotate(360deg); }
             }
 
-            /* --- 3D Pedestal --- */
+            /* --- 3D Pedestal (အရောင်သစ် Purple/Indigo သို့ ပြောင်းထားသည်) --- */
             .cyber-3d-pedestal-wrapper {
                 position: relative;
                 width: 190px;
@@ -282,10 +238,10 @@ export function renderProfileScreen(container) {
                 left: 0;
                 width: 100%;
                 height: 35px;
-                background: linear-gradient(135deg, rgba(244, 63, 94, 0.55) 0%, rgba(192, 38, 211, 0.5) 50%, rgba(15, 23, 42, 0.95) 100%);
+                background: linear-gradient(135deg, rgba(147, 51, 234, 0.6) 0%, rgba(56, 189, 248, 0.5) 50%, rgba(15, 23, 42, 0.95) 100%);
                 clip-path: polygon(18% 0%, 82% 0%, 100% 35%, 92% 100%, 8% 100%, 0% 35%);
-                border-top: 2px solid #ff2d55;
-                box-shadow: inset 0 0 25px rgba(244, 63, 94, 0.8);
+                border-top: 2px solid #c084fc;
+                box-shadow: inset 0 0 25px rgba(192, 132, 252, 0.8);
                 z-index: 2;
             }
 
@@ -295,19 +251,19 @@ export function renderProfileScreen(container) {
                 left: 4px;
                 width: calc(100% - 8px);
                 height: 30px;
-                background: linear-gradient(180deg, #38021c 0%, #020617 100%);
+                background: linear-gradient(180deg, #2e1065 0%, #020617 100%);
                 clip-path: polygon(18% 0%, 82% 0%, 92% 100%, 8% 100%);
                 box-shadow: 
                     0 15px 35px rgba(2, 6, 23, 0.95), 
-                    inset 0 0 22px rgba(244, 63, 94, 0.9);
+                    inset 0 0 22px rgba(147, 51, 234, 0.9);
                 z-index: 1;
                 animation: pedestalEdgeTrace 2.5s infinite alternate;
             }
 
             @keyframes pedestalEdgeTrace {
-                0% { box-shadow: 0 15px 35px rgba(2, 6, 23, 0.95), inset 0 0 18px rgba(244, 63, 94, 0.8), 0 0 15px #f43f5e; }
-                50% { box-shadow: 0 15px 40px rgba(2, 6, 23, 0.95), inset 0 0 30px rgba(192, 38, 211, 1), 0 0 28px #c084fc; }
-                100% { box-shadow: 0 15px 35px rgba(2, 6, 23, 0.95), inset 0 0 18px rgba(244, 63, 94, 0.8), 0 0 15px #f43f5e; }
+                0% { box-shadow: 0 15px 35px rgba(2, 6, 23, 0.95), inset 0 0 18px rgba(147, 51, 234, 0.8), 0 0 15px #c084fc; }
+                50% { box-shadow: 0 15px 40px rgba(2, 6, 23, 0.95), inset 0 0 30px rgba(56, 189, 248, 1), 0 0 28px #38bdf8; }
+                100% { box-shadow: 0 15px 35px rgba(2, 6, 23, 0.95), inset 0 0 18px rgba(147, 51, 234, 0.8), 0 0 15px #c084fc; }
             }
 
             .cyber-3d-pedestal-wrapper::after {
@@ -317,9 +273,9 @@ export function renderProfileScreen(container) {
                 left: 12px;
                 width: 166px;
                 height: 10px;
-                background: #f43f5e;
+                background: #c084fc;
                 clip-path: polygon(20% 0%, 80% 0%, 100% 100%, 0% 100%);
-                box-shadow: 0 0 30px #f43f5e, 0 0 55px #c084fc, 0 0 75px #f43f5e;
+                box-shadow: 0 0 30px #c084fc, 0 0 55px #38bdf8, 0 0 75px #9333ea;
                 opacity: 0.95;
                 z-index: 0;
             }
@@ -383,8 +339,8 @@ export function renderProfileScreen(container) {
             }
 
             .action-card:hover {
-                border-color: #f43f5e;
-                box-shadow: 0 0 18px rgba(244, 63, 94, 0.4);
+                border-color: #c084fc;
+                box-shadow: 0 0 18px rgba(192, 132, 252, 0.4);
             }
 
             .action-card .icon {
@@ -395,7 +351,7 @@ export function renderProfileScreen(container) {
             .action-card .title {
                 font-size: 10px;
                 font-weight: bold;
-                color: #fb7185;
+                color: #d8b4fe;
                 letter-spacing: 1px;
             }
 
@@ -424,13 +380,13 @@ export function renderProfileScreen(container) {
 
             .trophy-zoom-content {
                 background: rgba(15, 23, 42, 0.95);
-                border: 2px solid #f43f5e;
+                border: 2px solid #c084fc;
                 border-radius: 20px;
                 padding: 40px 30px;
                 width: 90%;
                 max-width: 360px;
                 text-align: center;
-                box-shadow: 0 0 50px rgba(244, 63, 94, 0.7);
+                box-shadow: 0 0 50px rgba(192, 132, 252, 0.7);
                 transform: scale(0.6);
                 transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
                 position: relative;
@@ -455,7 +411,7 @@ export function renderProfileScreen(container) {
             }
 
             .zoom-close-btn {
-                background: linear-gradient(135deg, #f43f5e, #c084fc);
+                background: linear-gradient(135deg, #9333ea, #38bdf8);
                 border: none;
                 border-radius: 10px;
                 color: white;
@@ -463,7 +419,7 @@ export function renderProfileScreen(container) {
                 font-size: 12px;
                 font-weight: bold;
                 cursor: pointer;
-                box-shadow: 0 0 18px rgba(244, 63, 94, 0.6);
+                box-shadow: 0 0 18px rgba(147, 51, 234, 0.6);
                 transition: opacity 0.2s ease;
                 margin-top: 15px;
             }
@@ -486,21 +442,11 @@ export function renderProfileScreen(container) {
                 </div>
             </div>
 
-            <!-- Cyber Stage (Background & Border Removed) -->
+            <!-- Cyber Stage -->
             <div class="cyber-stage" id="cyber-stage-box">
-                <!-- Nested Cubes (Outer Large Cube + Inner Small Cube) -->
+                <!-- Single Cube (အသေးကို ဖျောက်ပြီးသားဖြစ်သည်) -->
                 <div class="nested-cubic-wrapper" id="cyber-cube-trigger" title="Cube ကိုနှိပ်၍ Trophy များဖွင့်ပါ">
-                    <!-- Outer Large Cube -->
                     <div class="cyber-cube outer-cube">
-                        <div class="cube-face front"></div>
-                        <div class="cube-face back"></div>
-                        <div class="cube-face right"></div>
-                        <div class="cube-face left"></div>
-                        <div class="cube-face top"></div>
-                        <div class="cube-face bottom"></div>
-                    </div>
-                    <!-- Inner Small Cube -->
-                    <div class="cyber-cube inner-cube">
                         <div class="cube-face front"></div>
                         <div class="cube-face back"></div>
                         <div class="cube-face right"></div>
@@ -563,7 +509,7 @@ export function renderProfileScreen(container) {
         });
     }
 
-    // Toggle & Modal Logic for Nested Cubes
+    // Toggle & Modal Logic for Cube
     const cyberCubeTrigger = document.getElementById('cyber-cube-trigger');
     const cyber3DBase = document.getElementById('cyber-3d-base');
     const trophyBoxContent = document.getElementById('trophy-box-content');
@@ -606,7 +552,7 @@ export function renderProfileScreen(container) {
             zoomedTrophyWrapper.innerHTML = elementHTML;
         } else {
             zoomedTrophyWrapper.innerHTML = `
-                <div style="text-align: center; color: #fb7185;">
+                <div style="text-align: center; color: #d8b4fe;">
                     <div style="font-size: 50px;">${trophy.icon || '🏆'}</div>
                     <div style="font-size: 14px; font-weight: bold; margin-top: 8px;">${trophy.name || ''}</div>
                 </div>
