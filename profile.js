@@ -36,7 +36,7 @@ export function renderProfileScreen(container) {
                 transition: all 0.3s ease;
             }
 
-            /* Trophy ပွင့်နေချိန် အပေါ်ဘန်နာကိုသာ ဖျောက်မည် (KEY နဲ့ HISTORY ကတ်ပြားများကို ဆက်ပြထားမည်) */
+            /* Trophy ပွင့်နေချိန် အပေါ်ဘန်နာကိုသာ ဖျောက်မည် */
             .profile-wrapper.trophy-active .top-banner {
                 opacity: 0;
                 visibility: hidden;
@@ -360,13 +360,13 @@ export function renderProfileScreen(container) {
                 box-shadow: 0 0 18px rgba(192, 132, 252, 0.4);
             }
 
-            /* KEY နဲ့ HISTORY ကတ်ပြားများကို လုံးဝနှိပ်မရအောင် (Disabled ပုံစံ) ပြုလုပ်ခြင်း */
-            .action-card.disabled {
+            /* Trophy ပွင့်နေချိန်မှသာ KEY နဲ့ HISTORY ကတ်ပြားများကို နှိပ်မရအောင် (Disabled ပုံစံ) ပြုလုပ်မည် */
+            .profile-wrapper.trophy-active .action-card {
                 opacity: 0.4;
                 cursor: not-allowed;
                 pointer-events: none;
             }
-            .action-card.disabled:hover {
+            .profile-wrapper.trophy-active .action-card:hover {
                 border-color: #334155;
                 box-shadow: none;
             }
@@ -496,13 +496,13 @@ export function renderProfileScreen(container) {
                 </div>
             </div>
 
-            <!-- Key & History Cards (disabled class ထည့်သွင်းထားသဖြင့် ဆက်ပြနေမည်ဖြစ်သော်လည်း နှိပ်၍မရပါ) -->
+            <!-- Key & History Cards (အစအဦးမှာ နှိပ်လို့ရမည်၊ Trophy ပွင့်မှသာ နှိပ်မရအောင် ဖြစ်မည်) -->
             <div class="bottom-grid">
-                <div class="action-card disabled" id="key-card-btn">
+                <div class="action-card" id="key-card-btn">
                     <div class="icon">🔑</div>
                     <div class="title">KEY</div>
                 </div>
-                <div class="action-card disabled" id="history-card-btn">
+                <div class="action-card" id="history-card-btn">
                     <div class="icon">📜</div>
                     <div class="title">HISTORY</div>
                 </div>
