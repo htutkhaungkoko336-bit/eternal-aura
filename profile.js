@@ -172,7 +172,7 @@ export function renderProfileScreen(container) {
             .cube-face.top    { transform: rotateX(90deg) translateZ(35px); }
             .cube-face.bottom { transform: rotateX(-90deg) translateZ(35px); }
 
-            /* --- လန်းဆန်းနေမည့် အောက်ခံ Hologram Pad & Ring --- */
+            /* Hologram Pad & Ring */
             .holo-base {
                 position: absolute;
                 bottom: 25px;
@@ -285,7 +285,7 @@ export function renderProfileScreen(container) {
                 letter-spacing: 1px;
             }
 
-            /* Extra Large Trophy Zoom Modal Overlay */
+            /* Trophy Zoom Modal Overlay */
             .trophy-zoom-modal {
                 position: fixed;
                 top: 0; left: 0;
@@ -374,11 +374,9 @@ export function renderProfileScreen(container) {
 
             <!-- Cyber Stage (Cube, Hologram Base & Trophies) -->
             <div class="cyber-stage" id="cyber-stage-box">
-                <!-- Hologram Base & Ring (အောက်ခံ အလင်းတန်းများ) -->
                 <div class="holo-base"></div>
                 <div class="holo-ring"></div>
 
-                <!-- Perfect 3D Cyber Cubic (လေထဲမျောနေမည့် Cube) -->
                 <div class="cubic-wrapper" id="cyber-cube-trigger" title="Cube ကိုနှိပ်၍ Trophy များဖွင့်ပါ">
                     <div class="cyber-cube">
                         <div class="cube-face front"></div>
@@ -390,7 +388,6 @@ export function renderProfileScreen(container) {
                     </div>
                 </div>
 
-                <!-- Trophy Box Content Area -->
                 <div class="box-content-area" id="trophy-box-content">
                     <div id="trophy-showcase-target"></div>
                 </div>
