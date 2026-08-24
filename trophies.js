@@ -1,21 +1,20 @@
-// trophies.js - Updated with Twin Blades for No. 11 (Background and border removed)[cite: 4]
-
+// trophies.js - Updated with winner conditions and dimmed state
 const trophyDataList = [
-    { id: 1, title: "ANGELIC ASCENT", subtitle: "ANGELIC ASCENT", date: "2026-01-15", desc: "Eternal Aura Angelic Halo Trophy.", isCustom: true, styleType: 'angelic-large' },
-    { id: 2, title: "CYBER BLADE SHIELD", subtitle: "CYBER BLADE CHAMPION", date: "2026-02-10", desc: "Eternal Aura Cyber Blade Trophy. The Ultimate Cyber Shield." },
-    { id: 3, title: "PHOENIX PROTOCOL", subtitle: "PHOENIX PROTOCOL", date: "2026-03-05", desc: "Eternal Aura Phoenix Shield Trophy.", isCustom: true, styleType: 'phoenix' },
-    { id: 4, title: "VORTEX PROTOCOL", subtitle: "VORTEX PROTOCOL", date: "2026-03-20", desc: "Eternal Aura Cyber Vortex Phoenix Trophy.", isCustom: true, styleType: 'vortex' },
-    { id: 5, title: "PRISM PROTOCOL", subtitle: "PRISM PROTOCOL", date: "2026-04-12", desc: "Eternal Aura Cyber Prism Trophy.", isCustom: true, styleType: 'prism' },
+    { id: 1, title: "ANGELIC ASCENT", subtitle: "ANGELIC ASCENT", date: "2026-01-15", desc: "Eternal Aura Angelic Halo Trophy.", isCustom: true, styleType: 'angelic-large', isUnlocked: false },
+    { id: 2, title: "CYBER BLADE SHIELD", subtitle: "CYBER BLADE CHAMPION", date: "2026-02-10", desc: "Eternal Aura Cyber Blade Trophy. The Ultimate Cyber Shield.", isUnlocked: false },
+    { id: 3, title: "PHOENIX PROTOCOL", subtitle: "PHOENIX PROTOCOL", date: "2026-03-05", desc: "Eternal Aura Phoenix Shield Trophy.", isCustom: true, styleType: 'phoenix', isUnlocked: false },
+    { id: 4, title: "VORTEX PROTOCOL", subtitle: "VORTEX PROTOCOL", date: "2026-03-20", desc: "Eternal Aura Cyber Vortex Phoenix Trophy.", isCustom: true, styleType: 'vortex', isUnlocked: false },
+    { id: 5, title: "PRISM PROTOCOL", subtitle: "PRISM PROTOCOL", date: "2026-04-12", desc: "Eternal Aura Cyber Prism Trophy.", isCustom: true, styleType: 'prism', isUnlocked: false },
     
-    // အလယ်အကြီးစား ၁ လုံး
-    { id: 6, title: "ETERNAL SUPREME", subtitle: "M7 HALO CHAMPION", date: "2026-08-23", desc: "The Ultimate Cyber Angelic Shield Trophy. Undisputed king of all tournaments." },
+    // အလယ်အကြီးစား ၁ လုံး (Winner - OK မဖြုတ်ပါ)
+    { id: 6, title: "ETERNAL SUPREME", subtitle: "M7 HALO CHAMPION", date: "2026-08-23", desc: "The Ultimate Cyber Angelic Shield Trophy. Undisputed king of all tournaments.", isUnlocked: true },
 
-    // အောက်ဘက် ၅ လုံး
-    { id: 7, title: "FEATHER NEXUS", subtitle: "FEATHER NEXUS", date: "2026-05-01", desc: "Eternal Aura Feather Matrix Trophy.", isCustom: true, styleType: 'feather-small' },
-    { id: 8, title: "PHOENIX ASCENDANT", subtitle: "PHOENIX ASCENDANT", date: "2026-05-25", desc: "Celestial Phoenix Blade & Shield Trophy.", isCustom: true, styleType: 'phoenix-blade-small' },
-    { id: 9, title: "DRAGON MECH", subtitle: "DRAGON MECH", date: "2026-06-10", desc: "Cyber Dragon Mech Trophy. Ultimate high-tech power core.", isCustom: true, styleType: 'dragon-mech-small' },
-    { id: 10, title: "CRESCENT ECLIPSE", subtitle: "CRESCENT ECLIPSE", date: "2026-07-02", desc: "Cyber Crescent Eclipse Trophy with Diamond Core Edition.", isCustom: true, styleType: 'eclipse-small' },
-    { id: 11, title: "ANGELIC ASCENT", subtitle: "TWIN BLADES", date: "2026-07-20", desc: "Quantum Twin Blades Trophy." }
+    // အောက်ဘက် ၅ လုံး (1vs1)
+    { id: 7, title: "FEATHER NEXUS", subtitle: "FEATHER NEXUS", date: "2026-05-01", desc: "Eternal Aura Feather Matrix Trophy.", isCustom: true, styleType: 'feather-small', isUnlocked: false },
+    { id: 8, title: "PHOENIX ASCENDANT", subtitle: "PHOENIX ASCENDANT", date: "2026-05-25", desc: "Celestial Phoenix Blade & Shield Trophy.", isCustom: true, styleType: 'phoenix-blade-small', isUnlocked: false },
+    { id: 9, title: "DRAGON MECH", subtitle: "DRAGON MECH", date: "2026-06-10", desc: "Cyber Dragon Mech Trophy. Ultimate high-tech power core.", isCustom: true, styleType: 'dragon-mech-small', isUnlocked: false },
+    { id: 10, title: "CRESCENT ECLIPSE", subtitle: "CRESCENT ECLIPSE", date: "2026-07-02", desc: "Cyber Crescent Eclipse Trophy with Diamond Core Edition.", isCustom: true, styleType: 'eclipse-small', isUnlocked: false },
+    { id: 11, title: "ANGELIC ASCENT", subtitle: "TWIN BLADES", date: "2026-07-20", desc: "Quantum Twin Blades Trophy.", isUnlocked: false }
 ];
 
 export function renderTrophyShowcase(containerId, onTrophyClick) {
@@ -61,7 +60,18 @@ export function renderTrophyShowcase(containerId, onTrophyClick) {
                 flex-shrink: 0;
             }
 
-            .pure-trophy-item:hover {
+            /* မဖွင့်ရသေးသော ဖလားများအတွက် မှိန်နေစေရန် (Dimmed State) */
+            .pure-trophy-item.locked {
+                opacity: 0.35;
+                filter: grayscale(80%);
+            }
+
+            .pure-trophy-item.locked:hover {
+                transform: scale(1.02);
+                filter: grayscale(50%) drop-shadow(0 0 5px rgba(255,255,255,0.2));
+            }
+
+            .pure-trophy-item:not(.locked):hover {
                 transform: scale(1.08) translateY(-4px);
                 filter: drop-shadow(0 0 10px #00f0ff);
             }
@@ -1370,7 +1380,7 @@ export function renderTrophyShowcase(containerId, onTrophyClick) {
                 100% { opacity: 1; transform: scaleX(1.1); }
             }
 
-            /* --- နံပါတ် ၁၁ နေရာ (Quantum Twin Blades Trophy - Background box and border removed) --- */
+            /* --- နံပါတ် ၁၁ နေရာ (Quantum Twin Blades Trophy) --- */
             .twin-blades-wrapper-small {
                 width: 52px;
                 height: 72px;
@@ -1386,8 +1396,8 @@ export function renderTrophyShowcase(containerId, onTrophyClick) {
             .twin-blades-container-small {
                 width: 48px;
                 height: 68px;
-                background: transparent; /* Background box ဖျောက်ထားသည် */
-                border: none; /* Border ဖျောက်ထားသည် */
+                background: transparent;
+                border: none;
                 position: relative;
                 display: flex;
                 flex-direction: column;
@@ -1658,7 +1668,7 @@ export function renderTrophyShowcase(containerId, onTrophyClick) {
 
     const createLargeAngelicElement = (trophy) => {
         const item = document.createElement('div');
-        item.className = `pure-trophy-item`;
+        item.className = `pure-trophy-item ${!trophy.isUnlocked ? 'locked' : ''}`;
         item.title = `${trophy.subtitle} - နှိပ်၍ အသေးစိတ်ကြည့်ရန်`;
         item.innerHTML = `
             <div class="crystal-trophy-wrapper-first">
@@ -1687,7 +1697,7 @@ export function renderTrophyShowcase(containerId, onTrophyClick) {
 
     const createCyberBladeSmallElement = (trophy) => {
         const item = document.createElement('div');
-        item.className = `pure-trophy-item`;
+        item.className = `pure-trophy-item ${!trophy.isUnlocked ? 'locked' : ''}`;
         item.title = `${trophy.subtitle} - နှိပ်၍ အသေးစိတ်ကြည့်ရန်`;
         item.innerHTML = `
             <div class="crystal-trophy-wrapper-cyber-small">
@@ -1713,7 +1723,7 @@ export function renderTrophyShowcase(containerId, onTrophyClick) {
 
     const createPhoenixProtocolSmallElement = (trophy) => {
         const item = document.createElement('div');
-        item.className = `pure-trophy-item`;
+        item.className = `pure-trophy-item ${!trophy.isUnlocked ? 'locked' : ''}`;
         item.title = `${trophy.subtitle} - နှိပ်၍ အသေးစိတ်ကြည့်ရန်`;
         item.innerHTML = `
             <div class="crystal-trophy-wrapper-phoenix-small">
@@ -1744,7 +1754,7 @@ export function renderTrophyShowcase(containerId, onTrophyClick) {
 
     const createVortexProtocolSmallElement = (trophy) => {
         const item = document.createElement('div');
-        item.className = `pure-trophy-item`;
+        item.className = `pure-trophy-item ${!trophy.isUnlocked ? 'locked' : ''}`;
         item.title = `${trophy.subtitle} - နှိပ်၍ အသေးစိတ်ကြည့်ရန်`;
         item.innerHTML = `
             <div class="crystal-trophy-wrapper-vortex-small">
@@ -1775,7 +1785,7 @@ export function renderTrophyShowcase(containerId, onTrophyClick) {
 
     const createPrismProtocolSmallElement = (trophy) => {
         const item = document.createElement('div');
-        item.className = `pure-trophy-item`;
+        item.className = `pure-trophy-item ${!trophy.isUnlocked ? 'locked' : ''}`;
         item.title = `${trophy.subtitle} - နှိပ်၍ အသေးစိတ်ကြည့်ရန်`;
         item.innerHTML = `
             <div class="crystal-trophy-wrapper-prism-small">
@@ -1804,7 +1814,7 @@ export function renderTrophyShowcase(containerId, onTrophyClick) {
 
     const createFeatherProtocolSmallElement = (trophy) => {
         const item = document.createElement('div');
-        item.className = `pure-trophy-item`;
+        item.className = `pure-trophy-item ${!trophy.isUnlocked ? 'locked' : ''}`;
         item.title = `${trophy.subtitle} - နှိပ်၍ အသေးစိတ်ကြည့်ရန်`;
         item.innerHTML = `
             <div class="crystal-trophy-wrapper-feather-small">
@@ -1830,7 +1840,7 @@ export function renderTrophyShowcase(containerId, onTrophyClick) {
 
     const createPhoenixBladeSmallElement = (trophy) => {
         const item = document.createElement('div');
-        item.className = `pure-trophy-item`;
+        item.className = `pure-trophy-item ${!trophy.isUnlocked ? 'locked' : ''}`;
         item.title = `${trophy.subtitle} - နှိပ်၍ အသေးစိတ်ကြည့်ရန်`;
         item.innerHTML = `
             <div class="phoenix-blade-wrapper-small">
@@ -1860,7 +1870,7 @@ export function renderTrophyShowcase(containerId, onTrophyClick) {
 
     const createDragonMechSmallElement = (trophy) => {
         const item = document.createElement('div');
-        item.className = `pure-trophy-item`;
+        item.className = `pure-trophy-item ${!trophy.isUnlocked ? 'locked' : ''}`;
         item.title = `${trophy.subtitle} - နှိပ်၍ အသေးစိတ်ကြည့်ရန်`;
         item.innerHTML = `
             <div class="dragon-trophy-wrapper-small">
@@ -1886,7 +1896,7 @@ export function renderTrophyShowcase(containerId, onTrophyClick) {
 
     const createCrescentEclipseSmallElement = (trophy) => {
         const item = document.createElement('div');
-        item.className = `pure-trophy-item`;
+        item.className = `pure-trophy-item ${!trophy.isUnlocked ? 'locked' : ''}`;
         item.title = `${trophy.subtitle} - နှိပ်၍ အသေးစိတ်ကြည့်ရန်`;
         item.innerHTML = `
             <div class="eclipse-trophy-wrapper-small">
@@ -1919,7 +1929,7 @@ export function renderTrophyShowcase(containerId, onTrophyClick) {
 
     const createTwinBladesSmallElement = (trophy) => {
         const item = document.createElement('div');
-        item.className = `pure-trophy-item`;
+        item.className = `pure-trophy-item ${!trophy.isUnlocked ? 'locked' : ''}`;
         item.title = `${trophy.subtitle} - နှိပ်၍ အသေးစိတ်ကြည့်ရန်`;
         item.innerHTML = `
             <div class="twin-blades-wrapper-small">
