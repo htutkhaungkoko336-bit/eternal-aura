@@ -88,10 +88,10 @@ export function renderProfileScreen(container) {
                 font-family: monospace;
             }
 
-            /* Cyber Stage */
+            /* Cyber Stage (Background နဲ့ Border ဖြုတ်ထားသည်) */
             .cyber-stage {
-                background: linear-gradient(145deg, rgba(15, 23, 42, 0.98), rgba(2, 6, 23, 0.98));
-                border: 1px solid rgba(244, 63, 94, 0.4);
+                background: transparent;
+                border: none;
                 border-radius: 16px;
                 padding: 24px 8px 36px 8px;
                 margin-bottom: 16px;
@@ -104,7 +104,7 @@ export function renderProfileScreen(container) {
                 justify-content: center;
                 overflow: hidden !important;
                 box-sizing: border-box;
-                box-shadow: inset 0 0 40px rgba(244, 63, 94, 0.15);
+                box-shadow: none;
                 perspective: 1000px;
             }
 
@@ -171,7 +171,7 @@ export function renderProfileScreen(container) {
             .cyber-cube.outer-cube .cube-face {
                 width: 85px;
                 height: 85px;
-                background: rgba(2, 6, 23, 0.45); /* ပိုပြီးဖင်မြင်ရအောင် ပွင့်လင်းစေသည် */
+                background: rgba(2, 6, 23, 0.45);
                 border: 1px solid rgba(56, 189, 248, 0.3);
             }
 
@@ -182,8 +182,7 @@ export function renderProfileScreen(container) {
             .cyber-cube.outer-cube .cube-face.top    { transform: rotateX(90deg) translateZ(42.5px); }
             .cyber-cube.outer-cube .cube-face.bottom { transform: rotateX(-90deg) translateZ(42.5px); }
 
-
-            /* Inner Cube (Cube အသေး - အကြီးထဲမှာရှိမည့်ဟာ) */
+            /* Inner Cube (Cube အသေး) */
             .cyber-cube.inner-cube {
                 width: 42px;
                 height: 42px;
@@ -193,7 +192,7 @@ export function renderProfileScreen(container) {
                 margin-top: -21px;
                 margin-left: -21px;
                 transform-style: preserve-3d;
-                animation: rotateInnerCube 8s infinite linear reverse; /* ပြောင်းပြန် දිශာနဲ့ ပိုလန်းစေရန် */
+                animation: rotateInnerCube 8s infinite linear reverse;
             }
 
             @keyframes rotateInnerCube {
@@ -226,7 +225,6 @@ export function renderProfileScreen(container) {
             .cyber-cube.inner-cube .cube-face.left   { transform: rotateY(-90deg) translateZ(21px); }
             .cyber-cube.inner-cube .cube-face.top    { transform: rotateX(90deg) translateZ(21px); }
             .cyber-cube.inner-cube .cube-face.bottom { transform: rotateX(-90deg) translateZ(21px); }
-
 
             /* Common Cube Face Design */
             .cube-face {
@@ -488,7 +486,7 @@ export function renderProfileScreen(container) {
                 </div>
             </div>
 
-            <!-- Cyber Stage (Nested Cubes Inside Pedestal) -->
+            <!-- Cyber Stage (Background & Border Removed) -->
             <div class="cyber-stage" id="cyber-stage-box">
                 <!-- Nested Cubes (Outer Large Cube + Inner Small Cube) -->
                 <div class="nested-cubic-wrapper" id="cyber-cube-trigger" title="Cube ကိုနှိပ်၍ Trophy များဖွင့်ပါ">
@@ -512,7 +510,7 @@ export function renderProfileScreen(container) {
                     </div>
                 </div>
 
-                <!-- 3D Pedestal with Bright Red & Purple Tracing Edges -->
+                <!-- 3D Pedestal -->
                 <div class="cyber-3d-pedestal-wrapper" id="cyber-3d-base">
                     <div class="pedestal-top-face"></div>
                     <div class="pedestal-side-body"></div>
