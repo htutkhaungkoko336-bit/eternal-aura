@@ -6,8 +6,8 @@ const trophyDataList = [
     { id: 4, title: "VORTEX PROTOCOL", subtitle: "VORTEX PROTOCOL", date: "2026-03-20", desc: "Eternal Aura Cyber Vortex Phoenix Trophy.", isCustom: true, styleType: 'vortex', isUnlocked: false },
     { id: 5, title: "PRISM PROTOCOL", subtitle: "PRISM PROTOCOL", date: "2026-04-12", desc: "Eternal Aura Cyber Prism Trophy.", isCustom: true, styleType: 'prism', isUnlocked: false },
     
-    // အလယ်အကြီးစား ၁ လုံး (Winner - OK မဖြုတ်ပါ)
-    { id: 6, title: "ETERNAL SUPREME", subtitle: "M7 HALO CHAMPION", date: "2026-08-23", desc: "The Ultimate Cyber Angelic Shield Trophy. Undisputed king of all tournaments.", isUnlocked: true },
+    // အလယ်အကြီးစား ၁ လုံး (Winner - ၆ ကိုလည်း မှိန်ရန် isUnlocked: false သို့မဟုတ် condition ထည့်နိုင်သည်)
+    { id: 6, title: "ETERNAL SUPREME", subtitle: "M7 HALO CHAMPION", date: "2026-08-23", desc: "The Ultimate Cyber Angelic Shield Trophy. Undisputed king of all tournaments.", isUnlocked: false },
 
     // အောက်ဘက် ၅ လုံး (1vs1)
     { id: 7, title: "FEATHER NEXUS", subtitle: "FEATHER NEXUS", date: "2026-05-01", desc: "Eternal Aura Feather Matrix Trophy.", isCustom: true, styleType: 'feather-small', isUnlocked: false },
@@ -60,15 +60,17 @@ export function renderTrophyShowcase(containerId, onTrophyClick) {
                 flex-shrink: 0;
             }
 
-            /* မဖွင့်ရသေးသော ဖလားများအတွက် မှိန်နေစေရန် (Dimmed State) */
+            /* ဖလားများကို ပိုမှိန်စေရန် (အရာလောက်ပဲ ရှိစေရန်) နှင့် နှိပ်လျှင် မကြီးစေရန် တားဆီးခြင်း */
             .pure-trophy-item.locked {
-                opacity: 0.35;
-                filter: grayscale(80%);
+                opacity: 0.15;
+                filter: grayscale(100%);
+                pointer-events: none;
+                transform: none !important;
             }
 
             .pure-trophy-item.locked:hover {
-                transform: scale(1.02);
-                filter: grayscale(50%) drop-shadow(0 0 5px rgba(255,255,255,0.2));
+                transform: none !important;
+                filter: grayscale(100%);
             }
 
             .pure-trophy-item:not(.locked):hover {
@@ -1691,7 +1693,7 @@ export function renderTrophyShowcase(containerId, onTrophyClick) {
                 </div>
             </div>
         `;
-        item.addEventListener('click', () => { if (typeof onTrophyClick === 'function') onTrophyClick(trophy, item.innerHTML); });
+        item.addEventListener('click', () => { if (trophy.isUnlocked && typeof onTrophyClick === 'function') onTrophyClick(trophy, item.innerHTML); });
         return item;
     };
 
@@ -1717,7 +1719,7 @@ export function renderTrophyShowcase(containerId, onTrophyClick) {
                 </div>
             </div>
         `;
-        item.addEventListener('click', () => { if (typeof onTrophyClick === 'function') onTrophyClick(trophy, item.innerHTML); });
+        item.addEventListener('click', () => { if (trophy.isUnlocked && typeof onTrophyClick === 'function') onTrophyClick(trophy, item.innerHTML); });
         return item;
     };
 
@@ -1748,7 +1750,7 @@ export function renderTrophyShowcase(containerId, onTrophyClick) {
                 </div>
             </div>
         `;
-        item.addEventListener('click', () => { if (typeof onTrophyClick === 'function') onTrophyClick(trophy, item.innerHTML); });
+        item.addEventListener('click', () => { if (trophy.isUnlocked && typeof onTrophyClick === 'function') onTrophyClick(trophy, item.innerHTML); });
         return item;
     };
 
@@ -1779,7 +1781,7 @@ export function renderTrophyShowcase(containerId, onTrophyClick) {
                 </div>
             </div>
         `;
-        item.addEventListener('click', () => { if (typeof onTrophyClick === 'function') onTrophyClick(trophy, item.innerHTML); });
+        item.addEventListener('click', () => { if (trophy.isUnlocked && typeof onTrophyClick === 'function') onTrophyClick(trophy, item.innerHTML); });
         return item;
     };
 
@@ -1808,7 +1810,7 @@ export function renderTrophyShowcase(containerId, onTrophyClick) {
                 </div>
             </div>
         `;
-        item.addEventListener('click', () => { if (typeof onTrophyClick === 'function') onTrophyClick(trophy, item.innerHTML); });
+        item.addEventListener('click', () => { if (trophy.isUnlocked && typeof onTrophyClick === 'function') onTrophyClick(trophy, item.innerHTML); });
         return item;
     };
 
@@ -1834,7 +1836,7 @@ export function renderTrophyShowcase(containerId, onTrophyClick) {
                 </div>
             </div>
         `;
-        item.addEventListener('click', () => { if (typeof onTrophyClick === 'function') onTrophyClick(trophy, item.innerHTML); });
+        item.addEventListener('click', () => { if (trophy.isUnlocked && typeof onTrophyClick === 'function') onTrophyClick(trophy, item.innerHTML); });
         return item;
     };
 
@@ -1864,7 +1866,7 @@ export function renderTrophyShowcase(containerId, onTrophyClick) {
                 </div>
             </div>
         `;
-        item.addEventListener('click', () => { if (typeof onTrophyClick === 'function') onTrophyClick(trophy, item.innerHTML); });
+        item.addEventListener('click', () => { if (trophy.isUnlocked && typeof onTrophyClick === 'function') onTrophyClick(trophy, item.innerHTML); });
         return item;
     };
 
@@ -1890,7 +1892,7 @@ export function renderTrophyShowcase(containerId, onTrophyClick) {
                 </div>
             </div>
         `;
-        item.addEventListener('click', () => { if (typeof onTrophyClick === 'function') onTrophyClick(trophy, item.innerHTML); });
+        item.addEventListener('click', () => { if (trophy.isUnlocked && typeof onTrophyClick === 'function') onTrophyClick(trophy, item.innerHTML); });
         return item;
     };
 
@@ -1923,7 +1925,7 @@ export function renderTrophyShowcase(containerId, onTrophyClick) {
                 </div>
             </div>
         `;
-        item.addEventListener('click', () => { if (typeof onTrophyClick === 'function') onTrophyClick(trophy, item.innerHTML); });
+        item.addEventListener('click', () => { if (trophy.isUnlocked && typeof onTrophyClick === 'function') onTrophyClick(trophy, item.innerHTML); });
         return item;
     };
 
@@ -1949,13 +1951,13 @@ export function renderTrophyShowcase(containerId, onTrophyClick) {
                 </div>
             </div>
         `;
-        item.addEventListener('click', () => { if (typeof onTrophyClick === 'function') onTrophyClick(trophy, item.innerHTML); });
+        item.addEventListener('click', () => { if (trophy.isUnlocked && typeof onTrophyClick === 'function') onTrophyClick(trophy, item.innerHTML); });
         return item;
     };
 
     const createShieldCenterElement = (trophy) => {
         const item = document.createElement('div');
-        item.className = `pure-trophy-item center-shield-item`;
+        item.className = `pure-trophy-item center-shield-item ${!trophy.isUnlocked ? 'locked' : ''}`;
         item.title = `${trophy.subtitle} - နှိပ်၍ အသေးစိတ်ကြည့်ရန်`;
         item.innerHTML = `
             <div class="cyber-shield-wrapper-halo">
@@ -1973,7 +1975,7 @@ export function renderTrophyShowcase(containerId, onTrophyClick) {
                 </div>
             </div>
         `;
-        item.addEventListener('click', () => { if (typeof onTrophyClick === 'function') onTrophyClick(trophy, item.innerHTML); });
+        item.addEventListener('click', () => { if (trophy.isUnlocked && typeof onTrophyClick === 'function') onTrophyClick(trophy, item.innerHTML); });
         return item;
     };
 
@@ -1984,7 +1986,7 @@ export function renderTrophyShowcase(containerId, onTrophyClick) {
     topRow.appendChild(createVortexProtocolSmallElement(trophyDataList[3]));
     topRow.appendChild(createPrismProtocolSmallElement(trophyDataList[4]));
 
-    // အလယ်တန်း (Center Row)
+    // အလယ်တန်း (Center Row - ၆)
     centerRow.appendChild(createShieldCenterElement(trophyDataList[5]));
 
     // အောက်တန်း (Bottom Row)
