@@ -1,5 +1,4 @@
 import { renderTrophyShowcase } from './trophies.js';
-import { renderTrophyShowcase } from './key.js';
 
 export function renderProfileScreen(container) {
     const userName = localStorage.getItem('user_profile_name') || localStorage.getItem('userName') || "CyberPlayer";
