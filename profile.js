@@ -36,9 +36,8 @@ export function renderProfileScreen(container) {
                 transition: all 0.3s ease;
             }
 
-            /* Trophy ပွင့်နေချိန် အပေါ်ဘန်နာနဲ့ အောက်ကဟာများကို လုံးဝဖျောက်ရန် */
-            .profile-wrapper.trophy-active .top-banner,
-            .profile-wrapper.trophy-active .bottom-grid {
+            /* Trophy ပွင့်နေချိန် အပေါ်ဘန်နာကိုသာ ဖျောက်မည် (KEY နဲ့ HISTORY ကတ်ပြားများကို ဆက်ပြထားမည်) */
+            .profile-wrapper.trophy-active .top-banner {
                 opacity: 0;
                 visibility: hidden;
                 height: 0;
@@ -361,7 +360,7 @@ export function renderProfileScreen(container) {
                 box-shadow: 0 0 18px rgba(192, 132, 252, 0.4);
             }
 
-            /* မှိန်နေပြီး နှိပ်မရမည့် ပုံစံ (Disabled Card) */
+            /* KEY နဲ့ HISTORY ကတ်ပြားများကို လုံးဝနှိပ်မရအောင် (Disabled ပုံစံ) ပြုလုပ်ခြင်း */
             .action-card.disabled {
                 opacity: 0.4;
                 cursor: not-allowed;
@@ -497,7 +496,7 @@ export function renderProfileScreen(container) {
                 </div>
             </div>
 
-            <!-- Key & History Cards (disabled class ထည့်ထားသည်) -->
+            <!-- Key & History Cards (disabled class ထည့်သွင်းထားသဖြင့် ဆက်ပြနေမည်ဖြစ်သော်လည်း နှိပ်၍မရပါ) -->
             <div class="bottom-grid">
                 <div class="action-card disabled" id="key-card-btn">
                     <div class="icon">🔑</div>
