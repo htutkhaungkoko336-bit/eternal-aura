@@ -33,6 +33,20 @@ export function renderProfileScreen(container) {
                 font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
                 position: relative;
                 overflow-x: hidden !important;
+                transition: all 0.3s ease;
+            }
+
+            /* Trophy ပွင့်နေချိန် အပေါ်ဘန်နာနဲ့ အောက်ကဟာများကို လုံးဝဖျောက်ရန် */
+            .profile-wrapper.trophy-active .top-banner,
+            .profile-wrapper.trophy-active .bottom-grid {
+                opacity: 0;
+                visibility: hidden;
+                height: 0;
+                margin: 0;
+                padding: 0;
+                overflow: hidden;
+                pointer-events: none;
+                transition: all 0.4s ease;
             }
 
             /* Top Compact Banner */
@@ -48,6 +62,7 @@ export function renderProfileScreen(container) {
                 backdrop-filter: blur(10px);
                 margin-bottom: 16px;
                 box-sizing: border-box;
+                transition: all 0.4s ease;
             }
 
             .avatar-box {
@@ -88,7 +103,7 @@ export function renderProfileScreen(container) {
                 font-family: monospace;
             }
 
-            /* Cyber Stage (Background & Border ဖြုတ်ထားသည်) */
+            /* Cyber Stage */
             .cyber-stage {
                 background: transparent;
                 border: none;
@@ -106,9 +121,10 @@ export function renderProfileScreen(container) {
                 box-sizing: border-box;
                 box-shadow: none;
                 perspective: 1000px;
+                transition: all 0.4s ease;
             }
 
-            /* Single Cube Wrapper (အရောင်သစ် Purple/Cyan သို့ ပြောင်းထားသည်) */
+            /* Single Cube Wrapper */
             .nested-cubic-wrapper {
                 perspective: 900px;
                 width: 110px;
@@ -154,7 +170,7 @@ export function renderProfileScreen(container) {
                 50% { opacity: 1; height: 28px; }
             }
 
-            /* Outer Cube (Cube တစ်ခုတည်းကိုသာ ထားရှိပြီး အရောင်ပြောင်းထားသည်) */
+            /* Outer Cube */
             .cyber-cube.outer-cube {
                 width: 85px;
                 height: 85px;
@@ -182,7 +198,7 @@ export function renderProfileScreen(container) {
             .cyber-cube.outer-cube .cube-face.top    { transform: rotateX(90deg) translateZ(42.5px); }
             .cyber-cube.outer-cube .cube-face.bottom { transform: rotateX(-90deg) translateZ(42.5px); }
 
-            /* Common Cube Face Design (Purple & Cyan Glow) */
+            /* Common Cube Face Design */
             .cube-face {
                 position: absolute;
                 box-sizing: border-box;
@@ -221,7 +237,7 @@ export function renderProfileScreen(container) {
                 100% { transform: rotate(360deg); }
             }
 
-            /* --- 3D Pedestal (အရောင်သစ် Purple/Indigo သို့ ပြောင်းထားသည်) --- */
+            /* --- 3D Pedestal --- */
             .cyber-3d-pedestal-wrapper {
                 position: relative;
                 width: 190px;
@@ -230,6 +246,7 @@ export function renderProfileScreen(container) {
                 transform: perspective(800px) rotateX(25deg);
                 z-index: 2;
                 margin-top: 5px;
+                transition: all 0.3s ease;
             }
 
             .pedestal-top-face {
@@ -325,6 +342,7 @@ export function renderProfileScreen(container) {
                 gap: 12px;
                 margin-bottom: 14px;
                 box-sizing: border-box;
+                transition: all 0.4s ease;
             }
 
             .action-card {
@@ -444,7 +462,7 @@ export function renderProfileScreen(container) {
 
             <!-- Cyber Stage -->
             <div class="cyber-stage" id="cyber-stage-box">
-                <!-- Single Cube (အသေးကို ဖျောက်ပြီးသားဖြစ်သည်) -->
+                <!-- Single Cube -->
                 <div class="nested-cubic-wrapper" id="cyber-cube-trigger" title="Cube ကိုနှိပ်၍ Trophy များဖွင့်ပါ">
                     <div class="cyber-cube outer-cube">
                         <div class="cube-face front"></div>
@@ -509,7 +527,8 @@ export function renderProfileScreen(container) {
         });
     }
 
-    // Toggle & Modal Logic for Cube
+    // Toggle & Modal Logic for Cube & Trophy Hidden Layout
+    const profileMainWrapper = document.getElementById('profile-main-wrapper');
     const cyberCubeTrigger = document.getElementById('cyber-cube-trigger');
     const cyber3DBase = document.getElementById('cyber-3d-base');
     const trophyBoxContent = document.getElementById('trophy-box-content');
@@ -524,6 +543,7 @@ export function renderProfileScreen(container) {
         if (isTrophiesOpen) return;
 
         isTrophiesOpen = true;
+        profileMainWrapper.classList.add('trophy-active');
         cyberCubeTrigger.classList.add('hidden');
         if (cyber3DBase) cyber3DBase.style.display = 'none';
         trophyBoxContent.classList.add('open');
@@ -540,6 +560,7 @@ export function renderProfileScreen(container) {
         if (!clickedInsideTrophy && !clickedCube && !clickedModal) {
             setTimeout(() => {
                 isTrophiesOpen = false;
+                profileMainWrapper.classList.remove('trophy-active');
                 trophyBoxContent.classList.remove('open');
                 cyberCubeTrigger.classList.remove('hidden');
                 if (cyber3DBase) cyber3DBase.style.display = 'block';
