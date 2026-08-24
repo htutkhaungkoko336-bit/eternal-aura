@@ -99,7 +99,7 @@ export function renderProfileScreen(container) {
                 font-family: monospace;
             }
 
-            /* 2. Cyber Stage (Cube & Trophies) */
+            /* 2. Cyber Stage (Cube, Hologram Base & Trophies) */
             .cyber-stage {
                 background: rgba(15, 23, 42, 0.95);
                 border-radius: 16px;
@@ -107,7 +107,7 @@ export function renderProfileScreen(container) {
                 margin-bottom: 16px;
                 text-align: center;
                 position: relative;
-                min-height: 160px;
+                min-height: 200px;
                 display: flex;
                 flex-direction: column;
                 align-items: center;
@@ -116,7 +116,7 @@ export function renderProfileScreen(container) {
                 box-sizing: border-box;
             }
 
-            /* Perfect 3D Cyber Cubic */
+            /* Perfect 3D Cyber Cubic with Floating Animation */
             .cubic-wrapper {
                 perspective: 900px;
                 width: 110px;
@@ -126,6 +126,13 @@ export function renderProfileScreen(container) {
                 justify-content: center;
                 cursor: pointer;
                 transition: opacity 0.5s ease, transform 0.5s ease;
+                animation: floatCube 3s ease-in-out infinite;
+                z-index: 2;
+            }
+
+            @keyframes floatCube {
+                0%, 100% { transform: translateY(0px); }
+                50% { transform: translateY(-10px); }
             }
 
             .cubic-wrapper.hidden {
@@ -165,6 +172,44 @@ export function renderProfileScreen(container) {
             .cube-face.top    { transform: rotateX(90deg) translateZ(35px); }
             .cube-face.bottom { transform: rotateX(-90deg) translateZ(35px); }
 
+            /* --- လန်းဆန်းနေမည့် အောက်ခံ Hologram Pad & Ring --- */
+            .holo-base {
+                position: absolute;
+                bottom: 25px;
+                width: 120px;
+                height: 35px;
+                background: radial-gradient(ellipse at center, rgba(56, 189, 248, 0.4) 0%, rgba(14, 165, 233, 0) 70%);
+                border-radius: 50%;
+                transform: rotateX(60deg);
+                box-shadow: 0 0 25px rgba(56, 189, 248, 0.8);
+                animation: pulseBase 3s ease-in-out infinite;
+                z-index: 1;
+                pointer-events: none;
+            }
+
+            .holo-ring {
+                position: absolute;
+                bottom: 30px;
+                width: 90px;
+                height: 12px;
+                border: 1px dashed #38bdf8;
+                border-radius: 50%;
+                animation: rotateRing 8s linear infinite;
+                z-index: 1;
+                pointer-events: none;
+                opacity: 0.7;
+            }
+
+            @keyframes pulseBase {
+                0%, 100% { opacity: 0.5; transform: rotateX(60deg) scale(0.9); }
+                50% { opacity: 1; transform: rotateX(60deg) scale(1.1); }
+            }
+
+            @keyframes rotateRing {
+                0% { transform: rotateX(60deg) rotateZ(0deg); }
+                100% { transform: rotateX(60deg) rotateZ(360deg); }
+            }
+
             /* Trophy Box Content Area */
             .box-content-area {
                 opacity: 0;
@@ -179,6 +224,7 @@ export function renderProfileScreen(container) {
                 box-sizing: border-box;
                 pointer-events: none;
                 overflow: hidden !important;
+                z-index: 3;
             }
 
             .box-content-area.open {
@@ -197,7 +243,6 @@ export function renderProfileScreen(container) {
                 box-sizing: border-box;
             }
 
-            /* Trophy အသေးများ ဘေးတိုက်မလံထွက်စေရန်နှင့် အကျယ်အဝန်းကို ထိန်းချုပ်ရန် */
             #trophy-showcase-target * {
                 max-width: 100% !important;
                 box-sizing: border-box !important;
@@ -327,9 +372,13 @@ export function renderProfileScreen(container) {
                 </div>
             </div>
 
-            <!-- Cyber Stage (Cube & Trophies) -->
+            <!-- Cyber Stage (Cube, Hologram Base & Trophies) -->
             <div class="cyber-stage" id="cyber-stage-box">
-                <!-- Perfect 3D Cyber Cubic -->
+                <!-- Hologram Base & Ring (အောက်ခံ အလင်းတန်းများ) -->
+                <div class="holo-base"></div>
+                <div class="holo-ring"></div>
+
+                <!-- Perfect 3D Cyber Cubic (လေထဲမျောနေမည့် Cube) -->
                 <div class="cubic-wrapper" id="cyber-cube-trigger" title="Cube ကိုနှိပ်၍ Trophy များဖွင့်ပါ">
                     <div class="cyber-cube">
                         <div class="cube-face front"></div>
