@@ -297,28 +297,27 @@ export function renderProfileScreen(container) {
                 z-index: 0;
             }
 
-            /* Trophy Box Content Area (အလယ်တည့်တည့်ကျစေရန် ပြင်ဆင်ထားသည်) */
+            /* Trophy Box Content Area (Flexbox အလယ်တည့်တည့်ကျစေရန် ပြင်ဆင်ပြီး) */
             .box-content-area {
                 opacity: 0;
                 visibility: hidden;
-                transform: translate(-50%, -50%) scale(0.95);
+                transform: scale(0.95);
                 transition: opacity 0.5s ease, transform 0.5s ease, visibility 0.5s ease;
                 width: 100%;
-                position: absolute;
-                top: 50%;
-                left: 50%;
+                display: none;
+                flex-direction: column;
+                align-items: center;
+                justify-content: center;
                 padding: 0 8px;
                 box-sizing: border-box;
-                pointer-events: none;
-                overflow: hidden !important;
                 z-index: 4;
             }
 
             .box-content-area.open {
                 opacity: 1;
                 visibility: visible;
-                transform: translate(-50%, -50%) scale(1);
-                pointer-events: auto;
+                transform: scale(1);
+                display: flex;
             }
 
             #trophy-showcase-target {
