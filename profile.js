@@ -297,16 +297,16 @@ export function renderProfileScreen(container) {
                 z-index: 0;
             }
 
-            /* Trophy Box Content Area */
+            /* Trophy Box Content Area (အလယ်တည့်တည့်ကျစေရန် ပြင်ဆင်ထားသည်) */
             .box-content-area {
                 opacity: 0;
                 visibility: hidden;
-                transform: scale(0.95);
-                transition: opacity 0.7s ease, transform 0.7s ease, visibility 0.7s ease;
+                transform: translate(-50%, -50%) scale(0.95);
+                transition: opacity 0.5s ease, transform 0.5s ease, visibility 0.5s ease;
                 width: 100%;
                 position: absolute;
-                top: 20px;
-                left: 0;
+                top: 50%;
+                left: 50%;
                 padding: 0 8px;
                 box-sizing: border-box;
                 pointer-events: none;
@@ -317,9 +317,7 @@ export function renderProfileScreen(container) {
             .box-content-area.open {
                 opacity: 1;
                 visibility: visible;
-                transform: scale(1);
-                position: relative;
-                top: 0;
+                transform: translate(-50%, -50%) scale(1);
                 pointer-events: auto;
             }
 
