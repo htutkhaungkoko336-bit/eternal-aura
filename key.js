@@ -5,7 +5,7 @@ export function initKeyManagement() {
     let keyData = JSON.parse(localStorage.getItem('user_key_inventory_v2')) || {
         modes: {
             '5v5': { '5k': 30, '10k': 100, '15k': 200, '25k': 500, '50k': 40 },
-            '1v1': { '5k': 2, '10k': 50, '15k': 1000, '25k': 1500, '50k': 8000 },
+            '1v1': { '5k': 2, '10k': 50, '15k': 1000, '25k': 15, '50k': 80 },
             'tournament': { 'pass': 1 }
         }
     };
@@ -85,7 +85,7 @@ export function initKeyManagement() {
                     </div>
                 </div>
 
-                <!-- Key Refund System Card (Clicking outside input box area resets selection) -->
+                <!-- Key Refund System Card -->
                 <div id="refund-card-container" style="background: rgba(30, 41, 59, 0.6); border: 1px solid rgba(56, 189, 248, 0.25); border-radius: 16px; padding: 12px; margin-bottom: 12px;">
                     <div style="font-size: 11px; font-weight: bold; color: #38bdf8; margin-bottom: 8px;">Key Refund System</div>
                     
@@ -108,7 +108,7 @@ export function initKeyManagement() {
                             </select>
                         </div>
 
-                        <!-- State B: KPay Inputs Area (Replaces Dropdowns when active) -->
+                        <!-- State B: KPay Inputs Area -->
                         <div id="kpay-inputs-group" style="display: none; gap: 5px; flex: 1;">
                             <input type="text" id="kpay-name" placeholder="KPay Name" style="
                                 flex: 1; background: rgba(15, 23, 42, 0.95); border: 1px solid rgba(56, 189, 248, 0.6);
@@ -118,7 +118,7 @@ export function initKeyManagement() {
                                 border-radius: 8px; color: #f8fafc; padding: 7px 8px; font-size: 10px; outline: none; box-sizing: border-box;">
                         </div>
 
-                        <!-- Refund / Confirm Button -->
+                        <!-- Refund Button -->
                         <button id="execute-refund-btn" style="
                             background: linear-gradient(135deg, #ef4444, #dc2626); border: none;
                             border-radius: 8px; color: white; padding: 7px 14px; font-size: 11px;
@@ -206,20 +206,26 @@ export function initKeyManagement() {
     refundQtySelect.addEventListener('change', () => {
         updateInfoText();
         if (refundKeySelect.value && refundQtySelect.value) {
-            // Key နဲ့ Qty ပြီးတာနဲ့ Dropdowns နေရာမှာ KPay Inputs တွေ အစားထိုးဝင်မည်
             dropdownsGroup.style.display = 'none';
             kpayInputsGroup.style.display = 'flex';
             kpayNameInput.focus();
         }
     });
 
-    // Card ထဲမှာ KPay inputs ပေါ်နေချိန် ဘောက်စ်ဧရိယာပြင်ပ (ဥပမာ card နောက်ခံ သို့မဟုတ် စာသားနေရာ) ကိုနှိပ်ရင် Key ပြန်ရွေးလို့ရအောင် reset လုပ်ရန်
-    refundCardContainer.addEventListener('click', (e) => {
-        // အကယ်၍ KPay inputs တွေပေါ်နေပြီး၊ နှိပ်လိုက်တဲ့နေရာက input ဘောက်စ်တွေ မဟုတ်ဘူးဆိုရင်
-        if (kpayInputsGroup.style.display === 'flex' && !kpayNameInput.contains(e.target) && !kpayPhoneInput.contains(e.target) && e.target !== document.getElementById('execute-refund-btn')) {
-            resetToDropdownState();
+    // Mobile ဖုန်းများနှင့် Desktop နှစ်ခုစလုံးအတွက် နေရာလပ်များကို နှိပ်/ထိလိုက်ပါက Key ပြန်ရွေးနိုင်ရန် (click + touchstart)
+    const handleResetTrigger = (e) => {
+        if (kpayInputsGroup.style.display === 'flex') {
+            const isInsideInputs = kpayNameInput.contains(e.target) || kpayPhoneInput.contains(e.target);
+            const isRefundBtn = e.target === document.getElementById('execute-refund-btn');
+            
+            if (!isInsideInputs && !isRefundBtn) {
+                resetToDropdownState();
+            }
         }
-    });
+    };
+
+    refundCardContainer.addEventListener('click', handleResetTrigger);
+    refundCardContainer.addEventListener('touchstart', handleResetTrigger, { passive: true });
 
     function resetToDropdownState() {
         dropdownsGroup.style.display = 'flex';
@@ -241,7 +247,7 @@ export function initKeyManagement() {
         const [mode, type] = val.split('_');
         const unitVal = getKeyValues(type);
         const totalVal = (unitVal * qty).toLocaleString();
-        refundInfoText.innerText = `${mode.toUpperCase()} (${type.toUpperCase()}) Key ${qty} pcs for ${totalVal} Ks. (Click outside inputs to re-select)`;
+        refundInfoText.innerText = `${mode.toUpperCase()} (${type.toUpperCase()}) Key ${qty} pcs for ${totalVal} Ks. (Tap outside to re-select)`;
     }
 
     function renderKeys(mode, types, data) {
