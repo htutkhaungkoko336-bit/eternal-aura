@@ -85,51 +85,51 @@ export function initKeyManagement() {
                     </div>
                 </div>
 
-                <!-- Refund System Box -->
-                <div style="background: rgba(30, 41, 59, 0.6); border: 1px solid rgba(56, 189, 248, 0.2); border-radius: 16px; padding: 12px; margin-bottom: 12px;">
-                    <div style="font-size: 11.5px; font-weight: bold; color: #38bdf8; margin-bottom: 8px;">Key Refund System</div>
+                <!-- Clean Step-by-Step Refund Section -->
+                <div style="background: rgba(30, 41, 59, 0.5); border: 1px solid rgba(56, 189, 248, 0.25); border-radius: 16px; padding: 12px; margin-bottom: 12px;">
+                    <div style="font-size: 11px; font-weight: bold; color: #38bdf8; margin-bottom: 8px;">🔄 Key Refund & Exchange</div>
                     
-                    <!-- Dropdowns Selection -->
-                    <div style="display: flex; gap: 6px; align-items: center; margin-bottom: 10px;">
+                    <!-- Step 1: Select Key & Qty -->
+                    <div style="display: flex; gap: 6px; margin-bottom: 8px;">
                         <select id="refund-key-select" style="
-                            flex: 1.2; background: rgba(15, 23, 42, 0.95); border: 1px solid #334155;
-                            border-radius: 10px; color: #f8fafc; padding: 8px; font-size: 10.5px; outline: none; cursor: pointer;">
-                            <option value="" disabled selected style="color: #64748b;">Select key...</option>
+                            flex: 1.3; background: rgba(15, 23, 42, 0.95); border: 1px solid #334155;
+                            border-radius: 10px; color: #f8fafc; padding: 8px; font-size: 10.5px; outline: none;">
+                            <option value="" disabled selected style="color: #64748b;">Select Key...</option>
                             ${generateDropdownOptions(keyData)}
                         </select>
                         
                         <select id="refund-qty-select" style="
-                            flex: 0.8; background: rgba(15, 23, 42, 0.95); border: 1px solid #334155;
-                            border-radius: 10px; color: #f8fafc; padding: 8px; font-size: 10.5px; outline: none; cursor: pointer;">
+                            flex: 0.7; background: rgba(15, 23, 42, 0.95); border: 1px solid #334155;
+                            border-radius: 10px; color: #f8fafc; padding: 8px; font-size: 10.5px; outline: none;">
                             <option value="" disabled selected>Qty...</option>
                         </select>
                     </div>
 
-                    <!-- Info Text (Larger & Clearer) -->
-                    <div id="refund-info-text" style="font-size: 11.5px; color: #38bdf8; font-weight: bold; line-height: 1.4; min-height: 32px; margin-bottom: 10px; background: rgba(56, 189, 248, 0.12); border-left: 3px solid #38bdf8; padding: 8px 10px; border-radius: 0 8px 8px 0;">
-                        Please select a key and quantity to view refund details.
+                    <!-- Clear Info Banner -->
+                    <div id="refund-info-text" style="font-size: 11.5px; color: #38bdf8; font-weight: bold; line-height: 1.4; min-height: 30px; margin-bottom: 8px; background: rgba(56, 189, 248, 0.1); border-left: 3px solid #38bdf8; padding: 7px 9px; border-radius: 0 8px 8px 0;">
+                        ကျေးဇူးပြု၍ Refund လုပ်မည့် Key နှင့် ပမာဏကို ရွေးချယ်ပါ။
                     </div>
 
-                    <!-- KPay Inputs Container (Initially Hidden, appears after selecting key & qty) -->
-                    <div id="kpay-inputs-container" style="display: none; flex-direction: column; gap: 8px; margin-bottom: 10px; background: rgba(15, 23, 42, 0.6); padding: 10px; border-radius: 12px; border: 1px solid rgba(56, 189, 248, 0.3);">
-                        <div style="font-size: 10.5px; font-weight: bold; color: #cbd5e1; margin-bottom: 2px;">Enter KPay Details to Proceed:</div>
-                        <div>
-                            <div style="font-size: 9px; color: #94a3b8; margin-bottom: 2px;">KPay Account Name</div>
-                            <input type="text" id="kpay-name" placeholder="ဥပမာ - Mg Mg" style="
+                    <!-- Step 2: KPay Form (Appears smoothly after selecting key & qty) -->
+                    <div id="kpay-form-section" style="display: none; background: rgba(15, 23, 42, 0.75); border: 1px solid rgba(56, 189, 248, 0.35); border-radius: 12px; padding: 10px; margin-bottom: 8px;">
+                        <div style="font-size: 10px; font-weight: bold; color: #38bdf8; margin-bottom: 6px;">📱 KPay Withdrawal Details</div>
+                        
+                        <div style="margin-bottom: 6px;">
+                            <input type="text" id="kpay-name" placeholder="KPay Account Name (ဥပမာ - Mg Mg)" style="
                                 width: 100%; background: rgba(15, 23, 42, 0.95); border: 1px solid #334155;
                                 border-radius: 8px; color: #f8fafc; padding: 8px 10px; font-size: 11px; outline: none; box-sizing: border-box;">
                         </div>
-                        <div>
-                            <div style="font-size: 9px; color: #94a3b8; margin-bottom: 2px;">KPay Phone Number</div>
-                            <input type="text" id="kpay-phone" placeholder="ဥပမာ - 09xxxxxxxxx" style="
+                        <div style="margin-bottom: 4px;">
+                            <input type="text" id="kpay-phone" placeholder="KPay Phone Number (ဥပမာ - 09xxxxxxxxx)" style="
                                 width: 100%; background: rgba(15, 23, 42, 0.95); border: 1px solid #334155;
                                 border-radius: 8px; color: #f8fafc; padding: 8px 10px; font-size: 11px; outline: none; box-sizing: border-box;">
                         </div>
                     </div>
 
+                    <!-- Refund Button (Enabled only when ready) -->
                     <button id="execute-refund-btn" style="
                         width: 100%; background: linear-gradient(135deg, #ef4444, #dc2626); border: none;
-                        border-radius: 10px; color: white; padding: 10px; font-size: 12px;
+                        border-radius: 10px; color: white; padding: 9px; font-size: 11.5px;
                         font-weight: bold; cursor: pointer; box-shadow: 0 0 12px rgba(239, 68, 68, 0.4);">
                         Confirm & Refund
                     </button>
@@ -153,7 +153,7 @@ export function initKeyManagement() {
     const refundSelect = document.getElementById('refund-key-select');
     const qtySelect = document.getElementById('refund-qty-select');
     const refundInfoText = document.getElementById('refund-info-text');
-    const kpayInputsContainer = document.getElementById('kpay-inputs-container');
+    const kpayFormSection = document.getElementById('kpay-form-section');
     const kpayNameInput = document.getElementById('kpay-name');
     const kpayPhoneInput = document.getElementById('kpay-phone');
 
@@ -198,16 +198,16 @@ export function initKeyManagement() {
             qtyOptions += `<option value="${i}">${i} pcs</option>`;
         }
         qtySelect.innerHTML = qtyOptions;
-        kpayInputsContainer.style.display = 'none'; // Key ပြောင်းရင် KPay box ခဏပြန်ပိတ်မယ်
+        kpayFormSection.style.display = 'none';
         updateInfoText();
     });
 
     qtySelect.addEventListener('change', () => {
         updateInfoText();
         if (refundSelect.value && qtySelect.value) {
-            kpayInputsContainer.style.display = 'flex'; // Key နဲ့ Qty နှစ်ခုစလုံးရွေးပြီးမှ KPay box ပေါ်လာမည်
+            kpayFormSection.style.display = 'block'; // Key နဲ့ Qty ပြီးမှ KPay form ပေါ်လာမည်
         } else {
-            kpayInputsContainer.style.display = 'none';
+            kpayFormSection.style.display = 'none';
         }
     });
 
@@ -215,13 +215,13 @@ export function initKeyManagement() {
         const val = refundSelect.value;
         const qty = parseInt(qtySelect.value);
         if (!val || !qty) {
-            refundInfoText.innerText = "Please select a key and quantity to view refund details.";
+            refundInfoText.innerText = "ကျေးဇူးပြု၍ Refund လုပ်မည့် Key နှင့် ပမာဏကို ရွေးချယ်ပါ။";
             return;
         }
         const [mode, type] = val.split('_');
         const unitVal = getKeyValues(type);
         const totalVal = (unitVal * qty).toLocaleString();
-        refundInfoText.innerText = `${mode.toUpperCase()} (${type.toUpperCase()}) Key ${qty} ခု အတွက် ငွေကျပ် ${totalVal} ကို KPay ဖြင့် ထုတ်ယူမည်။`;
+        refundInfoText.innerText = `${mode.toUpperCase()} (${type.toUpperCase()}) Key ${qty} ခု အတွက် ငွေကျပ် ${totalVal} ရရှိမည်။`;
     }
 
     function renderKeys(mode, types, data) {
@@ -250,7 +250,7 @@ export function initKeyManagement() {
         const kpayPhone = kpayPhoneInput.value.trim();
 
         if (!selectedVal || !qty) {
-            alert('ကျေးဇူးပြု၍ Refund လုပ်မည့် Key နှင့် အရေအတွက်ကို အရင်ရွေးချယ်ပါ။');
+            alert('ကျေးဇူးပြု၍ Key နှင့် အရေအတွက်ကို အရင်ရွေးချယ်ပါ။');
             return;
         }
 
@@ -263,14 +263,14 @@ export function initKeyManagement() {
         const unitVal = getKeyValues(type);
         const totalVal = unitVal * qty;
 
-        const isConfirmed = confirm(`အတည်ပြုမည် - ${mode.toUpperCase()} ${type.toUpperCase()} Key (${qty} pcs) အတွက် ငွေကျပ် ${totalVal.toLocaleString()} ကို ${kpayName} (${kpayPhone}) သို့ KPay ဖြင့် လွှဲပေးရန် တောင်းဆိုမည်မှာ သေချာပါသလား?`);
+        const isConfirmed = confirm(`အတည်ပြုမည် - ${mode.toUpperCase()} ${type.toUpperCase()} Key (${qty} pcs) အတွက် ငွေကျပ် ${totalVal.toLocaleString()} ကို ${kpayName} (${kpayPhone}) သို့ KPay ဖြင့် ပို့ဆောင်ပေးပါမည်။`);
         if (!isConfirmed) return;
 
         if (keyData.modes[mode] && keyData.modes[mode][type] >= qty) {
             keyData.modes[mode][type] -= qty;
             localStorage.setItem('user_key_inventory_v2', JSON.stringify(keyData));
             updateUI(keyData);
-            alert(`အောင်မြင်ပါသည်! ${qty} pcs Refund တောင်းဆိုမှု တင်ပြီးပါပြီ။`);
+            alert(`အောင်မြင်ပါသည်! Refund တောင်းဆိုမှုကို လက်ခံရရှိပါသည်။`);
         } else {
             alert('အရေအတွက် မလုံလောက်ပါ။');
         }
@@ -280,10 +280,10 @@ export function initKeyManagement() {
         document.getElementById('vault-total-balance').innerText = calculateTotalBalance(data).toLocaleString() + ' Ks';
         document.getElementById('grid-5v5').innerHTML = renderKeys('5v5', ['5k', '10k', '15k', '25k', '50k'], data);
         document.getElementById('grid-1v1').innerHTML = renderKeys('1v1', ['5k', '10k', '15k', '25k', '50k'], data);
-        refundSelect.innerHTML = `<option value="" disabled selected style="color: #64748b;">Select key...</option>` + generateDropdownOptions(data);
+        refundSelect.innerHTML = `<option value="" disabled selected style="color: #64748b;">Select Key...</option>` + generateDropdownOptions(data);
         qtySelect.innerHTML = `<option value="" disabled selected>Qty...</option>`;
-        refundInfoText.innerText = "Please select a key and quantity to view refund details.";
-        kpayInputsContainer.style.display = 'none';
+        refundInfoText.innerText = "ကျေးဇူးပြု၍ Refund လုပ်မည့် Key နှင့် ပမာဏကို ရွေးချယ်ပါ။";
+        kpayFormSection.style.display = 'none';
         kpayNameInput.value = '';
         kpayPhoneInput.value = '';
     }
