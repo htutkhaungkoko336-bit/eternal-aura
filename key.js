@@ -5,7 +5,7 @@ export function initKeyManagement() {
     let keyData = JSON.parse(localStorage.getItem('user_key_inventory_v2')) || {
         modes: {
             '5v5': { '5k': 30, '10k': 100, '15k': 200, '25k': 500, '50k': 40 },
-            '1v1': { '5k': 2, '10k': 50, '15k': 1000, '25k': 15, '50k': 80 },
+            '1v1': { '5k': 2, '10k': 50, '15k': 1000, '25k': 1500, '50k': 8000 },
             'tournament': { 'pass': 1 }
         }
     };
@@ -108,12 +108,12 @@ export function initKeyManagement() {
                             </select>
                         </div>
 
-                        <!-- State B: KPay Inputs Area -->
+                        <!-- State B: KPay Inputs Area (English Name & Digits Phone) -->
                         <div id="kpay-inputs-group" style="display: none; gap: 5px; flex: 1;">
-                            <input type="text" id="kpay-name" placeholder="KPay Name" style="
+                            <input type="text" id="kpay-name" lang="en" placeholder="KPay Name (Eng)" style="
                                 flex: 1; background: rgba(15, 23, 42, 0.95); border: 1px solid rgba(56, 189, 248, 0.6);
                                 border-radius: 8px; color: #f8fafc; padding: 7px 8px; font-size: 10px; outline: none; box-sizing: border-box;">
-                            <input type="text" id="kpay-phone" placeholder="KPay Phone" style="
+                            <input type="tel" id="kpay-phone" pattern="[0-9]*" inputmode="numeric" placeholder="KPay Phone (Digits)" style="
                                 flex: 1; background: rgba(15, 23, 42, 0.95); border: 1px solid rgba(56, 189, 248, 0.6);
                                 border-radius: 8px; color: #f8fafc; padding: 7px 8px; font-size: 10px; outline: none; box-sizing: border-box;">
                         </div>
@@ -149,7 +149,6 @@ export function initKeyManagement() {
 
     const modalOverlay = document.getElementById('key-management-modal');
     const modalContent = modalOverlay.querySelector('.key-modal-content');
-    const refundCardContainer = document.getElementById('refund-card-container');
     const dropdownsGroup = document.getElementById('dropdowns-group');
     const kpayInputsGroup = document.getElementById('kpay-inputs-group');
     const refundKeySelect = document.getElementById('refund-key-select');
@@ -212,20 +211,15 @@ export function initKeyManagement() {
         }
     });
 
-    // Mobile ဖုန်းများနှင့် Desktop နှစ်ခုစလုံးအတွက် နေရာလပ်များကို နှိပ်/ထိလိုက်ပါက Key ပြန်ရွေးနိုင်ရန် (click + touchstart)
-    const handleResetTrigger = (e) => {
-        if (kpayInputsGroup.style.display === 'flex') {
-            const isInsideInputs = kpayNameInput.contains(e.target) || kpayPhoneInput.contains(e.target);
-            const isRefundBtn = e.target === document.getElementById('execute-refund-btn');
-            
-            if (!isInsideInputs && !isRefundBtn) {
-                resetToDropdownState();
-            }
-        }
-    };
+    // ဖုန်းနံပါတ် နေရာတွင် ဂဏန်း (Digits) သီးသန့်သာ ရိုက်ထည့်နိုင်ရန် စစ်ဆေးခြင်း
+    kpayPhoneInput.addEventListener('input', (e) => {
+        e.target.value = e.target.value.replace(/[^0-9]/g, '');
+    });
 
-    refundCardContainer.addEventListener('click', handleResetTrigger);
-    refundCardContainer.addEventListener('touchstart', handleResetTrigger, { passive: true });
+    // နာမည် နေရာတွင် အင်္ဂလိပ်စာ သီးသန့်သာ ရိုက်ထည့်နိုင်ရန် စစ်ဆေးခြင်း (မြန်မာစာ သို့မဟုတ် အခြားစာလုံးများပါလာပါက ဖယ်ရှားရန်)
+    kpayNameInput.addEventListener('input', (e) => {
+        e.target.value = e.target.value.replace(/[^a-zA-Z\s]/g, '');
+    });
 
     function resetToDropdownState() {
         dropdownsGroup.style.display = 'flex';
@@ -247,7 +241,7 @@ export function initKeyManagement() {
         const [mode, type] = val.split('_');
         const unitVal = getKeyValues(type);
         const totalVal = (unitVal * qty).toLocaleString();
-        refundInfoText.innerText = `${mode.toUpperCase()} (${type.toUpperCase()}) Key ${qty} pcs for ${totalVal} Ks. (Tap outside to re-select)`;
+        refundInfoText.innerText = `${mode.toUpperCase()} (${type.toUpperCase()}) Key ${qty} pcs for ${totalVal} Ks.`;
     }
 
     function renderKeys(mode, types, data) {
@@ -281,7 +275,7 @@ export function initKeyManagement() {
         }
 
         if (!kpayName || !kpayPhone) {
-            alert('ကျေးဇူးပြု၍ KPay အမည်နှင့် ဖုန်းနံပါတ်ကို ဖြည့်စွက်ပေးပါ။');
+            alert('ကျေးဇူးပြု၍ KPay အမည် (English) နှင့် ဖုန်းနံပါတ် (Digits) ကို မှန်ကန်စွာ ဖြည့်စွက်ပေးပါ။');
             return;
         }
 
