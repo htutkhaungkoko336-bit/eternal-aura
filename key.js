@@ -17,11 +17,10 @@ export function initKeyManagement() {
             case '15k': return 15000;
             case '25k': return 25000;
             case '50k': return 50000;
-            default: return 0; // Tournament pass ကို 0 ပေးထား၍ Balance ထဲမပါဝင်ပါ
+            default: return 0;
         }
     }
 
-    // Tournament Key ကို ဖယ်ထုတ်ပြီး 5v5 နဲ့ 1v1 ကိုသာ Balance ထဲ ထည့်တွက်မည်
     function calculateTotalBalance(data) {
         let total = 0;
         ['5v5', '1v1'].forEach(mode => {
@@ -84,21 +83,35 @@ export function initKeyManagement() {
                     </div>
                 </div>
 
+                <!-- Refund System Box -->
                 <div style="background: rgba(30, 41, 59, 0.5); border: 1px solid rgba(255, 255, 255, 0.08); border-radius: 16px; padding: 12px; margin-bottom: 16px;">
                     <div style="font-size: 11px; font-weight: 600; color: #f8fafc; margin-bottom: 8px;">Key Refund System</div>
-                    <div style="display: flex; gap: 8px; align-items: center;">
+                    
+                    <div style="display: flex; gap: 8px; align-items: center; margin-bottom: 8px;">
                         <select id="refund-key-select" style="
-                            flex: 1; background: rgba(15, 23, 42, 0.95); border: 1px solid #334155;
-                            border-radius: 10px; color: #f8fafc; padding: 8px 10px; font-size: 11px; outline: none; cursor: pointer;">
-                            <option value="" disabled selected style="color: #64748b;">Select key to refund...</option>
+                            flex: 1.2; background: rgba(15, 23, 42, 0.95); border: 1px solid #334155;
+                            border-radius: 10px; color: #f8fafc; padding: 8px 6px; font-size: 10.5px; outline: none; cursor: pointer;">
+                            <option value="" disabled selected style="color: #64748b;">Select key...</option>
                             ${generateDropdownOptions(keyData)}
                         </select>
+                        
+                        <select id="refund-qty-select" style="
+                            flex: 0.8; background: rgba(15, 23, 42, 0.95); border: 1px solid #334155;
+                            border-radius: 10px; color: #f8fafc; padding: 8px 6px; font-size: 10.5px; outline: none; cursor: pointer;">
+                            <option value="" disabled selected>Qty...</option>
+                        </select>
+
                         <button id="execute-refund-btn" style="
                             background: linear-gradient(135deg, #ef4444, #dc2626); border: none;
-                            border-radius: 10px; color: white; padding: 8px 14px; font-size: 11px;
+                            border-radius: 10px; color: white; padding: 8px 12px; font-size: 11px;
                             font-weight: bold; cursor: pointer; box-shadow: 0 0 12px rgba(239, 68, 68, 0.4); white-space: nowrap;">
                             Refund
                         </button>
+                    </div>
+
+                    <!-- Amount calculation info text -->
+                    <div id="refund-info-text" style="font-size: 10px; color: #94a3b8; font-style: italic; min-height: 14px;">
+                        Please select a key and quantity to view refund details.
                     </div>
                 </div>
 
@@ -117,6 +130,9 @@ export function initKeyManagement() {
 
     const modalOverlay = document.getElementById('key-management-modal');
     const modalContent = modalOverlay.querySelector('.key-modal-content');
+    const refundSelect = document.getElementById('refund-key-select');
+    const qtySelect = document.getElementById('refund-qty-select');
+    const refundInfoText = document.getElementById('refund-info-text');
 
     keyCardBtn.addEventListener('click', () => {
         modalOverlay.style.opacity = '1';
@@ -141,11 +157,41 @@ export function initKeyManagement() {
             for (let type in data.modes[mode]) {
                 let count = data.modes[mode][type] || 0;
                 if (count > 0) {
-                    options += `<option value="${mode}_${type}">${mode.toUpperCase()} - ${type.toUpperCase()} Key (${count} pcs)</option>`;
+                    options += `<option value="${mode}_${type}">${mode.toUpperCase()} - ${type.toUpperCase()} (${count} pcs)</option>`;
                 }
             }
         });
         return options;
+    }
+
+    // Key ရွေးလိုက်တဲ့အခါ Quantity Dropdown ကို အလိုအလျောက် ဖြည့်ပေးရန်
+    refundSelect.addEventListener('change', () => {
+        const val = refundSelect.value;
+        if (!val) return;
+        const [mode, type] = val.split('_');
+        const maxCount = keyData.modes[mode][type];
+        
+        let qtyOptions = '<option value="" disabled selected>Qty...</option>';
+        for (let i = 1; i <= maxCount; i++) {
+            qtyOptions += `<option value="${i}">${i} pcs</option>`;
+        }
+        qtySelect.innerHTML = qtyOptions;
+        updateInfoText();
+    });
+
+    qtySelect.addEventListener('change', updateInfoText);
+
+    function updateInfoText() {
+        const val = refundSelect.value;
+        const qty = parseInt(qtySelect.value);
+        if (!val || !qty) {
+            refundInfoText.innerText = "Please select a key and quantity to view refund details.";
+            return;
+        }
+        const [mode, type] = val.split('_');
+        const unitVal = getKeyValues(type);
+        const totalVal = (unitVal * qty).toLocaleString();
+        refundInfoText.innerText = `Exchange ${qty} pcs of ${mode.toUpperCase()} ${type.toUpperCase()} keys for ${totalVal} Ks. Click Refund to proceed.`;
     }
 
     function renderKeys(mode, types, data) {
@@ -166,22 +212,31 @@ export function initKeyManagement() {
     }
 
     const executeRefundBtn = document.getElementById('execute-refund-btn');
-    const refundSelect = document.getElementById('refund-key-select');
 
     executeRefundBtn.addEventListener('click', () => {
         const selectedVal = refundSelect.value;
-        if (!selectedVal) {
-            alert('Please select a key type to refund.');
+        const qty = parseInt(qtySelect.value);
+
+        if (!selectedVal || !qty) {
+            alert('Please select both key type and quantity.');
             return;
         }
 
         const [mode, type] = selectedVal.split('_');
+        const unitVal = getKeyValues(type);
+        const totalVal = unitVal * qty;
 
-        if (keyData.modes[mode] && keyData.modes[mode][type] > 0) {
-            keyData.modes[mode][type] -= 1;
+        // Confirm prompt တောင်းခြင်း
+        const isConfirmed = confirm(`Are you sure you want to refund ${qty} pcs of ${mode.toUpperCase()} ${type.toUpperCase()} keys for ${totalVal.toLocaleString()} Ks?`);
+        if (!isConfirmed) return;
+
+        if (keyData.modes[mode] && keyData.modes[mode][type] >= qty) {
+            keyData.modes[mode][type] -= qty;
             localStorage.setItem('user_key_inventory', JSON.stringify(keyData));
             updateUI(keyData);
-            alert(`Successfully refunded one ${mode.toUpperCase()} (${type.toUpperCase()}) key.`);
+            alert(`Successfully refunded ${qty} pcs of ${mode.toUpperCase()} (${type.toUpperCase()}) keys.`);
+        } else {
+            alert('Invalid quantity selected.');
         }
     });
 
@@ -189,6 +244,8 @@ export function initKeyManagement() {
         document.getElementById('vault-total-balance').innerText = calculateTotalBalance(data).toLocaleString() + ' Ks';
         document.getElementById('grid-5v5').innerHTML = renderKeys('5v5', ['5k', '10k', '15k', '25k', '50k'], data);
         document.getElementById('grid-1v1').innerHTML = renderKeys('1v1', ['5k', '10k', '15k', '25k', '50k'], data);
-        refundSelect.innerHTML = `<option value="" disabled selected style="color: #64748b;">Select key to refund...</option>` + generateDropdownOptions(data);
+        refundSelect.innerHTML = `<option value="" disabled selected style="color: #64748b;">Select key...</option>` + generateDropdownOptions(data);
+        qtySelect.innerHTML = `<option value="" disabled selected>Qty...</option>`;
+        refundInfoText.innerText = "Please select a key and quantity to view refund details.";
     }
 }
