@@ -1,12 +1,11 @@
 import { renderTrophyShowcase } from './trophies.js';
+import { initKeyManagement } from './key.js';
 
 export function renderProfileScreen(container) {
     const userName = localStorage.getItem('user_profile_name') || localStorage.getItem('userName') || "CyberPlayer";
     const userId = localStorage.getItem('user_profile_id') || localStorage.getItem('userId') || "EA-99821";
-    const userKey = localStorage.getItem('user_profile_key') || "EA-KEY-5599-CYBER-99X";
     const savedAvatar = localStorage.getItem('user_profile_avatar') || "";
 
-    // ဥပမာ သုံးစွဲသူရဲ့ Key အရေအတွက် (Localstorage ကနေ ယူသုံးလို့ရပါတယ်)
     let userKeyCount = parseInt(localStorage.getItem('user_profile_key_count') || '12');
 
     container.innerHTML = `
@@ -39,7 +38,6 @@ export function renderProfileScreen(container) {
                 transition: all 0.3s ease;
             }
 
-            /* Trophy ပွင့်နေချိန် အပေါ်ဘန်နာကိုသာ ဖျောက်မည် */
             .profile-wrapper.trophy-active .top-banner {
                 opacity: 0;
                 visibility: hidden;
@@ -51,7 +49,6 @@ export function renderProfileScreen(container) {
                 transition: all 0.4s ease;
             }
 
-            /* Top Compact Banner */
             .top-banner {
                 background: rgba(15, 23, 42, 0.85);
                 border: 1px solid #0ea5e9;
@@ -105,7 +102,6 @@ export function renderProfileScreen(container) {
                 font-family: monospace;
             }
 
-            /* Cyber Stage */
             .cyber-stage {
                 background: transparent;
                 border: none;
@@ -126,7 +122,6 @@ export function renderProfileScreen(container) {
                 transition: all 0.4s ease;
             }
 
-            /* Single Cube Wrapper */
             .nested-cubic-wrapper {
                 perspective: 900px;
                 width: 110px;
@@ -172,7 +167,6 @@ export function renderProfileScreen(container) {
                 50% { opacity: 1; height: 28px; }
             }
 
-            /* Outer Cube */
             .cyber-cube.outer-cube {
                 width: 85px;
                 height: 85px;
@@ -238,7 +232,6 @@ export function renderProfileScreen(container) {
                 100% { transform: rotate(360deg); }
             }
 
-            /* --- 3D Pedestal --- */
             .cyber-3d-pedestal-wrapper {
                 position: relative;
                 width: 190px;
@@ -271,7 +264,6 @@ export function renderProfileScreen(container) {
                 z-index: 1;
             }
 
-            /* Trophy Box Content Area */
             .box-content-area {
                 opacity: 0;
                 visibility: hidden;
@@ -303,7 +295,6 @@ export function renderProfileScreen(container) {
                 box-sizing: border-box;
             }
 
-            /* Bottom Grid Cards */
             .bottom-grid {
                 display: grid;
                 grid-template-columns: 1fr 1fr;
@@ -347,136 +338,6 @@ export function renderProfileScreen(container) {
                 letter-spacing: 1px;
             }
 
-            /* Key Management Modal / Box */
-            .key-modal-overlay {
-                position: fixed;
-                top: 0; left: 0;
-                width: 100%; height: 100%;
-                background: rgba(2, 6, 23, 0.85);
-                backdrop-filter: blur(8px);
-                display: flex;
-                align-items: center;
-                justify-content: center;
-                z-index: 9999;
-                opacity: 0;
-                visibility: hidden;
-                transition: all 0.3s ease;
-            }
-
-            .key-modal-overlay.active {
-                opacity: 1;
-                visibility: visible;
-            }
-
-            .key-modal-content {
-                background: rgba(15, 23, 42, 0.98);
-                border: 2px solid #c084fc;
-                border-radius: 20px;
-                padding: 24px 16px;
-                width: 90%;
-                max-width: 420px;
-                text-align: center;
-                box-shadow: 0 0 40px rgba(192, 132, 252, 0.5);
-                box-sizing: border-box;
-            }
-
-            .key-modal-content h3 {
-                color: #38bdf8;
-                margin-top: 0;
-                margin-bottom: 12px;
-                font-size: 16px;
-            }
-
-            .key-count-display {
-                background: rgba(30, 41, 59, 0.7);
-                border: 1px dashed #c084fc;
-                padding: 8px;
-                border-radius: 8px;
-                margin-bottom: 15px;
-                font-size: 13px;
-                color: #f1f5f9;
-            }
-
-            .section-label {
-                font-size: 12px;
-                color: #cbd5e1;
-                margin: 10px 0 6px 0;
-                text-align: left;
-                font-weight: bold;
-            }
-
-            .mode-btn-grid {
-                display: grid;
-                grid-template-columns: repeat(5, 1fr);
-                gap: 6px;
-                margin-bottom: 12px;
-            }
-
-            .mode-select-btn {
-                background: #0f172a;
-                border: 1px solid #475569;
-                color: #f8fafc;
-                padding: 8px 4px;
-                font-size: 11px;
-                border-radius: 6px;
-                cursor: pointer;
-                transition: all 0.2s;
-            }
-
-            .mode-select-btn:hover, .mode-select-btn.selected {
-                background: #9333ea;
-                border-color: #38bdf8;
-                box-shadow: 0 0 10px rgba(56, 189, 248, 0.5);
-            }
-
-            .result-action-box {
-                background: #020617;
-                border: 1px solid #334155;
-                border-radius: 10px;
-                padding: 12px;
-                margin-top: 15px;
-                display: flex;
-                align-items: center;
-                justify-content: space-between;
-                gap: 10px;
-            }
-
-            .result-text {
-                font-size: 12px;
-                color: #38bdf8;
-                text-align: left;
-                word-break: break-all;
-            }
-
-            .refund-action-btn {
-                background: linear-gradient(135deg, #ef4444, #f59e0b);
-                border: none;
-                color: white;
-                padding: 8px 14px;
-                border-radius: 8px;
-                font-size: 11px;
-                font-weight: bold;
-                cursor: pointer;
-                flex-shrink: 0;
-                box-shadow: 0 0 10px rgba(239, 68, 68, 0.4);
-            }
-
-            .refund-action-btn:hover {
-                opacity: 0.9;
-            }
-
-            .close-key-modal {
-                background: #334155;
-                border: none;
-                color: white;
-                padding: 8px 20px;
-                border-radius: 8px;
-                font-size: 12px;
-                cursor: pointer;
-                margin-top: 15px;
-            }
-
-            /* Zoom Modal */
             .trophy-zoom-modal {
                 position: fixed;
                 top: 0; left: 0;
@@ -547,7 +408,6 @@ export function renderProfileScreen(container) {
         </style>
 
         <div class="profile-wrapper" id="profile-main-wrapper">
-            <!-- Top Banner -->
             <div class="top-banner">
                 <label class="avatar-box" id="avatar-container" title="ဓာတ်ပုံပြောင်းရန် နှိပ်ပါ">
                     ${savedAvatar ? `<img src="${savedAvatar}">` : `<span id="avatar-plus">+</span>`}
@@ -559,7 +419,6 @@ export function renderProfileScreen(container) {
                 </div>
             </div>
 
-            <!-- Cyber Stage -->
             <div class="cyber-stage" id="cyber-stage-box">
                 <div class="nested-cubic-wrapper" id="cyber-cube-trigger" title="Cube ကိုနှိပ်၍ Trophy များဖွင့်ပါ">
                     <div class="cyber-cube outer-cube">
@@ -582,7 +441,6 @@ export function renderProfileScreen(container) {
                 </div>
             </div>
 
-            <!-- Key & History Cards (KEY ကတ်ပြားကို Button အဖြစ်ပြောင်းထားသည်) -->
             <div class="bottom-grid">
                 <div class="action-card" id="key-card-btn">
                     <div class="icon">🔑</div>
@@ -595,40 +453,6 @@ export function renderProfileScreen(container) {
             </div>
         </div>
 
-        <!-- Key Management Modal (Handwritten design implementation) -->
-        <div class="key-modal-overlay" id="key-modal-overlay">
-            <div class="key-modal-content">
-                <h3>KEY MANAGEMENT</h3>
-                <div class="key-count-display" id="key-count-text">ပိုင်ဆိုင်သော Key အရေအတွက်: <b>${userKeyCount} ခု</b></div>
-
-                <div class="section-label">5vs5 Mode Keys</div>
-                <div class="mode-btn-grid" id="grid-5v5">
-                    <button class="mode-select-btn" data-mode="5vs5" data-val="5k" data-amount="5000">5k</button>
-                    <button class="mode-select-btn" data-mode="5vs5" data-val="10k" data-amount="10000">10k</button>
-                    <button class="mode-select-btn" data-mode="5vs5" data-val="15k" data-amount="15000">15k</button>
-                    <button class="mode-select-btn" data-mode="5vs5" data-val="25k" data-amount="25000">25k</button>
-                    <button class="mode-select-btn" data-mode="5vs5" data-val="50k" data-amount="50000">50k</button>
-                </div>
-
-                <div class="section-label">1vs1 Mode Keys</div>
-                <div class="mode-btn-grid" id="grid-1v1">
-                    <button class="mode-select-btn" data-mode="1vs1" data-val="5k" data-amount="5000">5k</button>
-                    <button class="mode-select-btn" data-mode="1vs1" data-val="10k" data-amount="10000">10k</button>
-                    <button class="mode-select-btn" data-mode="1vs1" data-val="15k" data-amount="15000">15k</button>
-                    <button class="mode-select-btn" data-mode="1vs1" data-val="25k" data-amount="25000">25k</button>
-                    <button class="mode-select-btn" data-mode="1vs1" data-val="50k" data-amount="50000">50k</button>
-                </div>
-
-                <div class="result-action-box" id="result-action-box" style="display: none;">
-                    <div class="result-text" id="result-message-text">ကျေးဇူးပြု၍ Mode တစ်ခုကို ရွေးချယ်ပါ</div>
-                    <button class="refund-action-btn" id="refund-btn">Refund</button>
-                </div>
-
-                <button class="close-key-modal" id="close-key-modal">ပိတ်မည်</button>
-            </div>
-        </div>
-
-        <!-- Trophy Zoom Modal Overlay -->
         <div class="trophy-zoom-modal" id="trophy-zoom-modal">
             <div class="trophy-zoom-content">
                 <div class="zoomed-trophy-container" id="zoomed-trophy-wrapper"></div>
@@ -656,7 +480,7 @@ export function renderProfileScreen(container) {
         });
     }
 
-    // Toggle & Modal Logic for Cube & Trophy Hidden Layout
+    // Toggle & Modal Logic for Cube & Trophy
     const profileMainWrapper = document.getElementById('profile-main-wrapper');
     const cyberCubeTrigger = document.getElementById('cyber-cube-trigger');
     const cyber3DBase = document.getElementById('cyber-3d-base');
@@ -719,58 +543,6 @@ export function renderProfileScreen(container) {
         e.target === zoomModal && zoomModal.classList.remove('active');
     });
 
-    // --- Key Button & Mode Box Popup Logic ---
-    const keyCardBtn = document.getElementById('key-card-btn');
-    const keyModalOverlay = document.getElementById('key-modal-overlay');
-    const closeKeyModal = document.getElementById('close-key-modal');
-    const modeSelectBtns = document.querySelectorAll('.mode-select-btn');
-    const resultActionBox = document.getElementById('result-action-box');
-    const resultMessageText = document.getElementById('result-message-text');
-    const refundBtn = document.getElementById('refund-btn');
-
-    let selectedModeData = null;
-
-    keyCardBtn.addEventListener('click', () => {
-        if (profileMainWrapper.classList.contains('trophy-active')) return;
-        keyModalOverlay.classList.add('active');
-    });
-
-    closeKeyModal.addEventListener('click', () => {
-        keyModalOverlay.classList.remove('active');
-    });
-
-    keyModalOverlay.addEventListener('click', (e) => {
-        if (e.target === keyModalOverlay) {
-            keyModalOverlay.classList.remove('active');
-        }
-    });
-
-    modeSelectBtns.forEach(btn => {
-        btn.addEventListener('click', () => {
-            modeSelectBtns.forEach(b => b.classList.remove('selected'));
-            btn.classList.add('selected');
-
-            const mode = btn.getAttribute('data-mode');
-            const val = btn.getAttribute('data-val');
-            const amount = btn.getAttribute('data-amount');
-
-            selectedModeData = { mode, val, amount };
-
-            // လက်ရေးနဲ့ပြထားတဲ့ ပုံစံအတိုင်း စာသားပေါ်လာစေရန်
-            resultMessageText.innerHTML = `${mode} mode ${val} အတွက် ငွေသား ${amount}ks ကို ပြန်လည်လွဲပေးပါမည်`;
-            resultActionBox.style.display = 'flex';
-        });
-    });
-
-    refundBtn.addEventListener('click', () => {
-        if (!selectedModeData) return;
-        
-        // Refund လုပ်တဲ့အခါ လုပ်ဆောင်မယ့် Logic (ဥပမာ- Alert ပြသခြင်း သို့မဟုတ် Key အရေအတွက် ပြန်ပေါင်းပေးခြင်း)
-        alert(`အောင်မြင်ပါသည်! ${selectedModeData.mode} (${selectedModeData.val}) အတွက် ငွေပမာဏ ${selectedModeData.amount}ks ကို Refund ပြန်လည်ထုတ်ပေးပြီးပါပြီ။`);
-        
-        // ပြီးရင် box ကို ပုံမှန်အခြေအနေပြန်ထားရန်
-        resultActionBox.style.display = 'none';
-        modeSelectBtns.forEach(b => b.classList.remove('selected'));
-        selectedModeData = null;
-    });
+    // Key Management ကို key.js မှ ခေါ်သုံးခြင်း
+    initKeyManagement();
 }
