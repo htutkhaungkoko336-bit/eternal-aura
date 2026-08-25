@@ -4,8 +4,8 @@ export function initKeyManagement() {
 
     let keyData = JSON.parse(localStorage.getItem('user_key_inventory')) || {
         modes: {
-            '5v5': { '5k': 3, '10k': 1, '15k': 0, '25k': 0, '50k': 0 },
-            '1v1': { '5k': 2, '10k': 0, '15k': 1, '25k': 0, '50k': 0 },
+            '5v5': { '5k': 30, '10k': 100, '15k': 200, '25k': 500, '50k': 50 },
+            '1v1': { '5k': 2, '10k': 50, '15k': 1000, '25k': 1500, '50k': 8000 },
             'tournament': { 'pass': 1 }
         }
     };
