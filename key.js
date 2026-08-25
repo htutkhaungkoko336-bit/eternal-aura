@@ -57,7 +57,7 @@ export function initKeyManagement() {
                 <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; border-bottom: 1px solid rgba(255, 255, 255, 0.1); padding-bottom: 10px;">
                     <div>
                         <h3 style="margin: 0; color: #38bdf8; font-size: 14px; letter-spacing: 0.5px; font-weight: 700;">KEY MANAGEMENT</h3>
-                        <p style="margin: 2px 0 0 0; font-size: 9.5px; color: #94a3b8;">Cyber & iOS Secure Vault</p>
+                        <p style="margin: 2px 0 0 0; font-size: 9.5px; color: #94a3b8;">Cyber  Secure Vault</p>
                     </div>
                     <div style="background: rgba(192, 132, 252, 0.15); border: 1px solid rgba(192, 132, 252, 0.4); padding: 5px 10px; border-radius: 10px; text-align: right;">
                         <div style="font-size: 8.5px; color: #d8b4fe; text-transform: uppercase; font-weight: 600;">TOTAL BALANCE</div>
