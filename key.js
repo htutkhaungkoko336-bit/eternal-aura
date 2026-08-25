@@ -46,6 +46,13 @@ export function initKeyManagement() {
                 transform: scale(0.85); transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
                 box-sizing: border-box; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;">
                 
+                <style>
+                    .custom-dropdown-option:hover {
+                        background-color: #334155 !important;
+                        color: #38bdf8 !important;
+                    }
+                </style>
+
                 <!-- Header -->
                 <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; border-bottom: 1px solid rgba(255, 255, 255, 0.1); padding-bottom: 10px;">
                     <div>
@@ -92,37 +99,68 @@ export function initKeyManagement() {
                     <!-- Single Row Layout for Inputs & Refund Button -->
                     <div style="display: flex; gap: 6px; align-items: center; margin-bottom: 8px;">
                         
-                        <!-- State A: Dropdowns Area -->
+                        <!-- State A: Custom Dropdowns Area -->
                         <div id="dropdowns-group" style="display: flex; gap: 6px; flex: 1;">
-                            <select id="refund-key-select" style="
-                                flex: 1.3; background: rgba(15, 23, 42, 0.95); border: 1px solid #334155;
-                                border-radius: 8px; color: #f8fafc; padding: 7px 6px; font-size: 10px; outline: none;">
-                                <option value="" disabled selected style="color: #64748b;">Select key...</option>
-                                ${generateDropdownOptions(keyData)}
-                            </select>
                             
-                            <select id="refund-qty-select" style="
-                                flex: 0.7; background: rgba(15, 23, 42, 0.95); border: 1px solid #334155;
-                                border-radius: 8px; color: #f8fafc; padding: 7px 6px; font-size: 10px; outline: none;">
-                                <option value="" disabled selected>Qty...</option>
-                            </select>
+                            <!-- 1. Key Select Custom Dropdown -->
+                            <div style="flex: 1.3; position: relative;">
+                                <div id="refund-key-btn" style="
+                                    display: flex; align-items: center; justify-content: space-between;
+                                    background: rgba(15, 23, 42, 0.95); border: 1px solid #334155;
+                                    border-radius: 8px; color: #f8fafc; padding: 7px 8px; font-size: 10px; cursor: pointer; box-sizing: border-box; height: 32px;">
+                                    <span id="refund-key-text" style="color: #64748b;">Select key...</span>
+                                    <span style="font-size: 8px; color: #94a3b8;">▼</span>
+                                </div>
+                                <div id="refund-key-modal" style="
+                                    display: none; position: absolute; bottom: 38px; left: 0; width: 100%;
+                                    background: #0f172a; border: 1px solid #334155; border-radius: 8px;
+                                    box-shadow: 0 10px 25px rgba(0,0,0,0.5); z-index: 100; max-height: 150px; overflow-y: auto;">
+                                    <div style="padding: 6px 8px; font-size: 9.5px; font-weight: 600; color: #94a3b8; border-bottom: 1px solid #1e293b;">Select key</div>
+                                    <div id="refund-key-options-container">
+                                        ${generateCustomDropdownOptions(keyData)}
+                                    </div>
+                                </div>
+                                <input type="hidden" id="refund-key-value">
+                            </div>
+
+                            <!-- 2. Qty Select Custom Dropdown -->
+                            <div style="flex: 0.7; position: relative;">
+                                <div id="refund-qty-btn" style="
+                                    display: flex; align-items: center; justify-content: space-between;
+                                    background: rgba(15, 23, 42, 0.95); border: 1px solid #334155;
+                                    border-radius: 8px; color: #f8fafc; padding: 7px 8px; font-size: 10px; cursor: pointer; box-sizing: border-box; height: 32px;">
+                                    <span id="refund-qty-text" style="color: #64748b;">Qty...</span>
+                                    <span style="font-size: 8px; color: #94a3b8;">▼</span>
+                                </div>
+                                <div id="refund-qty-modal" style="
+                                    display: none; position: absolute; bottom: 38px; left: 0; width: 100%;
+                                    background: #0f172a; border: 1px solid #334155; border-radius: 8px;
+                                    box-shadow: 0 10px 25px rgba(0,0,0,0.5); z-index: 100; max-height: 130px; overflow-y: auto;">
+                                    <div style="padding: 6px 8px; font-size: 9.5px; font-weight: 600; color: #94a3b8; border-bottom: 1px solid #1e293b;">Qty</div>
+                                    <div id="refund-qty-options-container">
+                                        <div style="padding: 6px 8px; font-size: 10px; color: #64748b;">Qty...</div>
+                                    </div>
+                                </div>
+                                <input type="hidden" id="refund-qty-value">
+                            </div>
+
                         </div>
 
                         <!-- State B: KPay Inputs Area (English Name & Digits Phone) -->
                         <div id="kpay-inputs-group" style="display: none; gap: 5px; flex: 1;">
                             <input type="text" id="kpay-name" lang="en" placeholder="KPay Name (Eng)" style="
                                 flex: 1; background: rgba(15, 23, 42, 0.95); border: 1px solid rgba(56, 189, 248, 0.6);
-                                border-radius: 8px; color: #f8fafc; padding: 7px 8px; font-size: 10px; outline: none; box-sizing: border-box;">
+                                border-radius: 8px; color: #f8fafc; padding: 7px 8px; font-size: 10px; outline: none; box-sizing: border-box; height: 32px;">
                             <input type="tel" id="kpay-phone" pattern="[0-9]*" inputmode="numeric" placeholder="KPay Phone (Digits)" style="
                                 flex: 1; background: rgba(15, 23, 42, 0.95); border: 1px solid rgba(56, 189, 248, 0.6);
-                                border-radius: 8px; color: #f8fafc; padding: 7px 8px; font-size: 10px; outline: none; box-sizing: border-box;">
+                                border-radius: 8px; color: #f8fafc; padding: 7px 8px; font-size: 10px; outline: none; box-sizing: border-box; height: 32px;">
                         </div>
 
                         <!-- Refund Button -->
                         <button id="execute-refund-btn" style="
                             background: linear-gradient(135deg, #ef4444, #dc2626); border: none;
                             border-radius: 8px; color: white; padding: 7px 14px; font-size: 11px;
-                            font-weight: bold; cursor: pointer; white-space: nowrap;
+                            font-weight: bold; cursor: pointer; white-space: nowrap; height: 32px;
                             box-shadow: 0 0 10px rgba(239, 68, 68, 0.4);">
                             Refund
                         </button>
@@ -151,8 +189,20 @@ export function initKeyManagement() {
     const modalContent = modalOverlay.querySelector('.key-modal-content');
     const dropdownsGroup = document.getElementById('dropdowns-group');
     const kpayInputsGroup = document.getElementById('kpay-inputs-group');
-    const refundKeySelect = document.getElementById('refund-key-select');
-    const refundQtySelect = document.getElementById('refund-qty-select');
+    
+    // Custom Dropdown Elements
+    const refundKeyBtn = document.getElementById('refund-key-btn');
+    const refundKeyModal = document.getElementById('refund-key-modal');
+    const refundKeyText = document.getElementById('refund-key-text');
+    const refundKeyValue = document.getElementById('refund-key-value');
+    const refundKeyOptionsContainer = document.getElementById('refund-key-options-container');
+
+    const refundQtyBtn = document.getElementById('refund-qty-btn');
+    const refundQtyModal = document.getElementById('refund-qty-modal');
+    const refundQtyText = document.getElementById('refund-qty-text');
+    const refundQtyValue = document.getElementById('refund-qty-value');
+    const refundQtyOptionsContainer = document.getElementById('refund-qty-options-container');
+
     const refundInfoText = document.getElementById('refund-info-text');
     const kpayNameInput = document.getElementById('kpay-name');
     const kpayPhoneInput = document.getElementById('kpay-phone');
@@ -175,36 +225,80 @@ export function initKeyManagement() {
         if (e.target === modalOverlay) closeModal();
     });
 
-    function generateDropdownOptions(data) {
+    // Toggle Key Dropdown
+    refundKeyBtn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        refundQtyModal.style.display = 'none';
+        refundKeyModal.style.display = refundKeyModal.style.display === 'block' ? 'none' : 'block';
+    });
+
+    // Toggle Qty Dropdown
+    refundQtyBtn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        refundKeyModal.style.display = 'none';
+        if (refundKeyValue.value) {
+            refundQtyModal.style.display = refundQtyModal.style.display === 'block' ? 'none' : 'block';
+        }
+    });
+
+    // Close dropdowns on outside click
+    document.addEventListener('click', () => {
+        refundKeyModal.style.display = 'none';
+        refundQtyModal.style.display = 'none';
+    });
+
+    function generateCustomDropdownOptions(data) {
         let options = '';
         ['5v5', '1v1'].forEach(mode => {
             for (let type in data.modes[mode]) {
                 let count = data.modes[mode][type] || 0;
                 if (count > 0) {
-                    options += `<option value="${mode}_${type}">${mode.toUpperCase()} - ${type.toUpperCase()} (${count} pcs)</option>`;
+                    options += `<div class="custom-dropdown-option" data-value="${mode}_${type}" style="padding: 7px 10px; font-size: 10px; color: white; cursor: pointer;">${mode.toUpperCase()} - ${type.toUpperCase()} (${count} pcs)</div>`;
                 }
             }
         });
-        return options;
+        return options || `<div style="padding: 7px 10px; font-size: 10px; color: #64748b;">No keys available</div>`;
     }
 
-    refundKeySelect.addEventListener('change', () => {
-        const val = refundKeySelect.value;
-        if (!val) return;
+    // Attach event listener for custom key options using event delegation
+    refundKeyOptionsContainer.addEventListener('click', (e) => {
+        const option = e.target.closest('.custom-dropdown-option');
+        if (!option) return;
+        const val = option.getAttribute('data-value');
+        refundKeyValue.value = val;
+        refundKeyText.textContent = option.textContent;
+        refundKeyText.style.color = '#f8fafc';
+        refundKeyModal.style.display = 'none';
+
         const [mode, type] = val.split('_');
         const maxCount = keyData.modes[mode][type];
         
-        let qtyOptions = '<option value="" disabled selected>Qty...</option>';
+        let qtyOptions = '';
         for (let i = 1; i <= maxCount; i++) {
-            qtyOptions += `<option value="${i}">${i} pcs</option>`;
+            qtyOptions += `<div class="custom-dropdown-option" data-value="${i}" style="padding: 7px 10px; font-size: 10px; color: white; cursor: pointer;">${i} pcs</div>`;
         }
-        refundQtySelect.innerHTML = qtyOptions;
+        refundQtyOptionsContainer.innerHTML = qtyOptions;
+        
+        // Reset Qty selection when key changes
+        refundQtyValue.value = '';
+        refundQtyText.textContent = 'Qty...';
+        refundQtyText.style.color = '#64748b';
+
         updateInfoText();
     });
 
-    refundQtySelect.addEventListener('change', () => {
+    // Attach event listener for custom qty options using event delegation
+    refundQtyOptionsContainer.addEventListener('click', (e) => {
+        const option = e.target.closest('.custom-dropdown-option');
+        if (!option) return;
+        const val = option.getAttribute('data-value');
+        refundQtyValue.value = val;
+        refundQtyText.textContent = option.textContent;
+        refundQtyText.style.color = '#f8fafc';
+        refundQtyModal.style.display = 'none';
+
         updateInfoText();
-        if (refundKeySelect.value && refundQtySelect.value) {
+        if (refundKeyValue.value && refundQtyValue.value) {
             dropdownsGroup.style.display = 'none';
             kpayInputsGroup.style.display = 'flex';
             kpayNameInput.focus();
@@ -216,7 +310,7 @@ export function initKeyManagement() {
         e.target.value = e.target.value.replace(/[^0-9]/g, '');
     });
 
-    // နာမည် နေရာတွင် အင်္ဂလိပ်စာ သီးသန့်သာ ရိုက်ထည့်နိုင်ရန် စစ်ဆေးခြင်း (မြန်မာစာ သို့မဟုတ် အခြားစာလုံးများပါလာပါက ဖယ်ရှားရန်)
+    // နာမည် နေရာတွင် အင်္ဂလိပ်စာ သီးသန့်သာ ရိုက်ထည့်နိုင်ရန် စစ်ဆေးခြင်း
     kpayNameInput.addEventListener('input', (e) => {
         e.target.value = e.target.value.replace(/[^a-zA-Z\s]/g, '');
     });
@@ -226,14 +320,19 @@ export function initKeyManagement() {
         kpayInputsGroup.style.display = 'none';
         kpayNameInput.value = '';
         kpayPhoneInput.value = '';
-        refundKeySelect.value = "";
-        refundQtySelect.innerHTML = `<option value="" disabled selected>Qty...</option>`;
+        refundKeyValue.value = "";
+        refundKeyText.textContent = "Select key...";
+        refundKeyText.style.color = '#64748b';
+        refundQtyValue.value = "";
+        refundQtyText.textContent = "Qty...";
+        refundQtyText.style.color = '#64748b';
+        refundQtyOptionsContainer.innerHTML = `<div style="padding: 6px 8px; font-size: 10px; color: #64748b;">Qty...</div>`;
         refundInfoText.innerText = "Please select a key and quantity to view refund details.";
     }
 
     function updateInfoText() {
-        const val = refundKeySelect.value;
-        const qty = parseInt(refundQtySelect.value);
+        const val = refundKeyValue.value;
+        const qty = parseInt(refundQtyValue.value);
         if (!val || !qty) {
             refundInfoText.innerText = "Please select a key and quantity to view refund details.";
             return;
@@ -264,8 +363,8 @@ export function initKeyManagement() {
     const executeRefundBtn = document.getElementById('execute-refund-btn');
 
     executeRefundBtn.addEventListener('click', () => {
-        const selectedVal = refundKeySelect.value;
-        const qty = parseInt(refundQtySelect.value);
+        const selectedVal = refundKeyValue.value;
+        const qty = parseInt(refundQtyValue.value);
         const kpayName = kpayNameInput.value.trim();
         const kpayPhone = kpayPhoneInput.value.trim();
 
@@ -300,7 +399,7 @@ export function initKeyManagement() {
         document.getElementById('vault-total-balance').innerText = calculateTotalBalance(data).toLocaleString() + ' Ks';
         document.getElementById('grid-5v5').innerHTML = renderKeys('5v5', ['5k', '10k', '15k', '25k', '50k'], data);
         document.getElementById('grid-1v1').innerHTML = renderKeys('1v1', ['5k', '10k', '15k', '25k', '50k'], data);
-        refundKeySelect.innerHTML = `<option value="" disabled selected style="color: #64748b;">Select key...</option>` + generateDropdownOptions(data);
+        refundKeyOptionsContainer.innerHTML = generateCustomDropdownOptions(data);
         resetToDropdownState();
     }
 }
