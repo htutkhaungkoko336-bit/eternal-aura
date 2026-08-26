@@ -20,9 +20,22 @@ document.addEventListener('DOMContentLoaded', () => {
     // လိုအပ်ပါက Authentication ကို စတင်ရန်
     if (typeof initAuth === 'function' && formContent) {
         initAuth(formContent, (data) => {
-            // အောင်မြင်သွားပါက handleLoginSuccess သို့ ဒေတာပို့မည်
             handleLoginSuccess(data);
         });
+    }
+
+    // [အသစ်ထည့်ရန်] Refresh လုပ်လျှင် Polling ဆက်လုပ်ရန် စစ်ဆေးခြင်း
+    const savedPolling = localStorage.getItem('active_polling');
+    if (savedPolling) {
+        try {
+            const { registrationId, userId, mode } = JSON.parse(savedPolling);
+            if (registrationId && userId && mode) {
+                // notification.js ထဲက function ကို ဒီနေရာကနေ ခေါ်သုံးနိုင်ရန် (သို့မဟုတ် notification.js ထဲမှာတင် checkStoredPollingState ကို run ပေးရန်)
+                startCheckingStatus(registrationId, userId, mode);
+            }
+        } catch (e) {
+            console.error("Polling state parse error:", e);
+        }
     }
 
     // Mode မျက်နှာပြင်ကို စတင်ပြသရန်
@@ -30,7 +43,6 @@ document.addEventListener('DOMContentLoaded', () => {
         renderModeScreen(appContent);
     }
 });
-
 // Login သို့မဟုတ် Register အောင်မြင်သွားပါက Home Screen နှင့် Mode Screen ကိုပါ ပူးတွဲပြသရန်
 function handleLoginSuccess(data) {
     localStorage.setItem('userName', data.name || "User");
