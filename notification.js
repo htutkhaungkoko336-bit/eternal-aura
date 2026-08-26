@@ -144,6 +144,9 @@ function renderNotificationCards(container, notifications) {
 function startCheckingStatus(registrationId, userId, mode) {
     const intervalTime = 5000; // ၅ စက္ကန့်တစ်ကြိမ်
 
+    // Active ဖြစ်နေကြောင်း LocalStorage ထဲ မှတ်ထားမည် (Refresh လုပ်ရင် ပြန်ဖတ်လို့ရအောင်)
+    localStorage.setItem('active_polling', JSON.stringify({ registrationId, userId, mode }));
+
     const timer = setInterval(async () => {
         try {
             const response = await fetch(`/api/check-status?registrationId=${registrationId}&userId=${userId}&mode=${mode}`);
@@ -153,17 +156,34 @@ function startCheckingStatus(registrationId, userId, mode) {
                 if (result.status === 'CONFIRMED') {
                     addNotification("Registration Confirmed! 🎉", "Admin က မင်းရဲ့ Register ကို Confirm ပေးလိုက်ပါပြီ။ Key ရရှိသွားပါပြီ။");
                     clearInterval(timer); 
+                    localStorage.removeItem('active_polling'); // ပြီးသွားရင် LocalStorage ကနေ ဖြတ်မည်
                 } else if (result.status === 'REJECTED') {
-                    // Database ထဲကပါလာတဲ့ rejectionReason ကို ထည့်ပြပေးမည် (မပါလာရင် အထွေထွေအကြောင်းပြချက်ပြမည်)
                     const reason = result.rejectionReason || "အခြားအကြောင်းပြချက်ဖြင့် ပယ်ချပါသည်";
                     addNotification("Registration Rejected ❌", `တောင်းပန်ပါတယ်၊ မင်းရဲ့ Register ကို Reject လိုက်ပါတယ်။\n\n📝 အကြောင်းရင်း: ${reason}`);
                     clearInterval(timer); 
+                    localStorage.removeItem('active_polling'); // ပြီးသွားရင် LocalStorage ကနေ ဖြတ်မည်
                 }
             }
         } catch (error) {
             console.error("Polling error:", error);
         }
     }, intervalTime);
+}
+
+// Page Refresh လုပ်၍ App ပြန်စချိန်တွင် Polling ကို အလိုအလျောက် ပြန်စတင်ပေးရန်
+export function initAutoPolling() {
+    const savedPolling = localStorage.getItem('active_polling');
+    if (savedPolling) {
+        try {
+            const { registrationId, userId, mode } = JSON.parse(savedPolling);
+            if (registrationId && userId && mode) {
+                console.log("Restoring polling after page refresh...");
+                startCheckingStatus(registrationId, userId, mode);
+            }
+        } catch (e) {
+            console.error("Error restoring polling:", e);
+        }
+    }
 }
 
 // ==========================================
@@ -185,7 +205,6 @@ export async function submitUserRegistration(mode, formData, currentUserId, feed
         });
         const result = await response.json();
 
-        // Server က ဘာ Response ပို့လိုက်လဲ Console မှာ အရင်စစ်မယ်
         console.log("API Register Response:", result);
 
         if (result.success) {
@@ -194,13 +213,11 @@ export async function submitUserRegistration(mode, formData, currentUserId, feed
                 feedbackElement.style.color = "#22c55e"; 
             }
             
-            // ချက်ချင်း Noti တက်ခိုင်းမည်
             addNotification(
                 `${mode.toUpperCase()} Registration Submitted`, 
                 "မင်းရဲ့ Register တင်ထားမှု အောင်မြင်ပါတယ်။ Admin ဘက်က အတည်ပြုပေးသည်အထိ ခေတ္တစောင့်ဆိုင်းပေးပါ။"
             );
 
-            // Registration ID သေချာပါလာမလာ စစ်မယ် (Server က registrationId ပို့ပေးသလို တချို့နေရာမှာ id ဖြစ်နေရင်လည်း ယူလို့ရအောင်)
             const regId = result.registrationId || result.id;
             console.log("Extracted Registration ID:", regId);
 
