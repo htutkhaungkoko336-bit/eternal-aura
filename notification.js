@@ -186,11 +186,14 @@ export function initAutoPolling() {
     }
 }
 
-// 💡 အဓိက အပြောင်းအလဲ: File Load ဖြစ်တာနဲ့ ဒီကနေ တစ်ခါတည်း အလိုအလျောက် ခေါ်လိုက်ပါမည်
+// ဖိုင်ရဲ့ အောက်ဆုံးမှာ ဒီအတိုင်း ထည့်ပေးပါ 👇
 if (typeof window !== 'undefined') {
-    window.addEventListener('DOMContentLoaded', () => {
-        initAutoPolling();
-    });
+    // Page load ဖြစ်တာနဲ့ (သို့မဟုတ်) DOMContentLoaded ပြီးသွားရင်တောင် အလုပ်လုပ်စေရန်
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', initAutoPolling);
+    } else {
+        initAutoPolling(); // DOMContentLoaded ပြီးသွားရင်တောင် တိုက်ရိုက် Run ပေးမည်
+    }
 }
 // ==========================================
 // 3. Registration Submission 
