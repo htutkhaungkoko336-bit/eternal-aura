@@ -1,40 +1,14 @@
-export function initKeyManagement(backendUserData = null) {
+export function initKeyManagement() {
     const keyCardBtn = document.getElementById('key-card-btn');
     if (!keyCardBtn) return;
 
-    // Default or LocalStorage fallback
-    let defaultKeyData = {
+    let keyData = JSON.parse(localStorage.getItem('user_key_inventory_v2')) || {
         modes: {
-            '5v5': { '5k': 0, '10k': 0, '15k': 0, '25k': 0, '50k': 0 },
-            '1v1': { '5k': 0, '10k': 0, '15k': 0, '25k': 0, '50k': 0 },
-            'tournament': { 'pass': 0 }
+            '5v5': { '5k': 30, '10k': 100, '15k': 200, '25k': 500, '50k': 40 },
+            '1v1': { '5k': 2, '10k': 50, '15k': 1000, '25k': 1500, '50k': 8000 },
+            'tournament': { 'pass': 1 }
         }
     };
-
-    let keyData = JSON.parse(localStorage.getItem('user_key_inventory_v2')) || defaultKeyData;
-
-    // အကယ်၍ Firebase / Backend ဘက်မှ data အသစ်ပါလာလျှင် keyData သို့ ပုံစံမှန်ထည့်သွင်းပေးမည်
-    if (backendUserData && backendUserData.keys) {
-        // Backend keys format (ဥပမာ - "1vs1-50k": 1, "5v5-5k": 30 စသည်ဖြင့် လာသည်ကို mapping လုပ်ခြင်း)
-        const bkKeys = backendUserData.keys;
-        
-        keyData.modes['1v1']['5k'] = bkKeys['1vs1-5k'] ?? keyData.modes['1v1']['5k'];
-        keyData.modes['1v1']['10k'] = bkKeys['1vs1-10k'] ?? keyData.modes['1v1']['10k'];
-        keyData.modes['1v1']['15k'] = bkKeys['1vs1-15k'] ?? keyData.modes['1v1']['15k'];
-        keyData.modes['1v1']['25k'] = bkKeys['1vs1-25k'] ?? keyData.modes['1v1']['25k'];
-        keyData.modes['1v1']['50k'] = bkKeys['1vs1-50k'] ?? keyData.modes['1v1']['50k'];
-
-        keyData.modes['5v5']['5k'] = bkKeys['5v5-5k'] ?? keyData.modes['5v5']['5k'];
-        keyData.modes['5v5']['10k'] = bkKeys['5v5-10k'] ?? keyData.modes['5v5']['10k'];
-        keyData.modes['5v5']['15k'] = bkKeys['5v5-15k'] ?? keyData.modes['5v5']['15k'];
-        keyData.modes['5v5']['25k'] = bkKeys['5v5-25k'] ?? keyData.modes['5v5']['25k'];
-        keyData.modes['5v5']['50k'] = bkKeys['5v5-50k'] ?? keyData.modes['5v5']['50k'];
-
-        keyData.modes['tournament']['pass'] = bkKeys['tournament'] ?? keyData.modes['tournament']['pass'];
-
-        // LocalStorage ထဲပါ တစ်ခါတည်း သိမ်းဆည်းပေးမည်
-        localStorage.setItem('user_key_inventory_v2', JSON.stringify(keyData));
-    }
 
     function getKeyValues(type) {
         switch(type) {
@@ -83,7 +57,7 @@ export function initKeyManagement(backendUserData = null) {
                 <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; border-bottom: 1px solid rgba(255, 255, 255, 0.1); padding-bottom: 10px;">
                     <div>
                         <h3 style="margin: 0; color: #38bdf8; font-size: 14px; letter-spacing: 0.5px; font-weight: 700;">KEY MANAGEMENT</h3>
-                        <p style="margin: 2px 0 0 0; font-size: 9.5px; color: #94a3b8;">Cyber Secure Vault</p>
+                        <p style="margin: 2px 0 0 0; font-size: 9.5px; color: #94a3b8;">Cyber  Secure Vault</p>
                     </div>
                     <div style="background: rgba(192, 132, 252, 0.15); border: 1px solid rgba(192, 132, 252, 0.4); padding: 5px 10px; border-radius: 10px; text-align: right;">
                         <div style="font-size: 8.5px; color: #d8b4fe; text-transform: uppercase; font-weight: 600;">TOTAL BALANCE</div>
@@ -122,10 +96,13 @@ export function initKeyManagement(backendUserData = null) {
                 <div id="refund-card-container" style="background: rgba(30, 41, 59, 0.6); border: 1px solid rgba(56, 189, 248, 0.25); border-radius: 16px; padding: 12px; margin-bottom: 12px;">
                     <div style="font-size: 11px; font-weight: bold; color: #38bdf8; margin-bottom: 8px;">Key Refund System</div>
                     
+                    <!-- Single Row Layout for Inputs & Refund Button -->
                     <div style="display: flex; gap: 6px; align-items: center; margin-bottom: 8px;">
                         
+                        <!-- State A: Custom Dropdowns Area -->
                         <div id="dropdowns-group" style="display: flex; gap: 6px; flex: 1;">
                             
+                            <!-- 1. Key Select Custom Dropdown -->
                             <div style="flex: 1.3; position: relative;">
                                 <div id="refund-key-btn" style="
                                     display: flex; align-items: center; justify-content: space-between;
@@ -146,6 +123,7 @@ export function initKeyManagement(backendUserData = null) {
                                 <input type="hidden" id="refund-key-value">
                             </div>
 
+                            <!-- 2. Qty Select Custom Dropdown -->
                             <div style="flex: 0.7; position: relative;">
                                 <div id="refund-qty-btn" style="
                                     display: flex; align-items: center; justify-content: space-between;
@@ -168,6 +146,7 @@ export function initKeyManagement(backendUserData = null) {
 
                         </div>
 
+                        <!-- State B: KPay Inputs Area (English Name & Digits Phone) -->
                         <div id="kpay-inputs-group" style="display: none; gap: 5px; flex: 1;">
                             <input type="text" id="kpay-name" lang="en" placeholder="KPay Name (Eng)" style="
                                 flex: 1; background: rgba(15, 23, 42, 0.95); border: 1px solid rgba(56, 189, 248, 0.6);
@@ -177,6 +156,7 @@ export function initKeyManagement(backendUserData = null) {
                                 border-radius: 8px; color: #f8fafc; padding: 7px 8px; font-size: 10px; outline: none; box-sizing: border-box; height: 32px;">
                         </div>
 
+                        <!-- Refund Button -->
                         <button id="execute-refund-btn" style="
                             background: linear-gradient(135deg, #ef4444, #dc2626); border: none;
                             border-radius: 8px; color: white; padding: 7px 14px; font-size: 11px;
@@ -186,6 +166,7 @@ export function initKeyManagement(backendUserData = null) {
                         </button>
                     </div>
 
+                    <!-- Info Banner -->
                     <div id="refund-info-text" style="font-size: 10px; color: #94a3b8; line-height: 1.3;">
                         Please select a key and quantity to view refund details.
                     </div>
@@ -209,6 +190,7 @@ export function initKeyManagement(backendUserData = null) {
     const dropdownsGroup = document.getElementById('dropdowns-group');
     const kpayInputsGroup = document.getElementById('kpay-inputs-group');
     
+    // Custom Dropdown Elements
     const refundKeyBtn = document.getElementById('refund-key-btn');
     const refundKeyModal = document.getElementById('refund-key-modal');
     const refundKeyText = document.getElementById('refund-key-text');
@@ -243,12 +225,14 @@ export function initKeyManagement(backendUserData = null) {
         if (e.target === modalOverlay) closeModal();
     });
 
+    // Toggle Key Dropdown
     refundKeyBtn.addEventListener('click', (e) => {
         e.stopPropagation();
         refundQtyModal.style.display = 'none';
         refundKeyModal.style.display = refundKeyModal.style.display === 'block' ? 'none' : 'block';
     });
 
+    // Toggle Qty Dropdown
     refundQtyBtn.addEventListener('click', (e) => {
         e.stopPropagation();
         refundKeyModal.style.display = 'none';
@@ -257,6 +241,7 @@ export function initKeyManagement(backendUserData = null) {
         }
     });
 
+    // Close dropdowns on outside click
     document.addEventListener('click', () => {
         refundKeyModal.style.display = 'none';
         refundQtyModal.style.display = 'none';
@@ -275,6 +260,7 @@ export function initKeyManagement(backendUserData = null) {
         return options || `<div style="padding: 7px 10px; font-size: 10px; color: #64748b;">No keys available</div>`;
     }
 
+    // Attach event listener for custom key options using event delegation
     refundKeyOptionsContainer.addEventListener('click', (e) => {
         const option = e.target.closest('.custom-dropdown-option');
         if (!option) return;
@@ -293,6 +279,7 @@ export function initKeyManagement(backendUserData = null) {
         }
         refundQtyOptionsContainer.innerHTML = qtyOptions;
         
+        // Reset Qty selection when key changes
         refundQtyValue.value = '';
         refundQtyText.textContent = 'Qty...';
         refundQtyText.style.color = '#64748b';
@@ -300,6 +287,7 @@ export function initKeyManagement(backendUserData = null) {
         updateInfoText();
     });
 
+    // Attach event listener for custom qty options using event delegation
     refundQtyOptionsContainer.addEventListener('click', (e) => {
         const option = e.target.closest('.custom-dropdown-option');
         if (!option) return;
@@ -317,10 +305,12 @@ export function initKeyManagement(backendUserData = null) {
         }
     });
 
+    // ဖုန်းနံပါတ် နေရာတွင် ဂဏန်း (Digits) သီးသန့်သာ ရိုက်ထည့်နိုင်ရန် စစ်ဆေးခြင်း
     kpayPhoneInput.addEventListener('input', (e) => {
         e.target.value = e.target.value.replace(/[^0-9]/g, '');
     });
 
+    // နာမည် နေရာတွင် အင်္ဂလိပ်စာ သီးသန့်သာ ရိုက်ထည့်နိုင်ရန် စစ်ဆေးခြင်း
     kpayNameInput.addEventListener('input', (e) => {
         e.target.value = e.target.value.replace(/[^a-zA-Z\s]/g, '');
     });

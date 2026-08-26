@@ -1,7 +1,7 @@
 // main.js
 import { initAuth } from './auth.js';
 import { renderModeScreen } from './mode.js';
-import { addNotification, renderNotificationScreen, startCheckingStatus } from './notification.js';
+import { addNotification, renderNotificationScreen } from './notification.js';
 import { renderProfileScreen } from './profile.js';
 
 // DOM Elements များကို ရယူခြင်း
@@ -20,46 +20,9 @@ document.addEventListener('DOMContentLoaded', () => {
     // လိုအပ်ပါက Authentication ကို စတင်ရန်
     if (typeof initAuth === 'function' && formContent) {
         initAuth(formContent, (data) => {
+            // အောင်မြင်သွားပါက handleLoginSuccess သို့ ဒေတာပို့မည်
             handleLoginSuccess(data);
         });
-    }
-
-    // [အသစ်ထည့်ရန်] Refresh လုပ်လျှင် Polling ဆက်လုပ်ရန် နှင့် Status ချက်ချင်းစစ်ဆေးခြင်း
-    const savedPolling = localStorage.getItem('active_polling');
-    if (savedPolling) {
-        try {
-            const { registrationId, userId, mode } = JSON.parse(savedPolling);
-            if (registrationId && userId && mode) {
-                
-                // ၁။ Refresh လုပ်လိုက်တာနဲ့ အရင်ဆုံး Status ကို တစ်ခါ ချက်ချင်း လှမ်းစစ်မည်
-                fetch(`/api/check-status?registrationId=${registrationId}&userId=${userId}&mode=${mode}`)
-                    .then(res => res.json())
-                    .then(result => {
-                        if (result.success) {
-                            if (result.status === 'CONFIRMED') {
-                                addNotification("Registration Confirmed! 🎉", "Admin က မင်းရဲ့ Register ကို Confirm ပေးလိုက်ပါပြီ။ Key ရရှိသွားပါပြီ။");
-                                localStorage.removeItem('active_polling');
-                                return; // ပြီးသွားပြီမို့ Polling ဆက်စရာမလိုတော့ပါ
-                            } else if (result.status === 'REJECTED') {
-                                const reason = result.rejectionReason || "အခြားအကြောင်းပြချက်ဖြင့် ပယ်ချပါသည်";
-                                addNotification("Registration Rejected ❌", `တောင်းပန်ပါတယ်၊ မင်းရဲ့ Register ကို Reject လိုက်ပါတယ်။\n\n📝 အကြောင်းရင်း: ${reason}`);
-                                localStorage.removeItem('active_polling');
-                                return;
-                            }
-                        }
-                        // ၂။ အကယ်၍ Pending ဖြစ်နေဆဲဆိုမှသာ Polling ကို ဆက်လုပ်ရန် ပြန်စမည်
-                        startCheckingStatus(registrationId, userId, mode);
-                    })
-                    .catch(err => {
-                        console.error("Refresh status check error:", err);
-                        // Network error ဖြစ်ရင်တောင် Polling ကို ဆက်စမ်းခိုင်းထားမည်
-                        startCheckingStatus(registrationId, userId, mode);
-                    });
-
-            }
-        } catch (e) {
-            console.error("Polling state parse error:", e);
-        }
     }
 
     // Mode မျက်နှာပြင်ကို စတင်ပြသရန်

@@ -140,9 +140,8 @@ function renderNotificationCards(container, notifications) {
 // ==========================================
 // 2. Status Polling (5 စက္ကန့်တစ်ကြိမ် လှမ်းစစ်ပေးမည့် Function)
 // ==========================================
-export function startCheckingStatus(registrationId, userId, mode) {
-    localStorage.setItem('active_polling', JSON.stringify({ registrationId, userId, mode }));
 
+function startCheckingStatus(registrationId, userId, mode) {
     const intervalTime = 5000; // ၅ စက္ကန့်တစ်ကြိမ်
 
     const timer = setInterval(async () => {
@@ -154,43 +153,19 @@ export function startCheckingStatus(registrationId, userId, mode) {
                 if (result.status === 'CONFIRMED') {
                     addNotification("Registration Confirmed! 🎉", "Admin က မင်းရဲ့ Register ကို Confirm ပေးလိုက်ပါပြီ။ Key ရရှိသွားပါပြီ။");
                     clearInterval(timer); 
-                    localStorage.removeItem('active_polling'); // ပြီးဆုံးပါက ဖယ်ရှားမည်
                 } else if (result.status === 'REJECTED') {
+                    // Database ထဲကပါလာတဲ့ rejectionReason ကို ထည့်ပြပေးမည် (မပါလာရင် အထွေထွေအကြောင်းပြချက်ပြမည်)
                     const reason = result.rejectionReason || "အခြားအကြောင်းပြချက်ဖြင့် ပယ်ချပါသည်";
                     addNotification("Registration Rejected ❌", `တောင်းပန်ပါတယ်၊ မင်းရဲ့ Register ကို Reject လိုက်ပါတယ်။\n\n📝 အကြောင်းရင်း: ${reason}`);
                     clearInterval(timer); 
-                    localStorage.removeItem('active_polling'); // ပြီးဆုံးပါက ဖယ်ရှားမည်
                 }
             }
         } catch (error) {
             console.error("Polling error:", error);
         }
     }, intervalTime);
-
-    // Tab ပြောင်းသွားခြင်း (Visibility Change) သို့မဟုတ် Screen ပြန်ဖွင့်လာသည့်အခါ ချက်ချင်း တစ်ခါ API လှမ်းခေါ်စစ်ဆေးရန်
-    document.addEventListener('visibilitychange', async () => {
-        if (document.visibilityState === 'visible') {
-            console.log("Tab is active again, checking status immediately...");
-            // ချက်ချင်း တစ်ခါ စစ်ဆေးမည်
-            try {
-                const response = await fetch(`/api/check-status?registrationId=${registrationId}&userId=${userId}&mode=${mode}`);
-                const result = await response.json();
-                if (result.success && (result.status === 'CONFIRMED' || result.status === 'REJECTED')) {
-                    if (result.status === 'CONFIRMED') {
-                        addNotification("Registration Confirmed! 🎉", "Admin က မင်းရဲ့ Register ကို Confirm ပေးလိုက်ပါပြီ။ Key ရရှိသွားပါပြီ။");
-                    } else {
-                        const reason = result.rejectionReason || "အခြားအကြောင်းပြချက်ဖြင့် ပယ်ချပါသည်";
-                        addNotification("Registration Rejected ❌", `တောင်းပန်ပါတယ်၊ မင်းရဲ့ Register ကို Reject လိုက်ပါတယ်။\n\n📝 အကြောင်းရင်း: ${reason}`);
-                    }
-                    clearInterval(timer);
-                    localStorage.removeItem('active_polling');
-                }
-            } catch (err) {
-                console.error("Visibility change check error:", err);
-            }
-        }
-    });
 }
+
 // ==========================================
 // 3. Registration Submission 
 // ==========================================
