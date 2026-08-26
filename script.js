@@ -1,7 +1,7 @@
 // main.js
 import { initAuth } from './auth.js';
 import { renderModeScreen } from './mode.js';
-import { addNotification, renderNotificationScreen, initAutoPolling } from './notification.js'; // ဒီမှာ initAutoPolling ထည့် import မယ်
+import { addNotification, renderNotificationScreen } from './notification.js'; // initAutoPolling ကို ဖြုတ်လိုက်ပါပြီ
 import { renderProfileScreen } from './profile.js';
 
 // DOM Elements များကို ရယူခြင်း
@@ -17,8 +17,7 @@ if (formContent) {
 }
 
 document.addEventListener('DOMContentLoaded', () => {
-    // 💡 အဓိက - App စဖွင့်တာနဲ့ (Refresh လုပ်လိုက်ရင်တောင်) Polling ပြန်စဖို့ ဒီမှာ ထည့်ခေါ်ပါ 👇
-    initAutoPolling();
+    // initAutoPolling(); ကို ဒီနေရာမှာ ဖြုတ်လိုက်ပါပြီ (notification.js ထဲမှာ ကိုယ်တိုင် အော်တို run ပါလိမ့်မယ်)
 
     // လိုအပ်ပါက Authentication ကို စတင်ရန်
     if (typeof initAuth === 'function' && formContent) {
@@ -34,7 +33,6 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 });
 
-// (ကျန်တဲ့ handleLoginSuccess နဲ့ ကုဒ်တွေက ပုံမှန်အတိုင်း ဆက်ရှိနေပါမယ်...)
 // Login သို့မဟုတ် Register အောင်မြင်သွားပါက Home Screen နှင့် Mode Screen ကိုပါ ပူးတွဲပြသရန်
 function handleLoginSuccess(data) {
     localStorage.setItem('userName', data.name || "User");
