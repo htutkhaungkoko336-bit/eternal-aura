@@ -111,7 +111,7 @@ function renderNotificationCards(container, notifications) {
                 </div>
             </div>
             <div class="noti-body" style="max-height: 0; overflow: hidden; transition: max-height 0.3s ease; border-top: 1px dashed #334155; margin-top: 10px;">
-                <p style="color: #cbd5e1; font-size: 13px; padding-top: 10px;">${noti.message}</p>
+                <p style="color: #cbd5e1; font-size: 13px; padding-top: 10px; white-space: pre-line;">${noti.message}</p>
             </div>
         `;
 
@@ -133,7 +133,7 @@ function renderNotificationCards(container, notifications) {
 }
 
 // ==========================================
-// 2. Optimized Smart Global Polling (Tab Visible ဖြစ်မှသာ အလုပ်လုပ်မည်)
+// 2. Optimized Smart Global Polling (Mode & Fee ပါသော တစ်ခုတည်းသော Noti)
 // ==========================================
 
 let globalPollingTimer = null;
@@ -146,7 +146,6 @@ export function startSmartGlobalPolling(userId) {
     console.log("Smart Global Polling initialized for User ID:", userId);
 
     const runPolling = async () => {
-        // Tab ကို အမှန်တကယ် ကြည့်နေမှသာ (Visible ဖြစ်မှသာ) Server ကို Request ခေါ်မည်
         if (document.hidden) return; 
 
         try {
@@ -154,17 +153,26 @@ export function startSmartGlobalPolling(userId) {
             const result = await response.json();
 
             if (result.success) {
-                // Status ပြောင်းလဲမှုကို မှတ်သားရန် LocalStorage သို့မဟုတ် Window Variable သုံးခြင်း
                 const lastStatus = localStorage.getItem('last_known_status');
                 
                 if (result.status && result.status !== lastStatus) {
                     localStorage.setItem('last_known_status', result.status);
 
+                    const modeName = result.mode ? result.mode.toUpperCase() : "REGISTRATION";
+                    const feeAmount = result.fee || "5,500Ks"; // API မှ ပေးလိုက်သော Fee (သို့မဟုတ် Default)
+
                     if (result.status === 'CONFIRMED') {
-                        addNotification("Registration Confirmed! 🎉", "Admin က သင့်ရဲ့ Register ကို Confirm ပေးလိုက်ပါပြီ။ Key ရရှိသွားပါပြီ။");
+                        // 💡 အောက်က General Noti လုံးဝမပါတော့ဘဲ ဤ Mode ပါသော Noti တစ်ခုတည်းသာ တက်မည်
+                        addNotification(
+                            `${modeName} Mode Confirmed! 🎉`, 
+                            `${modeName} Mode fee ${feeAmount} အတွက် register တင်ပြမှုကို Admin မှ အတည်ပြုပေးလိုက်ပါပြီ။ Key ရရှိသွားပါပြီ။`
+                        );
                     } else if (result.status === 'REJECTED') {
                         const reason = result.rejectionReason || "အခြားအကြောင်းပြချက်ဖြင့် ပယ်ချပါသည်";
-                        addNotification("Registration Rejected ❌", `တောင်းပန်ပါတယ်၊ သင့်ရဲ့ Register ကို Reject လိုက်ပါတယ်။\n\n📝 အကြောင်းရင်း: ${reason}`);
+                        addNotification(
+                            `${modeName} Mode Rejected ❌`, 
+                            `တောင်းပန်ပါတယ်၊ ${modeName} Mode register ကို ပယ်ချလိုက်ပါတယ်။\n\n📝 အကြောင်းရင်း: ${reason}`
+                        );
                     }
                 }
             }
@@ -173,7 +181,6 @@ export function startSmartGlobalPolling(userId) {
         }
     };
 
-    // ပထမတစ်ကြိမ် ချက်ချင်းစစ်မည်၊ ပြီးရင် Interval စတင်မည်
     runPolling();
     globalPollingTimer = setInterval(runPolling, intervalTime);
 }

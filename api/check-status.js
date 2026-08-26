@@ -21,14 +21,18 @@ module.exports = async (req, res) => {
             return res.status(400).json({ success: false, message: 'Missing userId parameter' });
         }
 
-        // မျိုးစုံသော Mode Collection များကို စစ်ဆေးရန် (1vs1, 5vs5, tournament)
         const collections = ['1vs1_registrations', '5vs5_registrations', 'tournament_registrations'];
         let foundData = null;
+        let detectedMode = '1vs1';
 
         for (const colName of collections) {
             const snapshot = await db.collection(colName).where('userId', '==', userId).limit(1).get();
             if (!snapshot.empty) {
                 foundData = snapshot.docs[0].data();
+                // Collection နာမည်ပေါ်မူတည်ပြီး Mode ကို ခွဲထုတ်ခြင်း
+                if (colName.includes('5vs5')) detectedMode = '5vs5';
+                else if (colName.includes('tournament')) detectedMode = 'tournament';
+                else detectedMode = '1vs1';
                 break;
             }
         }
@@ -40,6 +44,8 @@ module.exports = async (req, res) => {
         return res.status(200).json({
             success: true,
             status: foundData.status, // 'PENDING', 'CONFIRMED', 'REJECTED'
+            mode: foundData.mode || detectedMode, // Mode အမည်
+            fee: foundData.fee || foundData.modeFee || '5,500Ks', // Fee ပမာဏ (အကယ်၍ DB ထဲမှာပါလျှင် ယူမည်၊ မပါက 5,500Ks သုံးမည်)
             rejectionReason: foundData.rejectionReason || null
         });
 
