@@ -170,14 +170,14 @@ function startCheckingStatus(registrationId, userId, mode) {
     }, intervalTime);
 }
 
-// Page Refresh လုပ်၍ App ပြန်စချိန်တွင် Polling ကို အလိုအလျောက် ပြန်စတင်ပေးရန်
+// Page Refresh လုပ်၍ App ပြန်စချိန်တွင် Polling ကို အလိုအလျောက် ပြန်စတင်ရန်
 export function initAutoPolling() {
     const savedPolling = localStorage.getItem('active_polling');
     if (savedPolling) {
         try {
             const { registrationId, userId, mode } = JSON.parse(savedPolling);
             if (registrationId && userId && mode) {
-                console.log("Restoring polling after page refresh...");
+                console.log("Restoring polling after page refresh for ID:", registrationId);
                 startCheckingStatus(registrationId, userId, mode);
             }
         } catch (e) {
@@ -186,6 +186,12 @@ export function initAutoPolling() {
     }
 }
 
+// 💡 အဓိက အပြောင်းအလဲ: File Load ဖြစ်တာနဲ့ ဒီကနေ တစ်ခါတည်း အလိုအလျောက် ခေါ်လိုက်ပါမည်
+if (typeof window !== 'undefined') {
+    window.addEventListener('DOMContentLoaded', () => {
+        initAutoPolling();
+    });
+}
 // ==========================================
 // 3. Registration Submission 
 // ==========================================
