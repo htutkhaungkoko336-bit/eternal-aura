@@ -140,8 +140,7 @@ function renderNotificationCards(container, notifications) {
 // ==========================================
 // 2. Status Polling (5 စက္ကန့်တစ်ကြိမ် လှမ်းစစ်ပေးမည့် Function)
 // ==========================================
-function startCheckingStatus(registrationId, userId, mode) {
-    // Active ဖြစ်နေကြောင်း LocalStorage တွင် သိမ်းဆည်းထားမည် (Refresh လုပ်လျှင် မပျောက်စေရန်)
+export function startCheckingStatus(registrationId, userId, mode) {
     localStorage.setItem('active_polling', JSON.stringify({ registrationId, userId, mode }));
 
     const intervalTime = 5000; // ၅ စက္ကန့်တစ်ကြိမ်
