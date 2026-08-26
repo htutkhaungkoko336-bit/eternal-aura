@@ -1,35 +1,36 @@
-export function initKeyManagement() {
+export function initKeyManagement(userDataFromBackend) {
     const keyCardBtn = document.getElementById('key-card-btn');
     if (!keyCardBtn) return;
 
-    let keyData = JSON.parse(localStorage.getItem('user_key_inventory_v2')) || {
-        modes: {
-            '5v5': { '5k': 30, '10k': 100, '15k': 200, '25k': 500, '50k': 40 },
-            '1v1': { '5k': 2, '10k': 50, '15k': 1000, '25k': 1500, '50k': 8000 },
-            'tournament': { 'pass': 1 }
-        }
+    // Backend ကနေ ဝင်လာတဲ့ user ရဲ့ keys များကို ယူသုံးမည် (မရှိလျှင် 0 ဖြင့် A စဉ်မည်)
+    let userKeys = userDataFromBackend?.keys || {
+        "1vs1-5k": 0, "1vs1-10k": 0, "1vs1-15k": 0, "1vs1-25k": 0, "1vs1-50k": 0,
+        "5vs5-5k": 0, "5vs5-10k": 0, "5vs5-15k": 0, "5vs5-25k": 0, "5vs5-50k": 0,
+        "tournament": 0
     };
 
-    function getKeyValues(type) {
-        switch(type) {
-            case '5k': return 5000;
-            case '10k': return 10000;
-            case '15k': return 15000;
-            case '25k': return 25000;
-            case '50k': return 50000;
-            default: return 0;
-        }
+    function getKeyValues(keyName) {
+        if (keyName.includes('5k')) return 5000;
+        if (keyName.includes('10k')) return 10000;
+        if (keyName.includes('15k')) return 15000;
+        if (keyName.includes('25k')) return 25000;
+        if (keyName.includes('50k')) return 50000;
+        return 0;
     }
 
-    function calculateTotalBalance(data) {
+    function calculateTotalBalance(keysObj) {
         let total = 0;
-        ['5v5', '1v1'].forEach(mode => {
-            for (let type in data.modes[mode]) {
-                total += (data.modes[mode][type] || 0) * getKeyValues(type);
-            }
-        });
+        for (let key in keysObj) {
+            if (key === 'tournament') continue;
+            total += (keysObj[key] || 0) * getKeyValues(key);
+        }
         return total;
     }
+
+    // Keys များကို 1vs1 နှင့် 5vs5 ဟူ၍ အလိုအလျောက် ခွဲထုတ်ရန်
+    const keys1vs1 = Object.keys(userKeys).filter(k => k.startsWith('1vs1'));
+    const keys5vs5 = Object.keys(userKeys).filter(k => k.startsWith('5vs5'));
+    const tournamentCount = userKeys['tournament'] || 0;
 
     const modalHTML = `
         <div class="key-modal-overlay" id="key-management-modal" style="
@@ -57,21 +58,13 @@ export function initKeyManagement() {
                 <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; border-bottom: 1px solid rgba(255, 255, 255, 0.1); padding-bottom: 10px;">
                     <div>
                         <h3 style="margin: 0; color: #38bdf8; font-size: 14px; letter-spacing: 0.5px; font-weight: 700;">KEY MANAGEMENT</h3>
-                        <p style="margin: 2px 0 0 0; font-size: 9.5px; color: #94a3b8;">Cyber  Secure Vault</p>
+                        <p style="margin: 2px 0 0 0; font-size: 9.5px; color: #94a3b8;">Cyber & iOS Secure Vault</p>
                     </div>
                     <div style="background: rgba(192, 132, 252, 0.15); border: 1px solid rgba(192, 132, 252, 0.4); padding: 5px 10px; border-radius: 10px; text-align: right;">
                         <div style="font-size: 8.5px; color: #d8b4fe; text-transform: uppercase; font-weight: 600;">TOTAL BALANCE</div>
                         <div style="font-size: 12px; color: #f8fafc; font-weight: bold;" id="vault-total-balance">
-                            ${calculateTotalBalance(keyData).toLocaleString()} Ks
+                            ${calculateTotalBalance(userKeys).toLocaleString()} Ks
                         </div>
-                    </div>
-                </div>
-
-                <!-- 5v5 Mode Keys -->
-                <div style="margin-bottom: 10px;">
-                    <div style="font-size: 10px; font-weight: 600; color: #38bdf8; margin-bottom: 4px; letter-spacing: 0.5px;">5v5 MODE KEYS</div>
-                    <div style="display: grid; grid-template-columns: repeat(5, 1fr); gap: 5px;" id="grid-5v5">
-                        ${renderKeys('5v5', ['5k', '10k', '15k', '25k', '50k'], keyData)}
                     </div>
                 </div>
 
@@ -79,7 +72,15 @@ export function initKeyManagement() {
                 <div style="margin-bottom: 10px;">
                     <div style="font-size: 10px; font-weight: 600; color: #38bdf8; margin-bottom: 4px; letter-spacing: 0.5px;">1v1 MODE KEYS</div>
                     <div style="display: grid; grid-template-columns: repeat(5, 1fr); gap: 5px;" id="grid-1v1">
-                        ${renderKeys('1v1', ['5k', '10k', '15k', '25k', '50k'], keyData)}
+                        ${renderKeys(keys1vs1, userKeys)}
+                    </div>
+                </div>
+
+                <!-- 5v5 Mode Keys -->
+                <div style="margin-bottom: 10px;">
+                    <div style="font-size: 10px; font-weight: 600; color: #38bdf8; margin-bottom: 4px; letter-spacing: 0.5px;">5v5 MODE KEYS</div>
+                    <div style="display: grid; grid-template-columns: repeat(5, 1fr); gap: 5px;" id="grid-5v5">
+                        ${renderKeys(keys5vs5, userKeys)}
                     </div>
                 </div>
 
@@ -88,7 +89,7 @@ export function initKeyManagement() {
                     <div style="font-size: 10px; font-weight: 600; color: #c084fc; margin-bottom: 4px; letter-spacing: 0.5px;">TOURNAMENT KEY</div>
                     <div style="background: rgba(30, 41, 59, 0.5); border: 1px solid rgba(192, 132, 252, 0.3); border-radius: 10px; padding: 6px 12px; display: flex; justify-content: space-between; align-items: center;">
                         <span style="font-size: 9.5px; color: #94a3b8;">Tournament Pass</span>
-                        <span style="font-size: 12px; font-weight: bold; color: #c084fc;">${keyData.modes.tournament.pass} pcs</span>
+                        <span style="font-size: 12px; font-weight: bold; color: #c084fc;" id="tournament-val-display">${tournamentCount} pcs</span>
                     </div>
                 </div>
 
@@ -96,7 +97,6 @@ export function initKeyManagement() {
                 <div id="refund-card-container" style="background: rgba(30, 41, 59, 0.6); border: 1px solid rgba(56, 189, 248, 0.25); border-radius: 16px; padding: 12px; margin-bottom: 12px;">
                     <div style="font-size: 11px; font-weight: bold; color: #38bdf8; margin-bottom: 8px;">Key Refund System</div>
                     
-                    <!-- Single Row Layout for Inputs & Refund Button -->
                     <div style="display: flex; gap: 6px; align-items: center; margin-bottom: 8px;">
                         
                         <!-- State A: Custom Dropdowns Area -->
@@ -117,7 +117,7 @@ export function initKeyManagement() {
                                     box-shadow: 0 10px 25px rgba(0,0,0,0.5); z-index: 100; max-height: 150px; overflow-y: auto;">
                                     <div style="padding: 6px 8px; font-size: 9.5px; font-weight: 600; color: #94a3b8; border-bottom: 1px solid #1e293b;">Select key</div>
                                     <div id="refund-key-options-container">
-                                        ${generateCustomDropdownOptions(keyData)}
+                                        ${generateCustomDropdownOptions(userKeys)}
                                     </div>
                                 </div>
                                 <input type="hidden" id="refund-key-value">
@@ -146,7 +146,7 @@ export function initKeyManagement() {
 
                         </div>
 
-                        <!-- State B: KPay Inputs Area (English Name & Digits Phone) -->
+                        <!-- State B: KPay Inputs Area -->
                         <div id="kpay-inputs-group" style="display: none; gap: 5px; flex: 1;">
                             <input type="text" id="kpay-name" lang="en" placeholder="KPay Name (Eng)" style="
                                 flex: 1; background: rgba(15, 23, 42, 0.95); border: 1px solid rgba(56, 189, 248, 0.6);
@@ -190,7 +190,6 @@ export function initKeyManagement() {
     const dropdownsGroup = document.getElementById('dropdowns-group');
     const kpayInputsGroup = document.getElementById('kpay-inputs-group');
     
-    // Custom Dropdown Elements
     const refundKeyBtn = document.getElementById('refund-key-btn');
     const refundKeyModal = document.getElementById('refund-key-modal');
     const refundKeyText = document.getElementById('refund-key-text');
@@ -225,14 +224,12 @@ export function initKeyManagement() {
         if (e.target === modalOverlay) closeModal();
     });
 
-    // Toggle Key Dropdown
     refundKeyBtn.addEventListener('click', (e) => {
         e.stopPropagation();
         refundQtyModal.style.display = 'none';
         refundKeyModal.style.display = refundKeyModal.style.display === 'block' ? 'none' : 'block';
     });
 
-    // Toggle Qty Dropdown
     refundQtyBtn.addEventListener('click', (e) => {
         e.stopPropagation();
         refundKeyModal.style.display = 'none';
@@ -241,45 +238,39 @@ export function initKeyManagement() {
         }
     });
 
-    // Close dropdowns on outside click
     document.addEventListener('click', () => {
         refundKeyModal.style.display = 'none';
         refundQtyModal.style.display = 'none';
     });
 
-    function generateCustomDropdownOptions(data) {
+    function generateCustomDropdownOptions(keysObj) {
         let options = '';
-        ['5v5', '1v1'].forEach(mode => {
-            for (let type in data.modes[mode]) {
-                let count = data.modes[mode][type] || 0;
-                if (count > 0) {
-                    options += `<div class="custom-dropdown-option" data-value="${mode}_${type}" style="padding: 7px 10px; font-size: 10px; color: white; cursor: pointer;">${mode.toUpperCase()} - ${type.toUpperCase()} (${count} pcs)</div>`;
-                }
+        for (let key in keysObj) {
+            if (key === 'tournament') continue;
+            let count = keysObj[key] || 0;
+            if (count > 0) {
+                options += `<div class="custom-dropdown-option" data-value="${key}" style="padding: 7px 10px; font-size: 10px; color: white; cursor: pointer;">${key.toUpperCase()} (${count} pcs)</div>`;
             }
-        });
+        }
         return options || `<div style="padding: 7px 10px; font-size: 10px; color: #64748b;">No keys available</div>`;
     }
 
-    // Attach event listener for custom key options using event delegation
     refundKeyOptionsContainer.addEventListener('click', (e) => {
         const option = e.target.closest('.custom-dropdown-option');
         if (!option) return;
-        const val = option.getAttribute('data-value');
-        refundKeyValue.value = val;
+        const keyName = option.getAttribute('data-value');
+        refundKeyValue.value = keyName;
         refundKeyText.textContent = option.textContent;
         refundKeyText.style.color = '#f8fafc';
         refundKeyModal.style.display = 'none';
 
-        const [mode, type] = val.split('_');
-        const maxCount = keyData.modes[mode][type];
-        
+        const maxCount = userKeys[keyName] || 0;
         let qtyOptions = '';
         for (let i = 1; i <= maxCount; i++) {
             qtyOptions += `<div class="custom-dropdown-option" data-value="${i}" style="padding: 7px 10px; font-size: 10px; color: white; cursor: pointer;">${i} pcs</div>`;
         }
         refundQtyOptionsContainer.innerHTML = qtyOptions;
         
-        // Reset Qty selection when key changes
         refundQtyValue.value = '';
         refundQtyText.textContent = 'Qty...';
         refundQtyText.style.color = '#64748b';
@@ -287,7 +278,6 @@ export function initKeyManagement() {
         updateInfoText();
     });
 
-    // Attach event listener for custom qty options using event delegation
     refundQtyOptionsContainer.addEventListener('click', (e) => {
         const option = e.target.closest('.custom-dropdown-option');
         if (!option) return;
@@ -305,12 +295,10 @@ export function initKeyManagement() {
         }
     });
 
-    // ဖုန်းနံပါတ် နေရာတွင် ဂဏန်း (Digits) သီးသန့်သာ ရိုက်ထည့်နိုင်ရန် စစ်ဆေးခြင်း
     kpayPhoneInput.addEventListener('input', (e) => {
         e.target.value = e.target.value.replace(/[^0-9]/g, '');
     });
 
-    // နာမည် နေရာတွင် အင်္ဂလိပ်စာ သီးသန့်သာ ရိုက်ထည့်နိုင်ရန် စစ်ဆေးခြင်း
     kpayNameInput.addEventListener('input', (e) => {
         e.target.value = e.target.value.replace(/[^a-zA-Z\s]/g, '');
     });
@@ -331,27 +319,27 @@ export function initKeyManagement() {
     }
 
     function updateInfoText() {
-        const val = refundKeyValue.value;
+        const keyName = refundKeyValue.value;
         const qty = parseInt(refundQtyValue.value);
-        if (!val || !qty) {
+        if (!keyName || !qty) {
             refundInfoText.innerText = "Please select a key and quantity to view refund details.";
             return;
         }
-        const [mode, type] = val.split('_');
-        const unitVal = getKeyValues(type);
+        const unitVal = getKeyValues(keyName);
         const totalVal = (unitVal * qty).toLocaleString();
-        refundInfoText.innerText = `${mode.toUpperCase()} (${type.toUpperCase()}) Key ${qty} pcs for ${totalVal} Ks.`;
+        refundInfoText.innerText = `${keyName.toUpperCase()} Key ${qty} pcs for ${totalVal} Ks.`;
     }
 
-    function renderKeys(mode, types, data) {
-        return types.map(type => {
-            let count = data.modes[mode][type] || 0;
+    function renderKeys(keyList, keysObj) {
+        return keyList.map(keyName => {
+            let count = keysObj[keyName] || 0;
+            let label = keyName.split('-')[1] || keyName.split('_')[1] || keyName;
             return `
                 <div style="
                     background: rgba(2, 6, 23, 0.5); 
                     border: 1px solid ${count > 0 ? 'rgba(56, 189, 248, 0.5)' : 'rgba(51, 65, 85, 0.5)'}; 
                     border-radius: 8px; padding: 5px 2px; text-align: center; box-sizing: border-box;">
-                    <div style="font-size: 8px; color: #94a3b8; margin-bottom: 2px;">${type.toUpperCase()}</div>
+                    <div style="font-size: 8px; color: #94a3b8; margin-bottom: 2px;">${label.toUpperCase()}</div>
                     <div style="font-size: 11.5px; font-weight: bold; color: ${count > 0 ? '#38bdf8' : '#64748b'};">
                         ${count} <span style="font-size: 7px; font-weight: normal;">pcs</span>
                     </div>
@@ -363,12 +351,12 @@ export function initKeyManagement() {
     const executeRefundBtn = document.getElementById('execute-refund-btn');
 
     executeRefundBtn.addEventListener('click', () => {
-        const selectedVal = refundKeyValue.value;
+        const keyName = refundKeyValue.value;
         const qty = parseInt(refundQtyValue.value);
         const kpayName = kpayNameInput.value.trim();
         const kpayPhone = kpayPhoneInput.value.trim();
 
-        if (!selectedVal || !qty) {
+        if (!keyName || !qty) {
             alert('ကျေးဇူးပြု၍ Key နှင့် အရေအတွက်ကို အရင်ရွေးချယ်ပါ။');
             return;
         }
@@ -378,28 +366,31 @@ export function initKeyManagement() {
             return;
         }
 
-        const [mode, type] = selectedVal.split('_');
-        const unitVal = getKeyValues(type);
+        const unitVal = getKeyValues(keyName);
         const totalVal = unitVal * qty;
 
-        const isConfirmed = confirm(`Confirm Refund - ${mode.toUpperCase()} ${type.toUpperCase()} Key (${qty} pcs) for ${totalVal.toLocaleString()} Ks to ${kpayName} (${kpayPhone}) via KPay.`);
+        const isConfirmed = confirm(`Confirm Refund - ${keyName.toUpperCase()} Key (${qty} pcs) for ${totalVal.toLocaleString()} Ks to ${kpayName} (${kpayPhone}) via KPay.`);
         if (!isConfirmed) return;
 
-        if (keyData.modes[mode] && keyData.modes[mode][type] >= qty) {
-            keyData.modes[mode][type] -= qty;
-            localStorage.setItem('user_key_inventory_v2', JSON.stringify(keyData));
-            updateUI(keyData);
+        if (userKeys[keyName] && userKeys[keyName] >= qty) {
+            userKeys[keyName] -= qty;
+            
+            // Local storage သို့မဟုတ် Firebase သို့ အချက်အလက်အသစ် ပြန်သိမ်းရန် ဤနေရာတွင် ဆက်လုပ်နိုင်ပါသည်
+            // (ဥပမာ - localStorage.setItem('user_key_inventory_v2', JSON.stringify(userKeys)));
+            
+            updateUI(userKeys);
             alert(`Refund request submitted successfully!`);
         } else {
             alert('အရေအတွက် မလုံလောက်ပါ။');
         }
     });
 
-    function updateUI(data) {
-        document.getElementById('vault-total-balance').innerText = calculateTotalBalance(data).toLocaleString() + ' Ks';
-        document.getElementById('grid-5v5').innerHTML = renderKeys('5v5', ['5k', '10k', '15k', '25k', '50k'], data);
-        document.getElementById('grid-1v1').innerHTML = renderKeys('1v1', ['5k', '10k', '15k', '25k', '50k'], data);
-        refundKeyOptionsContainer.innerHTML = generateCustomDropdownOptions(data);
+    function updateUI(keysObj) {
+        document.getElementById('vault-total-balance').innerText = calculateTotalBalance(keysObj).toLocaleString() + ' Ks';
+        document.getElementById('grid-1v1').innerHTML = renderKeys(keys1vs1, keysObj);
+        document.getElementById('grid-5v5').innerHTML = renderKeys(keys5vs5, keysObj);
+        document.getElementById('tournament-val-display').innerText = `${keysObj['tournament'] || 0} pcs`;
+        refundKeyOptionsContainer.innerHTML = generateCustomDropdownOptions(keysObj);
         resetToDropdownState();
     }
 }

@@ -443,8 +443,8 @@ export function renderProfileScreen(container) {
 
             <div class="bottom-grid">
                 <div class="action-card" id="key-card-btn">
-                    <div class="icon">🔑</div>
-                    <div class="title">KEY</div>
+                    <div class="icon">Key</div>
+                    <div class="title">Collection</div>
                 </div>
                 <div class="action-card" id="history-card-btn">
                     <div class="icon">📜</div>
