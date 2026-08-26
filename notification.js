@@ -1,8 +1,7 @@
 // ==========================================
-// 1. Notification Local Storage & Render (Sync မပါတော့ပါ)
+// 1. Notification Local Storage & Render
 // ==========================================
 
-// Notification အသစ်တစ်ခုကို LocalStorage ထဲ သိမ်းဆည်းပြီး Render လုပ်ရန်
 export function addNotification(title, message) {
     const now = new Date();
     const year = now.getFullYear();
@@ -34,7 +33,6 @@ export function addNotification(title, message) {
     }
 }
 
-// Notification Screen ကို ဝင်ရောက်ကြည့်ရှုသည့်အခါ Badge ကို ရှင်းလင်းပေးရန်
 export function renderNotificationScreen(container) {
     localStorage.setItem('app_unread_count', '0');
     updateNotificationBadge();
@@ -60,7 +58,6 @@ export function renderNotificationScreen(container) {
     renderNotificationCards(listContainer, notifications);
 }
 
-// Notification Bell Update
 export function updateNotificationBadge() {
     const unreadCount = parseInt(localStorage.getItem('app_unread_count') || '0', 10);
     const notiNavBtn = document.querySelector('.nav-item[data-tab="notification"]'); 
@@ -85,7 +82,6 @@ export function updateNotificationBadge() {
     }
 }
 
-// Card Render Helper
 function renderNotificationCards(container, notifications) {
     if (notifications.length === 0) {
         container.innerHTML = `<p style="color: #64748b; font-size: 13px; text-align: center; margin-top: 30px;">No new notifications.</p>`;
@@ -136,65 +132,52 @@ function renderNotificationCards(container, notifications) {
     });
 }
 
-
 // ==========================================
-// 2. Status Polling (5 စက္ကန့်တစ်ကြိမ် လှမ်းစစ်ပေးမည့် Function)
+// 2. Optimized Smart Global Polling (Tab Visible ဖြစ်မှသာ အလုပ်လုပ်မည်)
 // ==========================================
 
-function startCheckingStatus(registrationId, userId, mode) {
+let globalPollingTimer = null;
+
+export function startSmartGlobalPolling(userId) {
+    if (!userId || globalPollingTimer) return;
+    
     const intervalTime = 5000; // ၅ စက္ကန့်တစ်ကြိမ်
 
-    // Active ဖြစ်နေကြောင်း LocalStorage ထဲ မှတ်ထားမည် (Refresh လုပ်ရင် ပြန်ဖတ်လို့ရအောင်)
-    localStorage.setItem('active_polling', JSON.stringify({ registrationId, userId, mode }));
+    console.log("Smart Global Polling initialized for User ID:", userId);
 
-    const timer = setInterval(async () => {
+    const runPolling = async () => {
+        // Tab ကို အမှန်တကယ် ကြည့်နေမှသာ (Visible ဖြစ်မှသာ) Server ကို Request ခေါ်မည်
+        if (document.hidden) return; 
+
         try {
-            const response = await fetch(`/api/check-status?registrationId=${registrationId}&userId=${userId}&mode=${mode}`);
+            const response = await fetch(`/api/check-status?userId=${userId}`);
             const result = await response.json();
 
             if (result.success) {
-                if (result.status === 'CONFIRMED') {
-                    addNotification("Registration Confirmed! 🎉", "Admin က မင်းရဲ့ Register ကို Confirm ပေးလိုက်ပါပြီ။ Key ရရှိသွားပါပြီ။");
-                    clearInterval(timer); 
-                    localStorage.removeItem('active_polling'); // ပြီးသွားရင် LocalStorage ကနေ ဖြတ်မည်
-                } else if (result.status === 'REJECTED') {
-                    const reason = result.rejectionReason || "အခြားအကြောင်းပြချက်ဖြင့် ပယ်ချပါသည်";
-                    addNotification("Registration Rejected ❌", `တောင်းပန်ပါတယ်၊ မင်းရဲ့ Register ကို Reject လိုက်ပါတယ်။\n\n📝 အကြောင်းရင်း: ${reason}`);
-                    clearInterval(timer); 
-                    localStorage.removeItem('active_polling'); // ပြီးသွားရင် LocalStorage ကနေ ဖြတ်မည်
+                // Status ပြောင်းလဲမှုကို မှတ်သားရန် LocalStorage သို့မဟုတ် Window Variable သုံးခြင်း
+                const lastStatus = localStorage.getItem('last_known_status');
+                
+                if (result.status && result.status !== lastStatus) {
+                    localStorage.setItem('last_known_status', result.status);
+
+                    if (result.status === 'CONFIRMED') {
+                        addNotification("Registration Confirmed! 🎉", "Admin က သင့်ရဲ့ Register ကို Confirm ပေးလိုက်ပါပြီ။ Key ရရှိသွားပါပြီ။");
+                    } else if (result.status === 'REJECTED') {
+                        const reason = result.rejectionReason || "အခြားအကြောင်းပြချက်ဖြင့် ပယ်ချပါသည်";
+                        addNotification("Registration Rejected ❌", `တောင်းပန်ပါတယ်၊ သင့်ရဲ့ Register ကို Reject လိုက်ပါတယ်။\n\n📝 အကြောင်းရင်း: ${reason}`);
+                    }
                 }
             }
         } catch (error) {
-            console.error("Polling error:", error);
+            console.error("Global polling error:", error);
         }
-    }, intervalTime);
+    };
+
+    // ပထမတစ်ကြိမ် ချက်ချင်းစစ်မည်၊ ပြီးရင် Interval စတင်မည်
+    runPolling();
+    globalPollingTimer = setInterval(runPolling, intervalTime);
 }
 
-// Page Refresh လုပ်၍ App ပြန်စချိန်တွင် Polling ကို အလိုအလျောက် ပြန်စတင်ရန်
-export function initAutoPolling() {
-    const savedPolling = localStorage.getItem('active_polling');
-    if (savedPolling) {
-        try {
-            const { registrationId, userId, mode } = JSON.parse(savedPolling);
-            if (registrationId && userId && mode) {
-                console.log("Restoring polling after page refresh for ID:", registrationId);
-                startCheckingStatus(registrationId, userId, mode);
-            }
-        } catch (e) {
-            console.error("Error restoring polling:", e);
-        }
-    }
-}
-
-// ဖိုင်ရဲ့ အောက်ဆုံးမှာ ဒီအတိုင်း ထည့်ပေးပါ 👇
-if (typeof window !== 'undefined') {
-    // Page load ဖြစ်တာနဲ့ (သို့မဟုတ်) DOMContentLoaded ပြီးသွားရင်တောင် အလုပ်လုပ်စေရန်
-    if (document.readyState === 'loading') {
-        document.addEventListener('DOMContentLoaded', initAutoPolling);
-    } else {
-        initAutoPolling(); // DOMContentLoaded ပြီးသွားရင်တောင် တိုက်ရိုက် Run ပေးမည်
-    }
-}
 // ==========================================
 // 3. Registration Submission 
 // ==========================================
@@ -226,25 +209,7 @@ export async function submitUserRegistration(mode, formData, currentUserId, feed
                 `${mode.toUpperCase()} Registration Submitted`, 
                 "မင်းရဲ့ Register တင်ထားမှု အောင်မြင်ပါတယ်။ Admin ဘက်က အတည်ပြုပေးသည်အထိ ခေတ္တစောင့်ဆိုင်းပေးပါ။"
             );
-
-            const regId = result.registrationId || result.id;
-            console.log("Extracted Registration ID:", regId);
-
-            if (regId) {
-                console.log("Starting Polling Function...");
-                
-                // 💡 ဒီနေရာမှာ LocalStorage ထဲ active_polling ကို အသစ်ထည့်ပေးရပါမယ် 👇
-                localStorage.setItem('active_polling', JSON.stringify({
-                    registrationId: regId,
-                    userId: currentUserId,
-                    mode: mode
-                }));
-
-                startCheckingStatus(regId, currentUserId, mode);
-            } else {
-                console.error("Error: Registration ID is missing from API response!");
-            }
-                } else {
+        } else {
             if (feedbackElement) {
                 feedbackElement.textContent = "Error: " + (result.message || "Registration failed");
                 feedbackElement.style.color = "#ef4444"; 

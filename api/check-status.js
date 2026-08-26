@@ -15,37 +15,32 @@ module.exports = async (req, res) => {
     }
 
     try {
-        const { registrationId, userId, mode } = req.query;
+        const { userId } = req.query;
 
-        if (!registrationId || !userId || !mode) {
-            return res.status(400).json({ success: false, message: 'Missing parameters' });
+        if (!userId) {
+            return res.status(400).json({ success: false, message: 'Missing userId parameter' });
         }
 
-        // Mode အလိုက် သက်ဆိုင်ရာ Collection ကို ရွေးချယ်ခြင်း
-        let collectionName = '';
-        if (mode === '1vs1') collectionName = '1vs1_registrations';
-        else if (mode === '5vs5') collectionName = '5vs5_registrations';
-        else if (mode === 'tournament') collectionName = 'tournament_registrations';
-        else return res.status(400).json({ success: false, message: 'Invalid mode' });
+        // မျိုးစုံသော Mode Collection များကို စစ်ဆေးရန် (1vs1, 5vs5, tournament)
+        const collections = ['1vs1_registrations', '5vs5_registrations', 'tournament_registrations'];
+        let foundData = null;
 
-        const docRef = db.collection(collectionName).doc(registrationId);
-        const docSnap = await docRef.get();
-
-        if (!docSnap.exists) {
-            return res.status(404).json({ success: false, message: 'Registration not found' });
+        for (const colName of collections) {
+            const snapshot = await db.collection(colName).where('userId', '==', userId).limit(1).get();
+            if (!snapshot.empty) {
+                foundData = snapshot.docs[0].data();
+                break;
+            }
         }
 
-        const data = docSnap.data();
-
-        // Security Check: Register တင်ခဲ့တဲ့ user ဟုတ်မဟုတ် လုံခြုံရေး စစ်ဆေးခြင်း
-        if (data.userId !== userId) {
-            return res.status(403).json({ success: false, message: 'Unauthorized access' });
+        if (!foundData) {
+            return res.status(200).json({ success: true, status: 'NONE' });
         }
 
         return res.status(200).json({
             success: true,
-            status: data.status, // 'PENDING', 'CONFIRMED', 'REJECTED'
-            rejectionReason: data.rejectionReason || null // Reject ဖြစ်ပါက အကြောင်းရင်းပါ ပူးတွဲပေးပို့ရန်
+            status: foundData.status, // 'PENDING', 'CONFIRMED', 'REJECTED'
+            rejectionReason: foundData.rejectionReason || null
         });
 
     } catch (error) {
