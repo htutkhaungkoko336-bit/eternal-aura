@@ -1,11 +1,14 @@
+// main.js
 import { initAuth } from './auth.js';
 import { renderModeScreen } from './mode.js';
-import { addNotification, renderNotificationScreen, startSmartGlobalPolling } from './notification.js';
+import { addNotification, renderNotificationScreen } from './notification.js';
 import { renderProfileScreen } from './profile.js';
 
+// DOM Elements များကို ရယူခြင်း
 const formContent = document.getElementById('form-content');
 const appContent = document.getElementById('app-content'); 
 
+// Form Content အတွက် styling များကို သတ်မှတ်ခြင်း
 if (formContent) {
     formContent.style.display = 'flex';
     formContent.style.flexDirection = 'column';
@@ -14,32 +17,37 @@ if (formContent) {
 }
 
 document.addEventListener('DOMContentLoaded', () => {
+    // လိုအပ်ပါက Authentication ကို စတင်ရန်
     if (typeof initAuth === 'function' && formContent) {
         initAuth(formContent, (data) => {
+            // အောင်မြင်သွားပါက handleLoginSuccess သို့ ဒေတာပို့မည်
             handleLoginSuccess(data);
         });
     }
 
+    // Mode မျက်နှာပြင်ကို စတင်ပြသရန်
     if (appContent) {
         renderModeScreen(appContent);
     }
 });
 
+// Login သို့မဟုတ် Register အောင်မြင်သွားပါက Home Screen နှင့် Mode Screen ကိုပါ ပူးတွဲပြသရန်
 function handleLoginSuccess(data) {
     localStorage.setItem('userName', data.name || "User");
     
     if (data.userId) {
         localStorage.setItem('userId', data.userId);
-        
-        // 💡 ဤနေရာတွင် Login ဝင်ပြီးသည်နှင့် Smart Polling ကို စတင်လိုက်ပါသည်
-        startSmartGlobalPolling(data.userId);
     }
     
+    // Login Form ကို ဖျောက်ခြင်း
     formContent.style.display = 'none';
 
+    // Main Container ထဲသို့ UI အသစ်များ ထည့်သွင်းခြင်း
     document.querySelector('.container').innerHTML = `
+        <!-- အပေါ်ဘက် Content Area -->
         <div id="app-content" style="position: absolute; top: 0; left: 0; width: 100%; bottom: 70px; display: flex; flex-direction: column; overflow-y: auto; box-sizing: border-box;"></div>
         
+        <!-- အောက်ခြေ Bottom Nav Bar -->
         <div style="position: absolute; bottom: 0; left: 0; width: 100%; height: 70px; display: flex; justify-content: space-around; align-items: center; background-color: #0f172a; border-top: 1px solid #1e293b; box-sizing: border-box; z-index: 100; pointer-events: auto;">
             
             <div class="nav-item" data-tab="mode" style="display: flex; flex-direction: column; align-items: center; cursor: pointer; color: #38bdf8;">
@@ -80,11 +88,13 @@ function handleLoginSuccess(data) {
         </div>
     `;
 
+    // Mode Screen ကို စတင်ပြသခြင်း
     const dynamicAppContent = document.getElementById('app-content');
     if (dynamicAppContent) {
         renderModeScreen(dynamicAppContent);
     }
 
+    // Bottom Nav Click Event များ သတ်မှတ်ခြင်း
     const navItems = document.querySelectorAll('.nav-item');
     navItems.forEach(item => {
         item.addEventListener('click', function() {
@@ -110,6 +120,7 @@ function handleLoginSuccess(data) {
         });
     });
 
+    // Notification Badge စစ်ဆေးခြင်း
     if (typeof updateNotificationBadge === 'function') {
         updateNotificationBadge();
     }

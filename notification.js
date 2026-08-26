@@ -1,7 +1,8 @@
 // ==========================================
-// 1. Notification Local Storage & Render
+// 1. Notification Local Storage & Render (Sync မပါတော့ပါ)
 // ==========================================
 
+// Notification အသစ်တစ်ခုကို LocalStorage ထဲ သိမ်းဆည်းပြီး Render လုပ်ရန်
 export function addNotification(title, message) {
     const now = new Date();
     const year = now.getFullYear();
@@ -33,6 +34,7 @@ export function addNotification(title, message) {
     }
 }
 
+// Notification Screen ကို ဝင်ရောက်ကြည့်ရှုသည့်အခါ Badge ကို ရှင်းလင်းပေးရန်
 export function renderNotificationScreen(container) {
     localStorage.setItem('app_unread_count', '0');
     updateNotificationBadge();
@@ -58,6 +60,7 @@ export function renderNotificationScreen(container) {
     renderNotificationCards(listContainer, notifications);
 }
 
+// Notification Bell Update
 export function updateNotificationBadge() {
     const unreadCount = parseInt(localStorage.getItem('app_unread_count') || '0', 10);
     const notiNavBtn = document.querySelector('.nav-item[data-tab="notification"]'); 
@@ -82,6 +85,7 @@ export function updateNotificationBadge() {
     }
 }
 
+// Card Render Helper
 function renderNotificationCards(container, notifications) {
     if (notifications.length === 0) {
         container.innerHTML = `<p style="color: #64748b; font-size: 13px; text-align: center; margin-top: 30px;">No new notifications.</p>`;
@@ -111,7 +115,7 @@ function renderNotificationCards(container, notifications) {
                 </div>
             </div>
             <div class="noti-body" style="max-height: 0; overflow: hidden; transition: max-height 0.3s ease; border-top: 1px dashed #334155; margin-top: 10px;">
-                <p style="color: #cbd5e1; font-size: 13px; padding-top: 10px; white-space: pre-line;">${noti.message}</p>
+                <p style="color: #cbd5e1; font-size: 13px; padding-top: 10px;">${noti.message}</p>
             </div>
         `;
 
@@ -132,57 +136,34 @@ function renderNotificationCards(container, notifications) {
     });
 }
 
+
 // ==========================================
-// 2. Optimized Smart Global Polling (Mode & Fee ပါသော တစ်ခုတည်းသော Noti)
+// 2. Status Polling (5 စက္ကန့်တစ်ကြိမ် လှမ်းစစ်ပေးမည့် Function)
 // ==========================================
 
-let globalPollingTimer = null;
-
-export function startSmartGlobalPolling(userId) {
-    if (!userId || globalPollingTimer) return;
-    
+function startCheckingStatus(registrationId, userId, mode) {
     const intervalTime = 5000; // ၅ စက္ကန့်တစ်ကြိမ်
 
-    console.log("Smart Global Polling initialized for User ID:", userId);
-
-    const runPolling = async () => {
-        if (document.hidden) return; 
-
+    const timer = setInterval(async () => {
         try {
-            const response = await fetch(`/api/check-status?userId=${userId}`);
+            const response = await fetch(`/api/check-status?registrationId=${registrationId}&userId=${userId}&mode=${mode}`);
             const result = await response.json();
 
             if (result.success) {
-                const lastStatus = localStorage.getItem('last_known_status');
-                
-                if (result.status && result.status !== lastStatus) {
-                    localStorage.setItem('last_known_status', result.status);
-
-                    const modeName = result.mode ? result.mode.toUpperCase() : "REGISTRATION";
-                    const feeAmount = result.fee || "5,500Ks"; // API မှ ပေးလိုက်သော Fee (သို့မဟုတ် Default)
-
-                    if (result.status === 'CONFIRMED') {
-                        // 💡 အောက်က General Noti လုံးဝမပါတော့ဘဲ ဤ Mode ပါသော Noti တစ်ခုတည်းသာ တက်မည်
-                        addNotification(
-                            `${modeName} Mode Confirmed! 🎉`, 
-                            `${modeName} Mode fee ${feeAmount} အတွက် register တင်ပြမှုကို Admin မှ အတည်ပြုပေးလိုက်ပါပြီ။ Key ရရှိသွားပါပြီ။`
-                        );
-                    } else if (result.status === 'REJECTED') {
-                        const reason = result.rejectionReason || "အခြားအကြောင်းပြချက်ဖြင့် ပယ်ချပါသည်";
-                        addNotification(
-                            `${modeName} Mode Rejected ❌`, 
-                            `တောင်းပန်ပါတယ်၊ ${modeName} Mode register ကို ပယ်ချလိုက်ပါတယ်။\n\n📝 အကြောင်းရင်း: ${reason}`
-                        );
-                    }
+                if (result.status === 'CONFIRMED') {
+                    addNotification("Registration Confirmed! 🎉", "Admin က မင်းရဲ့ Register ကို Confirm ပေးလိုက်ပါပြီ။ Key ရရှိသွားပါပြီ။");
+                    clearInterval(timer); 
+                } else if (result.status === 'REJECTED') {
+                    // Database ထဲကပါလာတဲ့ rejectionReason ကို ထည့်ပြပေးမည် (မပါလာရင် အထွေထွေအကြောင်းပြချက်ပြမည်)
+                    const reason = result.rejectionReason || "အခြားအကြောင်းပြချက်ဖြင့် ပယ်ချပါသည်";
+                    addNotification("Registration Rejected ❌", `တောင်းပန်ပါတယ်၊ မင်းရဲ့ Register ကို Reject လိုက်ပါတယ်။\n\n📝 အကြောင်းရင်း: ${reason}`);
+                    clearInterval(timer); 
                 }
             }
         } catch (error) {
-            console.error("Global polling error:", error);
+            console.error("Polling error:", error);
         }
-    };
-
-    runPolling();
-    globalPollingTimer = setInterval(runPolling, intervalTime);
+    }, intervalTime);
 }
 
 // ==========================================
@@ -204,6 +185,7 @@ export async function submitUserRegistration(mode, formData, currentUserId, feed
         });
         const result = await response.json();
 
+        // Server က ဘာ Response ပို့လိုက်လဲ Console မှာ အရင်စစ်မယ်
         console.log("API Register Response:", result);
 
         if (result.success) {
@@ -212,10 +194,23 @@ export async function submitUserRegistration(mode, formData, currentUserId, feed
                 feedbackElement.style.color = "#22c55e"; 
             }
             
+            // ချက်ချင်း Noti တက်ခိုင်းမည်
             addNotification(
                 `${mode.toUpperCase()} Registration Submitted`, 
                 "မင်းရဲ့ Register တင်ထားမှု အောင်မြင်ပါတယ်။ Admin ဘက်က အတည်ပြုပေးသည်အထိ ခေတ္တစောင့်ဆိုင်းပေးပါ။"
             );
+
+            // Registration ID သေချာပါလာမလာ စစ်မယ် (Server က registrationId ပို့ပေးသလို တချို့နေရာမှာ id ဖြစ်နေရင်လည်း ယူလို့ရအောင်)
+            const regId = result.registrationId || result.id;
+            console.log("Extracted Registration ID:", regId);
+
+            if (regId) {
+                console.log("Starting Polling Function...");
+                startCheckingStatus(regId, currentUserId, mode);
+            } else {
+                console.error("Error: Registration ID is missing from API response!");
+            }
+
         } else {
             if (feedbackElement) {
                 feedbackElement.textContent = "Error: " + (result.message || "Registration failed");

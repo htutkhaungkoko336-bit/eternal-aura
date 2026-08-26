@@ -15,38 +15,37 @@ module.exports = async (req, res) => {
     }
 
     try {
-        const { userId } = req.query;
+        const { registrationId, userId, mode } = req.query;
 
-        if (!userId) {
-            return res.status(400).json({ success: false, message: 'Missing userId parameter' });
+        if (!registrationId || !userId || !mode) {
+            return res.status(400).json({ success: false, message: 'Missing parameters' });
         }
 
-        const collections = ['1vs1_registrations', '5vs5_registrations', 'tournament_registrations'];
-        let foundData = null;
-        let detectedMode = '1vs1';
+        // Mode အလိုက် သက်ဆိုင်ရာ Collection ကို ရွေးချယ်ခြင်း
+        let collectionName = '';
+        if (mode === '1vs1') collectionName = '1vs1_registrations';
+        else if (mode === '5vs5') collectionName = '5vs5_registrations';
+        else if (mode === 'tournament') collectionName = 'tournament_registrations';
+        else return res.status(400).json({ success: false, message: 'Invalid mode' });
 
-        for (const colName of collections) {
-            const snapshot = await db.collection(colName).where('userId', '==', userId).limit(1).get();
-            if (!snapshot.empty) {
-                foundData = snapshot.docs[0].data();
-                // Collection နာမည်ပေါ်မူတည်ပြီး Mode ကို ခွဲထုတ်ခြင်း
-                if (colName.includes('5vs5')) detectedMode = '5vs5';
-                else if (colName.includes('tournament')) detectedMode = 'tournament';
-                else detectedMode = '1vs1';
-                break;
-            }
+        const docRef = db.collection(collectionName).doc(registrationId);
+        const docSnap = await docRef.get();
+
+        if (!docSnap.exists) {
+            return res.status(404).json({ success: false, message: 'Registration not found' });
         }
 
-        if (!foundData) {
-            return res.status(200).json({ success: true, status: 'NONE' });
+        const data = docSnap.data();
+
+        // Security Check: Register တင်ခဲ့တဲ့ user ဟုတ်မဟုတ် လုံခြုံရေး စစ်ဆေးခြင်း
+        if (data.userId !== userId) {
+            return res.status(403).json({ success: false, message: 'Unauthorized access' });
         }
 
         return res.status(200).json({
             success: true,
-            status: foundData.status, // 'PENDING', 'CONFIRMED', 'REJECTED'
-            mode: foundData.mode || detectedMode, // Mode အမည်
-            fee: foundData.fee || foundData.modeFee || '5,500Ks', // Fee ပမာဏ (အကယ်၍ DB ထဲမှာပါလျှင် ယူမည်၊ မပါက 5,500Ks သုံးမည်)
-            rejectionReason: foundData.rejectionReason || null
+            status: data.status, // 'PENDING', 'CONFIRMED', 'REJECTED'
+            rejectionReason: data.rejectionReason || null // Reject ဖြစ်ပါက အကြောင်းရင်းပါ ပူးတွဲပေးပို့ရန်
         });
 
     } catch (error) {
