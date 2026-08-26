@@ -1,7 +1,7 @@
 import { renderTrophyShowcase } from './trophies.js';
 import { initKeyManagement } from './key.js';
 
-export function renderProfileScreen(container) {
+export function renderProfileScreen(container, userData = null) {
     const userName = localStorage.getItem('user_profile_name') || localStorage.getItem('userName') || "CyberPlayer";
     const userId = localStorage.getItem('user_profile_id') || localStorage.getItem('userId') || "EA-99821";
     const savedAvatar = localStorage.getItem('user_profile_avatar') || "";
@@ -543,6 +543,6 @@ export function renderProfileScreen(container) {
         e.target === zoomModal && zoomModal.classList.remove('active');
     });
 
-    // Key Management ကို key.js မှ ခေါ်သုံးခြင်း
-    initKeyManagement();
+    // Key Management ကို key.js မှ ခေါ်သုံးခြင်း (Firebase data ပို့ပေးရန်)
+    initKeyManagement(userData);
 }
