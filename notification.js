@@ -232,12 +232,19 @@ export async function submitUserRegistration(mode, formData, currentUserId, feed
 
             if (regId) {
                 console.log("Starting Polling Function...");
+                
+                // 💡 ဒီနေရာမှာ LocalStorage ထဲ active_polling ကို အသစ်ထည့်ပေးရပါမယ် 👇
+                localStorage.setItem('active_polling', JSON.stringify({
+                    registrationId: regId,
+                    userId: currentUserId,
+                    mode: mode
+                }));
+
                 startCheckingStatus(regId, currentUserId, mode);
             } else {
                 console.error("Error: Registration ID is missing from API response!");
             }
-
-        } else {
+                } else {
             if (feedbackElement) {
                 feedbackElement.textContent = "Error: " + (result.message || "Registration failed");
                 feedbackElement.style.color = "#ef4444"; 
