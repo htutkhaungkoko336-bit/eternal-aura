@@ -1,7 +1,7 @@
 // main.js
 import { initAuth } from './auth.js';
 import { renderModeScreen } from './mode.js';
-import { addNotification, renderNotificationScreen } from './notification.js';
+import { addNotification, renderNotificationScreen, updateNotificationBadge } from './notification.js';
 import { renderProfileScreen } from './profile.js';
 
 // DOM Elements များကို ရယူခြင်း
@@ -111,7 +111,9 @@ function handleLoginSuccess(data) {
             } else if (tab === 'match') {
                 targetContent.innerHTML = `<div style="color: white; text-align: center; margin-top: 50px; font-weight: 600;">MATCH SCREEN COMING SOON</div>`;
             } else if (tab === 'notification') {
-                renderNotificationScreen(targetContent);
+                // LocalStorage ထဲက userId ကို ယူပြီး ပို့ပေးပါ
+                const currentUserId = localStorage.getItem('userId');
+                renderNotificationScreen(targetContent, currentUserId);
             } else if (tab === 'profile') {
                 renderProfileScreen(targetContent);
             } else {
@@ -120,8 +122,12 @@ function handleLoginSuccess(data) {
         });
     });
 
-    // Notification Badge စစ်ဆေးခြင်း
-    if (typeof updateNotificationBadge === 'function') {
-        updateNotificationBadge();
+    // Notification Badge စစ်ဆေးခြင်း (userId ပါ ထည့်ပေးလိုက်ပါသည်)
+    const currentUserId = localStorage.getItem('userId');
+    if (typeof updateNotificationBadge === 'function' && currentUserId) {
+        // ပထမအကြိမ် ဝင်လာချိန်မှာ unread count စစ်ဖို့အတွက် loadAndRenderNotifications ကိုပါ ခေါ်နိုင်ပါတယ်
+        import('./notification.js').then(module => {
+            module.loadAndRenderNotifications(currentUserId);
+        });
     }
 }

@@ -37,6 +37,11 @@ export async function addNotification(userId, title, message) {
 
 // Database ထဲက Notification တွေကို လှမ်းဆွဲထုတ်ပြီး Screen ပေါ်ပြသရန်
 export async function loadAndRenderNotifications(userId, container = null) {
+    if (!userId) {
+        console.error("User ID is missing!");
+        return;
+    }
+
     try {
         const response = await fetch(`/api/notifications?userId=${userId}`);
         const result = await response.json();
@@ -44,7 +49,7 @@ export async function loadAndRenderNotifications(userId, container = null) {
         if (result.success) {
             const notifications = result.notifications;
             
-            // Unread count ကို တွက်ချက်ရန် (ဥပမာ isRead မလုပ်ရသေးတာတွေ)
+            // Unread count ကို တွက်ချက်ရန်
             const unreadCount = notifications.filter(n => !n.isRead).length;
             updateNotificationBadge(unreadCount);
 
@@ -74,8 +79,16 @@ export async function renderNotificationScreen(container, userId) {
         </div>
     `;
 
-    // Database ကနေ ဒေတာအလှမ်းခေါ်မယ်
-    await loadAndRenderNotifications(userId);
+    // Database ကနေ ဒေတာအလှမ်းခေါ်မယ် (userId သေချာပါမှ ခေါ်မည်)
+    if (userId) {
+        await loadAndRenderNotifications(userId, document.getElementById('notification-list-container'));
+    } else {
+        console.error("User ID is missing!");
+        const listContainer = document.getElementById('notification-list-container');
+        if (listContainer) {
+            listContainer.innerHTML = `<p style="color: #ef4444; font-size: 13px; text-align: center; margin-top: 30px;">User ID not found. Please log in again.</p>`;
+        }
+    }
 }
 
 // Notification Bell Update
@@ -139,9 +152,7 @@ function renderNotificationCards(container, notifications, userId) {
             body.style.maxHeight = body.style.maxHeight === '0px' || !body.style.maxHeight ? '1200px' : '0px';
         });
 
-        // Clear လုပ်တဲ့အခါ Database ကနေပါ ဖျက်ချင်ရင် Delete API ထပ်ရေးလို့ရပါတယ်
         card.querySelector('.delete-btn').addEventListener('click', async () => {
-            // (ဥပမာအနေနဲ့ UI ကနေ ဖြုတ်တာပြထားပါတယ်၊ လိုအပ်ရင် Delete API ထပ်ချိတ်နိုင်ပါတယ်)
             card.remove();
         });
 
