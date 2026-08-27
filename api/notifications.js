@@ -1,27 +1,16 @@
-const admin = require('firebase-admin');
+const { initializeApp, cert, getApps } = require('firebase-admin/app');
 const { getFirestore } = require('firebase-admin/firestore');
 
-// Firebase Admin SDK ကို လုံခြုံစွာ Initialize လုပ်ခြင်း
-function initFirebaseAdmin() {
-    if (admin.apps && admin.apps.length > 0) {
-        return admin.apps[0];
-    }
-    
-    const envVar = process.env.FIREBASE_SERVICE_ACCOUNT;
-    if (!envVar) {
-        throw new Error("FIREBASE_SERVICE_ACCOUNT is missing in environment variables!");
-    }
+const app = getApps().length === 0 
+  ? initializeApp({
+      credential: cert(JSON.parse(process.env.FIREBASE_SERVICE_ACCOUNT))
+    }) 
+  : getApps()[0];
 
-    const serviceAccount = JSON.parse(envVar);
-    return admin.initializeApp({
-        credential: admin.credential.cert(serviceAccount)
-    });
-}
+const db = getFirestore(app);
 
 module.exports = async function handler(req, res) {
     try {
-        initFirebaseAdmin();
-        const db = getFirestore();
         const notifsRef = db.collection('notifications');
 
         if (req.method === 'GET') {
