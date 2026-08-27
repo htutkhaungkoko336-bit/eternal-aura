@@ -13,6 +13,7 @@ module.exports = async function handler(req, res) {
     try {
         const notifsRef = db.collection('notifications');
 
+        // 1. GET: Notification တွေ လှမ်းဆွဲထုတ်ရန်
         if (req.method === 'GET') {
             const { userId } = req.query;
             if (!userId) {
@@ -31,6 +32,7 @@ module.exports = async function handler(req, res) {
             return res.status(200).json({ success: true, notifications });
         }
 
+        // 2. POST: Notification အသစ် သိမ်းဆည်းရန်
         if (req.method === 'POST') {
             const { userId, title, message, dateStr, timeStr } = req.body;
             if (!userId || !title || !message) {
@@ -52,7 +54,29 @@ module.exports = async function handler(req, res) {
             return res.status(200).json({ success: true, id: docRef.id, message: "Notification saved successfully" });
         }
 
-        res.setHeader('Allow', ['GET', 'POST']);
+        // 3. PATCH: Notification တစ်ခုချင်းစီကို Read (ဖတ်ပြီးသား) အဖြစ်ပြောင်းရန်
+        if (req.method === 'PATCH') {
+            const { id } = req.query;
+            if (!id) {
+                return res.status(400).json({ success: false, message: "Notification ID is required" });
+            }
+
+            await notifsRef.doc(id).update({ isRead: true });
+            return res.status(200).json({ success: true, message: "Marked as read successfully" });
+        }
+
+        // 4. DELETE: Notification ကို Database ထဲကနေ ဖျက်ရန်
+        if (req.method === 'DELETE') {
+            const { id } = req.query;
+            if (!id) {
+                return res.status(400).json({ success: false, message: "Notification ID is required" });
+            }
+
+            await notifsRef.doc(id).delete();
+            return res.status(200).json({ success: true, message: "Notification deleted successfully" });
+        }
+
+        res.setHeader('Allow', ['GET', 'POST', 'PATCH', 'DELETE']);
         return res.status(405).json({ success: false, message: `Method ${req.method} not allowed` });
 
     } catch (error) {

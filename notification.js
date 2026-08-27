@@ -18,7 +18,6 @@ export async function addNotification(userId, title, message) {
     const timeStr = `${hours}:${minutes} ${ampm}`;
 
     try {
-        // Backend API ကို လှမ်းပို့ပြီး Database ထဲ သိမ်းမည်
         const response = await fetch('/api/notifications', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
@@ -27,7 +26,6 @@ export async function addNotification(userId, title, message) {
         const result = await response.json();
 
         if (result.success) {
-            // သိမ်းပြီးတာနဲ့ Screen ပေါ်မှာ ပေါ်လာအောင် UI ကို Refresh လုပ်ပေးမယ်
             loadAndRenderNotifications(userId);
         }
     } catch (error) {
@@ -43,7 +41,6 @@ export async function loadAndRenderNotifications(userId, container = null) {
     }
 
     try {
-        // Backtick (`) ကို အမှန်တကယ် သုံးပေးရန်
         const response = await fetch(`/api/notifications?userId=${userId}`);
         const result = await response.json();
 
@@ -62,6 +59,7 @@ export async function loadAndRenderNotifications(userId, container = null) {
         console.error("Error loading notifications:", error);
     }
 }
+
 // Notification Screen ကို ဝင်ရောက်ကြည့်ရှုသည့်အခါ
 export async function renderNotificationScreen(container, userId) {
     container.innerHTML = `
@@ -78,7 +76,6 @@ export async function renderNotificationScreen(container, userId) {
         </div>
     `;
 
-    // Database ကနေ ဒေတာအလှမ်းခေါ်မယ် (userId သေချာပါမှ ခေါ်မည်)
     if (userId) {
         await loadAndRenderNotifications(userId, document.getElementById('notification-list-container'));
     } else {
@@ -145,14 +142,42 @@ function renderNotificationCards(container, notifications, userId) {
             </div>
         `;
 
-        card.querySelector('.noti-header').addEventListener('click', (e) => {
+        // Card ကို နှိပ်လျှင် Read အဖြစ်ပြောင်းရန် Event Listener
+        card.querySelector('.noti-header').addEventListener('click', async (e) => {
             if (e.target.closest('.delete-btn')) return;
             const body = card.querySelector('.noti-body');
-            body.style.maxHeight = body.style.maxHeight === '0px' || !body.style.maxHeight ? '1200px' : '0px';
+            const isOpen = body.style.maxHeight && body.style.maxHeight !== '0px';
+            
+            body.style.maxHeight = isOpen ? '0px' : '1200px';
+
+            if (!noti.isRead) {
+                try {
+                    await fetch(`/api/notifications?id=${noti.id}`, {
+                        method: 'PATCH'
+                    });
+                    noti.isRead = true;
+                    loadAndRenderNotifications(userId, container);
+                } catch (err) {
+                    console.error("Failed to mark as read:", err);
+                }
+            }
         });
 
+        // Card ကို Clear လုပ်လျှင် Database မှပါ ဖျက်ရန် Event Listener
         card.querySelector('.delete-btn').addEventListener('click', async () => {
-            card.remove();
+            try {
+                const response = await fetch(`/api/notifications?id=${noti.id}`, {
+                    method: 'DELETE'
+                });
+                const result = await response.json();
+                
+                if (result.success) {
+                    card.remove();
+                    loadAndRenderNotifications(userId, container);
+                }
+            } catch (err) {
+                console.error("Failed to delete notification:", err);
+            }
         });
 
         container.appendChild(card);
