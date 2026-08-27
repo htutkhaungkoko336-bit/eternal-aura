@@ -1,5 +1,5 @@
-import admin from 'firebase-admin';
-import { getFirestore } from 'firebase-admin/firestore';
+const admin = require('firebase-admin');
+const { getFirestore } = require('firebase-admin/firestore');
 
 // Firebase Admin SDK ကို လုံခြုံစွာ Initialize လုပ်ခြင်း
 function initFirebaseAdmin() {
@@ -18,7 +18,7 @@ function initFirebaseAdmin() {
     });
 }
 
-export default async function handler(req, res) {
+module.exports = async function handler(req, res) {
     try {
         initFirebaseAdmin();
         const db = getFirestore();
@@ -70,4 +70,4 @@ export default async function handler(req, res) {
         console.error("API Server Error:", error);
         return res.status(500).json({ success: false, message: error.message || "Internal Server Error" });
     }
-}
+};
