@@ -1,9 +1,9 @@
 // ==========================================
-// 1. Notification Local Storage & Render (Sync မပါတော့ပါ)
+// 1. Notification Database Sync & Render
 // ==========================================
 
-// Notification အသစ်တစ်ခုကို LocalStorage ထဲ သိမ်းဆည်းပြီး Render လုပ်ရန်
-export function addNotification(title, message) {
+// Notification အသစ်တစ်ခုကို Server (Database) ထဲ သိမ်းဆည်းရန်
+export async function addNotification(userId, title, message) {
     const now = new Date();
     const year = now.getFullYear();
     const month = String(now.getMonth() + 1).padStart(2, '0');
@@ -17,34 +17,53 @@ export function addNotification(title, message) {
     hours = hours ? hours : 12;
     const timeStr = `${hours}:${minutes} ${ampm}`;
 
-    const newNoti = { title, message, dateStr, timeStr };
+    try {
+        // Backend API ကို လှမ်းပို့ပြီး Database ထဲ သိမ်းမည်
+        const response = await fetch('/api/notifications', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ userId, title, message, dateStr, timeStr })
+        });
+        const result = await response.json();
 
-    let notifications = JSON.parse(localStorage.getItem('app_notifications')) || [];
-    notifications.unshift(newNoti);
-    localStorage.setItem('app_notifications', JSON.stringify(notifications));
-
-    let unreadCount = parseInt(localStorage.getItem('app_unread_count') || '0', 10);
-    unreadCount += 1;
-    localStorage.setItem('app_unread_count', unreadCount.toString());
-    updateNotificationBadge();
-
-    const listContainer = document.getElementById('notification-list-container');
-    if (listContainer) {
-        renderNotificationCards(listContainer, notifications);
+        if (result.success) {
+            // သိမ်းပြီးတာနဲ့ Screen ပေါ်မှာ ပေါ်လာအောင် UI ကို Refresh လုပ်ပေးမယ်
+            loadAndRenderNotifications(userId);
+        }
+    } catch (error) {
+        console.error("Error adding notification:", error);
     }
 }
 
-// Notification Screen ကို ဝင်ရောက်ကြည့်ရှုသည့်အခါ Badge ကို ရှင်းလင်းပေးရန်
-export function renderNotificationScreen(container) {
-    localStorage.setItem('app_unread_count', '0');
-    updateNotificationBadge();
+// Database ထဲက Notification တွေကို လှမ်းဆွဲထုတ်ပြီး Screen ပေါ်ပြသရန်
+export async function loadAndRenderNotifications(userId, container = null) {
+    try {
+        const response = await fetch(`/api/notifications?userId=${userId}`);
+        const result = await response.json();
 
+        if (result.success) {
+            const notifications = result.notifications;
+            
+            // Unread count ကို တွက်ချက်ရန် (ဥပမာ isRead မလုပ်ရသေးတာတွေ)
+            const unreadCount = notifications.filter(n => !n.isRead).length;
+            updateNotificationBadge(unreadCount);
+
+            const listContainer = container || document.getElementById('notification-list-container');
+            if (listContainer) {
+                renderNotificationCards(listContainer, notifications, userId);
+            }
+        }
+    } catch (error) {
+        console.error("Error loading notifications:", error);
+    }
+}
+
+// Notification Screen ကို ဝင်ရောက်ကြည့်ရှုသည့်အခါ
+export async function renderNotificationScreen(container, userId) {
     container.innerHTML = `
         <div style="width: 100%; height: 100%; display: flex; flex-direction: column; background-color: #0b0f19; box-sizing: border-box; overflow: hidden;">
             <div style="flex-shrink: 0; background-color: #0b0f19; padding: 12px 16px 10px 16px; box-sizing: border-box; border-bottom: 1px solid #1e293b; z-index: 10; display: flex; justify-content: center; align-items: center;">
                 <div style="position: relative; padding: 8px 20px; background: linear-gradient(135deg, rgba(56, 189, 248, 0.1), rgba(129, 140, 248, 0.1)); border: 2px solid #38bdf8; box-shadow: 0 0 15px rgba(56, 189, 248, 0.2); text-align: center; border-radius: 4px;">
-                    <div style="position: absolute; top: -2px; left: -2px; width: 6px; height: 6px; background: #38bdf8;"></div>
-                    <div style="position: absolute; bottom: -2px; right: -2px; width: 6px; height: 6px; background: #818cf8;"></div>
                     <h2 style="font-size: 15px; font-weight: 800; background: linear-gradient(135deg, #38bdf8, #818cf8); -webkit-background-clip: text; -webkit-text-fill-color: transparent; letter-spacing: 1.5px; margin: 0; text-transform: uppercase;">
                         System Notifications
                     </h2>
@@ -55,14 +74,12 @@ export function renderNotificationScreen(container) {
         </div>
     `;
 
-    const listContainer = document.getElementById('notification-list-container');
-    const notifications = JSON.parse(localStorage.getItem('app_notifications')) || [];
-    renderNotificationCards(listContainer, notifications);
+    // Database ကနေ ဒေတာအလှမ်းခေါ်မယ်
+    await loadAndRenderNotifications(userId);
 }
 
 // Notification Bell Update
-export function updateNotificationBadge() {
-    const unreadCount = parseInt(localStorage.getItem('app_unread_count') || '0', 10);
+export function updateNotificationBadge(unreadCount) {
     const notiNavBtn = document.querySelector('.nav-item[data-tab="notification"]'); 
     
     if (notiNavBtn) {
@@ -86,7 +103,7 @@ export function updateNotificationBadge() {
 }
 
 // Card Render Helper
-function renderNotificationCards(container, notifications) {
+function renderNotificationCards(container, notifications, userId) {
     if (notifications.length === 0) {
         container.innerHTML = `<p style="color: #64748b; font-size: 13px; text-align: center; margin-top: 30px;">No new notifications.</p>`;
         return;
@@ -99,19 +116,16 @@ function renderNotificationCards(container, notifications) {
         card.style.cssText = 'background: linear-gradient(135deg, #1e1b4b 0%, #0f172a 100%); border: 1px solid #38bdf8; border-radius: 8px; padding: 16px 16px 24px 16px; box-shadow: 0 0 15px rgba(56, 189, 248, 0.15); position: relative; transition: all 0.3s ease; flex-shrink: 0;';
         
         card.innerHTML = `
-            <div style="position: absolute; top: 0; left: 0; width: 6px; height: 6px; background-color: #38bdf8;"></div>
-            <div style="position: absolute; bottom: 0; right: 0; width: 6px; height: 6px; background-color: #38bdf8;"></div>
             <div class="noti-header" style="display: flex; justify-content: space-between; align-items: flex-start; width: 100%; cursor: pointer;">
                 <div style="flex-grow: 1;">
                     <div style="display: flex; align-items: center; gap: 8px;">
-                        <span style="display: inline-block; width: 8px; height: 8px; background-color: #38bdf8; border-radius: 50%; box-shadow: 0 0 8px #38bdf8;"></span>
+                        <span style="display: inline-block; width: 8px; height: 8px; background-color: #38bdf8; border-radius: 50%;"></span>
                         <h3 style="color: #f8fafc; font-size: 15px; font-weight: 700; margin: 0;">${noti.title}</h3>
                     </div>
                     <p style="color: #94a3b8; font-size: 11px; margin: 6px 0 0 16px; font-family: monospace;">${noti.dateStr} &bull; ${noti.timeStr}</p>
                 </div>
                 <div style="display: flex; align-items: center; gap: 10px;">
                     <button class="delete-btn" style="background: rgba(56, 189, 248, 0.1); border: 1px solid #38bdf8; color: #38bdf8; cursor: pointer; padding: 4px 10px; border-radius: 4px;">CLEAR</button>
-                    <span class="toggle-icon" style="color: #38bdf8;">▼</span>
                 </div>
             </div>
             <div class="noti-body" style="max-height: 0; overflow: hidden; transition: max-height 0.3s ease; border-top: 1px dashed #334155; margin-top: 10px;">
@@ -125,103 +139,12 @@ function renderNotificationCards(container, notifications) {
             body.style.maxHeight = body.style.maxHeight === '0px' || !body.style.maxHeight ? '1200px' : '0px';
         });
 
-        card.querySelector('.delete-btn').addEventListener('click', () => {
-            let currentNotis = JSON.parse(localStorage.getItem('app_notifications')) || [];
-            currentNotis = currentNotis.filter(n => n.title !== noti.title || n.timeStr !== noti.timeStr);
-            localStorage.setItem('app_notifications', JSON.stringify(currentNotis));
-            renderNotificationCards(container, currentNotis);
+        // Clear လုပ်တဲ့အခါ Database ကနေပါ ဖျက်ချင်ရင် Delete API ထပ်ရေးလို့ရပါတယ်
+        card.querySelector('.delete-btn').addEventListener('click', async () => {
+            // (ဥပမာအနေနဲ့ UI ကနေ ဖြုတ်တာပြထားပါတယ်၊ လိုအပ်ရင် Delete API ထပ်ချိတ်နိုင်ပါတယ်)
+            card.remove();
         });
 
         container.appendChild(card);
     });
-}
-
-
-// ==========================================
-// 2. Status Polling (5 စက္ကန့်တစ်ကြိမ် လှမ်းစစ်ပေးမည့် Function)
-// ==========================================
-
-function startCheckingStatus(registrationId, userId, mode) {
-    const intervalTime = 5000; // ၅ စက္ကန့်တစ်ကြိမ်
-
-    const timer = setInterval(async () => {
-        try {
-            const response = await fetch(`/api/check-status?registrationId=${registrationId}&userId=${userId}&mode=${mode}`);
-            const result = await response.json();
-
-            if (result.success) {
-                if (result.status === 'CONFIRMED') {
-                    addNotification("Registration Confirmed! 🎉", "Admin က မင်းရဲ့ Register ကို Confirm ပေးလိုက်ပါပြီ။ Key ရရှိသွားပါပြီ။");
-                    clearInterval(timer); 
-                } else if (result.status === 'REJECTED') {
-                    // Database ထဲကပါလာတဲ့ rejectionReason ကို ထည့်ပြပေးမည် (မပါလာရင် အထွေထွေအကြောင်းပြချက်ပြမည်)
-                    const reason = result.rejectionReason || "အခြားအကြောင်းပြချက်ဖြင့် ပယ်ချပါသည်";
-                    addNotification("Registration Rejected ❌", `တောင်းပန်ပါတယ်၊ မင်းရဲ့ Register ကို Reject လိုက်ပါတယ်။\n\n📝 အကြောင်းရင်း: ${reason}`);
-                    clearInterval(timer); 
-                }
-            }
-        } catch (error) {
-            console.error("Polling error:", error);
-        }
-    }, intervalTime);
-}
-
-// ==========================================
-// 3. Registration Submission 
-// ==========================================
-export async function submitUserRegistration(mode, formData, currentUserId, feedbackElement = null) {
-    formData.userId = currentUserId; 
-    
-    if (feedbackElement) {
-        feedbackElement.textContent = "Processing...";
-        feedbackElement.style.color = "#38bdf8";
-    }
-
-    try {
-        const response = await fetch('/api/register', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ mode, data: formData })
-        });
-        const result = await response.json();
-
-        // Server က ဘာ Response ပို့လိုက်လဲ Console မှာ အရင်စစ်မယ်
-        console.log("API Register Response:", result);
-
-        if (result.success) {
-            if (feedbackElement) {
-                feedbackElement.textContent = "Registration successful! Waiting for admin...";
-                feedbackElement.style.color = "#22c55e"; 
-            }
-            
-            // ချက်ချင်း Noti တက်ခိုင်းမည်
-            addNotification(
-                `${mode.toUpperCase()} Registration Submitted`, 
-                "မင်းရဲ့ Register တင်ထားမှု အောင်မြင်ပါတယ်။ Admin ဘက်က အတည်ပြုပေးသည်အထိ ခေတ္တစောင့်ဆိုင်းပေးပါ။"
-            );
-
-            // Registration ID သေချာပါလာမလာ စစ်မယ် (Server က registrationId ပို့ပေးသလို တချို့နေရာမှာ id ဖြစ်နေရင်လည်း ယူလို့ရအောင်)
-            const regId = result.registrationId || result.id;
-            console.log("Extracted Registration ID:", regId);
-
-            if (regId) {
-                console.log("Starting Polling Function...");
-                startCheckingStatus(regId, currentUserId, mode);
-            } else {
-                console.error("Error: Registration ID is missing from API response!");
-            }
-
-        } else {
-            if (feedbackElement) {
-                feedbackElement.textContent = "Error: " + (result.message || "Registration failed");
-                feedbackElement.style.color = "#ef4444"; 
-            }
-        }
-    } catch (error) {
-        console.error("Submit Error:", error);
-        if (feedbackElement) {
-            feedbackElement.textContent = "Network error occurred.";
-            feedbackElement.style.color = "#ef4444";
-        }
-    }
 }
