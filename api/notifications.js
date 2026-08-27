@@ -1,25 +1,26 @@
-const admin = require('firebase-admin');
-const { getFirestore } = require('firebase-admin/firestore');
+import admin from 'firebase-admin';
+import { getFirestore } from 'firebase-admin/firestore';
 
-// Firebase Admin SDK ကို Vercel Environment မှာ တစ်ကြိမ်သာ Initialize လုပ်ရန်
-if (!admin.apps.length) {
-    try {
-        // Environment Variable ရှိမရှိ အရင်စစ်ဆေးခြင်း
-        if (process.env.FIREBASE_SERVICE_ACCOUNT) {
-            const serviceAccount = JSON.parse(process.env.FIREBASE_SERVICE_ACCOUNT);
-            admin.initializeApp({
-                credential: admin.credential.cert(serviceAccount)
-            });
-        } else {
-            console.error("FIREBASE_SERVICE_ACCOUNT is missing in environment variables!");
-        }
-    } catch (error) {
-        console.error("Firebase Admin Initialization Error:", error);
+// Firebase Admin SDK ကို လုံခြုံစွာ Initialize လုပ်ခြင်း
+function initFirebaseAdmin() {
+    if (admin.apps && admin.apps.length > 0) {
+        return admin.apps[0];
     }
+    
+    const envVar = process.env.FIREBASE_SERVICE_ACCOUNT;
+    if (!envVar) {
+        throw new Error("FIREBASE_SERVICE_ACCOUNT is missing in environment variables!");
+    }
+
+    const serviceAccount = JSON.parse(envVar);
+    return admin.initializeApp({
+        credential: admin.credential.cert(serviceAccount)
+    });
 }
 
-module.exports = async function handler(req, res) {
+export default async function handler(req, res) {
     try {
+        initFirebaseAdmin();
         const db = getFirestore();
         const notifsRef = db.collection('notifications');
 
@@ -69,4 +70,4 @@ module.exports = async function handler(req, res) {
         console.error("API Server Error:", error);
         return res.status(500).json({ success: false, message: error.message || "Internal Server Error" });
     }
-};
+}

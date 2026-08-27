@@ -43,13 +43,13 @@ export async function loadAndRenderNotifications(userId, container = null) {
     }
 
     try {
+        // Backtick (`) ကို အမှန်တကယ် သုံးပေးရန်
         const response = await fetch(`/api/notifications?userId=${userId}`);
         const result = await response.json();
 
         if (result.success) {
             const notifications = result.notifications;
             
-            // Unread count ကို တွက်ချက်ရန်
             const unreadCount = notifications.filter(n => !n.isRead).length;
             updateNotificationBadge(unreadCount);
 
@@ -62,7 +62,6 @@ export async function loadAndRenderNotifications(userId, container = null) {
         console.error("Error loading notifications:", error);
     }
 }
-
 // Notification Screen ကို ဝင်ရောက်ကြည့်ရှုသည့်အခါ
 export async function renderNotificationScreen(container, userId) {
     container.innerHTML = `
