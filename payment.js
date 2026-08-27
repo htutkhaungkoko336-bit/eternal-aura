@@ -314,7 +314,6 @@ export function renderPaymentPage(appContent, formData) {
                 const notiTitle = `${displayModeText} Registration Submitted`;
                 const notiMessage = `${displayModeText} fee ${totalStr} အတွက် register တင်ထားပါသည်။ Admin မှ စစ်ဆေးပြီးလျှင် noti ပြန်တက်မည်။`;
                 
-                // ✔️ ပြင်ဆင်ချက် - addNotification တွင် currentUserId ထည့်သွင်းပေးခြင်း
                 addNotification(currentUserId, notiTitle, notiMessage);
                 alert("စာရင်းပေးသွင်းခြင်း အောင်မြင်ပါသည်ရှင့်!");
 
@@ -336,7 +335,6 @@ export function renderPaymentPage(appContent, formData) {
                                 const confTitle = `${displayModeText} Confirmed! 🎉`;
                                 const confMessage = `${displayModeText} fee ${totalStr} အတွက် register တင်ပြမှုကို Admin မှ အတည်ပြုပေးလိုက်ပါပြီရှင့်။`;
                                 
-                                // ✔️ ပြင်ဆင်ချက် - addNotification တွင် currentUserId ထည့်သွင်းပေးခြင်း
                                 addNotification(currentUserId, confTitle, confMessage);
                                 clearInterval(pollingInterval);
                             } else if (checkData.status === 'REJECTED') {
@@ -345,7 +343,6 @@ export function renderPaymentPage(appContent, formData) {
                                 const reason = checkData.rejectionReason || "အခြားအကြောင်းပြချက်ဖြင့် ပယ်ချပါသည်";
                                 const rejMessage = `${displayModeText} fee ${totalStr} အတွက် Register ကို ပယ်ချလိုက်ပါသည်။\n\n📝 အကြောင်းရင်း: ${reason}`;
                                 
-                                // ✔️ ပြင်ဆင်ချက် - addNotification တွင် currentUserId ထည့်သွင်းပေးခြင်း
                                 addNotification(currentUserId, rejTitle, rejMessage);
                                 clearInterval(pollingInterval);
                             }
@@ -369,4 +366,35 @@ export function renderPaymentPage(appContent, formData) {
             confirmBtn.textContent = "Confirm";
         }
     });
+}
+
+// Notification Item တစ်ခုချင်းစီကို ဖတ်လိုက်သည့်အခါ ခေါ်ရန် Function
+async function handleNotificationClick(notificationId) {
+    try {
+        await fetch(`/api/notifications/${notificationId}/read`, {
+            method: 'PATCH',
+            headers: { 'Content-Type': 'application/json' }
+        });
+
+        updateNotificationBadge(); 
+    } catch (err) {
+        console.error("Failed to mark notification as read", err);
+    }
+}
+
+// Notification Bell ပေါ်ရှိ Digit (Unread Count) ကို Update လုပ်ပေးသော Function
+function updateNotificationBadge() {
+    // ဥပမာ - notifications array ထဲမှ မဖတ်ရသေးသော အရေအတွက်ကို စစ်ခြင်း
+    const unreadCount = notifications.filter(n => !n.read && !n.isRead).length;
+    const badgeElement = document.getElementById('notification-badge'); 
+
+    if (badgeElement) {
+        if (unreadCount > 0) {
+            badgeElement.textContent = unreadCount;
+            badgeElement.style.display = 'inline-block'; 
+        } else {
+            badgeElement.textContent = '';
+            badgeElement.style.display = 'none'; 
+        }
+    }
 }
