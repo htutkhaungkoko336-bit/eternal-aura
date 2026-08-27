@@ -2,14 +2,13 @@ export function initKeyManagement() {
     const keyCardBtn = document.getElementById('key-card-btn');
     if (!keyCardBtn) return;
 
-    let keyData = JSON.parse(localStorage.getItem('user_key_inventory_v2')) || {
+let keyData = JSON.parse(localStorage.getItem('user_key_inventory_v2')) || {
         modes: {
-            '5v5': { '5k': 30, '10k': 100, '15k': 200, '25k': 500, '50k': 40 },
-            '1v1': { '5k': 2, '10k': 50, '15k': 1000, '25k': 1500, '50k': 8000 },
-            'tournament': { 'pass': 1 }
+            '5v5': { '5k': 0, '10k': 0, '15k': 0, '25k': 0, '50k': 0 },
+            '1v1': { '5k': 0, '10k': 0, '15k': 0, '25k': 0, '50k': 0 },
+            'tournament': { 'pass': 0 }
         }
     };
-
     function getKeyValues(type) {
         switch(type) {
             case '5k': return 5000;
