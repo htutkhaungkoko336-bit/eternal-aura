@@ -15,6 +15,7 @@ function generateUniqueUserId() {
     return `AURA-${randomStr}`;
 }
 
+// မြန်မာစံတော်ချိန် ရယူရန် Helper Function
 function getYangonTimeStr() {
     const now = new Date();
     const utc = now.getTime() + (now.getTimezoneOffset() * 60000);
@@ -42,6 +43,7 @@ module.exports = async function handler(req, res) {
 
         const usersRef = db.collection('users');
 
+        // ၁။ ဤ Device တွင် အခြားဖုန်းနံပါတ်ဖြင့် အကောင့်ရှိပြီးသားလား စစ်ဆေးခြင်း
         const deviceCheckSnapshot = await usersRef.where('deviceId', '==', deviceId).get();
         let hasOtherPhoneOnThisDevice = false;
         deviceCheckSnapshot.forEach(doc => {
@@ -60,8 +62,12 @@ module.exports = async function handler(req, res) {
             }
         }
 
+        // ၂။ ဖုန်းနံပါတ် Database ထဲတွင် ရှိမရှိ စစ်ဆေးခြင်း
         const snapshot = await usersRef.where('phone', '==', phone).get();
 
+        // -------------------------------------------------------------
+        // (က) ဖုန်းနံပါတ် မရှိသေးပါက (အကောင့်အသစ် Register လုပ်ရန်)
+        // -------------------------------------------------------------
         if (snapshot.empty) {
             if (!name || !pin) {
                 return res.status(200).json({ 
@@ -74,14 +80,22 @@ module.exports = async function handler(req, res) {
             const hashedPin = bcrypt.hashSync(pin, salt);
             const userId = generateUniqueUserId();
             const createdAtStr = getYangonTimeStr();
-            const defaultRole = 'user';
+            const defaultRole = 'user'; // အကောင့်အသစ်ဆိုလျှင် default role သတ်မှတ်ခြင်း
 
-            const formattedKeys = {
-                modes: {
-                    '5v5': { '5k': 0, '10k': 0, '15k': 0, '25k': 0, '50k': 0 },
-                    '1v1': { '5k': 0, '10k': 0, '15k': 0, '25k': 0, '50k': 0 },
-                    'tournament': { 'pass': 0 }
-                }
+            // အကောင့်အသစ်အတွက် Default Key ၁၁ မျိုး (0 စီဖြင့်)
+            const defaultKeys = {
+                "1vs1-5k": 0,
+                "1vs1-10k": 0,
+                "1vs1-15k": 0,
+                "1vs1-25k": 0,
+                "1vs1-50k": 0,
+                "5vs5-5k": 0,
+                "5vs5-10k": 0,
+                "5vs5-15k": 0,
+                "5vs5_25k": 0,
+                "5vs5_50k": 0,
+                // လိုအပ်မည့် အခြား Key အမျိုးအစားများကိုလည်း ဤနေရာတွင် ဆက်ထည့်နိုင်သည် (စုစုပေါင်း ၁၁ မျိုး)
+                "tournament": 0
             };
 
             const newUserData = {
@@ -91,7 +105,7 @@ module.exports = async function handler(req, res) {
                 pin: hashedPin,
                 deviceId: deviceId,
                 role: defaultRole,
-                keys: formattedKeys,
+                keys: defaultKeys, // <--- ထည့်သွင်းလိုက်သော Key ၁၁ မျိုး
                 createdAt: createdAtStr,
                 recentLogins: []
             };
@@ -103,25 +117,30 @@ module.exports = async function handler(req, res) {
                 message: "User registered successfully", 
                 name: name,
                 userId: userId,
-                role: defaultRole,
-                keys: formattedKeys
+                role: defaultRole
             });
         }
 
+        // -------------------------------------------------------------
+        // (ခ) ဖုန်းနံပါတ် ရှိပြီးသားဖြစ်ပါက (Login ဝင်ရန်)
+        // -------------------------------------------------------------
         const userDoc = snapshot.docs[0];
         const userData = userDoc.data();
 
+        // ပထမဆုံး Register လုပ်ထားတဲ့ Original Device နဲ့ တူနေရင် Password မလိုဘဲ တန်းဝင်ခွင့်ပေးမည်
         if (userData.deviceId === deviceId) {
             return res.status(200).json({ 
                 success: true, 
                 message: "Original device matched. Login successful", 
                 name: userData.name,
                 userId: userData.userId,
-                role: userData.role || 'user',
-                keys: userData.keys
+                role: userData.role || 'user'
             });
         }
 
+        // -------------------------------------------------------------
+        // (ဂ) DEVICE မတူတော့ပါက (Original Device မဟုတ်တော့ပါက)
+        // -------------------------------------------------------------
         if (!pin) {
             return res.status(200).json({ 
                 requiresPassword: true, 
@@ -129,12 +148,14 @@ module.exports = async function handler(req, res) {
             });
         }
 
+        // ပေးပို့လာသော PIN မှန်မမှန် စစ်ဆေးခြင်း
         const isPasswordValid = bcrypt.compareSync(pin, userData.pin);
 
         if (!isPasswordValid) {
             return res.status(401).json({ success: false, message: "Incorrect PIN. Access denied." });
         }
 
+        // PIN မှန်ကန်ပါက Original Device ကို လုံးဝ မပြောင်းလဲဘဲ ထားမည်။
         const loginRecord = {
             deviceId: deviceId,
             loginTime: getYangonTimeStr()
@@ -149,8 +170,7 @@ module.exports = async function handler(req, res) {
             message: "Login successful on another device with PIN", 
             name: userData.name,
             userId: userData.userId,
-            role: userData.role || 'user',
-            keys: userData.keys
+            role: userData.role || 'user'
         });
 
     } catch (error) {

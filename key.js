@@ -2,33 +2,13 @@ export function initKeyManagement() {
     const keyCardBtn = document.getElementById('key-card-btn');
     if (!keyCardBtn) return;
 
-    // Load initial data from localStorage or fallback to default structure
-    let keyData = JSON.parse(localStorage.getItem('user_key_inventory_v2')) || {
+let keyData = JSON.parse(localStorage.getItem('user_key_inventory_v2')) || {
         modes: {
             '5v5': { '5k': 0, '10k': 0, '15k': 0, '25k': 0, '50k': 0 },
             '1v1': { '5k': 0, '10k': 0, '15k': 0, '25k': 0, '50k': 0 },
             'tournament': { 'pass': 0 }
         }
     };
-
-async function fetchUserKeys() {
-    try {
-        const phone = localStorage.getItem('user_phone');
-        const response = await fetch('/api/userid', { // user-auth အစား userid လို့ ပြောင်းပါ
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ phone: phone, deviceId: localStorage.getItem('device_id') })
-            });
-            const data = await response.json();
-        if (data.success && data.keys) {
-            keyData = data.keys;
-            localStorage.setItem('user_key_inventory_v2', JSON.stringify(keyData));
-            updateUI(keyData);
-        }
-    } catch (error) {
-        console.error('Failed to fetch keys:', error);
-    }
-}
     function getKeyValues(type) {
         switch(type) {
             case '5k': return 5000;
@@ -43,45 +23,11 @@ async function fetchUserKeys() {
     function calculateTotalBalance(data) {
         let total = 0;
         ['5v5', '1v1'].forEach(mode => {
-            if (data.modes && data.modes[mode]) {
-                for (let type in data.modes[mode]) {
-                    total += (data.modes[mode][type] || 0) * getKeyValues(type);
-                }
+            for (let type in data.modes[mode]) {
+                total += (data.modes[mode][type] || 0) * getKeyValues(type);
             }
         });
         return total;
-    }
-
-    function renderKeys(mode, types, data) {
-        return types.map(type => {
-            let count = data.modes?.[mode]?.[type] || 0;
-            return `
-                <div style="
-                    background: rgba(2, 6, 23, 0.5); 
-                    border: 1px solid ${count > 0 ? 'rgba(56, 189, 248, 0.5)' : 'rgba(51, 65, 85, 0.5)'}; 
-                    border-radius: 8px; padding: 5px 2px; text-align: center; box-sizing: border-box;">
-                    <div style="font-size: 8px; color: #94a3b8; margin-bottom: 2px;">${type.toUpperCase()}</div>
-                    <div style="font-size: 11.5px; font-weight: bold; color: ${count > 0 ? '#38bdf8' : '#64748b'};">
-                        ${count} <span style="font-size: 7px; font-weight: normal;">pcs</span>
-                    </div>
-                </div>
-            `;
-        }).join('');
-    }
-
-    function generateCustomDropdownOptions(data) {
-        let options = '';
-        ['5v5', '1v1'].forEach(mode => {
-            if (data.modes && data.modes[mode]) {
-                for (let type in data.modes[mode]) {
-                    let count = data.modes[mode][type] || 0;
-                    if (count > 0) {
-                        options += `<div class="custom-dropdown-option" data-value="${mode}_${type}" style="padding: 7px 10px; font-size: 10px; color: white; cursor: pointer;">${mode.toUpperCase()} - ${type.toUpperCase()} (${count} pcs)</div>`;
-                    }
-                }
-            }
-        });
-        return options || `<div style="padding: 7px 10px; font-size: 10px; color: #64748b;">No keys available</div>`;
     }
 
     const modalHTML = `
@@ -110,7 +56,7 @@ async function fetchUserKeys() {
                 <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; border-bottom: 1px solid rgba(255, 255, 255, 0.1); padding-bottom: 10px;">
                     <div>
                         <h3 style="margin: 0; color: #38bdf8; font-size: 14px; letter-spacing: 0.5px; font-weight: 700;">KEY MANAGEMENT</h3>
-                        <p style="margin: 2px 0 0 0; font-size: 9.5px; color: #94a3b8;">API Secure Vault</p>
+                        <p style="margin: 2px 0 0 0; font-size: 9.5px; color: #94a3b8;">Cyber  Secure Vault</p>
                     </div>
                     <div style="background: rgba(192, 132, 252, 0.15); border: 1px solid rgba(192, 132, 252, 0.4); padding: 5px 10px; border-radius: 10px; text-align: right;">
                         <div style="font-size: 8.5px; color: #d8b4fe; text-transform: uppercase; font-weight: 600;">TOTAL BALANCE</div>
@@ -141,7 +87,7 @@ async function fetchUserKeys() {
                     <div style="font-size: 10px; font-weight: 600; color: #c084fc; margin-bottom: 4px; letter-spacing: 0.5px;">TOURNAMENT KEY</div>
                     <div style="background: rgba(30, 41, 59, 0.5); border: 1px solid rgba(192, 132, 252, 0.3); border-radius: 10px; padding: 6px 12px; display: flex; justify-content: space-between; align-items: center;">
                         <span style="font-size: 9.5px; color: #94a3b8;">Tournament Pass</span>
-                        <span style="font-size: 12px; font-weight: bold; color: #c084fc;" id="tournament-pass-val">${keyData.modes?.tournament?.pass || 0} pcs</span>
+                        <span style="font-size: 12px; font-weight: bold; color: #c084fc;">${keyData.modes.tournament.pass} pcs</span>
                     </div>
                 </div>
 
@@ -260,12 +206,11 @@ async function fetchUserKeys() {
     const kpayNameInput = document.getElementById('kpay-name');
     const kpayPhoneInput = document.getElementById('kpay-phone');
 
-    keyCardBtn.addEventListener('click', async () => {
+    keyCardBtn.addEventListener('click', () => {
         modalOverlay.style.opacity = '1';
         modalOverlay.style.visibility = 'visible';
         modalContent.style.transform = 'scale(1)';
         resetToDropdownState();
-        await fetchUserKeys(); // ဖွင့်လိုက်တာနဲ့ API ကနေ Data အသစ်လှမ်းဆွဲမည်
     });
 
     const closeModal = () => {
@@ -300,6 +245,19 @@ async function fetchUserKeys() {
         refundKeyModal.style.display = 'none';
         refundQtyModal.style.display = 'none';
     });
+
+    function generateCustomDropdownOptions(data) {
+        let options = '';
+        ['5v5', '1v1'].forEach(mode => {
+            for (let type in data.modes[mode]) {
+                let count = data.modes[mode][type] || 0;
+                if (count > 0) {
+                    options += `<div class="custom-dropdown-option" data-value="${mode}_${type}" style="padding: 7px 10px; font-size: 10px; color: white; cursor: pointer;">${mode.toUpperCase()} - ${type.toUpperCase()} (${count} pcs)</div>`;
+                }
+            }
+        });
+        return options || `<div style="padding: 7px 10px; font-size: 10px; color: #64748b;">No keys available</div>`;
+    }
 
     // Attach event listener for custom key options using event delegation
     refundKeyOptionsContainer.addEventListener('click', (e) => {
@@ -384,6 +342,23 @@ async function fetchUserKeys() {
         refundInfoText.innerText = `${mode.toUpperCase()} (${type.toUpperCase()}) Key ${qty} pcs for ${totalVal} Ks.`;
     }
 
+    function renderKeys(mode, types, data) {
+        return types.map(type => {
+            let count = data.modes[mode][type] || 0;
+            return `
+                <div style="
+                    background: rgba(2, 6, 23, 0.5); 
+                    border: 1px solid ${count > 0 ? 'rgba(56, 189, 248, 0.5)' : 'rgba(51, 65, 85, 0.5)'}; 
+                    border-radius: 8px; padding: 5px 2px; text-align: center; box-sizing: border-box;">
+                    <div style="font-size: 8px; color: #94a3b8; margin-bottom: 2px;">${type.toUpperCase()}</div>
+                    <div style="font-size: 11.5px; font-weight: bold; color: ${count > 0 ? '#38bdf8' : '#64748b'};">
+                        ${count} <span style="font-size: 7px; font-weight: normal;">pcs</span>
+                    </div>
+                </div>
+            `;
+        }).join('');
+    }
+
     const executeRefundBtn = document.getElementById('execute-refund-btn');
 
     executeRefundBtn.addEventListener('click', () => {
@@ -423,8 +398,6 @@ async function fetchUserKeys() {
         document.getElementById('vault-total-balance').innerText = calculateTotalBalance(data).toLocaleString() + ' Ks';
         document.getElementById('grid-5v5').innerHTML = renderKeys('5v5', ['5k', '10k', '15k', '25k', '50k'], data);
         document.getElementById('grid-1v1').innerHTML = renderKeys('1v1', ['5k', '10k', '15k', '25k', '50k'], data);
-        const tournamentPass = data.modes?.['tournament']?.['pass'] || 0;
-        document.getElementById('tournament-pass-val').innerText = `${tournamentPass} pcs`;
         refundKeyOptionsContainer.innerHTML = generateCustomDropdownOptions(data);
         resetToDropdownState();
     }
