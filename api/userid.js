@@ -76,20 +76,27 @@ module.exports = async function handler(req, res) {
             const createdAtStr = getYangonTimeStr();
             const defaultRole = 'user';
 
-            const defaultKeys = {
-                "1vs1-5k": 0,
-                "1vs1-10k": 0,
-                "1vs1-15k": 0,
-                "1vs1-25k": 0,
-                "1vs1-50k": 0,
-                "5vs5-5k": 0,
-                "5vs5-10k": 0,
-                "5vs5-15k": 0,
-                "5vs5_25k": 0,
-                "5vs5_50k": 0,
-                "tournament": 0
+            const formattedKeys = {
+                modes: {
+                    '5v5': {
+                        '5k': userData.keys?.["5vs5-5k"] || 0,
+                        '10k': userData.keys?.["5vs5-10k"] || 0,
+                        '15k': userData.keys?.["5vs5-15k"] || 0,
+                        '25k': userData.keys?.["5vs5_25k"] || 0,
+                        '50k': userData.keys?.["5vs5_50k"] || 0
+                    },
+                    '1v1': {
+                        '5k': userData.keys?.["1vs1-5k"] || 0,
+                        '10k': userData.keys?.["1vs1-10k"] || 0,
+                        '15k': userData.keys?.["1vs1-15k"] || 0,
+                        '25k': userData.keys?.["1vs1-25k"] || 0,
+                        '50k': userData.keys?.["1vs1-50k"] || 0
+                    },
+                    'tournament': {
+                        'pass': userData.keys?.["tournament"] || 0
+                    }
+                }
             };
-
             const newUserData = {
                 userId: userId,
                 name: name,
@@ -97,7 +104,7 @@ module.exports = async function handler(req, res) {
                 pin: hashedPin,
                 deviceId: deviceId,
                 role: defaultRole,
-                keys: defaultKeys,
+                keys: formattedKeys,
                 createdAt: createdAtStr,
                 recentLogins: []
             };
