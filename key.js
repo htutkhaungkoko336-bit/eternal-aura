@@ -1,13 +1,12 @@
-// LocalStorage ကနေ User အချက်အလက် (သို့မဟုတ်) ID ကို ရယူခြင်း
-let currentUser = window.currentUser || JSON.parse(localStorage.getItem('currentUser')) || { id: "default_user_123" };
+// LocalStorage ထဲက 'user_id' ကို တိုက်ရိုက် ရယူခြင်း
+let userId = localStorage.getItem('user_id');
 
 // userId ရှိမှသာ ခေါ်ပါရန် စစ်ဆေးခြင်း
-if (currentUser && currentUser.id) {
-    initKeyManagement(currentUser.id);
+if (userId && userId !== "undefined") {
+    initKeyManagement(userId);
 } else {
     console.log("User ID မရှိသေးပါ၊ ခေတ္တစောင့်ဆိုင်းနေပါသည်။");
 }
-
 export async function initKeyManagement(userId) {
     const keyCardBtn = document.getElementById('key-card-btn');
     if (!keyCardBtn) return;
