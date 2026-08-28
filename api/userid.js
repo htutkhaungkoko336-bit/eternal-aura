@@ -78,25 +78,12 @@ module.exports = async function handler(req, res) {
 
             const formattedKeys = {
                 modes: {
-                    '5v5': {
-                        '5k': userData.keys?.["5vs5-5k"] || 0,
-                        '10k': userData.keys?.["5vs5-10k"] || 0,
-                        '15k': userData.keys?.["5vs5-15k"] || 0,
-                        '25k': userData.keys?.["5vs5_25k"] || 0,
-                        '50k': userData.keys?.["5vs5_50k"] || 0
-                    },
-                    '1v1': {
-                        '5k': userData.keys?.["1vs1-5k"] || 0,
-                        '10k': userData.keys?.["1vs1-10k"] || 0,
-                        '15k': userData.keys?.["1vs1-15k"] || 0,
-                        '25k': userData.keys?.["1vs1-25k"] || 0,
-                        '50k': userData.keys?.["1vs1-50k"] || 0
-                    },
-                    'tournament': {
-                        'pass': userData.keys?.["tournament"] || 0
-                    }
+                    '5v5': { '5k': 0, '10k': 0, '15k': 0, '25k': 0, '50k': 0 },
+                    '1v1': { '5k': 0, '10k': 0, '15k': 0, '25k': 0, '50k': 0 },
+                    'tournament': { 'pass': 0 }
                 }
             };
+
             const newUserData = {
                 userId: userId,
                 name: name,
@@ -116,7 +103,8 @@ module.exports = async function handler(req, res) {
                 message: "User registered successfully", 
                 name: name,
                 userId: userId,
-                role: defaultRole
+                role: defaultRole,
+                keys: formattedKeys
             });
         }
 
@@ -129,7 +117,8 @@ module.exports = async function handler(req, res) {
                 message: "Original device matched. Login successful", 
                 name: userData.name,
                 userId: userData.userId,
-                role: userData.role || 'user'
+                role: userData.role || 'user',
+                keys: userData.keys
             });
         }
 
@@ -160,7 +149,8 @@ module.exports = async function handler(req, res) {
             message: "Login successful on another device with PIN", 
             name: userData.name,
             userId: userData.userId,
-            role: userData.role || 'user'
+            role: userData.role || 'user',
+            keys: userData.keys
         });
 
     } catch (error) {
