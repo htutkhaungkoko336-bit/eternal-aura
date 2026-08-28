@@ -30,10 +30,10 @@ function getUserId() {
 }
 
 // User ID ရလာသည်အထိ စောင့်ဆိုင်းပြီးမှ initKeyManagement စတင်ရန် function
-function checkAndInitUser(retries = 10, delay = 500) {
+function checkAndInitUser(retries = 15, delay = 500) {
     let userId = getUserId();
     
-    if (userId) {
+    if (userId && userId !== "undefined" && userId !== "null") {
         console.log("Found User ID:", userId);
         initKeyManagement(userId);
     } else if (retries > 0) {
