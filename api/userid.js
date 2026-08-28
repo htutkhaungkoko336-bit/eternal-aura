@@ -94,7 +94,6 @@ module.exports = async function handler(req, res) {
                 "5vs5-15k": 0,
                 "5vs5_25k": 0,
                 "5vs5_50k": 0,
-                // လိုအပ်မည့် အခြား Key အမျိုးအစားများကိုလည်း ဤနေရာတွင် ဆက်ထည့်နိုင်သည် (စုစုပေါင်း ၁၁ မျိုး)
                 "tournament": 0
             };
 
@@ -105,7 +104,7 @@ module.exports = async function handler(req, res) {
                 pin: hashedPin,
                 deviceId: deviceId,
                 role: defaultRole,
-                keys: defaultKeys, // <--- ထည့်သွင်းလိုက်သော Key ၁၁ မျိုး
+                keys: defaultKeys, 
                 createdAt: createdAtStr,
                 recentLogins: []
             };
@@ -117,7 +116,8 @@ module.exports = async function handler(req, res) {
                 message: "User registered successfully", 
                 name: name,
                 userId: userId,
-                role: defaultRole
+                role: defaultRole,
+                keys: defaultKeys
             });
         }
 
@@ -131,10 +131,11 @@ module.exports = async function handler(req, res) {
         if (userData.deviceId === deviceId) {
             return res.status(200).json({ 
                 success: true, 
-                message: "Original device matched. Login successful", 
+                message: "Login successful", 
                 name: userData.name,
                 userId: userData.userId,
-                role: userData.role || 'user'
+                role: userData.role || 'user',
+                keys: userData.keys 
             });
         }
 
@@ -170,7 +171,8 @@ module.exports = async function handler(req, res) {
             message: "Login successful on another device with PIN", 
             name: userData.name,
             userId: userData.userId,
-            role: userData.role || 'user'
+            role: userData.role || 'user',
+            keys: userData.keys
         });
 
     } catch (error) {

@@ -1,14 +1,14 @@
-export function initKeyManagement() {
+export function initKeyManagement(userDataKeys) {
     const keyCardBtn = document.getElementById('key-card-btn');
     if (!keyCardBtn) return;
 
-let keyData = JSON.parse(localStorage.getItem('user_key_inventory_v2')) || {
-        modes: {
-            '5v5': { '5k': 0, '10k': 0, '15k': 0, '25k': 0, '50k': 0 },
-            '1v1': { '5k': 0, '10k': 0, '15k': 0, '25k': 0, '50k': 0 },
-            'tournament': { 'pass': 0 }
-        }
+    // Backend မှ ရလာသော keys ကို ယူသုံးမည် (မရှိပါက Default 0 များဖြင့် သတ်မှတ်မည်)
+    let keyData = userDataKeys || {
+        "1vs1-5k": 0, "1vs1-10k": 0, "1vs1-15k": 0, "1vs1-25k": 0, "1vs1-50k": 0,
+        "5vs5-5k": 0, "5vs5-10k": 0, "5vs5-15k": 0, "5vs5_25k": 0, "5vs5_50k": 0,
+        "tournament": 0
     };
+
     function getKeyValues(type) {
         switch(type) {
             case '5k': return 5000;
@@ -22,11 +22,13 @@ let keyData = JSON.parse(localStorage.getItem('user_key_inventory_v2')) || {
 
     function calculateTotalBalance(data) {
         let total = 0;
-        ['5v5', '1v1'].forEach(mode => {
-            for (let type in data.modes[mode]) {
-                total += (data.modes[mode][type] || 0) * getKeyValues(type);
-            }
-        });
+        for (let key in data) {
+            if (key === 'tournament') continue;
+            // Key နာမည်ဥပမာ "1vs1-5k" သို့မဟုတ် "5vs5_25k" မှ တန်ဖိုးခွဲထုတ်ခြင်း
+            const parts = key.split(/[-_]/);
+            const type = parts[parts.length - 1]; // 5k, 10k စသည်ဖြင့်
+            total += (data[key] || 0) * getKeyValues(type);
+        }
         return total;
     }
 
@@ -56,7 +58,7 @@ let keyData = JSON.parse(localStorage.getItem('user_key_inventory_v2')) || {
                 <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; border-bottom: 1px solid rgba(255, 255, 255, 0.1); padding-bottom: 10px;">
                     <div>
                         <h3 style="margin: 0; color: #38bdf8; font-size: 14px; letter-spacing: 0.5px; font-weight: 700;">KEY MANAGEMENT</h3>
-                        <p style="margin: 2px 0 0 0; font-size: 9.5px; color: #94a3b8;">Cyber  Secure Vault</p>
+                        <p style="margin: 2px 0 0 0; font-size: 9.5px; color: #94a3b8;">Cyber Secure Vault</p>
                     </div>
                     <div style="background: rgba(192, 132, 252, 0.15); border: 1px solid rgba(192, 132, 252, 0.4); padding: 5px 10px; border-radius: 10px; text-align: right;">
                         <div style="font-size: 8.5px; color: #d8b4fe; text-transform: uppercase; font-weight: 600;">TOTAL BALANCE</div>
@@ -70,7 +72,7 @@ let keyData = JSON.parse(localStorage.getItem('user_key_inventory_v2')) || {
                 <div style="margin-bottom: 10px;">
                     <div style="font-size: 10px; font-weight: 600; color: #38bdf8; margin-bottom: 4px; letter-spacing: 0.5px;">5v5 MODE KEYS</div>
                     <div style="display: grid; grid-template-columns: repeat(5, 1fr); gap: 5px;" id="grid-5v5">
-                        ${renderKeys('5v5', ['5k', '10k', '15k', '25k', '50k'], keyData)}
+                        ${renderKeys(['5k', '10k', '15k', '25k', '50k'], keyData, '5vs5')}
                     </div>
                 </div>
 
@@ -78,7 +80,7 @@ let keyData = JSON.parse(localStorage.getItem('user_key_inventory_v2')) || {
                 <div style="margin-bottom: 10px;">
                     <div style="font-size: 10px; font-weight: 600; color: #38bdf8; margin-bottom: 4px; letter-spacing: 0.5px;">1v1 MODE KEYS</div>
                     <div style="display: grid; grid-template-columns: repeat(5, 1fr); gap: 5px;" id="grid-1v1">
-                        ${renderKeys('1v1', ['5k', '10k', '15k', '25k', '50k'], keyData)}
+                        ${renderKeys(['5k', '10k', '15k', '25k', '50k'], keyData, '1vs1')}
                     </div>
                 </div>
 
@@ -87,7 +89,7 @@ let keyData = JSON.parse(localStorage.getItem('user_key_inventory_v2')) || {
                     <div style="font-size: 10px; font-weight: 600; color: #c084fc; margin-bottom: 4px; letter-spacing: 0.5px;">TOURNAMENT KEY</div>
                     <div style="background: rgba(30, 41, 59, 0.5); border: 1px solid rgba(192, 132, 252, 0.3); border-radius: 10px; padding: 6px 12px; display: flex; justify-content: space-between; align-items: center;">
                         <span style="font-size: 9.5px; color: #94a3b8;">Tournament Pass</span>
-                        <span style="font-size: 12px; font-weight: bold; color: #c084fc;">${keyData.modes.tournament.pass} pcs</span>
+                        <span style="font-size: 12px; font-weight: bold; color: #c084fc;">${keyData['tournament'] || 0} pcs</span>
                     </div>
                 </div>
 
@@ -95,10 +97,7 @@ let keyData = JSON.parse(localStorage.getItem('user_key_inventory_v2')) || {
                 <div id="refund-card-container" style="background: rgba(30, 41, 59, 0.6); border: 1px solid rgba(56, 189, 248, 0.25); border-radius: 16px; padding: 12px; margin-bottom: 12px;">
                     <div style="font-size: 11px; font-weight: bold; color: #38bdf8; margin-bottom: 8px;">Key Refund System</div>
                     
-                    <!-- Single Row Layout for Inputs & Refund Button -->
                     <div style="display: flex; gap: 6px; align-items: center; margin-bottom: 8px;">
-                        
-                        <!-- State A: Custom Dropdowns Area -->
                         <div id="dropdowns-group" style="display: flex; gap: 6px; flex: 1;">
                             
                             <!-- 1. Key Select Custom Dropdown -->
@@ -142,10 +141,9 @@ let keyData = JSON.parse(localStorage.getItem('user_key_inventory_v2')) || {
                                 </div>
                                 <input type="hidden" id="refund-qty-value">
                             </div>
-
                         </div>
 
-                        <!-- State B: KPay Inputs Area (English Name & Digits Phone) -->
+                        <!-- KPay Inputs Area -->
                         <div id="kpay-inputs-group" style="display: none; gap: 5px; flex: 1;">
                             <input type="text" id="kpay-name" lang="en" placeholder="KPay Name (Eng)" style="
                                 flex: 1; background: rgba(15, 23, 42, 0.95); border: 1px solid rgba(56, 189, 248, 0.6);
@@ -165,7 +163,6 @@ let keyData = JSON.parse(localStorage.getItem('user_key_inventory_v2')) || {
                         </button>
                     </div>
 
-                    <!-- Info Banner -->
                     <div id="refund-info-text" style="font-size: 10px; color: #94a3b8; line-height: 1.3;">
                         Please select a key and quantity to view refund details.
                     </div>
@@ -189,7 +186,6 @@ let keyData = JSON.parse(localStorage.getItem('user_key_inventory_v2')) || {
     const dropdownsGroup = document.getElementById('dropdowns-group');
     const kpayInputsGroup = document.getElementById('kpay-inputs-group');
     
-    // Custom Dropdown Elements
     const refundKeyBtn = document.getElementById('refund-key-btn');
     const refundKeyModal = document.getElementById('refund-key-modal');
     const refundKeyText = document.getElementById('refund-key-text');
@@ -224,14 +220,12 @@ let keyData = JSON.parse(localStorage.getItem('user_key_inventory_v2')) || {
         if (e.target === modalOverlay) closeModal();
     });
 
-    // Toggle Key Dropdown
     refundKeyBtn.addEventListener('click', (e) => {
         e.stopPropagation();
         refundQtyModal.style.display = 'none';
         refundKeyModal.style.display = refundKeyModal.style.display === 'block' ? 'none' : 'block';
     });
 
-    // Toggle Qty Dropdown
     refundQtyBtn.addEventListener('click', (e) => {
         e.stopPropagation();
         refundKeyModal.style.display = 'none';
@@ -240,7 +234,6 @@ let keyData = JSON.parse(localStorage.getItem('user_key_inventory_v2')) || {
         }
     });
 
-    // Close dropdowns on outside click
     document.addEventListener('click', () => {
         refundKeyModal.style.display = 'none';
         refundQtyModal.style.display = 'none';
@@ -248,18 +241,18 @@ let keyData = JSON.parse(localStorage.getItem('user_key_inventory_v2')) || {
 
     function generateCustomDropdownOptions(data) {
         let options = '';
-        ['5v5', '1v1'].forEach(mode => {
-            for (let type in data.modes[mode]) {
-                let count = data.modes[mode][type] || 0;
-                if (count > 0) {
-                    options += `<div class="custom-dropdown-option" data-value="${mode}_${type}" style="padding: 7px 10px; font-size: 10px; color: white; cursor: pointer;">${mode.toUpperCase()} - ${type.toUpperCase()} (${count} pcs)</div>`;
-                }
+        for (let dbKey in data) {
+            if (dbKey === 'tournament') continue;
+            let count = data[dbKey] || 0;
+            if (count > 0) {
+                // dbKey ဥပမာ "1vs1-5k" သို့မဟုတ် "5vs5_25k" ကို ရှင်းလင်းပြတ်သားစွာ ပြရန်
+                let formattedName = dbKey.replace('-', ' ').replace('_', ' ').toUpperCase();
+                options += `<div class="custom-dropdown-option" data-value="${dbKey}" style="padding: 7px 10px; font-size: 10px; color: white; cursor: pointer;">${formattedName} (${count} pcs)</div>`;
             }
-        });
+        }
         return options || `<div style="padding: 7px 10px; font-size: 10px; color: #64748b;">No keys available</div>`;
     }
 
-    // Attach event listener for custom key options using event delegation
     refundKeyOptionsContainer.addEventListener('click', (e) => {
         const option = e.target.closest('.custom-dropdown-option');
         if (!option) return;
@@ -269,8 +262,7 @@ let keyData = JSON.parse(localStorage.getItem('user_key_inventory_v2')) || {
         refundKeyText.style.color = '#f8fafc';
         refundKeyModal.style.display = 'none';
 
-        const [mode, type] = val.split('_');
-        const maxCount = keyData.modes[mode][type];
+        const maxCount = keyData[val] || 0;
         
         let qtyOptions = '';
         for (let i = 1; i <= maxCount; i++) {
@@ -278,7 +270,6 @@ let keyData = JSON.parse(localStorage.getItem('user_key_inventory_v2')) || {
         }
         refundQtyOptionsContainer.innerHTML = qtyOptions;
         
-        // Reset Qty selection when key changes
         refundQtyValue.value = '';
         refundQtyText.textContent = 'Qty...';
         refundQtyText.style.color = '#64748b';
@@ -286,7 +277,6 @@ let keyData = JSON.parse(localStorage.getItem('user_key_inventory_v2')) || {
         updateInfoText();
     });
 
-    // Attach event listener for custom qty options using event delegation
     refundQtyOptionsContainer.addEventListener('click', (e) => {
         const option = e.target.closest('.custom-dropdown-option');
         if (!option) return;
@@ -304,12 +294,10 @@ let keyData = JSON.parse(localStorage.getItem('user_key_inventory_v2')) || {
         }
     });
 
-    // ဖုန်းနံပါတ် နေရာတွင် ဂဏန်း (Digits) သီးသန့်သာ ရိုက်ထည့်နိုင်ရန် စစ်ဆေးခြင်း
     kpayPhoneInput.addEventListener('input', (e) => {
         e.target.value = e.target.value.replace(/[^0-9]/g, '');
     });
 
-    // နာမည် နေရာတွင် အင်္ဂလိပ်စာ သီးသန့်သာ ရိုက်ထည့်နိုင်ရန် စစ်ဆေးခြင်း
     kpayNameInput.addEventListener('input', (e) => {
         e.target.value = e.target.value.replace(/[^a-zA-Z\s]/g, '');
     });
@@ -336,15 +324,18 @@ let keyData = JSON.parse(localStorage.getItem('user_key_inventory_v2')) || {
             refundInfoText.innerText = "Please select a key and quantity to view refund details.";
             return;
         }
-        const [mode, type] = val.split('_');
+        const parts = val.split(/[-_]/);
+        const type = parts[parts.length - 1];
         const unitVal = getKeyValues(type);
         const totalVal = (unitVal * qty).toLocaleString();
-        refundInfoText.innerText = `${mode.toUpperCase()} (${type.toUpperCase()}) Key ${qty} pcs for ${totalVal} Ks.`;
+        refundInfoText.innerText = `${val.replace(/[-_]/g, ' ').toUpperCase()} Key ${qty} pcs for ${totalVal} Ks.`;
     }
 
-    function renderKeys(mode, types, data) {
+    function renderKeys(types, data, modePrefix) {
         return types.map(type => {
-            let count = data.modes[mode][type] || 0;
+            // Firestore ထဲက key ပုံစံအတိုင်း ရှာရန် (ဥပမာ "1vs1-5k" သို့မဟုတ် "5vs5_25k")
+            let exactKey = Object.keys(data).find(k => k.startsWith(modePrefix) && k.endsWith(type));
+            let count = exactKey ? (data[exactKey] || 0) : 0;
             return `
                 <div style="
                     background: rgba(2, 6, 23, 0.5); 
@@ -377,16 +368,17 @@ let keyData = JSON.parse(localStorage.getItem('user_key_inventory_v2')) || {
             return;
         }
 
-        const [mode, type] = selectedVal.split('_');
+        const parts = selectedVal.split(/[-_]/);
+        const type = parts[parts.length - 1];
         const unitVal = getKeyValues(type);
         const totalVal = unitVal * qty;
 
-        const isConfirmed = confirm(`Confirm Refund - ${mode.toUpperCase()} ${type.toUpperCase()} Key (${qty} pcs) for ${totalVal.toLocaleString()} Ks to ${kpayName} (${kpayPhone}) via KPay.`);
+        const isConfirmed = confirm(`Confirm Refund - ${selectedVal.toUpperCase()} Key (${qty} pcs) for ${totalVal.toLocaleString()} Ks to ${kpayName} (${kpayPhone}) via KPay.`);
         if (!isConfirmed) return;
 
-        if (keyData.modes[mode] && keyData.modes[mode][type] >= qty) {
-            keyData.modes[mode][type] -= qty;
-            localStorage.setItem('user_key_inventory_v2', JSON.stringify(keyData));
+        if (keyData[selectedVal] && keyData[selectedVal] >= qty) {
+            keyData[selectedVal] -= qty;
+            // TODO: Backend သို့ API ခေါ်ပြီး Database ထဲက keys ကိုပါ အပ်ဒိတ်လုပ်ပေးရန် ဤနေရာတွင် ချိတ်ဆက်ရပါမည်။
             updateUI(keyData);
             alert(`Refund request submitted successfully!`);
         } else {
@@ -396,8 +388,8 @@ let keyData = JSON.parse(localStorage.getItem('user_key_inventory_v2')) || {
 
     function updateUI(data) {
         document.getElementById('vault-total-balance').innerText = calculateTotalBalance(data).toLocaleString() + ' Ks';
-        document.getElementById('grid-5v5').innerHTML = renderKeys('5v5', ['5k', '10k', '15k', '25k', '50k'], data);
-        document.getElementById('grid-1v1').innerHTML = renderKeys('1v1', ['5k', '10k', '15k', '25k', '50k'], data);
+        document.getElementById('grid-5v5').innerHTML = renderKeys(['5k', '10k', '15k', '25k', '50k'], data, '5vs5');
+        document.getElementById('grid-1v1').innerHTML = renderKeys(['5k', '10k', '15k', '25k', '50k'], data, '1vs1');
         refundKeyOptionsContainer.innerHTML = generateCustomDropdownOptions(data);
         resetToDropdownState();
     }
