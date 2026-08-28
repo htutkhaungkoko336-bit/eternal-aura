@@ -59,28 +59,28 @@ export async function initKeyManagement(userId) {
     // API မှ Key ဒေတာများကို တိုက်ရိုက်လှမ်းဆွဲထုတ်ခြင်း
     async function fetchUserKeys() {
         try {
-            const response = await fetch(`/api/keys?userId=${userId}`);
+            const response = await fetch(`/api/keys?userId=${encodeURIComponent(userId)}`);
             const result = await response.json();
             if (result.success) {
                 const rawKeys = result.keys || {};
                 return {
                     modes: {
                         '5v5': {
-                            '5k': rawKeys["5vs5-5k"] || 0,
-                            '10k': rawKeys["5vs5-10k"] || 0,
-                            '15k': rawKeys["5vs5-15k"] || 0,
-                            '25k': rawKeys["5vs5_25k"] || rawKeys["5vs5-25k"] || 0,
-                            '50k': rawKeys["5vs5_50k"] || rawKeys["5vs5-50k"] || 0
+                            '5k': rawKeys["5vs5-5k"] || rawKeys["5v5_5k"] || 0,
+                            '10k': rawKeys["5vs5-10k"] || rawKeys["5v5_10k"] || 0,
+                            '15k': rawKeys["5vs5-15k"] || rawKeys["5v5_15k"] || 0,
+                            '25k': rawKeys["5vs5_25k"] || rawKeys["5vs5-25k"] || rawKeys["5v5_25k"] || 0,
+                            '50k': rawKeys["5vs5_50k"] || rawKeys["5vs5-50k"] || rawKeys["5v5_50k"] || 0
                         },
                         '1v1': {
-                            '5k': rawKeys["1vs1-5k"] || 0,
-                            '10k': rawKeys["1vs1-10k"] || 0,
-                            '15k': rawKeys["1vs1-15k"] || 0,
-                            '25k': rawKeys["1vs1-25k"] || 0,
-                            '50k': rawKeys["1vs1-50k"] || 0
+                            '5k': rawKeys["1vs1-5k"] || rawKeys["1v1_5k"] || 0,
+                            '10k': rawKeys["1vs1-10k"] || rawKeys["1v1_10k"] || 0,
+                            '15k': rawKeys["1vs1-15k"] || rawKeys["1v1_15k"] || 0,
+                            '25k': rawKeys["1vs1-25k"] || rawKeys["1v1_25k"] || 0,
+                            '50k': rawKeys["1vs1-50k"] || rawKeys["1v1_50k"] || 0
                         },
                         'tournament': {
-                            'pass': rawKeys["tournament"] || 0
+                            'pass': rawKeys["tournament"] || rawKeys["tournament-pass"] || 0
                         }
                     }
                 };
@@ -474,25 +474,25 @@ export async function initKeyManagement(userId) {
 
             if (result.success) {
                 alert('Refund request submitted successfully to database!');
-                const rawKeys = result.updatedKeys || {};
+                const rawKeys = result.updatedKeys || result.keys || {};
                 keyData = {
                     modes: {
                         '5v5': {
-                            '5k': rawKeys["5vs5-5k"] || 0,
-                            '10k': rawKeys["5vs5-10k"] || 0,
-                            '15k': rawKeys["5vs5-15k"] || 0,
-                            '25k': rawKeys["5vs5_25k"] || rawKeys["5vs5-25k"] || 0,
-                            '50k': rawKeys["5vs5_50k"] || rawKeys["5vs5-50k"] || 0
+                            '5k': rawKeys["5vs5-5k"] || rawKeys["5v5_5k"] || 0,
+                            '10k': rawKeys["5vs5-10k"] || rawKeys["5v5_10k"] || 0,
+                            '15k': rawKeys["5vs5-15k"] || rawKeys["5v5_15k"] || 0,
+                            '25k': rawKeys["5vs5_25k"] || rawKeys["5vs5-25k"] || rawKeys["5v5_25k"] || 0,
+                            '50k': rawKeys["5vs5_50k"] || rawKeys["5vs5-50k"] || rawKeys["5v5_50k"] || 0
                         },
                         '1v1': {
-                            '5k': rawKeys["1vs1-5k"] || 0,
-                            '10k': rawKeys["1vs1-10k"] || 0,
-                            '15k': rawKeys["1vs1-15k"] || 0,
-                            '25k': rawKeys["1vs1-25k"] || 0,
-                            '50k': rawKeys["1vs1-50k"] || 0
+                            '5k': rawKeys["1vs1-5k"] || rawKeys["1v1_5k"] || 0,
+                            '10k': rawKeys["1vs1-10k"] || rawKeys["1v1_10k"] || 0,
+                            '15k': rawKeys["1vs1-15k"] || rawKeys["1v1_15k"] || 0,
+                            '25k': rawKeys["1vs1-25k"] || rawKeys["1v1_25k"] || 0,
+                            '50k': rawKeys["1vs1-50k"] || rawKeys["1v1_50k"] || 0
                         },
                         'tournament': {
-                            'pass': rawKeys["tournament"] || 0
+                            'pass': rawKeys["tournament"] || rawKeys["tournament-pass"] || 0
                         }
                     }
                 };
