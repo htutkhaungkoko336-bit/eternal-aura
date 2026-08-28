@@ -1,59 +1,14 @@
-// Status ကို Polling လုပ်ပြီး ၅ စက္ကန့်တစ်ကြိမ် စစ်ဆေးသည့် Function
-async function checkRegistrationStatus(registrationId, userId, mode) {
-    try {
-        const response = await fetch(`/api/checkstatus?registrationId=${registrationId}&userId=${userId}&mode=${mode}`);
-        const result = await response.json();
-
-        if (result.success) {
-            const statusBadge = document.getElementById('status-badge');
-            if (statusBadge) {
-                statusBadge.textContent = result.status;
-            }
-
-            // Status က CONFIRMED ဖြစ်သွားပြီဆိုလျှင်
-            if (result.status === 'CONFIRMED') {
-                console.log('Admin အတည်ပြုပြီးပါပြီ။ Key များကို Update လုပ်နေပါသည်...');
-                
-                // Key Management UI ကို ဒေတာအသစ်ဖြင့် ချက်ချင်း update လုပ်ခြင်း
-                if (typeof updateUI === 'function') {
-                    // Backend က ပို့ပေးတဲ့ keys သို့မဟုတ် balance ဒေတာကို ထည့်သွင်းပေးခြင်း
-                    updateUI(result.keys); 
-                }
-
-                // Status အတည်ပြုပြီးပါက Polling ကို ရပ်တန့်ရန်
-                if (window.pollingInterval) {
-                    clearInterval(window.pollingInterval);
-                }
-            } 
-            else if (result.status === 'REJECTED') {
-                console.log('Registration Rejected:', result.rejectionReason);
-                if (window.pollingInterval) {
-                    clearInterval(window.pollingInterval);
-                }
-            }
-        }
-    } catch (error) {
-        console.error("Error checking status:", error);
-    }
-}
-
-// ၅ စက္ကန့်တစ်ကြိမ် (၅၀၀၀ မီလီစက္ကန့်) ဖြင့် Status ကို ဆက်တိုက် စစ်ဆေးရန် သတ်မှတ်ခြင်း
-// ဥပမာ - checkRegistrationStatus('YOUR_REG_ID', 'YOUR_USER_ID', '1vs1') ဖြင့် စတင်နိုင်ပါသည်
-// window.pollingInterval = setInterval(() => {
-//     checkRegistrationStatus(myRegId, myUserId, '1vs1');
-// }, 5000);
-
-
-export function initKeyManagement(userDataKeys) {
+export function initKeyManagement() {
     const keyCardBtn = document.getElementById('key-card-btn');
     if (!keyCardBtn) return;
 
-    let keyData = userDataKeys || {
-        "1vs1-5k": 0, "1vs1-10k": 0, "1vs1-15k": 0, "1vs1-25k": 0, "1vs1-50k": 0,
-        "5vs5-5k": 0, "5vs5-10k": 0, "5vs5-15k": 0, "5vs5_25k": 0, "5vs5_50k": 0,
-        "tournament": 0
+let keyData = JSON.parse(localStorage.getItem('user_key_inventory_v2')) || {
+        modes: {
+            '5v5': { '5k': 0, '10k': 0, '15k': 0, '25k': 0, '50k': 0 },
+            '1v1': { '5k': 0, '10k': 0, '15k': 0, '25k': 0, '50k': 0 },
+            'tournament': { 'pass': 0 }
+        }
     };
-
     function getKeyValues(type) {
         switch(type) {
             case '5k': return 5000;
@@ -67,12 +22,11 @@ export function initKeyManagement(userDataKeys) {
 
     function calculateTotalBalance(data) {
         let total = 0;
-        for (let key in data) {
-            if (key === 'tournament') continue;
-            const parts = key.split(/[-_]/);
-            const type = parts[parts.length - 1];
-            total += (data[key] || 0) * getKeyValues(type);
-        }
+        ['5v5', '1v1'].forEach(mode => {
+            for (let type in data.modes[mode]) {
+                total += (data.modes[mode][type] || 0) * getKeyValues(type);
+            }
+        });
         return total;
     }
 
@@ -102,7 +56,7 @@ export function initKeyManagement(userDataKeys) {
                 <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; border-bottom: 1px solid rgba(255, 255, 255, 0.1); padding-bottom: 10px;">
                     <div>
                         <h3 style="margin: 0; color: #38bdf8; font-size: 14px; letter-spacing: 0.5px; font-weight: 700;">KEY MANAGEMENT</h3>
-                        <p style="margin: 2px 0 0 0; font-size: 9.5px; color: #94a3b8;">Cyber Secure Vault</p>
+                        <p style="margin: 2px 0 0 0; font-size: 9.5px; color: #94a3b8;">Cyber  Secure Vault</p>
                     </div>
                     <div style="background: rgba(192, 132, 252, 0.15); border: 1px solid rgba(192, 132, 252, 0.4); padding: 5px 10px; border-radius: 10px; text-align: right;">
                         <div style="font-size: 8.5px; color: #d8b4fe; text-transform: uppercase; font-weight: 600;">TOTAL BALANCE</div>
@@ -116,7 +70,7 @@ export function initKeyManagement(userDataKeys) {
                 <div style="margin-bottom: 10px;">
                     <div style="font-size: 10px; font-weight: 600; color: #38bdf8; margin-bottom: 4px; letter-spacing: 0.5px;">5v5 MODE KEYS</div>
                     <div style="display: grid; grid-template-columns: repeat(5, 1fr); gap: 5px;" id="grid-5v5">
-                        ${renderKeys(['5k', '10k', '15k', '25k', '50k'], keyData, '5vs5')}
+                        ${renderKeys('5v5', ['5k', '10k', '15k', '25k', '50k'], keyData)}
                     </div>
                 </div>
 
@@ -124,7 +78,7 @@ export function initKeyManagement(userDataKeys) {
                 <div style="margin-bottom: 10px;">
                     <div style="font-size: 10px; font-weight: 600; color: #38bdf8; margin-bottom: 4px; letter-spacing: 0.5px;">1v1 MODE KEYS</div>
                     <div style="display: grid; grid-template-columns: repeat(5, 1fr); gap: 5px;" id="grid-1v1">
-                        ${renderKeys(['5k', '10k', '15k', '25k', '50k'], keyData, '1vs1')}
+                        ${renderKeys('1v1', ['5k', '10k', '15k', '25k', '50k'], keyData)}
                     </div>
                 </div>
 
@@ -133,7 +87,7 @@ export function initKeyManagement(userDataKeys) {
                     <div style="font-size: 10px; font-weight: 600; color: #c084fc; margin-bottom: 4px; letter-spacing: 0.5px;">TOURNAMENT KEY</div>
                     <div style="background: rgba(30, 41, 59, 0.5); border: 1px solid rgba(192, 132, 252, 0.3); border-radius: 10px; padding: 6px 12px; display: flex; justify-content: space-between; align-items: center;">
                         <span style="font-size: 9.5px; color: #94a3b8;">Tournament Pass</span>
-                        <span style="font-size: 12px; font-weight: bold; color: #c084fc;" id="tournament-key-display">${keyData['tournament'] || 0} pcs</span>
+                        <span style="font-size: 12px; font-weight: bold; color: #c084fc;">${keyData.modes.tournament.pass} pcs</span>
                     </div>
                 </div>
 
@@ -141,7 +95,10 @@ export function initKeyManagement(userDataKeys) {
                 <div id="refund-card-container" style="background: rgba(30, 41, 59, 0.6); border: 1px solid rgba(56, 189, 248, 0.25); border-radius: 16px; padding: 12px; margin-bottom: 12px;">
                     <div style="font-size: 11px; font-weight: bold; color: #38bdf8; margin-bottom: 8px;">Key Refund System</div>
                     
+                    <!-- Single Row Layout for Inputs & Refund Button -->
                     <div style="display: flex; gap: 6px; align-items: center; margin-bottom: 8px;">
+                        
+                        <!-- State A: Custom Dropdowns Area -->
                         <div id="dropdowns-group" style="display: flex; gap: 6px; flex: 1;">
                             
                             <!-- 1. Key Select Custom Dropdown -->
@@ -185,9 +142,10 @@ export function initKeyManagement(userDataKeys) {
                                 </div>
                                 <input type="hidden" id="refund-qty-value">
                             </div>
+
                         </div>
 
-                        <!-- KPay Inputs Area -->
+                        <!-- State B: KPay Inputs Area (English Name & Digits Phone) -->
                         <div id="kpay-inputs-group" style="display: none; gap: 5px; flex: 1;">
                             <input type="text" id="kpay-name" lang="en" placeholder="KPay Name (Eng)" style="
                                 flex: 1; background: rgba(15, 23, 42, 0.95); border: 1px solid rgba(56, 189, 248, 0.6);
@@ -207,6 +165,7 @@ export function initKeyManagement(userDataKeys) {
                         </button>
                     </div>
 
+                    <!-- Info Banner -->
                     <div id="refund-info-text" style="font-size: 10px; color: #94a3b8; line-height: 1.3;">
                         Please select a key and quantity to view refund details.
                     </div>
@@ -230,6 +189,7 @@ export function initKeyManagement(userDataKeys) {
     const dropdownsGroup = document.getElementById('dropdowns-group');
     const kpayInputsGroup = document.getElementById('kpay-inputs-group');
     
+    // Custom Dropdown Elements
     const refundKeyBtn = document.getElementById('refund-key-btn');
     const refundKeyModal = document.getElementById('refund-key-modal');
     const refundKeyText = document.getElementById('refund-key-text');
@@ -264,12 +224,14 @@ export function initKeyManagement(userDataKeys) {
         if (e.target === modalOverlay) closeModal();
     });
 
+    // Toggle Key Dropdown
     refundKeyBtn.addEventListener('click', (e) => {
         e.stopPropagation();
         refundQtyModal.style.display = 'none';
         refundKeyModal.style.display = refundKeyModal.style.display === 'block' ? 'none' : 'block';
     });
 
+    // Toggle Qty Dropdown
     refundQtyBtn.addEventListener('click', (e) => {
         e.stopPropagation();
         refundKeyModal.style.display = 'none';
@@ -278,6 +240,7 @@ export function initKeyManagement(userDataKeys) {
         }
     });
 
+    // Close dropdowns on outside click
     document.addEventListener('click', () => {
         refundKeyModal.style.display = 'none';
         refundQtyModal.style.display = 'none';
@@ -285,17 +248,18 @@ export function initKeyManagement(userDataKeys) {
 
     function generateCustomDropdownOptions(data) {
         let options = '';
-        for (let dbKey in data) {
-            if (dbKey === 'tournament') continue;
-            let count = data[dbKey] || 0;
-            if (count > 0) {
-                let formattedName = dbKey.replace('-', ' ').replace('_', ' ').toUpperCase();
-                options += `<div class="custom-dropdown-option" data-value="${dbKey}" style="padding: 7px 10px; font-size: 10px; color: white; cursor: pointer;">${formattedName} (${count} pcs)</div>`;
+        ['5v5', '1v1'].forEach(mode => {
+            for (let type in data.modes[mode]) {
+                let count = data.modes[mode][type] || 0;
+                if (count > 0) {
+                    options += `<div class="custom-dropdown-option" data-value="${mode}_${type}" style="padding: 7px 10px; font-size: 10px; color: white; cursor: pointer;">${mode.toUpperCase()} - ${type.toUpperCase()} (${count} pcs)</div>`;
+                }
             }
-        }
+        });
         return options || `<div style="padding: 7px 10px; font-size: 10px; color: #64748b;">No keys available</div>`;
     }
 
+    // Attach event listener for custom key options using event delegation
     refundKeyOptionsContainer.addEventListener('click', (e) => {
         const option = e.target.closest('.custom-dropdown-option');
         if (!option) return;
@@ -305,7 +269,8 @@ export function initKeyManagement(userDataKeys) {
         refundKeyText.style.color = '#f8fafc';
         refundKeyModal.style.display = 'none';
 
-        const maxCount = keyData[val] || 0;
+        const [mode, type] = val.split('_');
+        const maxCount = keyData.modes[mode][type];
         
         let qtyOptions = '';
         for (let i = 1; i <= maxCount; i++) {
@@ -313,6 +278,7 @@ export function initKeyManagement(userDataKeys) {
         }
         refundQtyOptionsContainer.innerHTML = qtyOptions;
         
+        // Reset Qty selection when key changes
         refundQtyValue.value = '';
         refundQtyText.textContent = 'Qty...';
         refundQtyText.style.color = '#64748b';
@@ -320,6 +286,7 @@ export function initKeyManagement(userDataKeys) {
         updateInfoText();
     });
 
+    // Attach event listener for custom qty options using event delegation
     refundQtyOptionsContainer.addEventListener('click', (e) => {
         const option = e.target.closest('.custom-dropdown-option');
         if (!option) return;
@@ -337,10 +304,12 @@ export function initKeyManagement(userDataKeys) {
         }
     });
 
+    // ဖုန်းနံပါတ် နေရာတွင် ဂဏန်း (Digits) သီးသန့်သာ ရိုက်ထည့်နိုင်ရန် စစ်ဆေးခြင်း
     kpayPhoneInput.addEventListener('input', (e) => {
         e.target.value = e.target.value.replace(/[^0-9]/g, '');
     });
 
+    // နာမည် နေရာတွင် အင်္ဂလိပ်စာ သီးသန့်သာ ရိုက်ထည့်နိုင်ရန် စစ်ဆေးခြင်း
     kpayNameInput.addEventListener('input', (e) => {
         e.target.value = e.target.value.replace(/[^a-zA-Z\s]/g, '');
     });
@@ -367,17 +336,15 @@ export function initKeyManagement(userDataKeys) {
             refundInfoText.innerText = "Please select a key and quantity to view refund details.";
             return;
         }
-        const parts = val.split(/[-_]/);
-        const type = parts[parts.length - 1];
+        const [mode, type] = val.split('_');
         const unitVal = getKeyValues(type);
         const totalVal = (unitVal * qty).toLocaleString();
-        refundInfoText.innerText = `${val.replace(/[-_]/g, ' ').toUpperCase()} Key ${qty} pcs for ${totalVal} Ks.`;
+        refundInfoText.innerText = `${mode.toUpperCase()} (${type.toUpperCase()}) Key ${qty} pcs for ${totalVal} Ks.`;
     }
 
-    function renderKeys(types, data, modePrefix) {
+    function renderKeys(mode, types, data) {
         return types.map(type => {
-            let exactKey = Object.keys(data).find(k => k.startsWith(modePrefix) && k.endsWith(type));
-            let count = exactKey ? (data[exactKey] || 0) : 0;
+            let count = data.modes[mode][type] || 0;
             return `
                 <div style="
                     background: rgba(2, 6, 23, 0.5); 
@@ -410,16 +377,16 @@ export function initKeyManagement(userDataKeys) {
             return;
         }
 
-        const parts = selectedVal.split(/[-_]/);
-        const type = parts[parts.length - 1];
+        const [mode, type] = selectedVal.split('_');
         const unitVal = getKeyValues(type);
         const totalVal = unitVal * qty;
 
-        const isConfirmed = confirm(`Confirm Refund - ${selectedVal.toUpperCase()} Key (${qty} pcs) for ${totalVal.toLocaleString()} Ks to ${kpayName} (${kpayPhone}) via KPay.`);
+        const isConfirmed = confirm(`Confirm Refund - ${mode.toUpperCase()} ${type.toUpperCase()} Key (${qty} pcs) for ${totalVal.toLocaleString()} Ks to ${kpayName} (${kpayPhone}) via KPay.`);
         if (!isConfirmed) return;
 
-        if (keyData[selectedVal] && keyData[selectedVal] >= qty) {
-            keyData[selectedVal] -= qty;
+        if (keyData.modes[mode] && keyData.modes[mode][type] >= qty) {
+            keyData.modes[mode][type] -= qty;
+            localStorage.setItem('user_key_inventory_v2', JSON.stringify(keyData));
             updateUI(keyData);
             alert(`Refund request submitted successfully!`);
         } else {
@@ -427,21 +394,11 @@ export function initKeyManagement(userDataKeys) {
         }
     });
 
-    // ၅ စက္ကန့်တစ်ကြိမ် Polling လုပ်ရာမှ ဒေတာအသစ်ရောက်လာပါက UI ကို Update လုပ်ပေးမည့် function
-    window.updateUI = function(newData) {
-        if (newData && typeof newData === 'object') {
-            keyData = newData; // ဒေတာအသစ်ဖြင့် အစားထိုးခြင်း
-        }
-        document.getElementById('vault-total-balance').innerText = calculateTotalBalance(keyData).toLocaleString() + ' Ks';
-        document.getElementById('grid-5v5').innerHTML = renderKeys(['5k', '10k', '15k', '25k', '50k'], keyData, '5vs5');
-        document.getElementById('grid-1v1').innerHTML = renderKeys(['5k', '10k', '15k', '25k', '50k'], keyData, '1vs1');
-        
-        const tournamentDisplay = document.getElementById('tournament-key-display');
-        if (tournamentDisplay) {
-            tournamentDisplay.innerText = `${keyData['tournament'] || 0} pcs`;
-        }
-
-        refundKeyOptionsContainer.innerHTML = generateCustomDropdownOptions(keyData);
+    function updateUI(data) {
+        document.getElementById('vault-total-balance').innerText = calculateTotalBalance(data).toLocaleString() + ' Ks';
+        document.getElementById('grid-5v5').innerHTML = renderKeys('5v5', ['5k', '10k', '15k', '25k', '50k'], data);
+        document.getElementById('grid-1v1').innerHTML = renderKeys('1v1', ['5k', '10k', '15k', '25k', '50k'], data);
+        refundKeyOptionsContainer.innerHTML = generateCustomDropdownOptions(data);
         resetToDropdownState();
     }
 }

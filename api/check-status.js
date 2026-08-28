@@ -21,6 +21,7 @@ module.exports = async (req, res) => {
             return res.status(400).json({ success: false, message: 'Missing parameters' });
         }
 
+        // Mode အလိုက် သက်ဆိုင်ရာ Collection ကို ရွေးချယ်ခြင်း
         let collectionName = '';
         if (mode === '1vs1') collectionName = '1vs1_registrations';
         else if (mode === '5vs5') collectionName = '5vs5_registrations';
@@ -36,6 +37,7 @@ module.exports = async (req, res) => {
 
         const data = docSnap.data();
 
+        // Security Check: Register တင်ခဲ့တဲ့ user ဟုတ်မဟုတ် လုံခြုံရေး စစ်ဆေးခြင်း
         if (data.userId !== userId) {
             return res.status(403).json({ success: false, message: 'Unauthorized access' });
         }
@@ -43,9 +45,7 @@ module.exports = async (req, res) => {
         return res.status(200).json({
             success: true,
             status: data.status, // 'PENDING', 'CONFIRMED', 'REJECTED'
-            rejectionReason: data.rejectionReason || null,
-            keys: data.keys || 0,         // <-- Key ဒေတာကို ထည့်ပေးလိုက်ပါပြီ
-            balance: data.balance || 0    // <-- Balance ပါရင် ထည့်ပေးလိုက်ပါပြီ
+            rejectionReason: data.rejectionReason || null // Reject ဖြစ်ပါက အကြောင်းရင်းပါ ပူးတွဲပေးပို့ရန်
         });
 
     } catch (error) {
