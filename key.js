@@ -1,39 +1,53 @@
 // LocalStorage (သို့မဟုတ်) UI ထဲကနေ User ID ကို သေချာတိကျစွာ ဆွဲထုတ်ရန်
 function getUserId() {
     let id = localStorage.getItem('user_id');
-    if (id && id !== "undefined" && id !== "null") {
-        return id;
+    if (id && id !== "undefined" && id !== "null" && id.trim() !== "") {
+        return id.trim();
     }
     
-    // LocalStorage မှာ မရှိသေးရင် UI ပေါ်က Profile ID card ထဲကနေ ရှာဖွေယူခြင်း
-    const profileIdEl = document.querySelector('.profile-id'); // UI ထဲက ID ပြထားသော Element
-    if (profileIdEl) {
-        let text = profileIdEl.textContent.trim();
-        // "ID: AURA-QXDN77" ပုံစံဖြစ်နေရင် "AURA-QXDN77" ဆိုတဲ့ စာသားသီးသန့်ကို ဖြတ်ထုတ်ယူရန်
-        if (text.includes('ID:')) {
-            id = text.replace('ID:', '').trim();
-        } else {
-            id = text;
+    // UI ပေါ်က Profile ID card ထဲကနေ ရှာဖွေခြင်း (element selector များကို အစုံစမ်းပေးထားပါတယ်)
+    const selectors = ['.profile-id', '#profile-id', '[data-user-id]', '.user-id-text'];
+    for (let selector of selectors) {
+        const el = document.querySelector(selector);
+        if (el) {
+            let text = el.textContent.trim() || el.innerText.trim();
+            if (text) {
+                if (text.includes('ID:')) {
+                    id = text.split('ID:')[1].trim();
+                } else {
+                    id = text;
+                }
+                if (id && id !== "undefined" && id !== "null") {
+                    // နောက်တစ်ခါ အလွယ်ရအောင် LocalStorage ထဲ ခေတ္တသိမ်းထားပေးနိုင်ပါတယ်
+                    localStorage.setItem('user_id', id);
+                    return id;
+                }
+            }
         }
     }
     
-    return (id && id !== "undefined" && id !== "null") ? id : null;
+    return null;
 }
 
-let userId = getUserId();
-
-if (userId) {
-    initKeyManagement(userId);
-} else {
-    console.log("User ID မရှိသေးပါ၊ ခေတ္တစောင့်ဆိုင်းနေပါသည်။");
-    // တကယ်လို့ Login ဝင်ပြီးမှ ID ထွက်လာတာမျိုးဆိုရင် 1 စက္ကန့်ကြာပြီးနောက် တစ်ချက် ပြန်စစ်ပေးခြင်း
-    setTimeout(() => {
-        userId = getUserId();
-        if (userId) {
-            initKeyManagement(userId);
-        }
-    }, 1000);
+// User ID ရလာသည်အထိ စောင့်ဆိုင်းပြီးမှ initKeyManagement စတင်ရန် function
+function checkAndInitUser(retries = 10, delay = 500) {
+    let userId = getUserId();
+    
+    if (userId) {
+        console.log("Found User ID:", userId);
+        initKeyManagement(userId);
+    } else if (retries > 0) {
+        console.log(`User ID မရှိသေးပါ၊ ထပ်မံစစ်ဆေးနေပါသည်။ ကျန်ရှိသော အကြိမ်ရေ: ${retries}`);
+        setTimeout(() => {
+            checkAndInitUser(retries - 1, delay);
+        }, delay);
+    } else {
+        console.warn("User ID ရှာမတွေ့ပါ။ ကျေးဇူးပြု၍ Login ဝင်ထားခြင်း ရှိမရှိ စစ်ဆေးပါ။");
+    }
 }
+
+// စတင်လည်ပတ်ရန် ခေါ်ဆိုခြင်း
+checkAndInitUser();
 
 export async function initKeyManagement(userId) {
     const keyCardBtn = document.getElementById('key-card-btn');
