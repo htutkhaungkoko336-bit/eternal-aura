@@ -1,14 +1,28 @@
-export function initKeyManagement() {
+export async function initKeyManagement(userId) {
     const keyCardBtn = document.getElementById('key-card-btn');
     if (!keyCardBtn) return;
 
-    let keyData = JSON.parse(localStorage.getItem('user_key_inventory_v2')) || {
-        modes: {
-            '5v5': { '5k': 0, '10k': 0, '15k': 0, '25k': 0, '50k': 0 },
-            '1v1': { '5k': 0, '10k': 0, '15k': 0, '25k': 0, '50k': 0 },
-            'tournament': { 'pass': 0 }
+    // API မှ Key ဒေတာများကို တိုက်ရိုက်လှမ်းဆွဲထုတ်ခြင်း
+    async function fetchUserKeys() {
+        try {
+            const response = await fetch(`/api/keys?userId=${userId}`);
+            const result = await response.json();
+            if (result.success) {
+                return result.keys;
+            }
+        } catch (error) {
+            console.error("Error fetching keys:", error);
         }
-    };
+        return {
+            modes: {
+                '5v5': { '5k': 0, '10k': 0, '15k': 0, '25k': 0, '50k': 0 },
+                '1v1': { '5k': 0, '10k': 0, '15k': 0, '25k': 0, '50k': 0 },
+                'tournament': { 'pass': 0 }
+            }
+        };
+    }
+
+    let keyData = await fetchUserKeys();
 
     function getKeyValues(type) {
         switch(type) {
@@ -24,8 +38,10 @@ export function initKeyManagement() {
     function calculateTotalBalance(data) {
         let total = 0;
         ['5v5', '1v1'].forEach(mode => {
-            for (let type in data.modes[mode]) {
-                total += (data.modes[mode][type] || 0) * getKeyValues(type);
+            if (data.modes && data.modes[mode]) {
+                for (let type in data.modes[mode]) {
+                    total += (data.modes[mode][type] || 0) * getKeyValues(type);
+                }
             }
         });
         return total;
@@ -88,7 +104,7 @@ export function initKeyManagement() {
                     <div style="font-size: 10px; font-weight: 600; color: #c084fc; margin-bottom: 4px; letter-spacing: 0.5px;">TOURNAMENT KEY</div>
                     <div style="background: rgba(30, 41, 59, 0.5); border: 1px solid rgba(192, 132, 252, 0.3); border-radius: 10px; padding: 6px 12px; display: flex; justify-content: space-between; align-items: center;">
                         <span style="font-size: 9.5px; color: #94a3b8;">Tournament Pass</span>
-                        <span style="font-size: 12px; font-weight: bold; color: #c084fc;">${keyData.modes.tournament.pass} pcs</span>
+                        <span style="font-size: 12px; font-weight: bold; color: #c084fc;">${keyData.modes && keyData.modes.tournament ? keyData.modes.tournament.pass : 0} pcs</span>
                     </div>
                 </div>
 
@@ -238,14 +254,18 @@ export function initKeyManagement() {
 
     function generateCustomDropdownOptions(data) {
         let options = '';
-        ['5v5', '1v1'].forEach(mode => {
-            for (let type in data.modes[mode]) {
-                let count = data.modes[mode][type] || 0;
-                if (count > 0) {
-                    options += `<div class="custom-dropdown-option" data-value="${mode}_${type}" style="padding: 7px 10px; font-size: 10px; color: white; cursor: pointer;">${mode.toUpperCase()} - ${type.toUpperCase()} (${count} pcs)</div>`;
+        if (data && data.modes) {
+            ['5v5', '1v1'].forEach(mode => {
+                if (data.modes[mode]) {
+                    for (let type in data.modes[mode]) {
+                        let count = data.modes[mode][type] || 0;
+                        if (count > 0) {
+                            options += `<div class="custom-dropdown-option" data-value="${mode}_${type}" style="padding: 7px 10px; font-size: 10px; color: white; cursor: pointer;">${mode.toUpperCase()} - ${type.toUpperCase()} (${count} pcs)</div>`;
+                        }
+                    }
                 }
-            }
-        });
+            });
+        }
         return options || `<div style="padding: 7px 10px; font-size: 10px; color: #64748b;">No keys available</div>`;
     }
 
@@ -329,7 +349,7 @@ export function initKeyManagement() {
 
     function renderKeys(mode, types, data) {
         return types.map(type => {
-            let count = data.modes[mode][type] || 0;
+            let count = data.modes && data.modes[mode] ? (data.modes[mode][type] || 0) : 0;
             return `
                 <div style="
                     background: rgba(2, 6, 23, 0.5); 
@@ -346,7 +366,7 @@ export function initKeyManagement() {
 
     const executeRefundBtn = document.getElementById('execute-refund-btn');
 
-    executeRefundBtn.addEventListener('click', () => {
+    executeRefundBtn.addEventListener('click', async () => {
         const selectedVal = refundKeyValue.value;
         const qty = parseInt(refundQtyValue.value);
         const kpayName = kpayNameInput.value.trim();
@@ -369,13 +389,25 @@ export function initKeyManagement() {
         const isConfirmed = confirm(`Confirm Refund - ${mode.toUpperCase()} ${type.toUpperCase()} Key (${qty} pcs) for ${totalVal.toLocaleString()} Ks to ${kpayName} (${kpayPhone}) via KPay.`);
         if (!isConfirmed) return;
 
-        if (keyData.modes[mode] && keyData.modes[mode][type] >= qty) {
-            keyData.modes[mode][type] -= qty;
-            localStorage.setItem('user_key_inventory_v2', JSON.stringify(keyData));
-            updateUI(keyData);
-            alert(`Refund request submitted successfully!`);
-        } else {
-            alert('အရေအတွက် မလုံလောက်ပါ။');
+        // Database ကို တိုက်ရိုက် Update လုပ်ရန် API သို့ POST ပို့မည်
+        try {
+            const response = await fetch('/api/keys', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ userId, mode, type, qty, kpayName, kpayPhone, action: 'refund' })
+            });
+            const result = await response.json();
+
+            if (result.success) {
+                alert('Refund request submitted successfully to database!');
+                keyData = result.updatedKeys; // Server မှ ပြန်လာသည့် Updated Keys ဖြင့် UI ကို Update လုပ်မည်
+                updateUI(keyData);
+            } else {
+                alert(result.message || 'Error processing request.');
+            }
+        } catch (err) {
+            console.error("Refund API Error:", err);
+            alert('Server သို့ ချိတ်ဆက်ရာတွင် အမှားအယွင်း ရှိနေပါသည်။');
         }
     });
 
