@@ -5,7 +5,6 @@ function getUserId() {
         return id.trim();
     }
     
-    // UI ပေါ်က Profile ID card ထဲကနေ ရှာဖွေခြင်း (element selector များကို အစုံစမ်းပေးထားပါတယ်)
     const selectors = ['.profile-id', '#profile-id', '[data-user-id]', '.user-id-text'];
     for (let selector of selectors) {
         const el = document.querySelector(selector);
@@ -18,14 +17,12 @@ function getUserId() {
                     id = text;
                 }
                 if (id && id !== "undefined" && id !== "null") {
-                    // နောက်တစ်ခါ အလွယ်ရအောင် LocalStorage ထဲ ခေတ္တသိမ်းထားပေးနိုင်ပါတယ်
                     localStorage.setItem('user_id', id);
                     return id;
                 }
             }
         }
     }
-    
     return null;
 }
 
@@ -50,6 +47,12 @@ function checkAndInitUser(retries = 15, delay = 500) {
 checkAndInitUser();
 
 export async function initKeyManagement(userId) {
+    // userId က undefined ဖြစ်နေရင် (သို့မဟုတ်) အလုပ်မလုပ်သေးရင် API ကို မခေါ်ခိုင်းဘဲ ရပ်ထားမည်
+    if (!userId || userId === 'undefined' || userId === 'null') {
+        console.warn("User ID is not ready yet.");
+        return;
+    }
+
     const keyCardBtn = document.getElementById('key-card-btn');
     if (!keyCardBtn) return;
 
@@ -59,7 +62,6 @@ export async function initKeyManagement(userId) {
             const response = await fetch(`/api/keys?userId=${userId}`);
             const result = await response.json();
             if (result.success) {
-                // Backend မှ keys များကို အဆင်ပြေစေရန် map လုပ်ပေးခြင်း
                 const rawKeys = result.keys || {};
                 return {
                     modes: {
@@ -67,8 +69,8 @@ export async function initKeyManagement(userId) {
                             '5k': rawKeys["5vs5-5k"] || 0,
                             '10k': rawKeys["5vs5-10k"] || 0,
                             '15k': rawKeys["5vs5-15k"] || 0,
-                            '25k': rawKeys["5vs5_25k"] || 0,
-                            '50k': rawKeys["5vs5_50k"] || 0
+                            '25k': rawKeys["5vs5_25k"] || rawKeys["5vs5-25k"] || 0,
+                            '50k': rawKeys["5vs5_50k"] || rawKeys["5vs5-50k"] || 0
                         },
                         '1v1': {
                             '5k': rawKeys["1vs1-5k"] || 0,
@@ -462,7 +464,6 @@ export async function initKeyManagement(userId) {
         const isConfirmed = confirm(`Confirm Refund - ${mode.toUpperCase()} ${type.toUpperCase()} Key (${qty} pcs) for ${totalVal.toLocaleString()} Ks to ${kpayName} (${kpayPhone}) via KPay.`);
         if (!isConfirmed) return;
 
-        // Database ကို တိုက်ရိုက် Update လုပ်ရန် API သို့ POST ပို့မည်
         try {
             const response = await fetch('/api/keys', {
                 method: 'POST',
@@ -480,8 +481,8 @@ export async function initKeyManagement(userId) {
                             '5k': rawKeys["5vs5-5k"] || 0,
                             '10k': rawKeys["5vs5-10k"] || 0,
                             '15k': rawKeys["5vs5-15k"] || 0,
-                            '25k': rawKeys["5vs5_25k"] || 0,
-                            '50k': rawKeys["5vs5_50k"] || 0
+                            '25k': rawKeys["5vs5_25k"] || rawKeys["5vs5-25k"] || 0,
+                            '50k': rawKeys["5vs5_50k"] || rawKeys["5vs5-50k"] || 0
                         },
                         '1v1': {
                             '5k': rawKeys["1vs1-5k"] || 0,
