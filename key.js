@@ -1,4 +1,4 @@
-// LocalStorage ကနေ User အချက်အလက် (သို့မဟုတ်) ID ကို ရယူခြင်း (ဥပမာ - 'currentUser' သို့မဟုတ် 'userId' ကို ယူသုံးခြင်း)
+// LocalStorage ကနေ User အချက်အလက် (သို့မဟုတ်) ID ကို ရယူခြင်း
 let currentUser = window.currentUser || JSON.parse(localStorage.getItem('currentUser')) || { id: "default_user_123" };
 
 // userId ရှိမှသာ ခေါ်ပါရန် စစ်ဆေးခြင်း
@@ -18,7 +18,29 @@ export async function initKeyManagement(userId) {
             const response = await fetch(`/api/keys?userId=${userId}`);
             const result = await response.json();
             if (result.success) {
-                return result.keys;
+                // Backend မှ keys များကို အဆင်ပြေစေရန် map လုပ်ပေးခြင်း
+                const rawKeys = result.keys || {};
+                return {
+                    modes: {
+                        '5v5': {
+                            '5k': rawKeys["5vs5-5k"] || 0,
+                            '10k': rawKeys["5vs5-10k"] || 0,
+                            '15k': rawKeys["5vs5-15k"] || 0,
+                            '25k': rawKeys["5vs5_25k"] || 0,
+                            '50k': rawKeys["5vs5_50k"] || 0
+                        },
+                        '1v1': {
+                            '5k': rawKeys["1vs1-5k"] || 0,
+                            '10k': rawKeys["1vs1-10k"] || 0,
+                            '15k': rawKeys["1vs1-15k"] || 0,
+                            '25k': rawKeys["1vs1-25k"] || 0,
+                            '50k': rawKeys["1vs1-50k"] || 0
+                        },
+                        'tournament': {
+                            'pass': rawKeys["tournament"] || 0
+                        }
+                    }
+                };
             }
         } catch (error) {
             console.error("Error fetching keys:", error);
@@ -114,7 +136,7 @@ export async function initKeyManagement(userId) {
                     <div style="font-size: 10px; font-weight: 600; color: #c084fc; margin-bottom: 4px; letter-spacing: 0.5px;">TOURNAMENT KEY</div>
                     <div style="background: rgba(30, 41, 59, 0.5); border: 1px solid rgba(192, 132, 252, 0.3); border-radius: 10px; padding: 6px 12px; display: flex; justify-content: space-between; align-items: center;">
                         <span style="font-size: 9.5px; color: #94a3b8;">Tournament Pass</span>
-                        <span style="font-size: 12px; font-weight: bold; color: #c084fc;">${keyData.modes && keyData.modes.tournament ? keyData.modes.tournament.pass : 0} pcs</span>
+                        <span style="font-size: 12px; font-weight: bold; color: #c084fc;" id="tournament-pass">${keyData.modes && keyData.modes.tournament ? keyData.modes.tournament.pass : 0} pcs</span>
                     </div>
                 </div>
 
@@ -410,7 +432,28 @@ export async function initKeyManagement(userId) {
 
             if (result.success) {
                 alert('Refund request submitted successfully to database!');
-                keyData = result.updatedKeys; // Server မှ ပြန်လာသည့် Updated Keys ဖြင့် UI ကို Update လုပ်မည်
+                const rawKeys = result.updatedKeys || {};
+                keyData = {
+                    modes: {
+                        '5v5': {
+                            '5k': rawKeys["5vs5-5k"] || 0,
+                            '10k': rawKeys["5vs5-10k"] || 0,
+                            '15k': rawKeys["5vs5-15k"] || 0,
+                            '25k': rawKeys["5vs5_25k"] || 0,
+                            '50k': rawKeys["5vs5_50k"] || 0
+                        },
+                        '1v1': {
+                            '5k': rawKeys["1vs1-5k"] || 0,
+                            '10k': rawKeys["1vs1-10k"] || 0,
+                            '15k': rawKeys["1vs1-15k"] || 0,
+                            '25k': rawKeys["1vs1-25k"] || 0,
+                            '50k': rawKeys["1vs1-50k"] || 0
+                        },
+                        'tournament': {
+                            'pass': rawKeys["tournament"] || 0
+                        }
+                    }
+                };
                 updateUI(keyData);
             } else {
                 alert(result.message || 'Error processing request.');
@@ -425,6 +468,10 @@ export async function initKeyManagement(userId) {
         document.getElementById('vault-total-balance').innerText = calculateTotalBalance(data).toLocaleString() + ' Ks';
         document.getElementById('grid-5v5').innerHTML = renderKeys('5v5', ['5k', '10k', '15k', '25k', '50k'], data);
         document.getElementById('grid-1v1').innerHTML = renderKeys('1v1', ['5k', '10k', '15k', '25k', '50k'], data);
+        const tournamentPassEl = document.getElementById('tournament-pass');
+        if (tournamentPassEl && data.modes && data.modes.tournament) {
+            tournamentPassEl.innerText = `${data.modes.tournament.pass} pcs`;
+        }
         refundKeyOptionsContainer.innerHTML = generateCustomDropdownOptions(data);
         resetToDropdownState();
     }
