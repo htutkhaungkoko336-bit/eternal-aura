@@ -1,3 +1,6 @@
+// LocalStorage ကနေ User အချက်အလက် (သို့မဟုတ်) ID ကို ရယူခြင်း (ဥပမာ - 'currentUser' သို့မဟုတ် 'userId' ကို ယူသုံးခြင်း)
+let currentUser = window.currentUser || JSON.parse(localStorage.getItem('currentUser')) || { id: "default_user_123" };
+
 // userId ရှိမှသာ ခေါ်ပါရန် စစ်ဆေးခြင်း
 if (currentUser && currentUser.id) {
     initKeyManagement(currentUser.id);
