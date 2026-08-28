@@ -1,3 +1,10 @@
+// userId ရှိမှသာ ခေါ်ပါရန် စစ်ဆေးခြင်း
+if (currentUser && currentUser.id) {
+    initKeyManagement(currentUser.id);
+} else {
+    console.log("User ID မရှိသေးပါ၊ ခေတ္တစောင့်ဆိုင်းနေပါသည်။");
+}
+
 export async function initKeyManagement(userId) {
     const keyCardBtn = document.getElementById('key-card-btn');
     if (!keyCardBtn) return;
