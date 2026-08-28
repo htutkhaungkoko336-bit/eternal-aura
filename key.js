@@ -11,26 +11,24 @@ export function initKeyManagement() {
         }
     };
 
-    // Server ထံမှ Key ဒေတာများ လှမ်းယူသည့် လုပ်ဆောင်ချက် (API Support)
-    async function fetchUserKeys() {
-        try {
-            const phone = localStorage.getItem('user_phone');
-            const response = await fetch('/api/user-auth', {
+async function fetchUserKeys() {
+    try {
+        const phone = localStorage.getItem('user_phone');
+        const response = await fetch('/api/userid', { // user-auth အစား userid လို့ ပြောင်းပါ
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ phone: phone, deviceId: localStorage.getItem('device_id') })
             });
             const data = await response.json();
-            if (data.success && data.keys) {
-                keyData = data.keys;
-                localStorage.setItem('user_key_inventory_v2', JSON.stringify(keyData));
-                updateUI(keyData);
-            }
-        } catch (error) {
-            console.error('Failed to fetch keys:', error);
+        if (data.success && data.keys) {
+            keyData = data.keys;
+            localStorage.setItem('user_key_inventory_v2', JSON.stringify(keyData));
+            updateUI(keyData);
         }
+    } catch (error) {
+        console.error('Failed to fetch keys:', error);
     }
-
+}
     function getKeyValues(type) {
         switch(type) {
             case '5k': return 5000;
