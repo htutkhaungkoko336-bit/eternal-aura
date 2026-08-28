@@ -1,4 +1,4 @@
-// LocalStorage (သို့မဟုတ်) UI ထဲကနေ User ID ကို သေချာတိကျစွာ ဆွဲထုတ်ရန်
+// 1. LocalStorage (သို့မဟုတ်) UI ထဲကနေ User ID ကို သေချာတိကျစွာ ဆွဲထုတ်ရန်
 function getUserId() {
     let id = localStorage.getItem('user_id');
     if (id && id !== "undefined" && id !== "null" && id.trim() !== "") {
@@ -26,13 +26,20 @@ function getUserId() {
     return null;
 }
 
-// User ID ရလာသည်အထိ စောင့်ဆိုင်းပြီးမှ initKeyManagement စတင်ရန် function
+// 2. User ID ရလာသည်အထိ စောင့်ဆိုင်းပြီးမှ checkAndInitUser ဖြင့် စတင်ရန် function
 function checkAndInitUser(retries = 15, delay = 500) {
     let userId = getUserId();
     
     if (userId && userId !== "undefined" && userId !== "null") {
         console.log("Found User ID:", userId);
-        initKeyManagement(userId);
+        
+        // Button နှိပ်မှသာ သို့မဟုတ် Page Load ပြီးမှ User ID ကို သုံးမည့် ပုံစံ
+        const keyCardBtn = document.getElementById('key-card-btn');
+        if (keyCardBtn) {
+            keyCardBtn.addEventListener('click', () => {
+                initKeyManagement(userId);
+            });
+        }
     } else if (retries > 0) {
         console.log(`User ID မရှိသေးပါ၊ ထပ်မံစစ်ဆေးနေပါသည်။ ကျန်ရှိသော အကြိမ်ရေ: ${retries}`);
         setTimeout(() => {
@@ -46,8 +53,8 @@ function checkAndInitUser(retries = 15, delay = 500) {
 // စတင်လည်ပတ်ရန် ခေါ်ဆိုခြင်း
 checkAndInitUser();
 
+// 3. Key Management နှင့် Refund System ပေါင်းစပ်ထားသော Main Function
 export async function initKeyManagement(userId) {
-    // userId က undefined ဖြစ်နေရင် (သို့မဟုတ်) အလုပ်မလုပ်သေးရင် API ကို မခေါ်ခိုင်းဘဲ ရပ်ထားမည်
     if (!userId || userId === 'undefined' || userId === 'null') {
         console.warn("User ID is not ready yet.");
         return;
@@ -290,12 +297,11 @@ export async function initKeyManagement(userId) {
     const kpayNameInput = document.getElementById('kpay-name');
     const kpayPhoneInput = document.getElementById('kpay-phone');
 
-    keyCardBtn.addEventListener('click', () => {
-        modalOverlay.style.opacity = '1';
-        modalOverlay.style.visibility = 'visible';
-        modalContent.style.transform = 'scale(1)';
-        resetToDropdownState();
-    });
+    // Modal ကို ဖွင့်ရန်
+    modalOverlay.style.opacity = '1';
+    modalOverlay.style.visibility = 'visible';
+    modalContent.style.transform = 'scale(1)';
+    resetToDropdownState();
 
     const closeModal = () => {
         modalContent.style.transform = 'scale(0.85)';
@@ -488,8 +494,8 @@ export async function initKeyManagement(userId) {
                             '5k': rawKeys["1vs1-5k"] || rawKeys["1v1_5k"] || 0,
                             '10k': rawKeys["1vs1-10k"] || rawKeys["1v1_10k"] || 0,
                             '15k': rawKeys["1vs1-15k"] || rawKeys["1v1_15k"] || 0,
-                            '25k': rawKeys["1vs1-25k"] || rawKeys["1v1_25k"] || 0,
-                            '50k': rawKeys["1vs1-50k"] || rawKeys["1v1_50k"] || 0
+                            '25k': rawKeys["1vs1-25k"] || rawKeys["1vs1-25k"] || rawKeys["1v1_25k"] || 0,
+                            '50k': rawKeys["1vs1-50k"] || rawKeys["1v1_50k"] || rawKeys["1v1_50k"] || 0
                         },
                         'tournament': {
                             'pass': rawKeys["tournament"] || rawKeys["tournament-pass"] || 0
