@@ -1,8 +1,53 @@
+// Status ကို Polling လုပ်ပြီး ၅ စက္ကန့်တစ်ကြိမ် စစ်ဆေးသည့် Function
+async function checkRegistrationStatus(registrationId, userId, mode) {
+    try {
+        const response = await fetch(`/api/checkstatus?registrationId=${registrationId}&userId=${userId}&mode=${mode}`);
+        const result = await response.json();
+
+        if (result.success) {
+            const statusBadge = document.getElementById('status-badge');
+            if (statusBadge) {
+                statusBadge.textContent = result.status;
+            }
+
+            // Status က CONFIRMED ဖြစ်သွားပြီဆိုလျှင်
+            if (result.status === 'CONFIRMED') {
+                console.log('Admin အတည်ပြုပြီးပါပြီ။ Key များကို Update လုပ်နေပါသည်...');
+                
+                // Key Management UI ကို ဒေတာအသစ်ဖြင့် ချက်ချင်း update လုပ်ခြင်း
+                if (typeof updateUI === 'function') {
+                    // Backend က ပို့ပေးတဲ့ keys သို့မဟုတ် balance ဒေတာကို ထည့်သွင်းပေးခြင်း
+                    updateUI(result.keys); 
+                }
+
+                // Status အတည်ပြုပြီးပါက Polling ကို ရပ်တန့်ရန်
+                if (window.pollingInterval) {
+                    clearInterval(window.pollingInterval);
+                }
+            } 
+            else if (result.status === 'REJECTED') {
+                console.log('Registration Rejected:', result.rejectionReason);
+                if (window.pollingInterval) {
+                    clearInterval(window.pollingInterval);
+                }
+            }
+        }
+    } catch (error) {
+        console.error("Error checking status:", error);
+    }
+}
+
+// ၅ စက္ကန့်တစ်ကြိမ် (၅၀၀၀ မီလီစက္ကန့်) ဖြင့် Status ကို ဆက်တိုက် စစ်ဆေးရန် သတ်မှတ်ခြင်း
+// ဥပမာ - checkRegistrationStatus('YOUR_REG_ID', 'YOUR_USER_ID', '1vs1') ဖြင့် စတင်နိုင်ပါသည်
+// window.pollingInterval = setInterval(() => {
+//     checkRegistrationStatus(myRegId, myUserId, '1vs1');
+// }, 5000);
+
+
 export function initKeyManagement(userDataKeys) {
     const keyCardBtn = document.getElementById('key-card-btn');
     if (!keyCardBtn) return;
 
-    // Backend မှ ရလာသော keys ကို ယူသုံးမည် (မရှိပါက Default 0 များဖြင့် သတ်မှတ်မည်)
     let keyData = userDataKeys || {
         "1vs1-5k": 0, "1vs1-10k": 0, "1vs1-15k": 0, "1vs1-25k": 0, "1vs1-50k": 0,
         "5vs5-5k": 0, "5vs5-10k": 0, "5vs5-15k": 0, "5vs5_25k": 0, "5vs5_50k": 0,
@@ -24,9 +69,8 @@ export function initKeyManagement(userDataKeys) {
         let total = 0;
         for (let key in data) {
             if (key === 'tournament') continue;
-            // Key နာမည်ဥပမာ "1vs1-5k" သို့မဟုတ် "5vs5_25k" မှ တန်ဖိုးခွဲထုတ်ခြင်း
             const parts = key.split(/[-_]/);
-            const type = parts[parts.length - 1]; // 5k, 10k စသည်ဖြင့်
+            const type = parts[parts.length - 1];
             total += (data[key] || 0) * getKeyValues(type);
         }
         return total;
@@ -89,7 +133,7 @@ export function initKeyManagement(userDataKeys) {
                     <div style="font-size: 10px; font-weight: 600; color: #c084fc; margin-bottom: 4px; letter-spacing: 0.5px;">TOURNAMENT KEY</div>
                     <div style="background: rgba(30, 41, 59, 0.5); border: 1px solid rgba(192, 132, 252, 0.3); border-radius: 10px; padding: 6px 12px; display: flex; justify-content: space-between; align-items: center;">
                         <span style="font-size: 9.5px; color: #94a3b8;">Tournament Pass</span>
-                        <span style="font-size: 12px; font-weight: bold; color: #c084fc;">${keyData['tournament'] || 0} pcs</span>
+                        <span style="font-size: 12px; font-weight: bold; color: #c084fc;" id="tournament-key-display">${keyData['tournament'] || 0} pcs</span>
                     </div>
                 </div>
 
@@ -245,7 +289,6 @@ export function initKeyManagement(userDataKeys) {
             if (dbKey === 'tournament') continue;
             let count = data[dbKey] || 0;
             if (count > 0) {
-                // dbKey ဥပမာ "1vs1-5k" သို့မဟုတ် "5vs5_25k" ကို ရှင်းလင်းပြတ်သားစွာ ပြရန်
                 let formattedName = dbKey.replace('-', ' ').replace('_', ' ').toUpperCase();
                 options += `<div class="custom-dropdown-option" data-value="${dbKey}" style="padding: 7px 10px; font-size: 10px; color: white; cursor: pointer;">${formattedName} (${count} pcs)</div>`;
             }
@@ -333,7 +376,6 @@ export function initKeyManagement(userDataKeys) {
 
     function renderKeys(types, data, modePrefix) {
         return types.map(type => {
-            // Firestore ထဲက key ပုံစံအတိုင်း ရှာရန် (ဥပမာ "1vs1-5k" သို့မဟုတ် "5vs5_25k")
             let exactKey = Object.keys(data).find(k => k.startsWith(modePrefix) && k.endsWith(type));
             let count = exactKey ? (data[exactKey] || 0) : 0;
             return `
@@ -378,7 +420,6 @@ export function initKeyManagement(userDataKeys) {
 
         if (keyData[selectedVal] && keyData[selectedVal] >= qty) {
             keyData[selectedVal] -= qty;
-            // TODO: Backend သို့ API ခေါ်ပြီး Database ထဲက keys ကိုပါ အပ်ဒိတ်လုပ်ပေးရန် ဤနေရာတွင် ချိတ်ဆက်ရပါမည်။
             updateUI(keyData);
             alert(`Refund request submitted successfully!`);
         } else {
@@ -386,11 +427,21 @@ export function initKeyManagement(userDataKeys) {
         }
     });
 
-    function updateUI(data) {
-        document.getElementById('vault-total-balance').innerText = calculateTotalBalance(data).toLocaleString() + ' Ks';
-        document.getElementById('grid-5v5').innerHTML = renderKeys(['5k', '10k', '15k', '25k', '50k'], data, '5vs5');
-        document.getElementById('grid-1v1').innerHTML = renderKeys(['5k', '10k', '15k', '25k', '50k'], data, '1vs1');
-        refundKeyOptionsContainer.innerHTML = generateCustomDropdownOptions(data);
+    // ၅ စက္ကန့်တစ်ကြိမ် Polling လုပ်ရာမှ ဒေတာအသစ်ရောက်လာပါက UI ကို Update လုပ်ပေးမည့် function
+    window.updateUI = function(newData) {
+        if (newData && typeof newData === 'object') {
+            keyData = newData; // ဒေတာအသစ်ဖြင့် အစားထိုးခြင်း
+        }
+        document.getElementById('vault-total-balance').innerText = calculateTotalBalance(keyData).toLocaleString() + ' Ks';
+        document.getElementById('grid-5v5').innerHTML = renderKeys(['5k', '10k', '15k', '25k', '50k'], keyData, '5vs5');
+        document.getElementById('grid-1v1').innerHTML = renderKeys(['5k', '10k', '15k', '25k', '50k'], keyData, '1vs1');
+        
+        const tournamentDisplay = document.getElementById('tournament-key-display');
+        if (tournamentDisplay) {
+            tournamentDisplay.innerText = `${keyData['tournament'] || 0} pcs`;
+        }
+
+        refundKeyOptionsContainer.innerHTML = generateCustomDropdownOptions(keyData);
         resetToDropdownState();
     }
 }
