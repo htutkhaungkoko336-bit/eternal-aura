@@ -31,25 +31,25 @@ module.exports = async function handler(req, res) {
         const userData = userDoc.data();
         const k = userData.keys || {}; // Database ထဲက keys object ကို ယူခြင်း
 
-        // Database ထဲက keys object ထဲက data များကို frontend မျှော်လင့်ထားတဲ့ modes structure ထဲသို့ ချိတ်ဆက်ခြင်း
+        // Database ထဲက keys name များနှင့် ကိုက်ညီစေရန် mapping လုပ်ခြင်း (Dash(-) နှင့် Underscore(_) များကို နှစ်မျိုးစလုံး စစ်ဆေးပေးထားသည်)
         const keys = {
             modes: {
                 '5v5': {
-                    '5k': k['5v5-5k'] || 0,
-                    '10k': k['5v5-10k'] || 0,
-                    '15k': k['5v5-15k'] || 0,
-                    '25k': k['5v5-25k'] || 0,
-                    '50k': k['5v5-50k'] || 0
+                    '5k': k['5v5-5k'] || k['5v5_5k'] || 0,
+                    '10k': k['5v5-10k'] || k['5v5_10k'] || 0,
+                    '15k': k['5v5-15k'] || k['5v5_15k'] || 0,
+                    '25k': k['5v5-25k'] || k['5v5_25k'] || 0,
+                    '50k': k['5v5-50k'] || k['5v5_50k'] || 0
                 },
                 '1v1': {
-                    '5k': k['1vs1-5k'] || 0,
-                    '10k': k['1vs1-10k'] || 0,
-                    '15k': k['1vs1-15k'] || 0,
-                    '25k': k['1vs1-25k'] || 0,
-                    '50k': k['1vs1-50k'] || 0
+                    '5k': k['1vs1-5k'] || k['1vs1_5k'] || 0,
+                    '10k': k['1vs1-10k'] || k['1vs1_10k'] || 0,
+                    '15k': k['1vs1-15k'] || k['1vs1_15k'] || 0,
+                    '25k': k['1vs1-25k'] || k['1vs1_25k'] || 0,
+                    '50k': k['1vs1-50k'] || k['1vs1_50k'] || 0
                 },
                 'tournament': {
-                    'pass': k['tournament'] || 0
+                    'pass': k['tournament'] || k['tour'] || 0
                 }
             }
         };
