@@ -1,14 +1,31 @@
-export function initKeyManagement() {
+export async function initKeyManagement() {
     const keyCardBtn = document.getElementById('key-card-btn');
     if (!keyCardBtn) return;
 
-let keyData = JSON.parse(localStorage.getItem('user_key_inventory_v2')) || {
+    // ဥပမာအနေနဲ့ user ရဲ့ id ကို localStorage သို့မဟုတ် global variable တစ်ခုခုကနေ ရယူတယ်လို့ ယူဆပါတယ်
+    // (ဥပမာ - localStorage.getItem('user_id') သို့မဟုတ် သက်ဆိုင်ရာ variable နဲ့ အစားထိုးနိုင်ပါတယ်)
+    const userId = localStorage.getItem('user_id') || 'current_user_id'; 
+
+    let keyData = {
         modes: {
             '5v5': { '5k': 0, '10k': 0, '15k': 0, '25k': 0, '50k': 0 },
             '1v1': { '5k': 0, '10k': 0, '15k': 0, '25k': 0, '50k': 0 },
             'tournament': { 'pass': 0 }
         }
     };
+
+    // Backend API ကနေ Key ဒေတာများကို လှမ်းဆွဲခြင်း
+    try {
+        const response = await fetch(`/api/get-keys?userId=${userId}`);
+        const result = await response.json();
+        if (result.success && result.keys) {
+            // Backend ကလာတဲ့ keys တွေကို keyData ထဲ ထည့်သွင်းခြင်း
+            keyData.modes = result.keys.modes || keyData.modes;
+        }
+    } catch (error) {
+        console.error("Failed to fetch keys from server:", error);
+    }
+
     function getKeyValues(type) {
         switch(type) {
             case '5k': return 5000;
@@ -23,8 +40,10 @@ let keyData = JSON.parse(localStorage.getItem('user_key_inventory_v2')) || {
     function calculateTotalBalance(data) {
         let total = 0;
         ['5v5', '1v1'].forEach(mode => {
-            for (let type in data.modes[mode]) {
-                total += (data.modes[mode][type] || 0) * getKeyValues(type);
+            if (data.modes[mode]) {
+                for (let type in data.modes[mode]) {
+                    total += (data.modes[mode][type] || 0) * getKeyValues(type);
+                }
             }
         });
         return total;
@@ -87,7 +106,7 @@ let keyData = JSON.parse(localStorage.getItem('user_key_inventory_v2')) || {
                     <div style="font-size: 10px; font-weight: 600; color: #c084fc; margin-bottom: 4px; letter-spacing: 0.5px;">TOURNAMENT KEY</div>
                     <div style="background: rgba(30, 41, 59, 0.5); border: 1px solid rgba(192, 132, 252, 0.3); border-radius: 10px; padding: 6px 12px; display: flex; justify-content: space-between; align-items: center;">
                         <span style="font-size: 9.5px; color: #94a3b8;">Tournament Pass</span>
-                        <span style="font-size: 12px; font-weight: bold; color: #c084fc;">${keyData.modes.tournament.pass} pcs</span>
+                        <span style="font-size: 12px; font-weight: bold; color: #c084fc;" id="tournament-pass-count">${keyData.modes.tournament?.pass || 0} pcs</span>
                     </div>
                 </div>
 
@@ -95,13 +114,8 @@ let keyData = JSON.parse(localStorage.getItem('user_key_inventory_v2')) || {
                 <div id="refund-card-container" style="background: rgba(30, 41, 59, 0.6); border: 1px solid rgba(56, 189, 248, 0.25); border-radius: 16px; padding: 12px; margin-bottom: 12px;">
                     <div style="font-size: 11px; font-weight: bold; color: #38bdf8; margin-bottom: 8px;">Key Refund System</div>
                     
-                    <!-- Single Row Layout for Inputs & Refund Button -->
                     <div style="display: flex; gap: 6px; align-items: center; margin-bottom: 8px;">
-                        
-                        <!-- State A: Custom Dropdowns Area -->
                         <div id="dropdowns-group" style="display: flex; gap: 6px; flex: 1;">
-                            
-                            <!-- 1. Key Select Custom Dropdown -->
                             <div style="flex: 1.3; position: relative;">
                                 <div id="refund-key-btn" style="
                                     display: flex; align-items: center; justify-content: space-between;
@@ -122,7 +136,6 @@ let keyData = JSON.parse(localStorage.getItem('user_key_inventory_v2')) || {
                                 <input type="hidden" id="refund-key-value">
                             </div>
 
-                            <!-- 2. Qty Select Custom Dropdown -->
                             <div style="flex: 0.7; position: relative;">
                                 <div id="refund-qty-btn" style="
                                     display: flex; align-items: center; justify-content: space-between;
@@ -142,10 +155,8 @@ let keyData = JSON.parse(localStorage.getItem('user_key_inventory_v2')) || {
                                 </div>
                                 <input type="hidden" id="refund-qty-value">
                             </div>
-
                         </div>
 
-                        <!-- State B: KPay Inputs Area (English Name & Digits Phone) -->
                         <div id="kpay-inputs-group" style="display: none; gap: 5px; flex: 1;">
                             <input type="text" id="kpay-name" lang="en" placeholder="KPay Name (Eng)" style="
                                 flex: 1; background: rgba(15, 23, 42, 0.95); border: 1px solid rgba(56, 189, 248, 0.6);
@@ -155,7 +166,6 @@ let keyData = JSON.parse(localStorage.getItem('user_key_inventory_v2')) || {
                                 border-radius: 8px; color: #f8fafc; padding: 7px 8px; font-size: 10px; outline: none; box-sizing: border-box; height: 32px;">
                         </div>
 
-                        <!-- Refund Button -->
                         <button id="execute-refund-btn" style="
                             background: linear-gradient(135deg, #ef4444, #dc2626); border: none;
                             border-radius: 8px; color: white; padding: 7px 14px; font-size: 11px;
@@ -165,7 +175,6 @@ let keyData = JSON.parse(localStorage.getItem('user_key_inventory_v2')) || {
                         </button>
                     </div>
 
-                    <!-- Info Banner -->
                     <div id="refund-info-text" style="font-size: 10px; color: #94a3b8; line-height: 1.3;">
                         Please select a key and quantity to view refund details.
                     </div>
@@ -189,7 +198,6 @@ let keyData = JSON.parse(localStorage.getItem('user_key_inventory_v2')) || {
     const dropdownsGroup = document.getElementById('dropdowns-group');
     const kpayInputsGroup = document.getElementById('kpay-inputs-group');
     
-    // Custom Dropdown Elements
     const refundKeyBtn = document.getElementById('refund-key-btn');
     const refundKeyModal = document.getElementById('refund-key-modal');
     const refundKeyText = document.getElementById('refund-key-text');
@@ -206,7 +214,8 @@ let keyData = JSON.parse(localStorage.getItem('user_key_inventory_v2')) || {
     const kpayNameInput = document.getElementById('kpay-name');
     const kpayPhoneInput = document.getElementById('kpay-phone');
 
-    keyCardBtn.addEventListener('click', () => {
+    keyCardBtn.addEventListener('click', async () => {
+        // Modal ဖွင့်တိုင်းလည်း Server ကနေ ဒေတာအသစ် တစ်ခါထပ်လှမ်းဆွဲချင်ရင် ဒီမှာ fetch ထည့်လို့ရပါတယ်။
         modalOverlay.style.opacity = '1';
         modalOverlay.style.visibility = 'visible';
         modalContent.style.transform = 'scale(1)';
@@ -224,14 +233,12 @@ let keyData = JSON.parse(localStorage.getItem('user_key_inventory_v2')) || {
         if (e.target === modalOverlay) closeModal();
     });
 
-    // Toggle Key Dropdown
     refundKeyBtn.addEventListener('click', (e) => {
         e.stopPropagation();
         refundQtyModal.style.display = 'none';
         refundKeyModal.style.display = refundKeyModal.style.display === 'block' ? 'none' : 'block';
     });
 
-    // Toggle Qty Dropdown
     refundQtyBtn.addEventListener('click', (e) => {
         e.stopPropagation();
         refundKeyModal.style.display = 'none';
@@ -240,7 +247,6 @@ let keyData = JSON.parse(localStorage.getItem('user_key_inventory_v2')) || {
         }
     });
 
-    // Close dropdowns on outside click
     document.addEventListener('click', () => {
         refundKeyModal.style.display = 'none';
         refundQtyModal.style.display = 'none';
@@ -249,17 +255,18 @@ let keyData = JSON.parse(localStorage.getItem('user_key_inventory_v2')) || {
     function generateCustomDropdownOptions(data) {
         let options = '';
         ['5v5', '1v1'].forEach(mode => {
-            for (let type in data.modes[mode]) {
-                let count = data.modes[mode][type] || 0;
-                if (count > 0) {
-                    options += `<div class="custom-dropdown-option" data-value="${mode}_${type}" style="padding: 7px 10px; font-size: 10px; color: white; cursor: pointer;">${mode.toUpperCase()} - ${type.toUpperCase()} (${count} pcs)</div>`;
+            if (data.modes[mode]) {
+                for (let type in data.modes[mode]) {
+                    let count = data.modes[mode][type] || 0;
+                    if (count > 0) {
+                        options += `<div class="custom-dropdown-option" data-value="${mode}_${type}" style="padding: 7px 10px; font-size: 10px; color: white; cursor: pointer;">${mode.toUpperCase()} - ${type.toUpperCase()} (${count} pcs)</div>`;
+                    }
                 }
             }
         });
         return options || `<div style="padding: 7px 10px; font-size: 10px; color: #64748b;">No keys available</div>`;
     }
 
-    // Attach event listener for custom key options using event delegation
     refundKeyOptionsContainer.addEventListener('click', (e) => {
         const option = e.target.closest('.custom-dropdown-option');
         if (!option) return;
@@ -278,7 +285,6 @@ let keyData = JSON.parse(localStorage.getItem('user_key_inventory_v2')) || {
         }
         refundQtyOptionsContainer.innerHTML = qtyOptions;
         
-        // Reset Qty selection when key changes
         refundQtyValue.value = '';
         refundQtyText.textContent = 'Qty...';
         refundQtyText.style.color = '#64748b';
@@ -286,7 +292,6 @@ let keyData = JSON.parse(localStorage.getItem('user_key_inventory_v2')) || {
         updateInfoText();
     });
 
-    // Attach event listener for custom qty options using event delegation
     refundQtyOptionsContainer.addEventListener('click', (e) => {
         const option = e.target.closest('.custom-dropdown-option');
         if (!option) return;
@@ -304,12 +309,10 @@ let keyData = JSON.parse(localStorage.getItem('user_key_inventory_v2')) || {
         }
     });
 
-    // ဖုန်းနံပါတ် နေရာတွင် ဂဏန်း (Digits) သီးသန့်သာ ရိုက်ထည့်နိုင်ရန် စစ်ဆေးခြင်း
     kpayPhoneInput.addEventListener('input', (e) => {
         e.target.value = e.target.value.replace(/[^0-9]/g, '');
     });
 
-    // နာမည် နေရာတွင် အင်္ဂလိပ်စာ သီးသန့်သာ ရိုက်ထည့်နိုင်ရန် စစ်ဆေးခြင်း
     kpayNameInput.addEventListener('input', (e) => {
         e.target.value = e.target.value.replace(/[^a-zA-Z\s]/g, '');
     });
@@ -344,7 +347,7 @@ let keyData = JSON.parse(localStorage.getItem('user_key_inventory_v2')) || {
 
     function renderKeys(mode, types, data) {
         return types.map(type => {
-            let count = data.modes[mode][type] || 0;
+            let count = data.modes[mode]?.[type] || 0;
             return `
                 <div style="
                     background: rgba(2, 6, 23, 0.5); 
@@ -386,7 +389,7 @@ let keyData = JSON.parse(localStorage.getItem('user_key_inventory_v2')) || {
 
         if (keyData.modes[mode] && keyData.modes[mode][type] >= qty) {
             keyData.modes[mode][type] -= qty;
-            localStorage.setItem('user_key_inventory_v2', JSON.stringify(keyData));
+            // လိုအပ်ပါက server ဘက်ကိုလည်း update လုပ်ဖို့ API ခေါ်ဆိုမှုများ ထပ်ထည့်နိုင်ပါတယ်
             updateUI(keyData);
             alert(`Refund request submitted successfully!`);
         } else {
@@ -398,6 +401,10 @@ let keyData = JSON.parse(localStorage.getItem('user_key_inventory_v2')) || {
         document.getElementById('vault-total-balance').innerText = calculateTotalBalance(data).toLocaleString() + ' Ks';
         document.getElementById('grid-5v5').innerHTML = renderKeys('5v5', ['5k', '10k', '15k', '25k', '50k'], data);
         document.getElementById('grid-1v1').innerHTML = renderKeys('1v1', ['5k', '10k', '15k', '25k', '50k'], data);
+        const tournamentPassElem = document.getElementById('tournament-pass-count');
+        if (tournamentPassElem) {
+            tournamentPassElem.innerText = `${data.modes.tournament?.pass || 0} pcs`;
+        }
         refundKeyOptionsContainer.innerHTML = generateCustomDropdownOptions(data);
         resetToDropdownState();
     }
