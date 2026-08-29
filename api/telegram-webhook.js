@@ -107,7 +107,7 @@ module.exports = async (req, res) => {
             try {
                 if (collectionName && docId && action === 'confirm') {
                     
-                    // 1. REFUND REQUESTS အတွက် Confirm လုပ်ခြင်း (ရှိပြီးသားကနေ -1 နှုတ်မည်)
+                    // 1. REFUND REQUESTS အတွက် Confirm လုပ်ခြင်း (ရှိပြီးသား keys တွေထဲကနေ -1 နှုတ်မည်)
                     if (collectionName === 'refund_requests') {
                         const refundDocRef = db.collection('refund_requests').doc(docId);
                         await refundDocRef.update({ status: 'CONFIRMED' });
@@ -116,11 +116,11 @@ module.exports = async (req, res) => {
                         if (refundDoc.exists) {
                             const refundData = refundDoc.data();
                             const userId = refundData.userId;
-                            const mode = refundData.mode; // '1vs1', '5vs5', 'tournament'
-                            const type = (refundData.type || '').toString().toLowerCase().replace('k', ''); 
+                            const mode = (refundData.mode || '').toString().toLowerCase(); // '5v5' သို့မဟုတ် '1v1'
+                            const type = (refundData.type || '').toString().toLowerCase(); // '5k', '10k', '15k', '25k', '50k'
                             const qty = Number(refundData.qty) || 1;
 
-                            if (userId && mode) {
+                            if (userId && mode && type) {
                                 const userRef = db.collection('users').doc(userId);
                                 const userDoc = await userRef.get();
 
@@ -132,9 +132,8 @@ module.exports = async (req, res) => {
                                     if (mode === 'tournament') {
                                         dbKeyName = 'tournament';
                                     } else {
-                                        const cleanMode = mode.replace('_', '-');
-                                        const cleanType = type.replace('k', '');
-                                        dbKeyName = `${cleanMode}-${cleanType}k`;
+                                        // 5v5 သို့မဟုတ် 1v1 ကို Firestore ထဲကအတိုင်း hyphen (-) နဲ့ ပေါင်းစပ်မည် (ဥပမာ: 1vs1-50k)
+                                        dbKeyName = `${mode}-${type}`;
                                     }
 
                                     const currentQty = Number(keysObj[dbKeyName]) || 0;
