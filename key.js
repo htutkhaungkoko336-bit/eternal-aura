@@ -362,9 +362,9 @@ export async function initKeyManagement() {
         }).join('');
     }
 
-    const executeRefundBtn = document.getElementById('execute-refund-btn');
+const executeRefundBtn = document.getElementById('execute-refund-btn');
 
-    executeRefundBtn.addEventListener('click', () => {
+    executeRefundBtn.addEventListener('click', async () => {
         const selectedVal = refundKeyValue.value;
         const qty = parseInt(refundQtyValue.value);
         const kpayName = kpayNameInput.value.trim();
@@ -388,15 +388,47 @@ export async function initKeyManagement() {
         if (!isConfirmed) return;
 
         if (keyData.modes[mode] && keyData.modes[mode][type] >= qty) {
-            keyData.modes[mode][type] -= qty;
-            // လိုအပ်ပါက server ဘက်ကိုလည်း update လုပ်ဖို့ API ခေါ်ဆိုမှုများ ထပ်ထည့်နိုင်ပါတယ်
-            updateUI(keyData);
-            alert(`Refund request submitted successfully!`);
+            try {
+                // Loading ပြသရန် သို့မဟုတ် ခလုတ်ကို ယာယီပိတ်ရန်
+                executeRefundBtn.disabled = true;
+                executeRefundBtn.textContent = 'Sending...';
+
+                // Backend API သို့ ဒေတာများ ပို့ဆောင်ခြင်း (Telegram သို့ ပို့ပေးမည့် API)
+                const response = await fetch('/api/refund-request', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        userId: userId,
+                        mode: mode,
+                        type: type,
+                        qty: qty,
+                        totalVal: totalVal,
+                        kpayName: kpayName,
+                        kpayPhone: kpayPhone
+                    })
+                });
+
+                const result = await response.json();
+
+                if (result.success) {
+                    keyData.modes[mode][type] -= qty;
+                    updateUI(keyData);
+                    alert(`Refund request submitted successfully! Telegram သို့ ပို့လိုက်ပါပြီ။`);
+                } else {
+                    alert(`Error: ${result.message || 'Refund တောင်းဆိုမှု မအောင်မြင်ပါ။'}`);
+                }
+            } catch (err) {
+                console.error("Refund submission error:", err);
+                alert('ဆာဗာသို့ ချိတ်ဆက်၍ မရပါ။ ကျေးဇူးပြု၍ ခဏနေ ထပ်ကြိုးစားပါ။');
+            } finally {
+                executeRefundBtn.disabled = false;
+                executeRefundBtn.textContent = 'Refund';
+            }
         } else {
             alert('အရေအတွက် မလုံလောက်ပါ။');
         }
     });
-
+    
     function updateUI(data) {
         document.getElementById('vault-total-balance').innerText = calculateTotalBalance(data).toLocaleString() + ' Ks';
         document.getElementById('grid-5v5').innerHTML = renderKeys('5v5', ['5k', '10k', '15k', '25k', '50k'], data);

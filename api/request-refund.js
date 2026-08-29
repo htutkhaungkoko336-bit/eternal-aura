@@ -18,7 +18,7 @@ module.exports = async function handler(req, res) {
     }
 
     try {
-        const { userId, mode, type, qty, kpayName, kpayPhone, paymentSlipBase64 } = req.body;
+        const { userId, mode, type, qty, totalVal, kpayName, kpayPhone, paymentSlipBase64 } = req.body;
 
         if (!userId || !mode || !type || !qty || !kpayName || !kpayPhone) {
             return res.status(400).json({ success: false, message: "Missing required refund fields" });
@@ -30,6 +30,7 @@ module.exports = async function handler(req, res) {
             mode,
             type,
             qty,
+            totalVal: totalVal || 0,
             kpayName,
             kpayPhone,
             status: 'PENDING',
@@ -38,27 +39,31 @@ module.exports = async function handler(req, res) {
 
         const docId = refundRef.id;
         const BOT_TOKEN = process.env.TELEGRAM_BOT_TOKEN;
-        const GROUP_ID = process.env.REFUND_GROUP_ID; // Environment ထဲက Refund Group ID ကို သုံးမည်
+        const GROUP_ID = process.env.REFUND_GROUP_ID || process.env.ADMIN_CHAT_ID; // Environment ထဲက Group ID သို့မဟုတ် Admin ID ကို သုံးမည်
 
         if (!BOT_TOKEN || !GROUP_ID) {
             return res.status(500).json({ success: false, message: "Telegram bot configuration missing" });
         }
 
-        // Telegram သို့ ပို့မည့် Message ပုံစံ
+        // 2. Telegram သို့ ပို့မည့် Message ပုံစံ
+        const formattedTotal = totalVal ? `${totalVal.toLocaleString()} Ks` : 'N/A';
         const caption = `
-🔄 **NEW REFUND REQUEST** 🔄
+🔄 *NEW REFUND REQUEST* 🔄
 ━━━━━━━━━━━━━━━━━━━
-👤 **User ID:** ${userId}
-🎮 **Mode:** ${mode.toUpperCase()} (${type})
-🔑 **Qty to Refund:** ${qty} Keys
-💳 **KPay Name:** ${kpayName}
-📱 **KPay Phone:** ${kpayPhone}
+👤 *User ID:* \`${userId}\`
+🎮 *Mode:* ${mode.toUpperCase()} (${type.toUpperCase()})
+📦 *Qty to Refund:* ${qty} Keys
+💰 *Total:* ${formattedTotal}
+💳 *KPay Name:* ${kpayName}
+📱 *KPay Phone:* ${kpayPhone}
+
+*Status: PENDING*
         `.trim();
 
         const inlineKeyboard = {
             inline_keyboard: [
                 [
-                    { text: "✅ Confirm Refund", callback_data: `confirm_refund_requests_${docId}` },
+                    { text: "✅ Confirm", callback_data: `confirm_refund_requests_${docId}` },
                     { text: "❌ Reject", callback_data: `reject_refund_requests_${docId}` }
                 ]
             ]
@@ -101,6 +106,7 @@ module.exports = async function handler(req, res) {
         }
 
         if (!telegramRes.ok) {
+            console.error("Telegram API Error:", telegramRes);
             return res.status(500).json({ success: false, message: "Failed to send message to Telegram group" });
         }
 
