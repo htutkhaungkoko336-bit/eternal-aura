@@ -46,7 +46,6 @@ module.exports = async (req, res) => {
                 updateKeyboard = true;
             } 
             else if (action === 'reject') {
-                // Reject နှိပ်ရင် အကြောင်းပြချက်ရွေးခိုင်းမည့် ခလုတ်များ ပေါ်လာမည်
                 responseText = "⚠️ ပယ်ချရမည့် အကြောင်းရင်းကို ရွေးချယ်ပါ:";
                 updateKeyboard = true;
                 newInlineKeyboard = [
@@ -112,8 +111,12 @@ module.exports = async (req, res) => {
                     // 1. REFUND REQUESTS အတွက် Confirm လုပ်ခြင်း
                     if (collectionName === 'refund_requests') {
                         const refundDocRef = db.collection('refund_requests').doc(docId);
-                        const refundDoc = await refundDocRef.get();
+                        
+                        // Status ကို အရင်ဆုံး ချက်ချင်း CONFIRMED ပြောင်းမည်
+                        await refundDocRef.update({ status: 'CONFIRMED' });
+                        console.log(`SUCCESS: Database updated refund_requests/${docId} to CONFIRMED.`);
 
+                        const refundDoc = await refundDocRef.get();
                         if (refundDoc.exists) {
                             const refundData = refundDoc.data();
                             const userId = refundData.userId;
@@ -128,19 +131,12 @@ module.exports = async (req, res) => {
                                 if (userDoc.exists) {
                                     const userData = userDoc.data();
                                     const k = userData.keys || {};
-                                    
                                     const dbKeyName = mode === 'tournament' ? 'tournament' : `${mode}-${type}`;
-                                    const currentQty = k[dbKeyName] !== undefined ? k[dbKeyName] : (k[mode === 'tournament' ? 'tour' : `${mode}_${type}`] || 0);
-
-                                    if (currentQty >= qty) {
-                                        await userRef.update({
-                                            [`keys.${dbKeyName}`]: FieldValue.increment(-qty)
-                                        });
-                                        await refundDocRef.update({ status: 'CONFIRMED' });
-                                        console.log(`Successfully deducted ${qty} keys from user ${userId} for refund.`);
-                                    } else {
-                                        console.error("User has insufficient keys to process refund.");
-                                    }
+                                    
+                                    await userRef.update({
+                                        [`keys.${dbKeyName}`]: FieldValue.increment(-qty)
+                                    });
+                                    console.log(`Successfully deducted ${qty} keys from user ${userId} for refund.`);
                                 }
                             }
                         }
