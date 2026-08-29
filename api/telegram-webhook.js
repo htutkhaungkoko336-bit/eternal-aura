@@ -25,7 +25,7 @@ function getYangonTimeStr() {
     const minutes = yangonTime.getMinutes().toString().padStart(2, '0');
     const ampm = hours >= 12 ? 'pm' : 'am';
     hours = hours % 12 || 12;
-    return `${dateStr}     ${hours}:${minutes} ${ampm}`;
+    return `${dateStr}    ${hours}:${minutes} ${ampm}`;
 }
 
 module.exports = async function handler(req, res) {
@@ -141,20 +141,23 @@ module.exports = async function handler(req, res) {
 
                             if (userId) {
                                 let keyFieldToDecrement = "";
+                                
                                 if (mode === 'tournament') {
                                     keyFieldToDecrement = "keys.tournament";
-                                } else if (mode === '1vs1' || mode === '1v1') {
-                                    if (type.includes('50k')) keyFieldToDecrement = "keys.1vs1-50k";
-                                    else if (type.includes('25k')) keyFieldToDecrement = "keys.1vs1-25k";
-                                    else if (type.includes('15k')) keyFieldToDecrement = "keys.1vs1-15k";
-                                    else if (type.includes('10k')) keyFieldToDecrement = "keys.1vs1-10k";
-                                    else keyFieldToDecrement = "keys.1vs1-5k";
-                                } else if (mode === '5vs5') {
+                                } else if (mode.includes('5vs5') || mode.includes('5v5')) {
+                                    // 5vs5 အတွက် သေချာခွဲထုတ်ခြင်း
                                     if (type.includes('50k')) keyFieldToDecrement = "keys.5vs5-50k";
                                     else if (type.includes('25k')) keyFieldToDecrement = "keys.5vs5-25k";
                                     else if (type.includes('15k')) keyFieldToDecrement = "keys.5vs5-15k";
                                     else if (type.includes('10k')) keyFieldToDecrement = "keys.5vs5-10k";
                                     else keyFieldToDecrement = "keys.5vs5-5k";
+                                } else {
+                                    // ကျန်ရှိပါက 1vs1 အဖြစ် သတ်မှတ်မည်
+                                    if (type.includes('50k')) keyFieldToDecrement = "keys.1vs1-50k";
+                                    else if (type.includes('25k')) keyFieldToDecrement = "keys.1vs1-25k";
+                                    else if (type.includes('15k')) keyFieldToDecrement = "keys.1vs1-15k";
+                                    else if (type.includes('10k')) keyFieldToDecrement = "keys.1vs1-10k";
+                                    else keyFieldToDecrement = "keys.1vs1-5k";
                                 }
 
                                 if (keyFieldToDecrement) {
@@ -306,7 +309,6 @@ module.exports = async function handler(req, res) {
             const createdAtStr = getYangonTimeStr();
             const defaultRole = 'user';
 
-            // အကောင့်အသစ်အတွက် Default Key များ (1v1-50k အမှားကိုဖြုတ်၍ 1vs1-50k အမှန်ဖြင့် သတ်မှတ်ထားသည်)
             const defaultKeys = {
                 "1vs1-5k": 0,
                 "1vs1-10k": 0,
