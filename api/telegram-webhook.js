@@ -42,7 +42,7 @@ module.exports = async (req, res) => {
 
             if (action === 'confirm') {
                 newStatus = 'CONFIRMED';
-                responseText = "✅ This registration has been CONFIRMED.";
+                responseText = "✅ This request has been CONFIRMED.";
                 updateKeyboard = true;
             } 
             else if (action === 'reject') {
@@ -59,10 +59,9 @@ module.exports = async (req, res) => {
                 ];
             }
             else if (action === 'select') {
-                // အကြောင်းပြချက် တစ်ခုခုကို ရွေးလိုက်သည့်အခါ (select_r1_collection_docId)
                 const firstUnderscoreInRem = remaining.indexOf('_');
-                const reasonKey = remaining.substring(0, firstUnderscoreInRem); // r1, r2 စသည်ဖြင့်
-                const restOfData = remaining.substring(firstUnderscoreInRem + 1); // collection_docId
+                const reasonKey = remaining.substring(0, firstUnderscoreInRem); 
+                const restOfData = remaining.substring(firstUnderscoreInRem + 1);
 
                 const lastUnderscoreInRest = restOfData.lastIndexOf('_');
                 const actualCollection = restOfData.substring(0, lastUnderscoreInRest);
@@ -73,16 +72,15 @@ module.exports = async (req, res) => {
                     'r2': 'Game Name / Game ID မှားယွင်းနေပါသည်',
                     'r3': 'ငွေပမာဏ လျော့နည်းနေပါသည်။',
                     'r4': 'အချက်အလက်များ မပြည့်စုံပါ',
-                    'r5': 'K pay Phone Number /  Name မှားယွင်းနေပါသည်။'
+                    'r5': 'K pay Phone Number / Name မှားယွင်းနေပါသည်။'
                 };
                 
                 const rejectionReasonText = reasonsMap[reasonKey] || 'အခြားအကြောင်းပြချက်ဖြင့် ပယ်ချပါသည်';
                 newStatus = 'REJECTED';
                 responseText = `❌ REJECTED\nReason: ${rejectionReasonText}`;
                 updateKeyboard = true;
-                newInlineKeyboard = []; // ခလုတ်များကို ဖယ်ရှားမည်
+                newInlineKeyboard = []; 
 
-                // Database ထဲသို့ Status နှင့် Rejection Reason ကို တစ်ခါတည်း Update လုပ်မည်
                 if (actualCollection && actualDocId) {
                     try {
                         const regDocRef = db.collection(actualCollection).doc(actualDocId);
@@ -107,55 +105,95 @@ module.exports = async (req, res) => {
                 ];
             }
 
-            // Confirm အတွက် Database Update နှင့် User Key ပေါင်းထည့်သည့် အပိုင်း
+            // Database Confirm လုပ်ဆောင်ချက်များ (Registrations နှင့် Refund Requests)
             try {
                 if (collectionName && docId && action === 'confirm') {
-                    const regDocRef = db.collection(collectionName).doc(docId);
-                    await regDocRef.update({ status: 'CONFIRMED' });
+                    
+                    // 1. REFUND REQUESTS အတွက် Confirm လုပ်ခြင်း
+                    if (collectionName === 'refund_requests') {
+                        const refundDocRef = db.collection('refund_requests').doc(docId);
+                        const refundDoc = await refundDocRef.get();
 
-                    const regDoc = await regDocRef.get();
-                    if (regDoc.exists) {
-                        const regData = regDoc.data();
-                        const userId = regData.userId;
+                        if (refundDoc.exists) {
+                            const refundData = refundDoc.data();
+                            const userId = refundData.userId;
+                            const mode = refundData.mode;
+                            const type = refundData.type;
+                            const qty = refundData.qty;
 
-                        if (userId) {
-                            let keyFieldToIncrement = "";
-                            const fee = (regData.fee || "").toLowerCase();
+                            if (userId && mode && type && qty) {
+                                const userRef = db.collection('users').doc(userId);
+                                const userDoc = await userRef.get();
 
-                            if (collectionName === '1vs1_registrations') {
-                                if (fee.includes('50k')) keyFieldToIncrement = "keys.1vs1-50k";
-                                else if (fee.includes('25k')) keyFieldToIncrement = "keys.1vs1-25k";
-                                else if (fee.includes('15k')) keyFieldToIncrement = "keys.1vs1-15k";
-                                else if (fee.includes('10k')) keyFieldToIncrement = "keys.1vs1-10k";
-                                else keyFieldToIncrement = "keys.1vs1-5k"; 
-                            } else if (collectionName === 'tournament_registrations') {
-                                keyFieldToIncrement = "keys.tournament";
-                            } else if (collectionName === '5vs5_registrations') {
-                                if (fee.includes('50k')) keyFieldToIncrement = "keys.5vs5_50k";
-                                else if (fee.includes('25k')) keyFieldToIncrement = "keys.5vs5_25k";
-                                else if (fee.includes('15k')) keyFieldToIncrement = "keys.5vs5-15k";
-                                else if (fee.includes('10k')) keyFieldToIncrement = "keys.5vs5-10k";
-                                else keyFieldToIncrement = "keys.5vs5-5k"; 
-                            }
+                                if (userDoc.exists) {
+                                    const userData = userDoc.data();
+                                    const k = userData.keys || {};
+                                    
+                                    const dbKeyName = mode === 'tournament' ? 'tournament' : `${mode}-${type}`;
+                                    const currentQty = k[dbKeyName] !== undefined ? k[dbKeyName] : (k[mode === 'tournament' ? 'tour' : `${mode}_${type}`] || 0);
 
-                            if (keyFieldToIncrement) {
-                                try {
-                                    const userRef = db.collection('users').doc(userId);
-                                    const userDoc = await userRef.get();
-                                    const fieldKeyOnly = keyFieldToIncrement.split('.')[1];
-
-                                    if (!userDoc.exists || !userDoc.data().keys || userDoc.data().keys[fieldKeyOnly] === undefined) {
-                                        await userRef.set({
-                                            keys: { [fieldKeyOnly]: 0 }
-                                        }, { merge: true });
+                                    if (currentQty >= qty) {
+                                        await userRef.update({
+                                            [`keys.${dbKeyName}`]: FieldValue.increment(-qty)
+                                        });
+                                        await refundDocRef.update({ status: 'CONFIRMED' });
+                                        console.log(`Successfully deducted ${qty} keys from user ${userId} for refund.`);
+                                    } else {
+                                        console.error("User has insufficient keys to process refund.");
                                     }
+                                }
+                            }
+                        }
+                    } 
+                    // 2. REGISTRATIONS အတွက် Confirm လုပ်ခြင်း (မူလအတိုင်း)
+                    else {
+                        const regDocRef = db.collection(collectionName).doc(docId);
+                        await regDocRef.update({ status: 'CONFIRMED' });
 
-                                    await userRef.update({
-                                        [keyFieldToIncrement]: FieldValue.increment(1)
-                                    });
-                                    console.log(`User ${userId} got +1 key for ${keyFieldToIncrement}`);
-                                } catch (userErr) {
-                                    console.error("Error updating user keys (non-blocking):", userErr);
+                        const regDoc = await regDocRef.get();
+                        if (regDoc.exists) {
+                            const regData = regDoc.data();
+                            const userId = regData.userId;
+
+                            if (userId) {
+                                let keyFieldToIncrement = "";
+                                const fee = (regData.fee || "").toLowerCase();
+
+                                if (collectionName === '1vs1_registrations') {
+                                    if (fee.includes('50k')) keyFieldToIncrement = "keys.1vs1-50k";
+                                    else if (fee.includes('25k')) keyFieldToIncrement = "keys.1vs1-25k";
+                                    else if (fee.includes('15k')) keyFieldToIncrement = "keys.1vs1-15k";
+                                    else if (fee.includes('10k')) keyFieldToIncrement = "keys.1vs1-10k";
+                                    else keyFieldToIncrement = "keys.1vs1-5k"; 
+                                } else if (collectionName === 'tournament_registrations') {
+                                    keyFieldToIncrement = "keys.tournament";
+                                } else if (collectionName === '5vs5_registrations') {
+                                    if (fee.includes('50k')) keyFieldToIncrement = "keys.5vs5_50k";
+                                    else if (fee.includes('25k')) keyFieldToIncrement = "keys.5vs5_25k";
+                                    else if (fee.includes('15k')) keyFieldToIncrement = "keys.5vs5-15k";
+                                    else if (fee.includes('10k')) keyFieldToIncrement = "keys.5vs5-10k";
+                                    else keyFieldToIncrement = "keys.5vs5-5k"; 
+                                }
+
+                                if (keyFieldToIncrement) {
+                                    try {
+                                        const userRef = db.collection('users').doc(userId);
+                                        const userDoc = await userRef.get();
+                                        const fieldKeyOnly = keyFieldToIncrement.split('.')[1];
+
+                                        if (!userDoc.exists || !userDoc.data().keys || userDoc.data().keys[fieldKeyOnly] === undefined) {
+                                            await userRef.set({
+                                                keys: { [fieldKeyOnly]: 0 }
+                                            }, { merge: true });
+                                        }
+
+                                        await userRef.update({
+                                            [keyFieldToIncrement]: FieldValue.increment(1)
+                                        });
+                                        console.log(`User ${userId} got +1 key for ${keyFieldToIncrement}`);
+                                    } catch (userErr) {
+                                        console.error("Error updating user keys (non-blocking):", userErr);
+                                    }
                                 }
                             }
                         }
