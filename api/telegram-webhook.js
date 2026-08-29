@@ -63,6 +63,7 @@ module.exports = async function handler(req, res) {
                 newStatus = 'CONFIRMED';
                 responseText = "✅ This request has been CONFIRMED.";
                 updateKeyboard = true;
+                newInlineKeyboard = []; // Confirm နှိပ်လိုက်ရင် ခလုတ်တွေ လုံးဝပျောက်သွားရန်
             } 
             else if (action === 'reject') {
                 responseText = "⚠️ ပယ်ချရမည့် အကြောင်းရင်းကို ရွေးချယ်ပါ:";
@@ -97,8 +98,8 @@ module.exports = async function handler(req, res) {
                 newStatus = 'REJECTED';
                 responseText = `❌ REJECTED\nReason: ${rejectionReasonText}`;
                 updateKeyboard = true;
-                newInlineKeyboard = []; 
-
+                newInlineKeyboard = []; // Reject အကြောင်းရင်း ရွေးပြီးသွားရင်လည်း ခလုတ်တွေ လုံးဝပျောက်သွားရန်
+                
                 if (actualCollection && actualDocId) {
                     try {
                         const regDocRef = db.collection(actualCollection).doc(actualDocId);
@@ -135,8 +136,8 @@ module.exports = async function handler(req, res) {
                         if (refundDoc.exists) {
                             const refundData = refundDoc.data();
                             const userId = refundData.userId;
-                            const mode = (refundData.mode || '').toString().toLowerCase(); // '5vs5', '1vs1', သို့မဟုတ် 'tournament'
-                            const type = (refundData.type || '').toString().toLowerCase(); // '5k', '10k', '15k', '25k', '50k'
+                            const mode = (refundData.mode || '').toString().toLowerCase(); 
+                            const type = (refundData.type || '').toString().toLowerCase(); 
                             const qty = Number(refundData.qty) || 1;
 
                             if (userId) {
@@ -145,14 +146,12 @@ module.exports = async function handler(req, res) {
                                 if (mode === 'tournament') {
                                     keyFieldToDecrement = "keys.tournament";
                                 } else if (mode.includes('5vs5') || mode.includes('5v5')) {
-                                    // 5vs5 အတွက် သေချာခွဲထုတ်ခြင်း
                                     if (type.includes('50k')) keyFieldToDecrement = "keys.5vs5-50k";
                                     else if (type.includes('25k')) keyFieldToDecrement = "keys.5vs5-25k";
                                     else if (type.includes('15k')) keyFieldToDecrement = "keys.5vs5-15k";
                                     else if (type.includes('10k')) keyFieldToDecrement = "keys.5vs5-10k";
                                     else keyFieldToDecrement = "keys.5vs5-5k";
                                 } else {
-                                    // ကျန်ရှိပါက 1vs1 အဖြစ် သတ်မှတ်မည်
                                     if (type.includes('50k')) keyFieldToDecrement = "keys.1vs1-50k";
                                     else if (type.includes('25k')) keyFieldToDecrement = "keys.1vs1-25k";
                                     else if (type.includes('15k')) keyFieldToDecrement = "keys.1vs1-15k";
