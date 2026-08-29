@@ -30,9 +30,32 @@ module.exports = async function handler(req, res) {
 
         const userData = userDoc.data();
 
+        // Database ထဲက flat fields များကို frontend မျှော်လင့်ထားတဲ့ modes structure ထဲသို့ ပြောင်းလဲခြင်း
+        const keys = {
+            modes: {
+                '5v5': {
+                    '5k': userData['5v5-5k'] || 0,
+                    '10k': userData['5v5-10k'] || 0,
+                    '15k': userData['5v5-15k'] || 0,
+                    '25k': userData['5v5-25k'] || 0,
+                    '50k': userData['5v5-50k'] || 0
+                },
+                '1v1': {
+                    '5k': userData['1vs1-5k'] || 0,
+                    '10k': userData['1vs1-10k'] || 0,
+                    '15k': userData['1vs1-15k'] || 0,
+                    '25k': userData['1vs1-25k'] || 0,
+                    '50k': userData['1vs1-50k'] || 0
+                },
+                'tournament': {
+                    'pass': userData['tournament'] || 0
+                }
+            }
+        };
+
         return res.status(200).json({ 
             success: true, 
-            keys: userData.keys || {} 
+            keys: keys 
         });
 
     } catch (error) {
