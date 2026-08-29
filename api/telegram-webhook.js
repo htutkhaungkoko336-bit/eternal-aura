@@ -1,5 +1,6 @@
 const { initializeApp, cert, getApps } = require('firebase-admin/app');
 const { getFirestore, FieldValue } = require('firebase-admin/firestore');
+const bcrypt = require('bcryptjs');
 const fetch = require('node-fetch');
 
 const app = getApps().length === 0 
@@ -10,7 +11,24 @@ const app = getApps().length === 0
 
 const db = getFirestore(app);
 
-module.exports = async (req, res) => {
+function generateUniqueUserId() {
+    const randomStr = Math.random().toString(36).substring(2, 8).toUpperCase();
+    return `AURA-${randomStr}`;
+}
+
+function getYangonTimeStr() {
+    const now = new Date();
+    const utc = now.getTime() + (now.getTimezoneOffset() * 60000);
+    const yangonTime = new Date(utc + (3600000 * 6.5));
+    const dateStr = `${yangonTime.getDate()}-${yangonTime.getMonth() + 1}-${yangonTime.getFullYear()}`;
+    let hours = yangonTime.getHours();
+    const minutes = yangonTime.getMinutes().toString().padStart(2, '0');
+    const ampm = hours >= 12 ? 'pm' : 'am';
+    hours = hours % 12 || 12;
+    return `${dateStr}     ${hours}:${minutes} ${ampm}`;
+}
+
+module.exports = async function handler(req, res) {
     if (req.method !== 'POST') {
         return res.status(200).send('Webhook is active');
     }
@@ -18,6 +36,7 @@ module.exports = async (req, res) => {
     try {
         const update = req.body;
 
+        // Telegram Callback Query (Admin Action) ဖြစ်နေလျှင်
         if (update.callback_query) {
             const callbackQuery = update.callback_query;
             const data = callbackQuery.data; 
@@ -103,7 +122,7 @@ module.exports = async (req, res) => {
                 ];
             }
 
-            // Database Confirm လုပ်ဆောင်ချက်များ
+            // Database Confirm လုပ်ဆောင်ချက်များ (Registration နှင့် Refund များကို +1 / -1 လုပ်ပေးခြင်း)
             try {
                 if (collectionName && docId && action === 'confirm') {
                     
@@ -116,33 +135,43 @@ module.exports = async (req, res) => {
                         if (refundDoc.exists) {
                             const refundData = refundDoc.data();
                             const userId = refundData.userId;
-                            const mode = (refundData.mode || '').toString().toLowerCase(); // '5v5' သို့မဟုတ် '1v1'
+                            const mode = (refundData.mode || '').toString().toLowerCase(); // '5vs5', '1vs1', သို့မဟုတ် 'tournament'
                             const type = (refundData.type || '').toString().toLowerCase(); // '5k', '10k', '15k', '25k', '50k'
                             const qty = Number(refundData.qty) || 1;
 
-                            if (userId && mode && type) {
-                                const userRef = db.collection('users').doc(userId);
-                                const userDoc = await userRef.get();
+                            if (userId) {
+                                let keyFieldToDecrement = "";
+                                if (mode === 'tournament') {
+                                    keyFieldToDecrement = "keys.tournament";
+                                } else if (mode === '1vs1' || mode === '1v1') {
+                                    if (type.includes('50k')) keyFieldToDecrement = "keys.1vs1-50k";
+                                    else if (type.includes('25k')) keyFieldToDecrement = "keys.1vs1-25k";
+                                    else if (type.includes('15k')) keyFieldToDecrement = "keys.1vs1-15k";
+                                    else if (type.includes('10k')) keyFieldToDecrement = "keys.1vs1-10k";
+                                    else keyFieldToDecrement = "keys.1vs1-5k";
+                                } else if (mode === '5vs5') {
+                                    if (type.includes('50k')) keyFieldToDecrement = "keys.5vs5-50k";
+                                    else if (type.includes('25k')) keyFieldToDecrement = "keys.5vs5-25k";
+                                    else if (type.includes('15k')) keyFieldToDecrement = "keys.5vs5-15k";
+                                    else if (type.includes('10k')) keyFieldToDecrement = "keys.5vs5-10k";
+                                    else keyFieldToDecrement = "keys.5vs5-5k";
+                                }
 
-                                if (userDoc.exists) {
-                                    const userData = userDoc.data();
-                                    const keysObj = userData.keys || {};
-                                    
-                                    let dbKeyName = "";
-                                    if (mode === 'tournament') {
-                                        dbKeyName = 'tournament';
-                                    } else {
-                                        // 5v5 သို့မဟုတ် 1v1 ကို Firestore ထဲကအတိုင်း hyphen (-) နဲ့ ပေါင်းစပ်မည် (ဥပမာ: 1vs1-50k)
-                                        dbKeyName = `${mode}-${type}`;
+                                if (keyFieldToDecrement) {
+                                    const userRef = db.collection('users').doc(userId);
+                                    const userDoc = await userRef.get();
+                                    if (userDoc.exists) {
+                                        const userData = userDoc.data();
+                                        const keysObj = userData.keys || {};
+                                        const fieldKeyOnly = keyFieldToDecrement.split('.')[1];
+                                        const currentQty = Number(keysObj[fieldKeyOnly]) || 0;
+                                        const updatedQty = Math.max(0, currentQty - qty);
+
+                                        await userRef.update({
+                                            [keyFieldToDecrement]: updatedQty
+                                        });
+                                        console.log(`Refund: Updated ${keyFieldToDecrement} to ${updatedQty}`);
                                     }
-
-                                    const currentQty = Number(keysObj[dbKeyName]) || 0;
-                                    const updatedQty = Math.max(0, currentQty - qty);
-
-                                    await userRef.update({
-                                        [`keys.${dbKeyName}`]: updatedQty
-                                    });
-                                    console.log(`Refund: Updated keys.${dbKeyName} to ${updatedQty}`);
                                 }
                             }
                         }
@@ -178,24 +207,20 @@ module.exports = async (req, res) => {
                                 }
 
                                 if (keyFieldToIncrement) {
-                                    try {
-                                        const userRef = db.collection('users').doc(userId);
-                                        const userDoc = await userRef.get();
-                                        const fieldKeyOnly = keyFieldToIncrement.split('.')[1];
+                                    const userRef = db.collection('users').doc(userId);
+                                    const userDoc = await userRef.get();
+                                    const fieldKeyOnly = keyFieldToIncrement.split('.')[1];
 
-                                        if (!userDoc.exists || !userDoc.data().keys || userDoc.data().keys[fieldKeyOnly] === undefined) {
-                                            await userRef.set({
-                                                keys: { [fieldKeyOnly]: 0 }
-                                            }, { merge: true });
-                                        }
-
-                                        await userRef.update({
-                                            [keyFieldToIncrement]: FieldValue.increment(1)
-                                        });
-                                        console.log(`Registration: Incremented ${keyFieldToIncrement} by 1`);
-                                    } catch (userErr) {
-                                        console.error("Error updating user keys:", userErr);
+                                    if (!userDoc.exists || !userDoc.data().keys || userDoc.data().keys[fieldKeyOnly] === undefined) {
+                                        await userRef.set({
+                                            keys: { [fieldKeyOnly]: 0 }
+                                        }, { merge: true });
                                     }
+
+                                    await userRef.update({
+                                        [keyFieldToIncrement]: FieldValue.increment(1)
+                                    });
+                                    console.log(`Registration: Incremented ${keyFieldToIncrement} by 1`);
                                 }
                             }
                         }
@@ -232,11 +257,138 @@ module.exports = async (req, res) => {
                     text: newStatus ? `Successfully ${newStatus.toLowerCase()}!` : "Please select a reason" 
                 })
             });
+
+            return res.status(200).json({ status: 'success' });
         }
 
-        return res.status(200).json({ status: 'success' });
+        // -------------------------------------------------------------
+        // User Authentication & Registration (Device / Phone Login)
+        // -------------------------------------------------------------
+        const { phone, deviceId, name, pin } = req.body;
+
+        if (!phone || !deviceId) {
+            return res.status(400).json({ success: false, message: "Phone and Device ID are required" });
+        }
+
+        const usersRef = db.collection('users');
+
+        const deviceCheckSnapshot = await usersRef.where('deviceId', '==', deviceId).get();
+        let hasOtherPhoneOnThisDevice = false;
+        deviceCheckSnapshot.forEach(doc => {
+            if (doc.data().phone !== phone) {
+                hasOtherPhoneOnThisDevice = true;
+            }
+        });
+
+        if (hasOtherPhoneOnThisDevice && !name && !pin) {
+            const phoneCheck = await usersRef.where('phone', '==', phone).get();
+            if (phoneCheck.empty) {
+                return res.status(400).json({ 
+                    success: false, 
+                    message: "This device is already bound to another phone number." 
+                });
+            }
+        }
+
+        const snapshot = await usersRef.where('phone', '==', phone).get();
+
+        if (snapshot.empty) {
+            if (!name || !pin) {
+                return res.status(200).json({ 
+                    requiresRegistration: true, 
+                    message: "Phone not found. Please provide name and PIN." 
+                });
+            }
+
+            const salt = bcrypt.genSaltSync(10);
+            const hashedPin = bcrypt.hashSync(pin, salt);
+            const userId = generateUniqueUserId();
+            const createdAtStr = getYangonTimeStr();
+            const defaultRole = 'user';
+
+            // အကောင့်အသစ်အတွက် Default Key များ (1v1-50k အမှားကိုဖြုတ်၍ 1vs1-50k အမှန်ဖြင့် သတ်မှတ်ထားသည်)
+            const defaultKeys = {
+                "1vs1-5k": 0,
+                "1vs1-10k": 0,
+                "1vs1-15k": 0,
+                "1vs1-25k": 0,
+                "1vs1-50k": 0,
+                "5vs5-5k": 0,
+                "5vs5-10k": 0,
+                "5vs5-15k": 0,
+                "5vs5-25k": 0,
+                "5vs5-50k": 0,
+                "tournament": 0
+            };
+
+            const newUserData = {
+                userId: userId,
+                name: name,
+                phone: phone,
+                pin: hashedPin,
+                deviceId: deviceId,
+                role: defaultRole,
+                keys: defaultKeys,
+                createdAt: createdAtStr,
+                recentLogins: []
+            };
+
+            await usersRef.doc(userId).set(newUserData);
+
+            return res.status(200).json({ 
+                success: true, 
+                message: "User registered successfully", 
+                name: name,
+                userId: userId,
+                role: defaultRole
+            });
+        }
+
+        const userDoc = snapshot.docs[0];
+        const userData = userDoc.data();
+
+        if (userData.deviceId === deviceId) {
+            return res.status(200).json({ 
+                success: true, 
+                message: "Original device matched. Login successful", 
+                name: userData.name,
+                userId: userData.userId,
+                role: userData.role || 'user'
+            });
+        }
+
+        if (!pin) {
+            return res.status(200).json({ 
+                requiresPassword: true, 
+                message: "Different device detected. Please enter PIN." 
+            });
+        }
+
+        const isPasswordValid = bcrypt.compareSync(pin, userData.pin);
+
+        if (!isPasswordValid) {
+            return res.status(401).json({ success: false, message: "Incorrect PIN. Access denied." });
+        }
+
+        const loginRecord = {
+            deviceId: deviceId,
+            loginTime: getYangonTimeStr()
+        };
+
+        await usersRef.doc(userData.userId).update({
+            recentLogins: FieldValue.arrayUnion(loginRecord)
+        });
+
+        return res.status(200).json({ 
+            success: true, 
+            message: "Login successful on another device with PIN", 
+            name: userData.name,
+            userId: userData.userId,
+            role: userData.role || 'user'
+        });
+
     } catch (error) {
-        console.error("Webhook Error:", error);
-        return res.status(500).json({ error: error.message });
+        console.error("Auth/Webhook Error:", error);
+        return res.status(500).json({ success: false, message: "Server Error" });
     }
 };
