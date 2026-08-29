@@ -107,10 +107,9 @@ module.exports = async (req, res) => {
             try {
                 if (collectionName && docId && action === 'confirm') {
                     
-                    // 1. REFUND REQUESTS အတွက် Confirm လုပ်ခြင်း (ရှိပြီးသားကနေ နှုတ်မည်)
+                    // 1. REFUND REQUESTS အတွက် Confirm လုပ်ခြင်း (ရှိပြီးသားကနေ -1 နှုတ်မည်)
                     if (collectionName === 'refund_requests') {
                         const refundDocRef = db.collection('refund_requests').doc(docId);
-                        
                         await refundDocRef.update({ status: 'CONFIRMED' });
 
                         const refundDoc = await refundDocRef.get();
@@ -118,7 +117,7 @@ module.exports = async (req, res) => {
                             const refundData = refundDoc.data();
                             const userId = refundData.userId;
                             const mode = refundData.mode; // '1vs1', '5vs5', 'tournament'
-                            const type = (refundData.type || '').toString().toLowerCase().replace('k', ''); // '5', '10', '15', '25', '50'
+                            const type = (refundData.type || '').toString().toLowerCase().replace('k', ''); 
                             const qty = Number(refundData.qty) || 1;
 
                             if (userId && mode) {
@@ -129,12 +128,10 @@ module.exports = async (req, res) => {
                                     const userData = userDoc.data();
                                     const keysObj = userData.keys || {};
                                     
-                                    // ပုံစံတကျ ဖြစ်စေရန် field နာမည်ကို တစုတစည်းတည်း ဖန်တီးခြင်း
                                     let dbKeyName = "";
                                     if (mode === 'tournament') {
                                         dbKeyName = 'tournament';
                                     } else {
-                                        // 5vs5_50k လိုဟာမျိုး မဖြစ်စေဘဲ 5vs5-50k ပုံစံတည်း ဖြစ်အောင် လုပ်ခြင်း
                                         const cleanMode = mode.replace('_', '-');
                                         const cleanType = type.replace('k', '');
                                         dbKeyName = `${cleanMode}-${cleanType}k`;
@@ -174,7 +171,6 @@ module.exports = async (req, res) => {
                                 } else if (collectionName === 'tournament_registrations') {
                                     keyFieldToIncrement = "keys.tournament";
                                 } else if (collectionName === '5vs5_registrations') {
-                                    // Underscore တွေ မပါဘဲ hyphen (-) သာ သုံးပေးရန်
                                     if (fee.includes('50k')) keyFieldToIncrement = "keys.5vs5-50k";
                                     else if (fee.includes('25k')) keyFieldToIncrement = "keys.5vs5-25k";
                                     else if (fee.includes('15k')) keyFieldToIncrement = "keys.5vs5-15k";
@@ -188,7 +184,6 @@ module.exports = async (req, res) => {
                                         const userDoc = await userRef.get();
                                         const fieldKeyOnly = keyFieldToIncrement.split('.')[1];
 
-                                        // အကယ်၍ အဲ့ဒီ field မရှိသေးမှသာ 0 စတင်ထည့်မည်၊ ရှိပြီးသားဆိုရင် FieldValue.increment(1) နဲ့ တိုက်ရိုက် +1 တိုးမည်
                                         if (!userDoc.exists || !userDoc.data().keys || userDoc.data().keys[fieldKeyOnly] === undefined) {
                                             await userRef.set({
                                                 keys: { [fieldKeyOnly]: 0 }
