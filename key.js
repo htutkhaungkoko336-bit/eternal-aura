@@ -394,7 +394,7 @@ const executeRefundBtn = document.getElementById('execute-refund-btn');
                 executeRefundBtn.textContent = 'Sending...';
 
                 // Backend API သို့ ဒေတာများ ပို့ဆောင်ခြင်း (Telegram သို့ ပို့ပေးမည့် API)
-                const response = await fetch('/api/refund-request', {
+                const response = await fetch('/api/request-refund', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({
@@ -428,7 +428,7 @@ const executeRefundBtn = document.getElementById('execute-refund-btn');
             alert('အရေအတွက် မလုံလောက်ပါ။');
         }
     });
-    
+
     function updateUI(data) {
         document.getElementById('vault-total-balance').innerText = calculateTotalBalance(data).toLocaleString() + ' Ks';
         document.getElementById('grid-5v5').innerHTML = renderKeys('5v5', ['5k', '10k', '15k', '25k', '50k'], data);
