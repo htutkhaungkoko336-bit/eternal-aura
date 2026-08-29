@@ -3,10 +3,10 @@ const { getFirestore, FieldValue } = require('firebase-admin/firestore');
 const fetch = require('node-fetch');
 
 const app = getApps().length === 0 
-  ? initializeApp({
-      credential: cert(JSON.parse(process.env.FIREBASE_SERVICE_ACCOUNT))
-    }) 
-  : getApps()[0];
+    ? initializeApp({
+        credential: cert(JSON.parse(process.env.FIREBASE_SERVICE_ACCOUNT))
+      }) 
+    : getApps()[0];
 
 const db = getFirestore(app);
 

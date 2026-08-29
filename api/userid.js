@@ -92,12 +92,11 @@ module.exports = async function handler(req, res) {
                 "5vs5-5k": 0,
                 "5vs5-10k": 0,
                 "5vs5-15k": 0,
-                "5vs5_25k": 0,
-                "5vs5_50k": 0,
+                "5vs5-25k": 0, // underscore အစား hyphen သို့ ပြောင်းလိုက်သည်
+                "5vs5-50k": 0, // underscore အစား hyphen သို့ ပြောင်းလိုက်သည်
                 // လိုအပ်မည့် အခြား Key အမျိုးအစားများကိုလည်း ဤနေရာတွင် ဆက်ထည့်နိုင်သည် (စုစုပေါင်း ၁၁ မျိုး)
                 "tournament": 0
             };
-
             const newUserData = {
                 userId: userId,
                 name: name,
