@@ -5,8 +5,8 @@ const FormData = require('form-data');
 
 const app = getApps().length === 0 
   ? initializeApp({
-      credential: cert(JSON.parse(process.env.FIREBASE_SERVICE_ACCOUNT))
-    }) 
+        credential: cert(JSON.parse(process.env.FIREBASE_SERVICE_ACCOUNT))
+      }) 
   : getApps()[0];
 
 const db = getFirestore(app);
