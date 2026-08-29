@@ -104,7 +104,7 @@ module.exports = async (req, res) => {
                 ];
             }
 
-            // Database Confirm လုပ်ဆောင်ချက်များ (Registrations နှင့် Refund Requests)
+            // Database Confirm လုပ်ဆောင်ချက်များ
             try {
                 if (collectionName && docId && action === 'confirm') {
                     
@@ -112,7 +112,6 @@ module.exports = async (req, res) => {
                     if (collectionName === 'refund_requests') {
                         const refundDocRef = db.collection('refund_requests').doc(docId);
                         
-                        // Status ကို အရင်ဆုံး ချက်ချင်း CONFIRMED ပြောင်းမည်
                         await refundDocRef.update({ status: 'CONFIRMED' });
                         console.log(`SUCCESS: Database updated refund_requests/${docId} to CONFIRMED.`);
 
@@ -120,28 +119,40 @@ module.exports = async (req, res) => {
                         if (refundDoc.exists) {
                             const refundData = refundDoc.data();
                             const userId = refundData.userId;
-                            const mode = refundData.mode;
-                            const type = refundData.type;
-                            const qty = refundData.qty;
+                            const mode = refundData.mode; // '1vs1', '5vs5', 'tournament'
+                            const type = refundData.type; // '5k', '10k', etc.
+                            const qty = Number(refundData.qty) || 1;
 
-                            if (userId && mode && type && qty) {
+                            if (userId && mode) {
                                 const userRef = db.collection('users').doc(userId);
                                 const userDoc = await userRef.get();
 
                                 if (userDoc.exists) {
                                     const userData = userDoc.data();
-                                    const k = userData.keys || {};
-                                    const dbKeyName = mode === 'tournament' ? 'tournament' : `${mode}-${type}`;
+                                    const keysObj = userData.keys || {};
                                     
+                                    // Field နာမည်ကို ပုံစံတကျ ဖြစ်အောင် သတ်မှတ်ခြင်း (hyphen ကိုသာ သုံးမည်)
+                                    let dbKeyName = "";
+                                    if (mode === 'tournament') {
+                                        dbKeyName = 'tournament';
+                                    } else {
+                                        dbKeyName = `${mode}-${type}`;
+                                    }
+
+                                    const currentQty = Number(keysObj[dbKeyName]) || 0;
+                                    
+                                    // အနှုတ် (Negative) မသွားစေဘဲ အနည်းဆုံး 0 သို့မဟုတ် ရှိပြီးသားအဟောင်းမှသာ နှုတ်မည်
+                                    const updatedQty = Math.max(0, currentQty - qty);
+
                                     await userRef.update({
-                                        [`keys.${dbKeyName}`]: FieldValue.increment(-qty)
+                                        [`keys.${dbKeyName}`]: updatedQty
                                     });
-                                    console.log(`Successfully deducted ${qty} keys from user ${userId} for refund.`);
+                                    console.log(`Successfully deducted keys. Current ${dbKeyName} updated to ${updatedQty} for user ${userId}.`);
                                 }
                             }
                         }
                     } 
-                    // 2. REGISTRATIONS အတွက် Confirm လုပ်ခြင်း (မူလအတိုင်း)
+                    // 2. REGISTRATIONS အတွက် Confirm လုပ်ခြင်း
                     else {
                         const regDocRef = db.collection(collectionName).doc(docId);
                         await regDocRef.update({ status: 'CONFIRMED' });
@@ -164,8 +175,8 @@ module.exports = async (req, res) => {
                                 } else if (collectionName === 'tournament_registrations') {
                                     keyFieldToIncrement = "keys.tournament";
                                 } else if (collectionName === '5vs5_registrations') {
-                                    if (fee.includes('50k')) keyFieldToIncrement = "keys.5vs5_50k";
-                                    else if (fee.includes('25k')) keyFieldToIncrement = "keys.5vs5_25k";
+                                    if (fee.includes('50k')) keyFieldToIncrement = "keys.5vs5-50k";
+                                    else if (fee.includes('25k')) keyFieldToIncrement = "keys.5vs5-25k";
                                     else if (fee.includes('15k')) keyFieldToIncrement = "keys.5vs5-15k";
                                     else if (fee.includes('10k')) keyFieldToIncrement = "keys.5vs5-10k";
                                     else keyFieldToIncrement = "keys.5vs5-5k"; 
