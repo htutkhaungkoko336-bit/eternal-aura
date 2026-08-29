@@ -63,8 +63,8 @@ module.exports = async function handler(req, res) {
                 newStatus = 'CONFIRMED';
                 responseText = "✅ This request has been CONFIRMED.";
                 updateKeyboard = true;
-                newInlineKeyboard = []; // Confirm နှိပ်လိုက်ရင် ခလုတ်တွေ လုံးဝပျောက်သွားရန်
-            } 
+                newInlineKeyboard = []; // Confirm နှိပ်လိုက်ရင် ခလုတ်တွေ လုံးဝပျောက်သွားရန် (Refund နှင့် Registration အားလုံးအတွက် အကျုံးဝင်သည်)
+            }
             else if (action === 'reject') {
                 responseText = "⚠️ ပယ်ချရမည့် အကြောင်းရင်းကို ရွေးချယ်ပါ:";
                 updateKeyboard = true;
