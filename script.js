@@ -1,6 +1,7 @@
 // main.js
 import { initAuth } from './auth.js';
 import { renderModeScreen } from './mode.js';
+import { renderMatchScreen } from './match.js'; // <-- Match screen ကို import လုပ်ရန်
 import { addNotification, renderNotificationScreen, updateNotificationBadge } from './notification.js';
 import { renderProfileScreen } from './profile.js';
 
@@ -109,9 +110,8 @@ function handleLoginSuccess(data) {
             if (tab === 'mode') {
                 renderModeScreen(targetContent);
             } else if (tab === 'match') {
-                targetContent.innerHTML = `<div style="color: white; text-align: center; margin-top: 50px; font-weight: 600;">MATCH SCREEN COMING SOON</div>`;
+                renderMatchScreen(targetContent); // <-- ဤနေရာတွင် match.js က screen ကို ခေါ်ပေးမည်
             } else if (tab === 'notification') {
-                // LocalStorage ထဲက userId ကို ယူပြီး ပို့ပေးပါ
                 const currentUserId = localStorage.getItem('userId');
                 renderNotificationScreen(targetContent, currentUserId);
             } else if (tab === 'profile') {
@@ -122,10 +122,9 @@ function handleLoginSuccess(data) {
         });
     });
 
-    // Notification Badge စစ်ဆေးခြင်း (userId ပါ ထည့်ပေးလိုက်ပါသည်)
+    // Notification Badge စစ်ဆေးခြင်း
     const currentUserId = localStorage.getItem('userId');
     if (typeof updateNotificationBadge === 'function' && currentUserId) {
-        // ပထမအကြိမ် ဝင်လာချိန်မှာ unread count စစ်ဖို့အတွက် loadAndRenderNotifications ကိုပါ ခေါ်နိုင်ပါတယ်
         import('./notification.js').then(module => {
             module.loadAndRenderNotifications(currentUserId);
         });
