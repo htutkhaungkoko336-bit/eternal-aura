@@ -5,10 +5,10 @@ let currentMode = "5vs5"; // ပုံသေ 5vs5 စတင်မည်
 
 export function renderMatchScreen(container) {
     container.innerHTML = `
-        <div style="padding: 16px; box-sizing: border-box; display: flex; flex-direction: column; height: 100%; justify-content: space-between; position: relative; padding-bottom: 85px; background: #0b0f19;">
+        <div style="padding: 16px; box-sizing: border-box; display: flex; flex-direction: column; height: 100%; justify-content: space-between; position: relative; background: #0b0f19;">
             
-            <!-- အပေါ်ပိုင်း အစိတ်အပိုင်းများ (အပေါ်မှာ သင့်တော်ရုံ နေရာလွတ်ရှိစေရန်) -->
-            <div style="display: flex; flex-direction: column; gap: 16px; width: 100%; margin-top: 10px;">
+            <!-- အပေါ်ပိုင်း အစိတ်အပိုင်းများ -->
+            <div style="display: flex; flex-direction: column; gap: 16px; width: 100%; margin-top: 5px;">
                 
                 <!-- Header Section (Cyan Glowing Border) -->
                 <div style="display: flex; justify-content: center; width: 100%;">
@@ -25,8 +25,8 @@ export function renderMatchScreen(container) {
 
             </div>
 
-            <!-- အောက်ဆုံး Bottom Nav Bar ပေါ်က ကွက်တိကျမည့် Action ခလုတ်များ -->
-            <div style="display: flex; gap: 12px; width: 100%; margin-bottom: 5px;">
+            <!-- အောက်ဆုံး Bottom Nav Bar နဲ့ ကွက်တိဖြစ်စေမည့် Action ခလုတ်များ (margin-bottom ကို 0 ထားသည်) -->
+            <div style="display: flex; gap: 12px; width: 100%; margin-bottom: 0;">
                 <button id="match-new-room-btn" style="flex: 1; padding: 14px; background: rgba(56, 189, 248, 0.2); color: #38bdf8; border: 1px solid #38bdf8; border-radius: 12px; font-weight: 700; font-size: 13px; cursor: pointer; text-align: center; box-shadow: 0 0 12px rgba(56, 189, 248, 0.25); text-transform: uppercase; letter-spacing: 1px; transition: all 0.2s;">+ New Room</button>
                 <button id="match-cancel-btn" style="flex: 1; padding: 14px; background: rgba(15, 23, 42, 0.8); color: #94a3b8; border: 1px solid rgba(56, 189, 248, 0.3); border-radius: 12px; font-weight: 600; font-size: 13px; cursor: pointer; text-align: center; text-transform: uppercase; letter-spacing: 1px; transition: all 0.2s;">Cancel</button>
             </div>
