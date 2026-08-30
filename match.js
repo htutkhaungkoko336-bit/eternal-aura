@@ -1,6 +1,4 @@
 // match.js
-import { renderModeScreen } from './mode.js';
-
 let currentMode = "5vs5"; // ပုံသေ 5vs5 စတင်မည်
 let currentFee = "ALL";   // ပုံသေ Fee အားလုံး
 
@@ -68,7 +66,6 @@ function setupMatchEvents(container) {
     const filterOptions = container.querySelectorAll('.filter-option');
 
     const newRoomBtn = document.getElementById('match-new-room-btn');
-    const cancelBtn = document.getElementById('match-cancel-btn');
 
     // Mode Selection Logic
     btn5v5.addEventListener('click', () => {
@@ -118,7 +115,6 @@ function setupMatchEvents(container) {
         option.addEventListener('click', (e) => {
             currentFee = e.currentTarget.getAttribute('data-fee');
             filterDropdown.style.display = 'none';
-            // ရွေးချယ်ထားသော Fee ကို alert ဒါမှမဟုတ် filter လုပ်ငန်းစဥ်အတွက် အသုံးပြုနိုင်ပါပြီ
             console.log("Selected Fee:", currentFee);
         });
 
@@ -135,7 +131,5 @@ function setupMatchEvents(container) {
         alert(`Creating Room for ${currentMode} with Fee: ${currentFee}`);
     });
 
-    cancelBtn.addEventListener('click', () => {
-        renderModeScreen(container);
-    });
+    // Cancel button မှာ function တစ်စုံတစ်ရာ မထည့်ထားတော့ပါ (ဒီတိုင်းသာ ထားရှိသည်)
 }
