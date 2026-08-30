@@ -3,7 +3,6 @@ import { initAuth } from './auth.js';
 import { renderModeScreen } from './mode.js';
 import { addNotification, renderNotificationScreen, updateNotificationBadge } from './notification.js';
 import { renderProfileScreen } from './profile.js';
-import { renderMatchScreen } from './match.js';
 
 // DOM Elements များကို ရယူခြင်း
 const formContent = document.getElementById('form-content');
@@ -110,7 +109,7 @@ function handleLoginSuccess(data) {
             if (tab === 'mode') {
                 renderModeScreen(targetContent);
             } else if (tab === 'match') {
-                renderMatchScreen(targetContent);
+                targetContent.innerHTML = `<div style="color: white; text-align: center; margin-top: 50px; font-weight: 600;">MATCH SCREEN COMING SOON</div>`;
             } else if (tab === 'notification') {
                 // LocalStorage ထဲက userId ကို ယူပြီး ပို့ပေးပါ
                 const currentUserId = localStorage.getItem('userId');
