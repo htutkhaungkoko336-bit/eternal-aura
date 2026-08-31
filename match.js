@@ -5,129 +5,112 @@ export function renderMatchScreen(container) {
     container.innerHTML = `
         <div id="floating-arena" style="position: relative; width: 100%; height: 100%; background: #0b0f19; overflow: hidden; box-sizing: border-box; display: flex; align-items: center; justify-content: center;">
             
-            <!-- နောက်ခံ Glow အလှ -->
             <div style="position: absolute; width: 250px; height: 250px; background: radial-gradient(circle, rgba(56,189,248,0.15) 0%, rgba(11,15,25,0) 70%); border-radius: 50%; pointer-events: none;"></div>
 
-            <!-- ညွှန်ကြားချက် စာသားငယ် -->
-            <div style="position: absolute; top: 20px; width: 100%; text-align: center; pointer-events: none;">
-                <span style="font-size: 11px; font-weight: 700; letter-spacing: 2px; color: #64748b; text-transform: uppercase;">TAP A FLOATING NODE TO ENTER</span>
+            <div style="position: absolute; top: 25px; width: 100%; text-align: center; pointer-events: none; z-index: 5;">
+                <span style="font-size: 11px; font-weight: 700; letter-spacing: 2px; color: #64748b; text-transform: uppercase;">TAP A CYBER SHIP TO ENTER</span>
             </div>
 
-            <!-- မျောနေမယ့် Items ၁၀ ခု Container -->
             <div id="orbit-container" style="position: relative; width: 100%; height: 100%;"></div>
-
-            <!-- အောက်ဆုံး Back/Cancel ခလုတ် (ဒီတိုင်းထားရန်) -->
-            <div style="position: absolute; bottom: 16px; left: 16px; right: 16px; z-index: 10;">
-                <button id="match-cancel-btn" style="width: 100%; padding: 12px; background: rgba(15, 23, 42, 0.8); color: #94a3b8; border: 1px solid rgba(56, 189, 248, 0.3); border-radius: 8px; font-weight: 700; font-size: 13px; cursor: pointer; text-align: center; text-transform: uppercase; letter-spacing: 1.5px;">CANCEL</button>
-            </div>
 
         </div>
     `;
 
-    initFloatingNodes(container);
+    initSpaceshipNodes(container);
 }
 
-function initFloatingNodes(container) {
+function initSpaceshipNodes(container) {
     const orbitContainer = container.querySelector('#orbit-container');
-    const cancelBtn = container.querySelector('#match-cancel-btn');
 
-    // လေထဲမျောမယ့် Item ၁၀ ခု (Modes နဲ့ Fees တွေ ရောနှောထားသည်)
+    // မတူညီသော အရောင် (၁၀) မျိုးဖြင့် 10 ခု (Modes နဲ့ Fees များ)
     const items = [
-        { label: "5 VS 5", type: "mode" },
-        { label: "1 VS 1", type: "mode" },
-        { label: "5K", type: "fee" },
-        { label: "10K", type: "fee" },
-        { label: "15K", type: "fee" },
-        { label: "25K", type: "fee" },
-        { label: "50K", type: "fee" },
-        { label: "5 VS 5", type: "mode" },
-        { label: "10K", type: "fee" },
-        { label: "25K", type: "fee" }
+        { label: "5 VS 5", color: "#38bdf8" }, // Cyan
+        { label: "1 VS 1", color: "#f43f5e" }, // Rose Red
+        { label: "5K", color: "#a855f7" },     // Purple
+        { label: "10K", color: "#10b981" },    // Emerald Green
+        { label: "15K", color: "#f59e0b" },    // Amber Gold
+        { label: "25K", color: "#ec4899" },    // Pink
+        { label: "50K", color: "#6366f1" },    // Indigo
+        { label: "5 VS 5", color: "#14b8a6" }, // Teal
+        { label: "10K", color: "#eab308" },    // Yellow
+        { label: "25K", color: "#8b5cf6" }     // Violet
     ];
 
     const nodes = [];
     const width = orbitContainer.clientWidth || 380;
     const height = orbitContainer.clientHeight || 700;
 
-    // တစ်ခုချင်းစီအတွက် နေရာနှင့် လှုပ်ရှားမှု ပုံစံဖန်တီးခြင်း
     items.forEach((item, index) => {
         const el = document.createElement('div');
-        el.className = 'floating-node';
+        el.className = 'cyber-ship-node';
         el.textContent = item.label;
         
-        // Cyber City Node Styling
+        // Spaceship / Cyber Node Styling (Hexagonal / Shield Shape with Unique Colors)
         el.style.position = 'absolute';
-        el.style.padding = '10px 16px';
-        el.style.background = 'rgba(15, 23, 42, 0.85)';
-        el.style.border = '2px solid #38bdf8';
-        el.style.borderRadius = '6px';
-        el.style.color = '#38bdf8';
+        el.style.padding = '10px 14px';
+        el.style.background = 'rgba(15, 23, 42, 0.9)';
+        el.style.border = `2px solid ${item.color}`;
+        el.style.borderRadius = '12px 4px 12px 4px'; // Spaceship aerodynamic look
+        el.style.color = item.color;
         el.style.fontSize = '12px';
         el.style.fontWeight = '800';
         el.style.cursor = 'pointer';
         el.style.textAlign = 'center';
-        el.style.boxShadow = '0 0 12px rgba(56, 189, 248, 0.3)';
-        el.style.textShadow = '0 0 8px rgba(56, 189, 248, 0.5)';
+        el.style.boxShadow = `0 0 12px ${item.color}55`;
+        el.style.textShadow = `0 0 8px ${item.color}`;
         el.style.userSelect = 'none';
-        el.style.transition = 'transform 0.1s ease, background 0.2s ease';
+        el.style.transition = 'transform 0.15s ease, background 0.2s ease';
 
-        // ထောင့်စွန်း pixel အစက်လေးများထည့်ရန်
-        const corner1 = document.createElement('div');
-        corner1.style.cssText = 'position: absolute; top: -2px; left: -2px; width: 4px; height: 4px; background: #38bdf8;';
-        const corner2 = document.createElement('div');
-        corner2.style.cssText = 'position: absolute; bottom: -2px; right: -2px; width: 4px; height: 4px; background: #38bdf8;';
-        el.appendChild(corner1);
-        el.appendChild(corner2);
+        // Spaceship တောင်ပံအသေးစားလေးများ (Corner Thrusters)
+        const thruster1 = document.createElement('div');
+        thruster1.style.cssText = `position: absolute; top: 4px; left: -4px; width: 3px; height: 3px; background: ${item.color}; box-shadow: 0 0 5px ${item.color};`;
+        const thruster2 = document.createElement('div');
+        thruster2.style.cssText = `position: absolute; bottom: 4px; right: -4px; width: 3px; height: 3px; background: ${item.color}; box-shadow: 0 0 5px ${item.color};`;
+        el.appendChild(thruster1);
+        el.appendChild(thruster2);
 
-        // ကျပန်း နေရာချထားခြင်း (Random Initial Positions & Velocities)
+        // ကျပန်း နေရာစတင်ချထားခြင်း
         let x = Math.random() * (width - 90);
         let y = Math.random() * (height - 180) + 60;
-        let vx = (Math.random() - 0.5) * 1.2;
-        let vy = (Math.random() - 0.5) * 1.2;
+        let vx = (Math.random() - 0.5) * 1.3;
+        let vy = (Math.random() - 0.5) * 1.3;
 
         orbitContainer.appendChild(el);
-
         nodes.push({ el, x, y, vx, vy, label: item.label });
 
-        // Node တစ်ခုကို ထိလိုက်/နှိပ်လိုက်လျှင် Room Card ဖန်တီးသည့် နေရာသို့ရောက်ရန်
+        // Node တစ်ခုကို နှိပ်လိုက်ပါက Room Card နေရာသို့ရောက်ရန်
         el.addEventListener('click', () => {
             enterRoomCreation(container, item.label);
         });
 
         el.addEventListener('mouseenter', () => {
-            el.style.background = 'rgba(56, 189, 248, 0.25)';
-            el.style.transform = 'scale(1.1)';
+            el.style.background = `${item.color}25`;
+            el.style.transform = 'scale(1.15) rotate(3deg)';
         });
         el.addEventListener('mouseleave', () => {
-            el.style.background = 'rgba(15, 23, 42, 0.85)';
-            el.style.transform = 'scale(1)';
+            el.style.background = 'rgba(15, 23, 42, 0.9)';
+            el.style.transform = 'scale(1) rotate(0deg)';
         });
     });
 
-    // လေထဲမျောနေစေရန် Animation Loop
+    // မျက်နှာပြင်တစ်လျှောက် လေထဲမျောလွင့်နေမည့် Physics Animation Loop
     let animationFrameId;
     function animate() {
         nodes.forEach(node => {
             node.x += node.vx;
             node.y += node.vy;
 
-            // နံရံနှင့်ထိပါက ပြန်ကန်ထွက်ရန် (Bounce off edges)
             if (node.x <= 10 || node.x >= width - 90) node.vx *= -1;
-            if (node.y <= 60 || node.y >= height - 120) node.vy *= -1;
+            if (node.y <= 60 || node.y >= height - 100) node.vy *= -1;
 
             node.el.style.transform = `translate(${node.x}px, ${node.y}px)`;
         });
         animationFrameId = requestAnimationFrame(animate);
     }
     animate();
-
-    // Cancel ခလုတ်အတွက် 
-    cancelBtn.addEventListener('click', () => {
-        cancelAnimationFrame(animationFrameId);
-    });
 }
 
-// Node ကိုထိပြီးပါက Room Card ဖန်တီးမည့် မျက်နှာပြင်သို့ ကူးပြောင်းမည့် ပုံစံ
+// Room Card တည်ဆောက်မည့် မျက်နှာပြင်
 function enterRoomCreation(container, selectedValue) {
     container.innerHTML = `
         <div style="padding: 16px; box-sizing: border-box; display: flex; flex-direction: column; height: 100%; justify-content: space-between; background: #0b0f19;">
