@@ -1,135 +1,149 @@
 // match.js
-let currentMode = "5vs5"; // ပုံသေ 5vs5 စတင်မည်
-let currentFee = "ALL";   // ပုံသေ Fee အားလုံး
+import { renderModeScreen } from './mode.js';
 
 export function renderMatchScreen(container) {
     container.innerHTML = `
-        <div style="padding: 16px; box-sizing: border-box; display: flex; flex-direction: column; height: 100%; justify-content: space-between; position: relative; background: #0b0f19;">
+        <div id="floating-arena" style="position: relative; width: 100%; height: 100%; background: #0b0f19; overflow: hidden; box-sizing: border-box; display: flex; align-items: center; justify-content: center;">
             
-            <!-- အပေါ်ပိုင်း အစိတ်အပိုင်းများ -->
-            <div style="display: flex; flex-direction: column; gap: 16px; width: 100%; margin-top: 5px;">
-                
-                <!-- Header နှင့် မျဉ်းသုံးချောင်း Filter Icon ပါသော ဘောင် -->
-                <div style="position: relative; border: 2px solid #38bdf8; border-radius: 4px; padding: 12px 16px; background-color: rgba(15, 23, 42, 0.8); display: flex; align-items: center; justify-content: space-between; width: 100%; box-sizing: border-box; box-shadow: 0 0 10px rgba(56, 189, 248, 0.3);">
-                    <div style="position: absolute; top: -3px; left: -3px; width: 6px; height: 6px; background-color: #38bdf8;"></div>
-                    <div style="position: absolute; bottom: -3px; right: -3px; width: 6px; height: 6px; background-color: #38bdf8;"></div>
-                    
-                    <!-- ခေါင်းစဉ်စာသား (အလယ်ဗဟိုကျစေရန်) -->
-                    <span style="font-size: 15px; font-weight: 800; letter-spacing: 1.5px; text-transform: uppercase; background: linear-gradient(to right, #38bdf8, #818cf8); -webkit-background-clip: text; -webkit-text-fill-color: transparent; flex: 1; text-align: center; margin-left: 24px;">SELECT MATCH MODE</span>
+            <!-- နောက်ခံ Glow အလှ -->
+            <div style="position: absolute; width: 250px; height: 250px; background: radial-gradient(circle, rgba(56,189,248,0.15) 0%, rgba(11,15,25,0) 70%); border-radius: 50%; pointer-events: none;"></div>
 
-                    <!-- မျဉ်းသုံးချောင်း Filter Button (Hamburger/Filter Icon) -->
-                    <div style="position: relative;">
-                        <button id="filter-toggle-btn" style="background: transparent; border: none; cursor: pointer; display: flex; flex-direction: column; gap: 4px; padding: 4px; align-items: center; justify-content: center;" title="Filter">
-                            <span style="display: block; width: 18px; height: 2px; background-color: #38bdf8; box-shadow: 0 0 6px #38bdf8;"></span>
-                            <span style="display: block; width: 14px; height: 2px; background-color: #38bdf8; box-shadow: 0 0 6px #38bdf8;"></span>
-                            <span style="display: block; width: 10px; height: 2px; background-color: #38bdf8; box-shadow: 0 0 6px #38bdf8;"></span>
-                        </button>
-
-                        <!-- Dropdown Menu (5k, 10k, 15k, 25k, 50k) -->
-                        <div id="filter-dropdown" style="display: none; position: absolute; right: 0; top: 35px; background: #0f172a; border: 2px solid #38bdf8; border-radius: 6px; width: 110px; z-index: 100; box-shadow: 0 0 15px rgba(56, 189, 248, 0.4); overflow: hidden;">
-                            <div class="filter-option" data-fee="ALL" style="padding: 8px 12px; font-size: 12px; font-weight: 700; color: #f8fafc; cursor: pointer; border-bottom: 1px solid #1e293b; text-align: center;">ALL</div>
-                            <div class="filter-option" data-fee="5k" style="padding: 8px 12px; font-size: 12px; font-weight: 700; color: #38bdf8; cursor: pointer; border-bottom: 1px solid #1e293b; text-align: center;">5K</div>
-                            <div class="filter-option" data-fee="10k" style="padding: 8px 12px; font-size: 12px; font-weight: 700; color: #38bdf8; cursor: pointer; border-bottom: 1px solid #1e293b; text-align: center;">10K</div>
-                            <div class="filter-option" data-fee="15k" style="padding: 8px 12px; font-size: 12px; font-weight: 700; color: #38bdf8; cursor: pointer; border-bottom: 1px solid #1e293b; text-align: center;">15K</div>
-                            <div class="filter-option" data-fee="25k" style="padding: 8px 12px; font-size: 12px; font-weight: 700; color: #38bdf8; cursor: pointer; border-bottom: 1px solid #1e293b; text-align: center;">25K</div>
-                            <div class="filter-option" data-fee="50k" style="padding: 8px 12px; font-size: 12px; font-weight: 700; color: #38bdf8; cursor: pointer; text-align: center;">50K</div>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Mode Switcher (5 VS 5 နှင့် 1 VS 1) -->
-                <div style="display: flex; gap: 10px; width: 100%; background: #0f172a; padding: 4px; border-radius: 8px; border: 1px solid rgba(56, 189, 248, 0.3); box-shadow: inset 0 0 10px rgba(0, 0, 0, 0.5);">
-                    <button id="mode-5v5-btn" class="match-mode-btn" data-mode="5vs5" style="flex: 1; padding: 12px; background: rgba(56, 189, 248, 0.2); color: #38bdf8; border: 1px solid #38bdf8; border-radius: 6px; font-weight: 800; font-size: 13px; cursor: pointer; text-align: center; text-shadow: 0 0 8px rgba(56, 189, 248, 0.6); box-shadow: 0 0 10px rgba(56, 189, 248, 0.25); transition: all 0.25s ease;">5 VS 5</button>
-                    <button id="mode-1v1-btn" class="match-mode-btn" data-mode="1vs1" style="flex: 1; padding: 12px; background: transparent; color: #64748b; border: 1px solid #334155; border-radius: 6px; font-weight: 700; font-size: 13px; cursor: pointer; text-align: center; transition: all 0.25s ease;">1 VS 1</button>
-                </div>
-
+            <!-- ညွှန်ကြားချက် စာသားငယ် -->
+            <div style="position: absolute; top: 20px; width: 100%; text-align: center; pointer-events: none;">
+                <span style="font-size: 11px; font-weight: 700; letter-spacing: 2px; color: #64748b; text-transform: uppercase;">TAP A FLOATING NODE TO ENTER</span>
             </div>
 
-            <!-- အောက်ဆုံး Action ခလုတ်များ -->
-            <div style="display: flex; gap: 12px; width: 100%; margin-bottom: 0;">
-                <button id="match-new-room-btn" style="flex: 1; position: relative; padding: 14px; background: rgba(56, 189, 248, 0.2); color: #38bdf8; border: 1px solid #38bdf8; border-radius: 8px; font-weight: 800; font-size: 13px; cursor: pointer; text-align: center; box-shadow: 0 0 12px rgba(56, 189, 248, 0.25); text-transform: uppercase; letter-spacing: 1.5px; transition: all 0.2s;">NEW ROOM</button>
-                <button id="match-cancel-btn" style="flex: 1; position: relative; padding: 14px; background: rgba(15, 23, 42, 0.8); color: #94a3b8; border: 1px solid rgba(56, 189, 248, 0.3); border-radius: 8px; font-weight: 700; font-size: 13px; cursor: pointer; text-align: center; text-transform: uppercase; letter-spacing: 1.5px; transition: all 0.2s;">CANCEL</button>
+            <!-- မျောနေမယ့် Items ၁၀ ခု Container -->
+            <div id="orbit-container" style="position: relative; width: 100%; height: 100%;"></div>
+
+            <!-- အောက်ဆုံး Back/Cancel ခလုတ် (ဒီတိုင်းထားရန်) -->
+            <div style="position: absolute; bottom: 16px; left: 16px; right: 16px; z-index: 10;">
+                <button id="match-cancel-btn" style="width: 100%; padding: 12px; background: rgba(15, 23, 42, 0.8); color: #94a3b8; border: 1px solid rgba(56, 189, 248, 0.3); border-radius: 8px; font-weight: 700; font-size: 13px; cursor: pointer; text-align: center; text-transform: uppercase; letter-spacing: 1.5px;">CANCEL</button>
             </div>
 
         </div>
     `;
 
-    setupMatchEvents(container);
+    initFloatingNodes(container);
 }
 
-function setupMatchEvents(container) {
-    const btn5v5 = document.getElementById('mode-5v5-btn');
-    const btn1v1 = document.getElementById('mode-1v1-btn');
-    
-    const filterToggleBtn = document.getElementById('filter-toggle-btn');
-    const filterDropdown = document.getElementById('filter-dropdown');
-    const filterOptions = container.querySelectorAll('.filter-option');
+function initFloatingNodes(container) {
+    const orbitContainer = container.querySelector('#orbit-container');
+    const cancelBtn = container.querySelector('#match-cancel-btn');
 
-    const newRoomBtn = document.getElementById('match-new-room-btn');
+    // လေထဲမျောမယ့် Item ၁၀ ခု (Modes နဲ့ Fees တွေ ရောနှောထားသည်)
+    const items = [
+        { label: "5 VS 5", type: "mode" },
+        { label: "1 VS 1", type: "mode" },
+        { label: "5K", type: "fee" },
+        { label: "10K", type: "fee" },
+        { label: "15K", type: "fee" },
+        { label: "25K", type: "fee" },
+        { label: "50K", type: "fee" },
+        { label: "5 VS 5", type: "mode" },
+        { label: "10K", type: "fee" },
+        { label: "25K", type: "fee" }
+    ];
 
-    // Mode Selection Logic
-    btn5v5.addEventListener('click', () => {
-        currentMode = "5vs5";
-        btn5v5.style.background = "rgba(56, 189, 248, 0.2)";
-        btn5v5.style.color = "#38bdf8";
-        btn5v5.style.border = "1px solid #38bdf8";
-        btn5v5.style.textShadow = "0 0 8px rgba(56, 189, 248, 0.6)";
-        btn5v5.style.boxShadow = "0 0 10px rgba(56, 189, 248, 0.25)";
+    const nodes = [];
+    const width = orbitContainer.clientWidth || 380;
+    const height = orbitContainer.clientHeight || 700;
 
-        btn1v1.style.background = "transparent";
-        btn1v1.style.color = "#64748b";
-        btn1v1.style.border = "1px solid #334155";
-        btn1v1.style.textShadow = "none";
-        btn1v1.style.boxShadow = "none";
-    });
+    // တစ်ခုချင်းစီအတွက် နေရာနှင့် လှုပ်ရှားမှု ပုံစံဖန်တီးခြင်း
+    items.forEach((item, index) => {
+        const el = document.createElement('div');
+        el.className = 'floating-node';
+        el.textContent = item.label;
+        
+        // Cyber City Node Styling
+        el.style.position = 'absolute';
+        el.style.padding = '10px 16px';
+        el.style.background = 'rgba(15, 23, 42, 0.85)';
+        el.style.border = '2px solid #38bdf8';
+        el.style.borderRadius = '6px';
+        el.style.color = '#38bdf8';
+        el.style.fontSize = '12px';
+        el.style.fontWeight = '800';
+        el.style.cursor = 'pointer';
+        el.style.textAlign = 'center';
+        el.style.boxShadow = '0 0 12px rgba(56, 189, 248, 0.3)';
+        el.style.textShadow = '0 0 8px rgba(56, 189, 248, 0.5)';
+        el.style.userSelect = 'none';
+        el.style.transition = 'transform 0.1s ease, background 0.2s ease';
 
-    btn1v1.addEventListener('click', () => {
-        currentMode = "1vs1";
-        btn1v1.style.background = "rgba(56, 189, 248, 0.2)";
-        btn1v1.style.color = "#38bdf8";
-        btn1v1.style.border = "1px solid #38bdf8";
-        btn1v1.style.textShadow = "0 0 8px rgba(56, 189, 248, 0.6)";
-        btn1v1.style.boxShadow = "0 0 10px rgba(56, 189, 248, 0.25)";
+        // ထောင့်စွန်း pixel အစက်လေးများထည့်ရန်
+        const corner1 = document.createElement('div');
+        corner1.style.cssText = 'position: absolute; top: -2px; left: -2px; width: 4px; height: 4px; background: #38bdf8;';
+        const corner2 = document.createElement('div');
+        corner2.style.cssText = 'position: absolute; bottom: -2px; right: -2px; width: 4px; height: 4px; background: #38bdf8;';
+        el.appendChild(corner1);
+        el.appendChild(corner2);
 
-        btn5v5.style.background = "transparent";
-        btn5v5.style.color = "#64748b";
-        btn5v5.style.border = "1px solid #334155";
-        btn5v5.style.textShadow = "none";
-        btn5v5.style.boxShadow = "none";
-    });
+        // ကျပန်း နေရာချထားခြင်း (Random Initial Positions & Velocities)
+        let x = Math.random() * (width - 90);
+        let y = Math.random() * (height - 180) + 60;
+        let vx = (Math.random() - 0.5) * 1.2;
+        let vy = (Math.random() - 0.5) * 1.2;
 
-    // Filter Dropdown Toggle
-    filterToggleBtn.addEventListener('click', (e) => {
-        e.stopPropagation();
-        const isVisible = filterDropdown.style.display === 'block';
-        filterDropdown.style.display = isVisible ? 'none' : 'block';
-    });
+        orbitContainer.appendChild(el);
 
-    // Close dropdown when clicking outside
-    document.addEventListener('click', () => {
-        filterDropdown.style.display = 'none';
-    });
+        nodes.push({ el, x, y, vx, vy, label: item.label });
 
-    // Filter Option Selection
-    filterOptions.forEach(option => {
-        option.addEventListener('click', (e) => {
-            currentFee = e.currentTarget.getAttribute('data-fee');
-            filterDropdown.style.display = 'none';
-            console.log("Selected Fee:", currentFee);
+        // Node တစ်ခုကို ထိလိုက်/နှိပ်လိုက်လျှင် Room Card ဖန်တီးသည့် နေရာသို့ရောက်ရန်
+        el.addEventListener('click', () => {
+            enterRoomCreation(container, item.label);
         });
 
-        // Hover effect for options
-        option.addEventListener('mouseenter', () => {
-            option.style.background = 'rgba(56, 189, 248, 0.15)';
+        el.addEventListener('mouseenter', () => {
+            el.style.background = 'rgba(56, 189, 248, 0.25)';
+            el.style.transform = 'scale(1.1)';
         });
-        option.addEventListener('mouseleave', () => {
-            option.style.background = 'transparent';
+        el.addEventListener('mouseleave', () => {
+            el.style.background = 'rgba(15, 23, 42, 0.85)';
+            el.style.transform = 'scale(1)';
         });
     });
 
-    newRoomBtn.addEventListener('click', () => {
-        alert(`Creating Room for ${currentMode} with Fee: ${currentFee}`);
-    });
+    // လေထဲမျောနေစေရန် Animation Loop
+    let animationFrameId;
+    function animate() {
+        nodes.forEach(node => {
+            node.x += node.vx;
+            node.y += node.vy;
 
-    // Cancel button မှာ function တစ်စုံတစ်ရာ မထည့်ထားတော့ပါ (ဒီတိုင်းသာ ထားရှိသည်)
+            // နံရံနှင့်ထိပါက ပြန်ကန်ထွက်ရန် (Bounce off edges)
+            if (node.x <= 10 || node.x >= width - 90) node.vx *= -1;
+            if (node.y <= 60 || node.y >= height - 120) node.vy *= -1;
+
+            node.el.style.transform = `translate(${node.x}px, ${node.y}px)`;
+        });
+        animationFrameId = requestAnimationFrame(animate);
+    }
+    animate();
+
+    // Cancel ခလုတ်အတွက် 
+    cancelBtn.addEventListener('click', () => {
+        cancelAnimationFrame(animationFrameId);
+    });
+}
+
+// Node ကိုထိပြီးပါက Room Card ဖန်တီးမည့် မျက်နှာပြင်သို့ ကူးပြောင်းမည့် ပုံစံ
+function enterRoomCreation(container, selectedValue) {
+    container.innerHTML = `
+        <div style="padding: 16px; box-sizing: border-box; display: flex; flex-direction: column; height: 100%; justify-content: space-between; background: #0b0f19;">
+            <div style="display: flex; flex-direction: column; gap: 16px; width: 100%; margin-top: 5px;">
+                <div style="position: relative; border: 2px solid #38bdf8; border-radius: 4px; padding: 12px 16px; background-color: rgba(15, 23, 42, 0.8); text-align: center; box-shadow: 0 0 10px rgba(56, 189, 248, 0.3);">
+                    <span style="font-size: 14px; font-weight: 800; letter-spacing: 1.5px; color: #38bdf8; text-transform: uppercase;">ROOM CARD: ${selectedValue}</span>
+                </div>
+                <div style="color: #94a3b8; font-size: 13px; text-align: center; margin-top: 40px;">
+                    Room တည်ဆောက်ရန် နေရာ (Room Card Builder)
+                </div>
+            </div>
+            <button id="back-to-orbit" style="width: 100%; padding: 14px; background: rgba(56, 189, 248, 0.2); color: #38bdf8; border: 1px solid #38bdf8; border-radius: 8px; font-weight: 800; font-size: 13px; cursor: pointer; text-transform: uppercase;">BACK</button>
+        </div>
+    `;
+
+    container.querySelector('#back-to-orbit').addEventListener('click', () => {
+        renderMatchScreen(container);
+    });
 }
