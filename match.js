@@ -7,7 +7,7 @@ export function renderMatchScreen(container) {
                 display: flex;
                 align-items: center;
                 justify-content: center;
-                gap: 35px;
+                gap: 15px;
                 position: relative;
                 width: 100%;
                 height: 100%;
@@ -16,30 +16,35 @@ export function renderMatchScreen(container) {
                 user-select: none;
                 box-sizing: border-box;
                 overflow: hidden;
+                flex-direction: column;
+                padding: 10px;
             }
 
             .main-workspace {
                 display: flex;
                 flex-direction: column;
                 align-items: center;
-                gap: 15px;
+                gap: 10px;
+                width: 100%;
+                max-width: 380px;
             }
 
             .monitor-group {
                 display: flex;
                 flex-direction: column;
                 align-items: center;
-                gap: 10px;
+                gap: 8px;
+                width: 100%;
             }
 
-            /* မော်နီတာ */
+            /* ဖုန်း Screen နဲ့ အနေတော်ဖြစ်စေရန် မော်နီတာအရွယ်အစားကို သေးငယ်အောင် ပြင်ဆင်ထားသည် */
             .monitor {
-                width: 600px;
-                height: 310px;
+                width: 100%;
+                height: 210px;
                 background: linear-gradient(135deg, #7c3aed 0%, #2563eb 50%, #06b6d4 100%);
-                border: 8px solid #181824;
-                border-radius: 16px;
-                box-shadow: 0 0 40px rgba(124, 58, 237, 0.6);
+                border: 6px solid #181824;
+                border-radius: 12px;
+                box-shadow: 0 0 25px rgba(124, 58, 237, 0.5);
                 display: flex;
                 justify-content: center;
                 align-items: center;
@@ -49,28 +54,28 @@ export function renderMatchScreen(container) {
                 transition: box-shadow 0.3s;
             }
             .monitor:hover {
-                box-shadow: 0 0 60px rgba(124, 58, 237, 0.9);
+                box-shadow: 0 0 40px rgba(124, 58, 237, 0.8);
             }
             .btn-text {
                 color: #fff;
                 font-weight: 800;
-                font-size: 20px;
-                letter-spacing: 2px;
+                font-size: 16px;
+                letter-spacing: 1.5px;
                 text-align: center;
-                padding: 0 20px;
-                text-shadow: 0 0 12px rgba(255,255,255,0.8);
-                line-height: 1.5;
+                padding: 0 10px;
+                text-shadow: 0 0 10px rgba(255,255,255,0.8);
+                line-height: 1.4;
             }
 
-            /* အကွက် ၁၀ ကွက် (Grid System) */
+            /* အကွက် ၁၀ ကွက် (Grid System) - ဖုန်းစခရင်အတွက် အနေတော် */
             .screen-grid {
                 display: none;
                 width: 100%;
                 height: 100%;
                 grid-template-columns: repeat(5, 1fr);
                 grid-template-rows: repeat(2, 1fr);
-                gap: 10px;
-                padding: 10px;
+                gap: 6px;
+                padding: 8px;
                 box-sizing: border-box;
                 background: linear-gradient(135deg, #7c3aed 0%, #2563eb 50%, #06b6d4 100%);
                 position: absolute;
@@ -83,18 +88,18 @@ export function renderMatchScreen(container) {
             .grid-cell {
                 background: rgba(255, 255, 255, 0.15);
                 border: 1px solid rgba(255, 255, 255, 0.4);
-                border-radius: 8px;
+                border-radius: 6px;
                 display: flex;
                 flex-direction: column; 
                 justify-content: center;
                 align-items: center;
                 color: #fff;
-                font-size: 14px;
+                font-size: 11px;
                 font-weight: bold;
                 backdrop-filter: blur(4px);
                 transition: background 0.2s, transform 0.2s;
                 text-align: center;
-                gap: 5px;
+                gap: 2px;
                 cursor: pointer;
             }
             .grid-cell:hover {
@@ -104,10 +109,10 @@ export function renderMatchScreen(container) {
 
             /* မော်နီတာခြေထောက် */
             .monitor-stand {
-                width: 90px;
-                height: 35px;
+                width: 70px;
+                height: 25px;
                 background: #181824;
-                border-radius: 6px;
+                border-radius: 4px;
                 border: 1px solid #00f2ff44;
             }
 
@@ -116,40 +121,39 @@ export function renderMatchScreen(container) {
                 display: flex;
                 justify-content: center;
                 align-items: center;
-                gap: 30px;
+                gap: 20px;
                 perspective: 400px;
-                margin-top: 5px;
             }
 
             /* RGB Mechanical Keyboard */
             .keyboard {
-                width: 320px;
-                height: 75px;
+                width: 260px;
+                height: 60px;
                 background: #111119;
-                border-radius: 10px;
+                border-radius: 8px;
                 border: 1.5px solid #00f2ff66;
-                box-shadow: 0 12px 25px rgba(0,0,0,0.8), 0 0 20px rgba(0, 242, 255, 0.25);
+                box-shadow: 0 8px 20px rgba(0,0,0,0.8), 0 0 15px rgba(0, 242, 255, 0.2);
                 display: grid;
                 grid-template-columns: repeat(14, 1fr);
                 grid-template-rows: repeat(4, 1fr);
-                gap: 3px;
-                padding: 6px;
+                gap: 2px;
+                padding: 4px;
                 transform: rotateX(25deg);
                 position: relative;
             }
             .keyboard::after {
                 content: '';
                 position: absolute;
-                bottom: -8px; left: 5%; width: 90%; height: 6px;
+                bottom: -6px; left: 5%; width: 90%; height: 5px;
                 background: linear-gradient(90deg, #ff007f, #7c3aed, #00f2ff);
                 border-radius: 50%;
-                filter: blur(5px);
+                filter: blur(4px);
                 opacity: 0.8;
             }
             .key {
                 background: #1e1e2d;
                 border: 1px solid #33334d;
-                border-radius: 3px;
+                border-radius: 2px;
             }
             .key.accent-pink {
                 background: #ff007f33;
@@ -162,94 +166,41 @@ export function renderMatchScreen(container) {
 
             /* RGB Gaming Mouse */
             .mouse {
-                width: 30px;
-                height: 50px;
+                width: 24px;
+                height: 40px;
                 background: #111119;
-                border-radius: 15px 15px 8px 8px;
+                border-radius: 12px 12px 6px 6px;
                 border: 1.5px solid #ff007f77;
-                box-shadow: 0 10px 20px rgba(0,0,0,0.7), 0 0 15px rgba(255, 0, 127, 0.3);
+                box-shadow: 0 8px 15px rgba(0,0,0,0.7), 0 0 10px rgba(255, 0, 127, 0.3);
                 transform: rotateX(20deg) rotateY(-10deg);
                 position: relative;
                 display: flex;
                 flex-direction: column;
                 align-items: center;
-                padding-top: 5px;
-                gap: 4px;
+                padding-top: 4px;
+                gap: 3px;
             }
             .mouse-wheel {
-                width: 4px;
-                height: 10px;
+                width: 3px;
+                height: 8px;
                 background: #00f2ff;
-                border-radius: 3px;
-                box-shadow: 0 0 6px #00f2ff;
+                border-radius: 2px;
+                box-shadow: 0 0 5px #00f2ff;
             }
             .mouse::after {
                 content: '';
                 position: absolute;
-                bottom: -4px;
+                bottom: -3px;
                 width: 80%;
-                height: 4px;
+                height: 3px;
                 background: linear-gradient(90deg, #00f2ff, #ff007f);
                 border-radius: 50%;
-                filter: blur(3px);
+                filter: blur(2px);
             }
 
-            /* PC ပုံး (Fish Tank Style) */
+            /* PC ပုံး (Fish Tank Style) - ဖုန်းစခရင်အတွက် ဘေးဘောင်အစား အောက်ဘက်တွင် သို့မဟုတ် သေးငယ်အောင် ပြုလုပ်နိုင်ရန် */
             .pc-tower {
-                width: 100px;
-                height: 300px;
-                background: #0c0c14;
-                border: 2px solid #7c3aed66;
-                border-radius: 8px;
-                box-shadow: 0 0 30px rgba(124, 58, 237, 0.3), inset 0 0 20px rgba(0, 242, 255, 0.1);
-                display: flex;
-                flex-direction: column;
-                align-items: center;
-                padding: 10px 6px;
-                gap: 10px;
-            }
-            .pc-fan-large {
-                width: 65px;
-                height: 65px;
-                background: radial-gradient(circle, #08080f 30%, #151522 70%);
-                border-radius: 50%;
-                border: 3px solid transparent;
-                background-image: linear-gradient(#08080f, #08080f), linear-gradient(135deg, #00f2ff, #ff007f);
-                background-origin: border-box;
-                background-clip: content-box, border-box;
-                box-shadow: 0 0 15px rgba(0, 242, 255, 0.4);
-                display: flex;
-                justify-content: center;
-                align-items: center;
-            }
-            .pc-fan-large::after {
-                content: '';
-                width: 20px; height: 20px;
-                background: linear-gradient(135deg, #7c3aed, #00f2ff);
-                border-radius: 50%;
-                box-shadow: 0 0 10px #7c3aed;
-            }
-            .pc-bottom-panel {
-                width: 100%;
-                display: flex;
-                justify-content: center;
-                align-items: center;
-                gap: 6px;
-                margin-top: auto;
-                border-top: 1px solid #202030;
-                padding-top: 6px;
-            }
-            .power-circle {
-                width: 12px; height: 12px;
-                background: #00f2ff;
-                border-radius: 50%;
-                box-shadow: 0 0 8px #00f2ff;
-            }
-            .audio-jack {
-                width: 7px; height: 7px;
-                background: #ff007f;
-                border-radius: 50%;
-                box-shadow: 0 0 6px #ff007f;
+                display: none; /* ဖုန်းစခရင်သေးငယ်၍ အလွန်ကြီးမားမှုကို ရှောင်ရှားရန် ဖယ်ထားသည် (သို့မဟုတ် အရွယ်အစားကို လျှော့ချသုံးနိုင်သည်) */
             }
         </style>
 
@@ -257,7 +208,7 @@ export function renderMatchScreen(container) {
             <div class="main-workspace">
                 <div class="monitor-group">
                     <div class="monitor" id="monitor">
-                        <span class="btn-text" id="btnText">WELCOME FROM ETERNAL AURA<br><span style="font-size: 15px; font-weight: 600; letter-spacing: 1px;">CLICK HERE</span></span>
+                        <span class="btn-text" id="btnText">WELCOME FROM ETERNAL AURA<br><span style="font-size: 13px; font-weight: 600; letter-spacing: 1px;">CLICK HERE</span></span>
                         <div class="screen-grid" id="screenGrid">
                             <div class="grid-cell" data-value="5vs5 - 5k"><span>5vs5</span><span>5k</span></div>
                             <div class="grid-cell" data-value="5vs5 - 10k"><span>5vs5</span><span>10k</span></div>
@@ -294,17 +245,6 @@ export function renderMatchScreen(container) {
                     </div>
                 </div>
             </div>
-
-            <div class="pc-tower">
-                <div class="pc-fan-large"></div>
-                <div class="pc-fan-large"></div>
-                <div class="pc-fan-large"></div>
-                <div class="pc-bottom-panel">
-                    <div class="power-circle"></div>
-                    <div class="audio-jack"></div>
-                    <div class="audio-jack"></div>
-                </div>
-            </div>
         </div>
     `;
 
@@ -313,7 +253,6 @@ export function renderMatchScreen(container) {
     const screenGrid = container.querySelector('#screenGrid');
     let isGridOpen = false;
 
-    // မော်နီတာကို နှိပ်လျှင် အကွက်များ ပေါ်လာစေရန်/ဖျောက်ရန်
     monitor.addEventListener('click', (e) => {
         if (e.target.closest('.grid-cell')) return;
 
@@ -327,16 +266,11 @@ export function renderMatchScreen(container) {
         }
     });
 
-    // Grid အကွက်တစ်ခုခုကို နှိပ်လိုက်သောအခါ
     const gridCells = container.querySelectorAll('.grid-cell');
     gridCells.forEach(cell => {
         cell.addEventListener('click', () => {
             const selectedValue = cell.getAttribute('data-value');
-            
-            // ဤနေရာတွင် Room Card အစား လိုချင်သည့် လုပ်ဆောင်ချက်ကို ထည့်ပါ
             alert(`Selected: ${selectedValue} (Match Finding Started...)`);
-            
-            // ဥပမာ - mode.js သို့ တန်းသွားချင်ပါက renderModeScreen(container) ကို ဤနေရာတွင် ခေါ်သုံးနိုင်ပါသည်။
         });
     });
 }
