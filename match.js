@@ -7,7 +7,7 @@ export function renderMatchScreen(container) {
                 display: flex;
                 align-items: center;
                 justify-content: center;
-                gap: 12px;
+                gap: 10px;
                 position: relative;
                 width: 100%;
                 height: 100%;
@@ -33,10 +33,10 @@ export function renderMatchScreen(container) {
                 gap: 8px;
             }
 
-            /* Monitor ကို ကြီးကြီးမားမားနှင့် ကျယ်ကျယ်ပြန့်ပြန့် ပေါ်လာစေရန် */
+            /* ကြီးမားကျယ်ပြန့်သော Monitor */
             .monitor {
-                width: 320px;
-                height: 185px;
+                width: 310px;
+                height: 180px;
                 background: linear-gradient(135deg, #7c3aed 0%, #2563eb 50%, #06b6d4 100%);
                 border: 6px solid #181824;
                 border-radius: 12px;
@@ -123,7 +123,7 @@ export function renderMatchScreen(container) {
 
             /* RGB Mechanical Keyboard */
             .keyboard {
-                width: 220px;
+                width: 215px;
                 height: 52px;
                 background: #111119;
                 border-radius: 7px;
@@ -194,63 +194,63 @@ export function renderMatchScreen(container) {
                 filter: blur(2px);
             }
 
-            /* PC ပုံး (Fish Tank Style) - သေးငယ်ပြီး ဖုန်းစခရင်နှင့် အလွန်အမင်း အနေတော်ဖြစ်စေရန် */
+            /* PC ပုံး (Fish Tank Style) - ယခင်ထက် အနည်းငယ် ပိုကြီးအောင် ညှိထားသည် */
             .pc-tower {
                 display: flex;
-                width: 52px;
-                height: 185px;
+                width: 65px;
+                height: 180px;
                 background: #0c0c14;
                 border: 1.5px solid #7c3aed66;
                 border-radius: 6px;
-                box-shadow: 0 0 12px rgba(124, 58, 237, 0.3), inset 0 0 8px rgba(0, 242, 255, 0.1);
+                box-shadow: 0 0 15px rgba(124, 58, 237, 0.4), inset 0 0 10px rgba(0, 242, 255, 0.15);
                 flex-direction: column;
                 align-items: center;
-                padding: 5px 2px;
-                gap: 6px;
+                padding: 6px 3px;
+                gap: 8px;
                 position: relative;
             }
             .pc-fan-large {
-                width: 34px;
-                height: 34px;
+                width: 44px;
+                height: 44px;
                 background: radial-gradient(circle, #08080f 30%, #151522 70%);
                 border-radius: 50%;
-                border: 1.5px solid transparent;
+                border: 2px solid transparent;
                 background-image: linear-gradient(#08080f, #08080f), linear-gradient(135deg, #00f2ff, #ff007f);
                 background-origin: border-box;
                 background-clip: content-box, border-box;
-                box-shadow: 0 0 8px rgba(0, 242, 255, 0.4);
+                box-shadow: 0 0 10px rgba(0, 242, 255, 0.5);
                 display: flex;
                 justify-content: center;
                 align-items: center;
             }
             .pc-fan-large::after {
                 content: '';
-                width: 10px; height: 10px;
+                width: 14px; height: 14px;
                 background: linear-gradient(135deg, #7c3aed, #00f2ff);
                 border-radius: 50%;
-                box-shadow: 0 0 5px #7c3aed;
+                box-shadow: 0 0 6px #7c3aed;
             }
             .pc-bottom-panel {
                 width: 100%;
                 display: flex;
                 justify-content: center;
                 align-items: center;
-                gap: 4px;
+                gap: 5px;
                 margin-top: auto;
                 border-top: 1px solid #202030;
-                padding-top: 4px;
+                padding-top: 5px;
             }
             .power-circle {
-                width: 7px; height: 7px;
+                width: 8px; height: 8px;
                 background: #00f2ff;
                 border-radius: 50%;
-                box-shadow: 0 0 4px #00f2ff;
+                box-shadow: 0 0 5px #00f2ff;
             }
             .audio-jack {
                 width: 4px; height: 4px;
                 background: #ff007f;
                 border-radius: 50%;
-                box-shadow: 0 0 3px #ff007f;
+                box-shadow: 0 0 4px #ff007f;
             }
         </style>
 
@@ -297,7 +297,7 @@ export function renderMatchScreen(container) {
                 </div>
             </div>
 
-            <!-- PC Tower (Fish Tank Style - သေးငယ်ပြီး အနေတော်) -->
+            <!-- PC Tower (Fish Tank Style - အနည်းငယ် ပိုကြီးလာသည်) -->
             <div class="pc-tower">
                 <div class="pc-fan-large"></div>
                 <div class="pc-fan-large"></div>
