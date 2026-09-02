@@ -1,132 +1,342 @@
-// match.js
 import { renderModeScreen } from './mode.js';
 
 export function renderMatchScreen(container) {
     container.innerHTML = `
-        <div id="floating-arena" style="position: relative; width: 100%; height: 100%; background: #0b0f19; overflow: hidden; box-sizing: border-box; display: flex; align-items: center; justify-content: center;">
-            
-            <div style="position: absolute; width: 250px; height: 250px; background: radial-gradient(circle, rgba(56,189,248,0.15) 0%, rgba(11,15,25,0) 70%); border-radius: 50%; pointer-events: none;"></div>
+        <style>
+            .setup-wrapper {
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                gap: 35px;
+                position: relative;
+                width: 100%;
+                height: 100%;
+                background: #040408;
+                font-family: sans-serif;
+                user-select: none;
+                box-sizing: border-box;
+                overflow: hidden;
+            }
 
-            <div style="position: absolute; top: 25px; width: 100%; text-align: center; pointer-events: none; z-index: 5;">
-                <span style="font-size: 11px; font-weight: 700; letter-spacing: 2px; color: #64748b; text-transform: uppercase;">TAP A CYBER SHIP TO ENTER</span>
+            .main-workspace {
+                display: flex;
+                flex-direction: column;
+                align-items: center;
+                gap: 15px;
+            }
+
+            .monitor-group {
+                display: flex;
+                flex-direction: column;
+                align-items: center;
+                gap: 10px;
+            }
+
+            /* မော်နီတာ */
+            .monitor {
+                width: 600px;
+                height: 310px;
+                background: linear-gradient(135deg, #7c3aed 0%, #2563eb 50%, #06b6d4 100%);
+                border: 8px solid #181824;
+                border-radius: 16px;
+                box-shadow: 0 0 40px rgba(124, 58, 237, 0.6);
+                display: flex;
+                justify-content: center;
+                align-items: center;
+                cursor: pointer;
+                position: relative;
+                overflow: hidden;
+                transition: box-shadow 0.3s;
+            }
+            .monitor:hover {
+                box-shadow: 0 0 60px rgba(124, 58, 237, 0.9);
+            }
+            .btn-text {
+                color: #fff;
+                font-weight: 800;
+                font-size: 20px;
+                letter-spacing: 2px;
+                text-align: center;
+                padding: 0 20px;
+                text-shadow: 0 0 12px rgba(255,255,255,0.8);
+                line-height: 1.5;
+            }
+
+            /* အကွက် ၁၀ ကွက် (Grid System) */
+            .screen-grid {
+                display: none;
+                width: 100%;
+                height: 100%;
+                grid-template-columns: repeat(5, 1fr);
+                grid-template-rows: repeat(2, 1fr);
+                gap: 10px;
+                padding: 10px;
+                box-sizing: border-box;
+                background: linear-gradient(135deg, #7c3aed 0%, #2563eb 50%, #06b6d4 100%);
+                position: absolute;
+                top: 0;
+                left: 0;
+            }
+            .screen-grid.active {
+                display: grid;
+            }
+            .grid-cell {
+                background: rgba(255, 255, 255, 0.15);
+                border: 1px solid rgba(255, 255, 255, 0.4);
+                border-radius: 8px;
+                display: flex;
+                flex-direction: column; 
+                justify-content: center;
+                align-items: center;
+                color: #fff;
+                font-size: 14px;
+                font-weight: bold;
+                backdrop-filter: blur(4px);
+                transition: background 0.2s, transform 0.2s;
+                text-align: center;
+                gap: 5px;
+                cursor: pointer;
+            }
+            .grid-cell:hover {
+                background: rgba(255, 255, 255, 0.3);
+                transform: scale(1.03);
+            }
+
+            /* မော်နီတာခြေထောက် */
+            .monitor-stand {
+                width: 90px;
+                height: 35px;
+                background: #181824;
+                border-radius: 6px;
+                border: 1px solid #00f2ff44;
+            }
+
+            /* ကီးဘုတ်နှင့် မောက်စ် ဇုန် */
+            .desk-accessories {
+                display: flex;
+                justify-content: center;
+                align-items: center;
+                gap: 30px;
+                perspective: 400px;
+                margin-top: 5px;
+            }
+
+            /* RGB Mechanical Keyboard */
+            .keyboard {
+                width: 320px;
+                height: 75px;
+                background: #111119;
+                border-radius: 10px;
+                border: 1.5px solid #00f2ff66;
+                box-shadow: 0 12px 25px rgba(0,0,0,0.8), 0 0 20px rgba(0, 242, 255, 0.25);
+                display: grid;
+                grid-template-columns: repeat(14, 1fr);
+                grid-template-rows: repeat(4, 1fr);
+                gap: 3px;
+                padding: 6px;
+                transform: rotateX(25deg);
+                position: relative;
+            }
+            .keyboard::after {
+                content: '';
+                position: absolute;
+                bottom: -8px; left: 5%; width: 90%; height: 6px;
+                background: linear-gradient(90deg, #ff007f, #7c3aed, #00f2ff);
+                border-radius: 50%;
+                filter: blur(5px);
+                opacity: 0.8;
+            }
+            .key {
+                background: #1e1e2d;
+                border: 1px solid #33334d;
+                border-radius: 3px;
+            }
+            .key.accent-pink {
+                background: #ff007f33;
+                border-color: #ff007f99;
+            }
+            .key.accent-blue {
+                background: #00f2ff33;
+                border-color: #00f2ff99;
+            }
+
+            /* RGB Gaming Mouse */
+            .mouse {
+                width: 30px;
+                height: 50px;
+                background: #111119;
+                border-radius: 15px 15px 8px 8px;
+                border: 1.5px solid #ff007f77;
+                box-shadow: 0 10px 20px rgba(0,0,0,0.7), 0 0 15px rgba(255, 0, 127, 0.3);
+                transform: rotateX(20deg) rotateY(-10deg);
+                position: relative;
+                display: flex;
+                flex-direction: column;
+                align-items: center;
+                padding-top: 5px;
+                gap: 4px;
+            }
+            .mouse-wheel {
+                width: 4px;
+                height: 10px;
+                background: #00f2ff;
+                border-radius: 3px;
+                box-shadow: 0 0 6px #00f2ff;
+            }
+            .mouse::after {
+                content: '';
+                position: absolute;
+                bottom: -4px;
+                width: 80%;
+                height: 4px;
+                background: linear-gradient(90deg, #00f2ff, #ff007f);
+                border-radius: 50%;
+                filter: blur(3px);
+            }
+
+            /* PC ပုံး (Fish Tank Style) */
+            .pc-tower {
+                width: 100px;
+                height: 300px;
+                background: #0c0c14;
+                border: 2px solid #7c3aed66;
+                border-radius: 8px;
+                box-shadow: 0 0 30px rgba(124, 58, 237, 0.3), inset 0 0 20px rgba(0, 242, 255, 0.1);
+                display: flex;
+                flex-direction: column;
+                align-items: center;
+                padding: 10px 6px;
+                gap: 10px;
+            }
+            .pc-fan-large {
+                width: 65px;
+                height: 65px;
+                background: radial-gradient(circle, #08080f 30%, #151522 70%);
+                border-radius: 50%;
+                border: 3px solid transparent;
+                background-image: linear-gradient(#08080f, #08080f), linear-gradient(135deg, #00f2ff, #ff007f);
+                background-origin: border-box;
+                background-clip: content-box, border-box;
+                box-shadow: 0 0 15px rgba(0, 242, 255, 0.4);
+                display: flex;
+                justify-content: center;
+                align-items: center;
+            }
+            .pc-fan-large::after {
+                content: '';
+                width: 20px; height: 20px;
+                background: linear-gradient(135deg, #7c3aed, #00f2ff);
+                border-radius: 50%;
+                box-shadow: 0 0 10px #7c3aed;
+            }
+            .pc-bottom-panel {
+                width: 100%;
+                display: flex;
+                justify-content: center;
+                align-items: center;
+                gap: 6px;
+                margin-top: auto;
+                border-top: 1px solid #202030;
+                padding-top: 6px;
+            }
+            .power-circle {
+                width: 12px; height: 12px;
+                background: #00f2ff;
+                border-radius: 50%;
+                box-shadow: 0 0 8px #00f2ff;
+            }
+            .audio-jack {
+                width: 7px; height: 7px;
+                background: #ff007f;
+                border-radius: 50%;
+                box-shadow: 0 0 6px #ff007f;
+            }
+        </style>
+
+        <div class="setup-wrapper">
+            <div class="main-workspace">
+                <div class="monitor-group">
+                    <div class="monitor" id="monitor">
+                        <span class="btn-text" id="btnText">WELCOME FROM ETERNAL AURA<br><span style="font-size: 15px; font-weight: 600; letter-spacing: 1px;">CLICK HERE</span></span>
+                        <div class="screen-grid" id="screenGrid">
+                            <div class="grid-cell" data-value="5vs5 - 5k"><span>5vs5</span><span>5k</span></div>
+                            <div class="grid-cell" data-value="5vs5 - 10k"><span>5vs5</span><span>10k</span></div>
+                            <div class="grid-cell" data-value="5vs5 - 15k"><span>5vs5</span><span>15k</span></div>
+                            <div class="grid-cell" data-value="5vs5 - 25k"><span>5vs5</span><span>25k</span></div>
+                            <div class="grid-cell" data-value="5vs5 - 50k"><span>5vs5</span><span>50k</span></div>
+                            <div class="grid-cell" data-value="1vs1 - 5k"><span>1vs1</span><span>5k</span></div>
+                            <div class="grid-cell" data-value="1vs1 - 10k"><span>1vs1</span><span>10k</span></div>
+                            <div class="grid-cell" data-value="1vs1 - 15k"><span>1vs1</span><span>15k</span></div>
+                            <div class="grid-cell" data-value="1vs1 - 25k"><span>1vs1</span><span>25k</span></div>
+                            <div class="grid-cell" data-value="1vs1 - 50k"><span>1vs1</span><span>50k</span></div>
+                        </div>
+                    </div>
+                    <div class="monitor-stand"></div>
+                </div>
+
+                <div class="desk-accessories">
+                    <div class="keyboard">
+                        <div class="key accent-pink" style="grid-column: span 2;"></div>
+                        <div class="key"></div><div class="key"></div><div class="key"></div><div class="key"></div>
+                        <div class="key"></div><div class="key"></div><div class="key"></div><div class="key"></div>
+                        <div class="key"></div><div class="key"></div><div class="key"></div>
+                        <div class="key accent-blue" style="grid-column: span 2;"></div>
+                        <div class="key" style="grid-column: span 3;"></div>
+                        <div class="key"></div><div class="key"></div><div class="key"></div><div class="key"></div><div class="key"></div><div class="key"></div><div class="key"></div><div class="key"></div><div class="key"></div><div class="key"></div><div class="key" style="grid-column: span 2;"></div>
+                        <div class="key accent-blue" style="grid-column: span 3;"></div>
+                        <div class="key"></div><div class="key"></div><div class="key"></div><div class="key"></div><div class="key"></div><div class="key"></div><div class="key"></div><div class="key"></div><div class="key"></div><div class="key" style="grid-column: span 2;"></div>
+                        <div class="key" style="grid-column: span 4;"></div>
+                        <div class="key accent-pink" style="grid-column: span 6;"></div>
+                        <div class="key" style="grid-column: span 4;"></div>
+                    </div>
+                    <div class="mouse">
+                        <div class="mouse-wheel"></div>
+                    </div>
+                </div>
             </div>
 
-            <div id="orbit-container" style="position: relative; width: 100%; height: 100%;"></div>
-
+            <div class="pc-tower">
+                <div class="pc-fan-large"></div>
+                <div class="pc-fan-large"></div>
+                <div class="pc-fan-large"></div>
+                <div class="pc-bottom-panel">
+                    <div class="power-circle"></div>
+                    <div class="audio-jack"></div>
+                    <div class="audio-jack"></div>
+                </div>
+            </div>
         </div>
     `;
 
-    initSpaceshipNodes(container);
-}
+    const monitor = container.querySelector('#monitor');
+    const btnText = container.querySelector('#btnText');
+    const screenGrid = container.querySelector('#screenGrid');
+    let isGridOpen = false;
 
-function initSpaceshipNodes(container) {
-    const orbitContainer = container.querySelector('#orbit-container');
+    // မော်နီတာကို နှိပ်လျှင် အကွက်များ ပေါ်လာစေရန်/ဖျောက်ရန်
+    monitor.addEventListener('click', (e) => {
+        if (e.target.closest('.grid-cell')) return;
 
-    // မတူညီသော အရောင် (၁၀) မျိုးဖြင့် 10 ခု (Modes နဲ့ Fees များ)
-    const items = [
-        { label: "5 VS 5", color: "#38bdf8" }, // Cyan
-        { label: "1 VS 1", color: "#f43f5e" }, // Rose Red
-        { label: "5K", color: "#a855f7" },     // Purple
-        { label: "10K", color: "#10b981" },    // Emerald Green
-        { label: "15K", color: "#f59e0b" },    // Amber Gold
-        { label: "25K", color: "#ec4899" },    // Pink
-        { label: "50K", color: "#6366f1" },    // Indigo
-        { label: "5 VS 5", color: "#14b8a6" }, // Teal
-        { label: "10K", color: "#eab308" },    // Yellow
-        { label: "25K", color: "#8b5cf6" }     // Violet
-    ];
-
-    const nodes = [];
-    const width = orbitContainer.clientWidth || 380;
-    const height = orbitContainer.clientHeight || 700;
-
-    items.forEach((item, index) => {
-        const el = document.createElement('div');
-        el.className = 'cyber-ship-node';
-        el.textContent = item.label;
-        
-        // Spaceship / Cyber Node Styling (Hexagonal / Shield Shape with Unique Colors)
-        el.style.position = 'absolute';
-        el.style.padding = '10px 14px';
-        el.style.background = 'rgba(15, 23, 42, 0.9)';
-        el.style.border = `2px solid ${item.color}`;
-        el.style.borderRadius = '12px 4px 12px 4px'; // Spaceship aerodynamic look
-        el.style.color = item.color;
-        el.style.fontSize = '12px';
-        el.style.fontWeight = '800';
-        el.style.cursor = 'pointer';
-        el.style.textAlign = 'center';
-        el.style.boxShadow = `0 0 12px ${item.color}55`;
-        el.style.textShadow = `0 0 8px ${item.color}`;
-        el.style.userSelect = 'none';
-        el.style.transition = 'transform 0.15s ease, background 0.2s ease';
-
-        // Spaceship တောင်ပံအသေးစားလေးများ (Corner Thrusters)
-        const thruster1 = document.createElement('div');
-        thruster1.style.cssText = `position: absolute; top: 4px; left: -4px; width: 3px; height: 3px; background: ${item.color}; box-shadow: 0 0 5px ${item.color};`;
-        const thruster2 = document.createElement('div');
-        thruster2.style.cssText = `position: absolute; bottom: 4px; right: -4px; width: 3px; height: 3px; background: ${item.color}; box-shadow: 0 0 5px ${item.color};`;
-        el.appendChild(thruster1);
-        el.appendChild(thruster2);
-
-        // ကျပန်း နေရာစတင်ချထားခြင်း
-        let x = Math.random() * (width - 90);
-        let y = Math.random() * (height - 180) + 60;
-        let vx = (Math.random() - 0.5) * 1.3;
-        let vy = (Math.random() - 0.5) * 1.3;
-
-        orbitContainer.appendChild(el);
-        nodes.push({ el, x, y, vx, vy, label: item.label });
-
-        // Node တစ်ခုကို နှိပ်လိုက်ပါက Room Card နေရာသို့ရောက်ရန်
-        el.addEventListener('click', () => {
-            enterRoomCreation(container, item.label);
-        });
-
-        el.addEventListener('mouseenter', () => {
-            el.style.background = `${item.color}25`;
-            el.style.transform = 'scale(1.15) rotate(3deg)';
-        });
-        el.addEventListener('mouseleave', () => {
-            el.style.background = 'rgba(15, 23, 42, 0.9)';
-            el.style.transform = 'scale(1) rotate(0deg)';
-        });
+        isGridOpen = !isGridOpen;
+        if (isGridOpen) {
+            btnText.style.display = 'none';
+            screenGrid.classList.add('active');
+        } else {
+            screenGrid.classList.remove('active');
+            btnText.style.display = 'block';
+        }
     });
 
-    // မျက်နှာပြင်တစ်လျှောက် လေထဲမျောလွင့်နေမည့် Physics Animation Loop
-    let animationFrameId;
-    function animate() {
-        nodes.forEach(node => {
-            node.x += node.vx;
-            node.y += node.vy;
-
-            if (node.x <= 10 || node.x >= width - 90) node.vx *= -1;
-            if (node.y <= 60 || node.y >= height - 100) node.vy *= -1;
-
-            node.el.style.transform = `translate(${node.x}px, ${node.y}px)`;
+    // Grid အကွက်တစ်ခုခုကို နှိပ်လိုက်သောအခါ
+    const gridCells = container.querySelectorAll('.grid-cell');
+    gridCells.forEach(cell => {
+        cell.addEventListener('click', () => {
+            const selectedValue = cell.getAttribute('data-value');
+            
+            // ဤနေရာတွင် Room Card အစား လိုချင်သည့် လုပ်ဆောင်ချက်ကို ထည့်ပါ
+            alert(`Selected: ${selectedValue} (Match Finding Started...)`);
+            
+            // ဥပမာ - mode.js သို့ တန်းသွားချင်ပါက renderModeScreen(container) ကို ဤနေရာတွင် ခေါ်သုံးနိုင်ပါသည်။
         });
-        animationFrameId = requestAnimationFrame(animate);
-    }
-    animate();
-}
-
-// Room Card တည်ဆောက်မည့် မျက်နှာပြင်
-function enterRoomCreation(container, selectedValue) {
-    container.innerHTML = `
-        <div style="padding: 16px; box-sizing: border-box; display: flex; flex-direction: column; height: 100%; justify-content: space-between; background: #0b0f19;">
-            <div style="display: flex; flex-direction: column; gap: 16px; width: 100%; margin-top: 5px;">
-                <div style="position: relative; border: 2px solid #38bdf8; border-radius: 4px; padding: 12px 16px; background-color: rgba(15, 23, 42, 0.8); text-align: center; box-shadow: 0 0 10px rgba(56, 189, 248, 0.3);">
-                    <span style="font-size: 14px; font-weight: 800; letter-spacing: 1.5px; color: #38bdf8; text-transform: uppercase;">ROOM CARD: ${selectedValue}</span>
-                </div>
-                <div style="color: #94a3b8; font-size: 13px; text-align: center; margin-top: 40px;">
-                    Room တည်ဆောက်ရန် နေရာ (Room Card Builder)
-                </div>
-            </div>
-            <button id="back-to-orbit" style="width: 100%; padding: 14px; background: rgba(56, 189, 248, 0.2); color: #38bdf8; border: 1px solid #38bdf8; border-radius: 8px; font-weight: 800; font-size: 13px; cursor: pointer; text-transform: uppercase;">BACK</button>
-        </div>
-    `;
-
-    container.querySelector('#back-to-orbit').addEventListener('click', () => {
-        renderMatchScreen(container);
     });
 }
