@@ -2,6 +2,7 @@
 // 1. Notification Database Sync & Render
 // ==========================================
 
+// Notification အသစ်တစ်ခုကို Server (Database) ထဲ သိမ်းဆည်းရန်
 export async function addNotification(userId, title, message) {
     const now = new Date();
     const year = now.getFullYear();
@@ -25,24 +26,19 @@ export async function addNotification(userId, title, message) {
         const result = await response.json();
 
         if (result.success) {
-            // Container ရှိမှသာ Load ပြန်လုပ်ပါ (တကယ့် Screen ပေါ်မှာ ရှိနေမှသာ)
-            const listContainer = document.getElementById('notification-list-container');
-            if (listContainer) {
-                loadAndRenderNotifications(userId, listContainer);
-            }
+            loadAndRenderNotifications(userId);
         }
     } catch (error) {
         console.error("Error adding notification:", error);
     }
 }
 
+// Database ထဲက Notification တွေကို လှမ်းဆွဲထုတ်ပြီး Screen ပေါ်ပြသရန်
 export async function loadAndRenderNotifications(userId, container = null) {
     if (!userId) {
         console.error("User ID is missing!");
         return;
     }
-
-    const listContainer = container || document.getElementById('notification-list-container');
 
     try {
         const response = await fetch(`/api/notifications?userId=${userId}`);
@@ -54,19 +50,17 @@ export async function loadAndRenderNotifications(userId, container = null) {
             const unreadCount = notifications.filter(n => !n.isRead).length;
             updateNotificationBadge(unreadCount);
 
+            const listContainer = container || document.getElementById('notification-list-container');
             if (listContainer) {
                 renderNotificationCards(listContainer, notifications, userId);
             }
         }
     } catch (error) {
-    get_server_error:
         console.error("Error loading notifications:", error);
-        if (listContainer) {
-            listContainer.innerHTML = `<p style="color: #ef4444; font-size: 13px; text-align: center; margin-top: 30px;">Failed to load notifications. Please try again.</p>`;
-        }
     }
 }
 
+// Notification Screen ကို ဝင်ရောက်ကြည့်ရှုသည့်အခါ
 export async function renderNotificationScreen(container, userId) {
     container.innerHTML = `
         <div style="width: 100%; height: 100%; display: flex; flex-direction: column; background-color: #0b0f19; box-sizing: border-box; overflow: hidden;">
@@ -85,6 +79,7 @@ export async function renderNotificationScreen(container, userId) {
     if (userId) {
         await loadAndRenderNotifications(userId, document.getElementById('notification-list-container'));
     } else {
+        console.error("User ID is missing!");
         const listContainer = document.getElementById('notification-list-container');
         if (listContainer) {
             listContainer.innerHTML = `<p style="color: #ef4444; font-size: 13px; text-align: center; margin-top: 30px;">User ID not found. Please log in again.</p>`;
@@ -92,6 +87,7 @@ export async function renderNotificationScreen(container, userId) {
     }
 }
 
+// Notification Bell Update
 export function updateNotificationBadge(unreadCount) {
     const notiNavBtn = document.querySelector('.nav-item[data-tab="notification"]'); 
     
@@ -115,6 +111,7 @@ export function updateNotificationBadge(unreadCount) {
     }
 }
 
+// Card Render Helper
 function renderNotificationCards(container, notifications, userId) {
     if (notifications.length === 0) {
         container.innerHTML = `<p style="color: #64748b; font-size: 13px; text-align: center; margin-top: 30px;">No new notifications.</p>`;
@@ -131,7 +128,7 @@ function renderNotificationCards(container, notifications, userId) {
             <div class="noti-header" style="display: flex; justify-content: space-between; align-items: flex-start; width: 100%; cursor: pointer;">
                 <div style="flex-grow: 1;">
                     <div style="display: flex; align-items: center; gap: 8px;">
-                        <span style="display: inline-block; width: 8px; height: 8px; background-color: ${noti.isRead ? '#64748b' : '#38bdf8'}; border-radius: 50%;"></span>
+                        <span style="display: inline-block; width: 8px; height: 8px; background-color: #38bdf8; border-radius: 50%;"></span>
                         <h3 style="color: #f8fafc; font-size: 15px; font-weight: 700; margin: 0;">${noti.title}</h3>
                     </div>
                     <p style="color: #94a3b8; font-size: 11px; margin: 6px 0 0 16px; font-family: monospace;">${noti.dateStr} &bull; ${noti.timeStr}</p>
@@ -145,7 +142,7 @@ function renderNotificationCards(container, notifications, userId) {
             </div>
         `;
 
-        // Card ကို နှိပ်လျှင် Read အဖြစ်ပြောင်းရန်
+        // Card ကို နှိပ်လျှင် Read အဖြစ်ပြောင်းရန် Event Listener
         card.querySelector('.noti-header').addEventListener('click', async (e) => {
             if (e.target.closest('.delete-btn')) return;
             const body = card.querySelector('.noti-body');
@@ -154,30 +151,19 @@ function renderNotificationCards(container, notifications, userId) {
             body.style.maxHeight = isOpen ? '0px' : '1200px';
 
             if (!noti.isRead) {
-                noti.isRead = true; // Local မှာ တန်းပြောင်းပြီးသားဖြစ်အောင်လုပ်ခြင်း
-                
-                // Dot အရောင်ကို Unread ကနေ Read ပုံစံပြောင်းရန်
-                const dot = card.querySelector('span[style*="background-color"]');
-                if (dot) dot.style.backgroundColor = '#64748b';
-
                 try {
                     await fetch(`/api/notifications?id=${noti.id}`, {
                         method: 'PATCH'
                     });
-                    // တစ်ခါတလေ Server ကို loadAndRender ပြန်လုပ်ခိုင်းတာက API တွေကို ပုံမှန်ထက်ပိုခေါ်မိစေလို့ 
-                    // Badge ကိုသာ တိုက်ရိုက် update လုပ်ပေးပါ
-                    const badgeEl = document.getElementById('notification-badge');
-                    if (badgeEl) {
-                        let currentCount = parseInt(badgeEl.textContent) || 1;
-                        updateNotificationBadge(Math.max(0, currentCount - 1));
-                    }
+                    noti.isRead = true;
+                    loadAndRenderNotifications(userId, container);
                 } catch (err) {
                     console.error("Failed to mark as read:", err);
                 }
             }
         });
 
-        // Card ကို Clear လုပ်လျှင်
+        // Card ကို Clear လုပ်လျှင် Database မှပါ ဖျက်ရန် Event Listener
         card.querySelector('.delete-btn').addEventListener('click', async () => {
             try {
                 const response = await fetch(`/api/notifications?id=${noti.id}`, {
@@ -187,10 +173,7 @@ function renderNotificationCards(container, notifications, userId) {
                 
                 if (result.success) {
                     card.remove();
-                    // ကျန်နေတဲ့ Notification အရေအတွက်ကို စစ်ပြီး 'No new notifications.' ပြရန်
-                    if (container.children.length === 0) {
-                        container.innerHTML = `<p style="color: #64748b; font-size: 13px; text-align: center; margin-top: 30px;">No new notifications.</p>`;
-                    }
+                    loadAndRenderNotifications(userId, container);
                 }
             } catch (err) {
                 console.error("Failed to delete notification:", err);
