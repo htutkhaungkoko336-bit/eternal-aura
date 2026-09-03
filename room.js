@@ -89,4 +89,4 @@ export function renderRoomScreen(container, roomTitleText) {
     container.querySelector('#cancelBtn').addEventListener('click', () => {
         renderMatchScreen(container);
     });
-}
+}   
