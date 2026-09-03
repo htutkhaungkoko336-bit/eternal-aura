@@ -1,13 +1,18 @@
 const { initializeApp, cert, getApps } = require('firebase-admin/app');
 const { getFirestore } = require('firebase-admin/firestore');
 
-const app = getApps().length === 0 
-  ? initializeApp({
-      credential: cert(JSON.parse(process.env.FIREBASE_SERVICE_ACCOUNT))
-    }) 
-  : getApps()[0];
-
-const db = getFirestore(app);
+// Firebase Initialization ကို Safe ဖြစ်အောင် လုပ်ခြင်း
+function getDbInstance() {
+    if (getApps().length === 0) {
+        if (!process.env.FIREBASE_SERVICE_ACCOUNT) {
+            throw new Error("FIREBASE_SERVICE_ACCOUNT environment variable is not set");
+        }
+        initializeApp({
+            credential: cert(JSON.parse(process.env.FIREBASE_SERVICE_ACCOUNT))
+        });
+    }
+    return getFirestore();
+}
 
 module.exports = async function handler(req, res) {
     if (req.method !== 'GET') {
@@ -22,17 +27,17 @@ module.exports = async function handler(req, res) {
             return res.status(400).json({ success: false, message: "User ID is required" });
         }
 
+        const db = getDbInstance();
         const userDoc = await db.collection('users').doc(userId).get();
 
         if (!userDoc.exists) {
             return res.status(404).json({ success: false, message: "User not found" });
         }
 
-        // Database ထဲရှိ keys များကို Frontend မှ မျှော်လင့်ထားသော modes structure ထဲသို့ အသေအချာ Map လုပ်ခြင်း
         const userData = userDoc.data();
-        const k = userData.keys || {}; // Database ထဲက keys object ကို ယူခြင်း
+        const k = userData.keys || {}; 
 
-        // Database ထဲရှိ keys များကို Frontend မှ မျှော်လင့်ထားသော modes structure ထဲသို့ အသေအချာ Map လုပ်ခြင်း
+        // Database ထဲရှိ keys များကို Frontend မှ မျှော်လင့်ထားသော modes structure ထဲသို့ Map လုပ်ခြင်း
         const keys = {
             modes: {
                 '5v5': {
@@ -54,13 +59,14 @@ module.exports = async function handler(req, res) {
                 }
             }
         };
-            return res.status(200).json({ 
+
+        return res.status(200).json({ 
             success: true, 
             keys: keys 
         });
 
     } catch (error) {
         console.error("Fetch Keys Error:", error);
-        return res.status(500).json({ success: false, message: "Internal Server Error" });
+        return res.status(500).json({ success: false, message: error.message || "Internal Server Error" });
     }
 };
