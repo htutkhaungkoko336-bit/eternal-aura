@@ -36,7 +36,9 @@ module.exports = async function handler(req, res) {
     try {
         const update = req.body;
 
-        // Telegram Callback Query (Admin Action) ဖြစ်နေလျှင်
+        // -------------------------------------------------------------
+        // Telegram Callback Query (Admin Action) လုပ်ဆောင်ချက်များ
+        // -------------------------------------------------------------
         if (update.callback_query) {
             const callbackQuery = update.callback_query;
             const data = callbackQuery.data; 
@@ -46,7 +48,7 @@ module.exports = async function handler(req, res) {
 
             console.log("Received callback data:", data);
 
-            // 🟢 ပိုမိုတိကျသော split စနစ်ကို အသုံးပြုခြင်း
+            // 🟢 Callback Data ကို တိကျစွာ ခွဲထုတ်ခြင်း
             const parts = data.split('_');
             const action = parts[0]; // confirm, reject, select, back
             
@@ -55,11 +57,9 @@ module.exports = async function handler(req, res) {
             let reasonKey = "";
 
             if (action === 'confirm' || action === 'reject' || action === 'back') {
-                // ဥပမာ: confirm_1vs1_registrations_ABC123
                 collectionName = `${parts[1]}_${parts[2]}`; 
                 docId = parts[3];
             } else if (action === 'select') {
-                // ဥပမာ: select_r1_1vs1_registrations_ABC123
                 reasonKey = parts[1]; // r1, r2, etc.
                 collectionName = `${parts[2]}_${parts[3]}`;
                 docId = parts[4];
