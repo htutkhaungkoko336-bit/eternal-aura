@@ -46,13 +46,24 @@ module.exports = async function handler(req, res) {
 
             console.log("Received callback data:", data);
 
-            const firstUnderscore = data.indexOf('_');
-            const action = data.substring(0, firstUnderscore); 
-            const remaining = data.substring(firstUnderscore + 1);
+            // 🟢 ပိုမိုတိကျသော split စနစ်ကို အသုံးပြုခြင်း
+            const parts = data.split('_');
+            const action = parts[0]; // confirm, reject, select, back
             
-            const lastUnderscore = remaining.lastIndexOf('_');
-            const collectionName = remaining.substring(0, lastUnderscore);
-            const docId = remaining.substring(lastUnderscore + 1);
+            let collectionName = "";
+            let docId = "";
+            let reasonKey = "";
+
+            if (action === 'confirm' || action === 'reject' || action === 'back') {
+                // ဥပမာ: confirm_1vs1_registrations_ABC123
+                collectionName = `${parts[1]}_${parts[2]}`; 
+                docId = parts[3];
+            } else if (action === 'select') {
+                // ဥပမာ: select_r1_1vs1_registrations_ABC123
+                reasonKey = parts[1]; // r1, r2, etc.
+                collectionName = `${parts[2]}_${parts[3]}`;
+                docId = parts[4];
+            }
 
             let newStatus = "";
             let responseText = "";
@@ -63,7 +74,7 @@ module.exports = async function handler(req, res) {
                 newStatus = 'CONFIRMED';
                 responseText = "✅ This request has been CONFIRMED.";
                 updateKeyboard = true;
-                newInlineKeyboard = []; // Confirm နှိပ်လိုက်ရင် ခလုတ်တွေ လုံးဝပျောက်သွားရန် (Refund နှင့် Registration အားလုံးအတွက် အကျုံးဝင်သည်)
+                newInlineKeyboard = []; 
             }
             else if (action === 'reject') {
                 responseText = "⚠️ ပယ်ချရမည့် အကြောင်းရင်းကို ရွေးချယ်ပါ:";
@@ -78,14 +89,6 @@ module.exports = async function handler(req, res) {
                 ];
             }
             else if (action === 'select') {
-                const firstUnderscoreInRem = remaining.indexOf('_');
-                const reasonKey = remaining.substring(0, firstUnderscoreInRem); 
-                const restOfData = remaining.substring(firstUnderscoreInRem + 1);
-
-                const lastUnderscoreInRest = restOfData.lastIndexOf('_');
-                const actualCollection = restOfData.substring(0, lastUnderscoreInRest);
-                const actualDocId = restOfData.substring(lastUnderscoreInRest + 1);
-
                 const reasonsMap = {
                     'r1': 'ညစ်ညမ်းပုံ/မသင့်လျော်သောပုံများပါဝင်နေပါသည်။',
                     'r2': 'Game Name / Game ID မှားယွင်းနေပါသည်',
@@ -98,11 +101,11 @@ module.exports = async function handler(req, res) {
                 newStatus = 'REJECTED';
                 responseText = `❌ REJECTED\nReason: ${rejectionReasonText}`;
                 updateKeyboard = true;
-                newInlineKeyboard = []; // Reject အကြောင်းရင်း ရွေးပြီးသွားရင်လည်း ခလုတ်တွေ လုံးဝပျောက်သွားရန်
+                newInlineKeyboard = []; 
                 
-                if (actualCollection && actualDocId) {
+                if (collectionName && docId) {
                     try {
-                        const regDocRef = db.collection(actualCollection).doc(actualDocId);
+                        const regDocRef = db.collection(collectionName).doc(docId);
                         await regDocRef.update({
                             status: 'REJECTED',
                             rejectionReason: rejectionReasonText
@@ -127,7 +130,7 @@ module.exports = async function handler(req, res) {
             try {
                 if (collectionName && docId && action === 'confirm') {
                     
-                    // 1. REFUND REQUESTS အတွက် Confirm လုပ်ခြင်း (ရှိပြီးသား keys တွေထဲကနေ -1 နှုတ်မည်)
+                    // 1. REFUND REQUESTS အတွက် Confirm လုပ်ခြင်း
                     if (collectionName === 'refund_requests') {
                         const refundDocRef = db.collection('refund_requests').doc(docId);
                         await refundDocRef.update({ status: 'CONFIRMED' });
@@ -178,7 +181,7 @@ module.exports = async function handler(req, res) {
                             }
                         }
                     } 
-                    // 2. REGISTRATIONS အတွက် Confirm လုပ်ခြင်း (ရှိပြီးသားကို +1 တိုးမည်)
+                    // 2. REGISTRATIONS အတွက် Confirm လုပ်ခြင်း
                     else {
                         const regDocRef = db.collection(collectionName).doc(docId);
                         await regDocRef.update({ status: 'CONFIRMED' });
