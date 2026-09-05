@@ -289,7 +289,7 @@ export function renderPaymentPage(appContent, formData) {
                 slot: slotNum,
                 totalFee: totalStr,
                 matchFormat: badgeText,
-                selectedGameMode: displayModeText
+                selectedGameMode: displayModeText 
             }
         };
 
