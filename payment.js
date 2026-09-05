@@ -279,7 +279,7 @@ export function renderPaymentPage(appContent, formData) {
         
         const requestBody = {
             mode: modeType,
-            data: {
+            data: { 
                 ...formData,
                 userId: currentUserId,
                 logo: formData.logoBase64 || formData.teamLogo || formData.logo || '',
