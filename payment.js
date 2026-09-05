@@ -291,7 +291,7 @@ export function renderPaymentPage(appContent, formData) {
                 matchFormat: badgeText,
                 selectedGameMode: displayModeText 
             }
-        }; 
+        };  
 
         confirmBtn.disabled = true;
         confirmBtn.textContent = "Submitting...";
