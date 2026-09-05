@@ -1,14 +1,6 @@
 const fetch = require('node-fetch');
 const FormData = require('form-data');
 
-// Collection အမည်များကို အတိုကောက် Mapping ပြုလုပ်ခြင်း (Callback Data ၆၄ လုံး အောက်တွင် ဆံ့စေရန်)
-const collectionMap = {
-    '1vs1_registrations': 'r1',
-    '5vs5_registrations': 'r5',
-    'tournament_registrations': 'rt',
-    'refund_requests': 'ref'
-};
-
 async function sendRegistrationToTelegram(userData, paymentSlipBase64, collectionName, docId) {
     const BOT_TOKEN = process.env.TELEGRAM_BOT_TOKEN;
     const GROUP_ID = process.env.REGISTRATION_GROUP_ID;
@@ -72,7 +64,7 @@ async function sendRegistrationToTelegram(userData, paymentSlipBase64, collectio
 🛡️ **Roamer:** ${userData.playerRoamer?.name || 'N/A'} (${userData.playerRoamer?.gameId || 'N/A'})
 ⚔️ **EXP:** ${userData.playerExp?.name || 'N/A'} (${userData.playerExp?.gameId || 'N/A'})
 💰 **Gold:** ${userData.playerGold?.name || 'N/A'} (${userData.playerGold?.gameId || 'N/A'})
-🔮 **Mid:** ${userData.playerMid?.name || 'N/A'} (${userData.playerMid?.id || 'N/A'})
+🔮 **Mid:** ${userData.playerMid?.name || 'N/A'} (${userData.playerMid?.gameId || 'N/A'})
 🌿 **Jungle:** ${userData.playerJungle?.name || 'N/A'} (${userData.playerJungle?.gameId || 'N/A'})
 
 💳 **KPay Name:** ${userData.kpayAccountName || 'N/A'}
@@ -93,13 +85,12 @@ async function sendRegistrationToTelegram(userData, paymentSlipBase64, collectio
 ${detailsCaption}
     `.trim();
 
-    const shortCollection = collectionMap[collectionName] || collectionName;
-
+    // 🔴 callback_data ထဲတွင် collectionName နှင့် docId ကို တွဲထည့်ခြင်း
     const inlineKeyboard = {
         inline_keyboard: [
             [
-                { text: "✅ Confirm", callback_data: `confirm_${shortCollection}_${docId}` },
-                { text: "❌ Reject", callback_data: `reject_${shortCollection}_${docId}` }
+                { text: "✅ Confirm", callback_data: `confirm_${collectionName}_${docId}` },
+                { text: "❌ Reject", callback_data: `reject_${collectionName}_${docId}` }
             ]
         ]
     };

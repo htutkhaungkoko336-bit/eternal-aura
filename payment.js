@@ -3,8 +3,6 @@ import { renderRegisterForm as renderTournamentRegister } from './tournamentRegi
 import { renderRegisterForm as renderNormalRegister } from './register.js';
 import { renderModeScreen } from './mode.js';
 import { addNotification } from './notification.js';
-import { doc, onSnapshot } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
-import { db } from "./firebase-config.js";
 
 export function renderPaymentPage(appContent, formData) {
     let isTournament = !!(formData.selectedSlot || formData.slot);
@@ -323,20 +321,14 @@ export function renderPaymentPage(appContent, formData) {
                 console.log("🆔 Registration ID ရရှိပါပြီ:", regId);
 
                 if (regId) {
-                    console.log("⏳ Real-time Status Listener (`onSnapshot`) စတင်ပါပြီ...");
+                    console.log("⏳ Status စစ်ဆေးခြင်း (Polling) စတင်ပါပြီ...");
                     
-                    let collectionName = '5vs5_registrations';
-                    if (isTournament) {
-                        collectionName = 'tournament_registrations';
-                    } else if (modeType === '1vs1') {
-                        collectionName = '1vs1_registrations';
-                    }
-
-                    const docRef = doc(db, collectionName, regId);
-                    const unsubscribe = onSnapshot(docRef, (docSnap) => {
-                        if (docSnap.exists()) {
-                            const checkData = docSnap.data();
-                            console.log("📊 Real-time Status Update:", checkData.status);
+                    const pollingInterval = setInterval(async () => {
+                        try {
+                            console.log(`🔍 Checking status for ID: ${regId} ...`);
+                            const checkRes = await fetch(`/api/check-status?registrationId=${regId}&userId=${currentUserId}&mode=${modeType}`); 
+                            const checkData = await checkRes.json();
+                            console.log("📊 Check Status Result:", checkData);
 
                             if (checkData.status === 'CONFIRMED') {
                                 console.log("✅ Admin အတည်ပြုပြီးပါပြီ!");
@@ -344,7 +336,7 @@ export function renderPaymentPage(appContent, formData) {
                                 const confMessage = `${displayModeText} fee ${totalStr} အတွက် register တင်ပြမှုကို Admin မှ အတည်ပြုပေးလိုက်ပါပြီရှင့်။`;
                                 
                                 addNotification(currentUserId, confTitle, confMessage);
-                                unsubscribe();
+                                clearInterval(pollingInterval);
                             } else if (checkData.status === 'REJECTED') {
                                 console.log("❌ Registration ပယ်ချခံရပါသည်!");
                                 const rejTitle = `${displayModeText} Rejected ❌`;
@@ -352,15 +344,14 @@ export function renderPaymentPage(appContent, formData) {
                                 const rejMessage = `${displayModeText} fee ${totalStr} အတွက် Register ကို ပယ်ချလိုက်ပါသည်။\n\n📝 အကြောင်းရင်း: ${reason}`;
                                 
                                 addNotification(currentUserId, rejTitle, rejMessage);
-                                unsubscribe();
+                                clearInterval(pollingInterval);
                             }
+                        } catch (pollErr) {
+                            console.error("⚠️ Polling Error ဖြစ်နေပါသည်:", pollErr);
                         }
-                    }, (error) => {
-                        console.error("⚠️ Snapshot Error ဖြစ်နေပါသည်:", error);
-                    });
-
+                    }, 5000); 
                 } else {
-                    console.warn("⚠️ Registration ID မပါလာပါ။");
+                    console.warn("⚠️ Registration ID မပါလာပါ၊ ထို့ကြောင့် Polling စတင်၍ မရပါ။");
                 }
 
             } else {
@@ -377,6 +368,7 @@ export function renderPaymentPage(appContent, formData) {
     });
 }
 
+// Notification Item တစ်ခုချင်းစီကို ဖတ်လိုက်သည့်အခါ ခေါ်ရန် Function
 async function handleNotificationClick(notificationId) {
     try {
         await fetch(`/api/notifications/${notificationId}/read`, {
@@ -390,7 +382,9 @@ async function handleNotificationClick(notificationId) {
     }
 }
 
+// Notification Bell ပေါ်ရှိ Digit (Unread Count) ကို Update လုပ်ပေးသော Function
 function updateNotificationBadge() {
+    // ဥပမာ - notifications array ထဲမှ မဖတ်ရသေးသော အရေအတွက်ကို စစ်ခြင်း
     const unreadCount = notifications.filter(n => !n.read && !n.isRead).length;
     const badgeElement = document.getElementById('notification-badge'); 
 
