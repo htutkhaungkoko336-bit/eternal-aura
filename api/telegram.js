@@ -13,6 +13,7 @@ async function sendRegistrationToTelegram(userData, paymentSlipBase64, collectio
     const mode = userData.mode || 'N/A';
     let detailsCaption = '';
 
+    // 🟢 1VS1 Mode
     if (mode === '1vs1') {
         detailsCaption = `
 🎮 **Mode:** 1VS1
@@ -31,6 +32,7 @@ async function sendRegistrationToTelegram(userData, paymentSlipBase64, collectio
 🖼️ **Logo URL:** ${userData.logo || 'N/A'}
         `.trim();
     } 
+    // 🟢 5VS5 Mode
     else if (mode === '5vs5') {
         detailsCaption = `
 🎮 **Mode:** 5VS5 Squad
@@ -53,6 +55,7 @@ async function sendRegistrationToTelegram(userData, paymentSlipBase64, collectio
 🖼️ **Logo URL:** ${userData.logo || 'N/A'}
         `.trim();
     } 
+    // 🟢 Tournament Mode
     else if (mode === 'tournament') {
         detailsCaption = `
 🎮 **Mode:** Tournament
@@ -75,17 +78,38 @@ async function sendRegistrationToTelegram(userData, paymentSlipBase64, collectio
 🕒 **Time:** ${userData.time || 'N/A'}
 🖼️ **Team Logo URL:** ${userData.teamLogo || 'N/A'}
         `.trim();
-    } else {
+    } 
+    // 🟢 Refund Request Mode (သို့မဟုတ် အခြား Custom Mode များအတွက်)
+    else if (collectionName === 'refund_requests') {
+        detailsCaption = `
+💸 **REFUND REQUEST** 💸
+━━━━━━━━━━━━━━━━━━━
+👤 **User ID:** ${userData.userId || 'N/A'}
+🎮 **Mode/Type:** ${userData.mode || 'N/A'} / ${userData.type || 'N/A'}
+📦 **Quantity:** ${userData.qty || '1'}
+💳 **KPay Name:** ${userData.kpayName || 'N/A'}
+📱 **KPay Ph No:** ${userData.kpayPhNo || 'N/A'}
+📞 **Contact Ph No:** ${userData.contactPhNo || 'N/A'}
+💰 **Amount:** ${userData.amount || 'N/A'}
+🕒 **Time:** ${userData.time || 'N/A'}
+        `.trim();
+    } 
+    else {
         detailsCaption = `🎮 **Mode:** ${mode}`;
     }
 
+    const titleHeader = collectionName === 'refund_requests' 
+        ? "🔄 **NEW REFUND REQUEST** 🔄" 
+        : "🚀 **NEW REGISTRATION** 🚀";
+
     const caption = `
-🚀 **NEW REGISTRATION** 🚀
+${titleHeader}
 ━━━━━━━━━━━━━━━━━━━
 ${detailsCaption}
     `.trim();
 
-    // 🔴 callback_data ထဲတွင် collectionName နှင့် docId ကို တွဲထည့်ခြင်း
+    // 🔴 callback_data ထဲတွင် collectionName နှင့် docId ကို အလိုအလျောက် ခွဲခြားထည့်သွင်းခြင်း
+    // ဥပမာ: refund_requests ဖြစ်ပါက confirm_refund_requests_DOCID ဟု ထွက်လာမည်။
     const inlineKeyboard = {
         inline_keyboard: [
             [

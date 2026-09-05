@@ -56,19 +56,38 @@ module.exports = async function handler(req, res) {
             let docId = "";
             let reasonKey = "";
 
-            if (action === 'confirm' || action === 'reject' || action === 'back') {
+            // ဥပမာ: confirm_refund_requests_DOCID ဆိုပါက parts တွေက [confirm, refund, requests, DOCID] ဖြစ်သွားပါမည်။
+            if (parts[1] === 'refund' && parts[2] === 'requests') {
+                collectionName = 'refund_requests';
+                docId = parts[3];
+            } else if (action === 'confirm' || action === 'reject' || action === 'back') {
                 collectionName = `${parts[1]}_${parts[2]}`; 
                 docId = parts[3];
             } else if (action === 'select') {
                 reasonKey = parts[1]; // r1, r2, etc.
-                collectionName = `${parts[2]}_${parts[3]}`;
-                docId = parts[4];
+                if (parts[2] === 'refund' && parts[3] === 'requests') {
+                    collectionName = 'refund_requests';
+                    docId = parts[4];
+                } else {
+                    collectionName = `${parts[2]}_${parts[3]}`;
+                    docId = parts[4];
+                }
             }
 
             let newStatus = "";
             let responseText = "";
             let updateKeyboard = false;
             let newInlineKeyboard = [];
+
+            // Callback data ထဲမှာ collection ကို မူတည်ပြီး button callback data များကို ပုံစံမှန်ပြန်တည်ဆောက်ရန် helper
+            const getCallbackPrefix = () => {
+                if (collectionName === 'refund_requests') {
+                    return 'refund_requests';
+                }
+                return collectionName;
+            };
+
+            const prefix = getCallbackPrefix();
 
             if (action === 'confirm') {
                 newStatus = 'CONFIRMED';
@@ -80,12 +99,12 @@ module.exports = async function handler(req, res) {
                 responseText = "⚠️ ပယ်ချရမည့် အကြောင်းရင်းကို ရွေးချယ်ပါ:";
                 updateKeyboard = true;
                 newInlineKeyboard = [
-                    [{ text: "🚫 ညစ်ညမ်းပုံ/မသင့်လျော်သောပုံ", callback_data: `select_r1_${collectionName}_${docId}` }],
-                    [{ text: "⚠️ Game Name/ID မှားယွင်း", callback_data: `select_r2_${collectionName}_${docId}` }],
-                    [{ text: "💰 ငွေပမာဏ မမှန်", callback_data: `select_r3_${collectionName}_${docId}` }],
-                    [{ text: "📝 အချက်အလက် မပြည့်စုံ", callback_data: `select_r4_${collectionName}_${docId}` }],
-                    [{ text: "🔄 အကောင့်အမည်/ဖုန်းနံပါတ် မှားယွင်း", callback_data: `select_r5_${collectionName}_${docId}` }],
-                    [{ text: "🔙 Back", callback_data: `back_${collectionName}_${docId}` }]
+                    [{ text: "🚫 ညစ်ညမ်းပုံ/မသင့်လျော်သောပုံ", callback_data: `select_r1_${prefix}_${docId}` }],
+                    [{ text: "⚠️ Game Name/ID မှားယွင်း", callback_data: `select_r2_${prefix}_${docId}` }],
+                    [{ text: "💰 ငွေပမာဏ မမှန်", callback_data: `select_r3_${prefix}_${docId}` }],
+                    [{ text: "📝 အချက်အလက် မပြည့်စုံ", callback_data: `select_r4_${prefix}_${docId}` }],
+                    [{ text: "🔄 အကောင့်အမည်/ဖုန်းနံပါတ် မှားယွင်း", callback_data: `select_r5_${prefix}_${docId}` }],
+                    [{ text: "🔙 Back", callback_data: `back_${prefix}_${docId}` }]
                 ];
             }
             else if (action === 'select') {
@@ -120,8 +139,8 @@ module.exports = async function handler(req, res) {
                 updateKeyboard = true;
                 newInlineKeyboard = [
                     [
-                        { text: "✅ Confirm", callback_data: `confirm_${collectionName}_${docId}` },
-                        { text: "❌ Reject", callback_data: `reject_${collectionName}_${docId}` }
+                        { text: "✅ Confirm", callback_data: `confirm_${prefix}_${docId}` },
+                        { text: "❌ Reject", callback_data: `reject_${prefix}_${docId}` }
                     ]
                 ];
             }
