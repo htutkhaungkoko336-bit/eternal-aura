@@ -3,7 +3,7 @@ import { renderRegisterForm as renderTournamentRegister } from './tournamentRegi
 import { renderRegisterForm as renderNormalRegister } from './register.js';
 import { renderModeScreen } from './mode.js';
 import { addNotification } from './notification.js';
-import { doc, onSnapshot } from "firebase/firestore";
+import { doc, onSnapshot } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 import { db } from "./firebase-config.js";
 
 export function renderPaymentPage(appContent, formData) {
