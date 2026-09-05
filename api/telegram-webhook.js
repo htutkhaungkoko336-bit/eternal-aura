@@ -11,6 +11,14 @@ const app = getApps().length === 0
 
 const db = getFirestore(app);
 
+// 64 bytes ကန့်သတ်ချက်ကျော်လွန်မှုမရှိစေရန် Collection အမည်များကို အတိုကောက် Mapping ပြုလုပ်ခြင်း
+const reverseCollectionMap = {
+    'r1': '1vs1_registrations',
+    'r5': '5vs5_registrations',
+    'rt': 'tournament_registrations',
+    'ref': 'refund_requests'
+};
+
 function generateUniqueUserId() {
     const randomStr = Math.random().toString(36).substring(2, 8).toUpperCase();
     return `AURA-${randomStr}`;
@@ -36,7 +44,6 @@ module.exports = async function handler(req, res) {
     try {
         const update = req.body;
 
-        // Telegram Callback Query (Admin Action) ဖြစ်နေလျှင်
         if (update.callback_query) {
             const callbackQuery = update.callback_query;
             const data = callbackQuery.data; 
@@ -51,8 +58,10 @@ module.exports = async function handler(req, res) {
             const remaining = data.substring(firstUnderscore + 1);
             
             const lastUnderscore = remaining.lastIndexOf('_');
-            const collectionName = remaining.substring(0, lastUnderscore);
+            const shortColl = remaining.substring(0, lastUnderscore);
             const docId = remaining.substring(lastUnderscore + 1);
+
+            const collectionName = reverseCollectionMap[shortColl] || shortColl;
 
             let newStatus = "";
             let responseText = "";
@@ -63,18 +72,18 @@ module.exports = async function handler(req, res) {
                 newStatus = 'CONFIRMED';
                 responseText = "✅ This request has been CONFIRMED.";
                 updateKeyboard = true;
-                newInlineKeyboard = []; // Confirm နှိပ်လိုက်ရင် ခလုတ်တွေ လုံးဝပျောက်သွားရန် (Refund နှင့် Registration အားလုံးအတွက် အကျုံးဝင်သည်)
+                newInlineKeyboard = []; 
             }
             else if (action === 'reject') {
                 responseText = "⚠️ ပယ်ချရမည့် အကြောင်းရင်းကို ရွေးချယ်ပါ:";
                 updateKeyboard = true;
                 newInlineKeyboard = [
-                    [{ text: "🚫 ညစ်ညမ်းပုံ/မသင့်လျော်သောပုံ", callback_data: `select_r1_${collectionName}_${docId}` }],
-                    [{ text: "⚠️ Game Name/ID မှားယွင်း", callback_data: `select_r2_${collectionName}_${docId}` }],
-                    [{ text: "💰 ငွေပမာဏ မမှန်", callback_data: `select_r3_${collectionName}_${docId}` }],
-                    [{ text: "📝 အချက်အလက် မပြည့်စုံ", callback_data: `select_r4_${collectionName}_${docId}` }],
-                    [{ text: "🔄 အကောင့်အမည်/ဖုန်းနံပါတ် မှားယွင်း", callback_data: `select_r5_${collectionName}_${docId}` }],
-                    [{ text: "🔙 Back", callback_data: `back_${collectionName}_${docId}` }]
+                    [{ text: "🚫 ညစ်ညမ်းပုံ/မသင့်လျော်သောပုံ", callback_data: `select_r1_${shortColl}_${docId}` }],
+                    [{ text: "⚠️ Game Name/ID မှားယွင်း", callback_data: `select_r2_${shortColl}_${docId}` }],
+                    [{ text: "💰 ငွေပမာဏ မမှန်", callback_data: `select_r3_${shortColl}_${docId}` }],
+                    [{ text: "📝 အချက်အလက် မပြည့်စုံ", callback_data: `select_r4_${shortColl}_${docId}` }],
+                    [{ text: "🔄 အကောင့်အမည်/ဖုန်းနံပါတ် မှားယွင်း", callback_data: `select_r5_${shortColl}_${docId}` }],
+                    [{ text: "🔙 Back", callback_data: `back_${shortColl}_${docId}` }]
                 ];
             }
             else if (action === 'select') {
@@ -83,8 +92,9 @@ module.exports = async function handler(req, res) {
                 const restOfData = remaining.substring(firstUnderscoreInRem + 1);
 
                 const lastUnderscoreInRest = restOfData.lastIndexOf('_');
-                const actualCollection = restOfData.substring(0, lastUnderscoreInRest);
+                const actualShortColl = restOfData.substring(0, lastUnderscoreInRest);
                 const actualDocId = restOfData.substring(lastUnderscoreInRest + 1);
+                const actualCollection = reverseCollectionMap[actualShortColl] || actualShortColl;
 
                 const reasonsMap = {
                     'r1': 'ညစ်ညမ်းပုံ/မသင့်လျော်သောပုံများပါဝင်နေပါသည်။',
@@ -98,7 +108,7 @@ module.exports = async function handler(req, res) {
                 newStatus = 'REJECTED';
                 responseText = `❌ REJECTED\nReason: ${rejectionReasonText}`;
                 updateKeyboard = true;
-                newInlineKeyboard = []; // Reject အကြောင်းရင်း ရွေးပြီးသွားရင်လည်း ခလုတ်တွေ လုံးဝပျောက်သွားရန်
+                newInlineKeyboard = []; 
                 
                 if (actualCollection && actualDocId) {
                     try {
@@ -117,17 +127,14 @@ module.exports = async function handler(req, res) {
                 updateKeyboard = true;
                 newInlineKeyboard = [
                     [
-                        { text: "✅ Confirm", callback_data: `confirm_${collectionName}_${docId}` },
-                        { text: "❌ Reject", callback_data: `reject_${collectionName}_${docId}` }
+                        { text: "✅ Confirm", callback_data: `confirm_${shortColl}_${docId}` },
+                        { text: "❌ Reject", callback_data: `reject_${shortColl}_${docId}` }
                     ]
                 ];
             }
 
-            // Database Confirm လုပ်ဆောင်ချက်များ (Registration နှင့် Refund များကို +1 / -1 လုပ်ပေးခြင်း)
             try {
                 if (collectionName && docId && action === 'confirm') {
-                    
-                    // 1. REFUND REQUESTS အတွက် Confirm လုပ်ခြင်း (ရှိပြီးသား keys တွေထဲကနေ -1 နှုတ်မည်)
                     if (collectionName === 'refund_requests') {
                         const refundDocRef = db.collection('refund_requests').doc(docId);
                         await refundDocRef.update({ status: 'CONFIRMED' });
@@ -172,13 +179,11 @@ module.exports = async function handler(req, res) {
                                         await userRef.update({
                                             [keyFieldToDecrement]: updatedQty
                                         });
-                                        console.log(`Refund: Updated ${keyFieldToDecrement} to ${updatedQty}`);
                                     }
                                 }
                             }
                         }
                     } 
-                    // 2. REGISTRATIONS အတွက် Confirm လုပ်ခြင်း (ရှိပြီးသားကို +1 တိုးမည်)
                     else {
                         const regDocRef = db.collection(collectionName).doc(docId);
                         await regDocRef.update({ status: 'CONFIRMED' });
@@ -222,7 +227,6 @@ module.exports = async function handler(req, res) {
                                     await userRef.update({
                                         [keyFieldToIncrement]: FieldValue.increment(1)
                                     });
-                                    console.log(`Registration: Incremented ${keyFieldToIncrement} by 1`);
                                 }
                             }
                         }
@@ -263,9 +267,6 @@ module.exports = async function handler(req, res) {
             return res.status(200).json({ status: 'success' });
         }
 
-        // -------------------------------------------------------------
-        // User Authentication & Registration (Device / Phone Login)
-        // -------------------------------------------------------------
         const { phone, deviceId, name, pin } = req.body;
 
         if (!phone || !deviceId) {
@@ -273,7 +274,6 @@ module.exports = async function handler(req, res) {
         }
 
         const usersRef = db.collection('users');
-
         const deviceCheckSnapshot = await usersRef.where('deviceId', '==', deviceId).get();
         let hasOtherPhoneOnThisDevice = false;
         deviceCheckSnapshot.forEach(doc => {
@@ -309,39 +309,20 @@ module.exports = async function handler(req, res) {
             const defaultRole = 'user';
 
             const defaultKeys = {
-                "1vs1-5k": 0,
-                "1vs1-10k": 0,
-                "1vs1-15k": 0,
-                "1vs1-25k": 0,
-                "1vs1-50k": 0,
-                "5vs5-5k": 0,
-                "5vs5-10k": 0,
-                "5vs5-15k": 0,
-                "5vs5-25k": 0,
-                "5vs5-50k": 0,
+                "1vs1-5k": 0, "1vs1-10k": 0, "1vs1-15k": 0, "1vs1-25k": 0, "1vs1-50k": 0,
+                "5vs5-5k": 0, "5vs5-10k": 0, "5vs5-15k": 0, "5vs5-25k": 0, "5vs5-50k": 0,
                 "tournament": 0
             };
 
             const newUserData = {
-                userId: userId,
-                name: name,
-                phone: phone,
-                pin: hashedPin,
-                deviceId: deviceId,
-                role: defaultRole,
-                keys: defaultKeys,
-                createdAt: createdAtStr,
-                recentLogins: []
+                userId, name, phone, pin: hashedPin, deviceId,
+                role: defaultRole, keys: defaultKeys, createdAt: createdAtStr, recentLogins: []
             };
 
             await usersRef.doc(userId).set(newUserData);
 
             return res.status(200).json({ 
-                success: true, 
-                message: "User registered successfully", 
-                name: name,
-                userId: userId,
-                role: defaultRole
+                success: true, message: "User registered successfully", name, userId, role: defaultRole 
             });
         }
 
@@ -350,42 +331,28 @@ module.exports = async function handler(req, res) {
 
         if (userData.deviceId === deviceId) {
             return res.status(200).json({ 
-                success: true, 
-                message: "Original device matched. Login successful", 
-                name: userData.name,
-                userId: userData.userId,
-                role: userData.role || 'user'
+                success: true, message: "Original device matched. Login successful", 
+                name: userData.name, userId: userData.userId, role: userData.role || 'user' 
             });
         }
 
         if (!pin) {
-            return res.status(200).json({ 
-                requiresPassword: true, 
-                message: "Different device detected. Please enter PIN." 
-            });
+            return res.status(200).json({ requiresPassword: true, message: "Different device detected. Please enter PIN." });
         }
 
         const isPasswordValid = bcrypt.compareSync(pin, userData.pin);
-
         if (!isPasswordValid) {
             return res.status(401).json({ success: false, message: "Incorrect PIN. Access denied." });
         }
 
-        const loginRecord = {
-            deviceId: deviceId,
-            loginTime: getYangonTimeStr()
-        };
-
+        const loginRecord = { deviceId, loginTime: getYangonTimeStr() };
         await usersRef.doc(userData.userId).update({
             recentLogins: FieldValue.arrayUnion(loginRecord)
         });
 
         return res.status(200).json({ 
-            success: true, 
-            message: "Login successful on another device with PIN", 
-            name: userData.name,
-            userId: userData.userId,
-            role: userData.role || 'user'
+            success: true, message: "Login successful on another device with PIN", 
+            name: userData.name, userId: userData.userId, role: userData.role || 'user' 
         });
 
     } catch (error) {
