@@ -48,7 +48,6 @@ module.exports = async function handler(req, res) {
 
             console.log("Received callback data:", data);
 
-            // 🟢 Callback Data ကို တိကျစွာ ခွဲထုတ်ခြင်း
             const parts = data.split('_');
             const action = parts[0]; // confirm, reject, select, back
             
@@ -56,12 +55,9 @@ module.exports = async function handler(req, res) {
             let docId = "";
             let reasonKey = "";
 
-            // ဥပမာ: confirm_refund_requests_DOCID ဆိုပါက parts တွေက [confirm, refund, requests, DOCID] ဖြစ်သွားပါမည်။
+            // 🟢 Callback Data ပုံစံများကို တိကျစွာ ခွဲထုတ်ခြင်း
             if (parts[1] === 'refund' && parts[2] === 'requests') {
                 collectionName = 'refund_requests';
-                docId = parts[3];
-            } else if (action === 'confirm' || action === 'reject' || action === 'back') {
-                collectionName = `${parts[1]}_${parts[2]}`; 
                 docId = parts[3];
             } else if (action === 'select') {
                 reasonKey = parts[1]; // r1, r2, etc.
@@ -72,6 +68,10 @@ module.exports = async function handler(req, res) {
                     collectionName = `${parts[2]}_${parts[3]}`;
                     docId = parts[4];
                 }
+            } else {
+                // ဥပမာ: confirm_1vs1_registrations_DOCID ဆိုပါက parts[1] က 1vs1၊ parts[2] က registrations ဖြစ်ပါမည်။
+                collectionName = `${parts[1]}_${parts[2]}`; 
+                docId = parts[3];
             }
 
             let newStatus = "";
@@ -79,15 +79,7 @@ module.exports = async function handler(req, res) {
             let updateKeyboard = false;
             let newInlineKeyboard = [];
 
-            // Callback data ထဲမှာ collection ကို မူတည်ပြီး button callback data များကို ပုံစံမှန်ပြန်တည်ဆောက်ရန် helper
-            const getCallbackPrefix = () => {
-                if (collectionName === 'refund_requests') {
-                    return 'refund_requests';
-                }
-                return collectionName;
-            };
-
-            const prefix = getCallbackPrefix();
+            const prefix = collectionName;
 
             if (action === 'confirm') {
                 newStatus = 'CONFIRMED';
