@@ -349,7 +349,7 @@ export function renderPaymentPage(appContent, formData) {
                         } catch (pollErr) {
                             console.error("⚠️ Polling Error ဖြစ်နေပါသည်:", pollErr);
                         }
-                    }, 5000); 
+                    }, 18000); 
                 } else {
                     console.warn("⚠️ Registration ID မပါလာပါ၊ ထို့ကြောင့် Polling စတင်၍ မရပါ။");
                 }
