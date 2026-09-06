@@ -38,7 +38,6 @@ export function renderRoomScreen(container, roomTitleText, userDocData = {}) {
     const userName = userDocData.userName || userDocData.name || 'Player';
     const userAvatar = userDocData.photoURL || userDocData.avatar || 'FrontLogo.jpg';
 
-    // မူလ HTML တည်ဆောက်ပုံ (ပြန်ပေါ်လာစေရန် function တစ်ခုအနေဖြင့် သုံးရန်)
     function renderScreenHTML(isCreated = false) {
         return `
             <style>
@@ -89,7 +88,6 @@ export function renderRoomScreen(container, roomTitleText, userDocData = {}) {
                     align-items: center;
                     justify-content: space-between;
                     gap: 12px;
-                    margin-bottom: 16px;
                 }
                 .player-side {
                     display: flex;
@@ -141,8 +139,24 @@ export function renderRoomScreen(container, roomTitleText, userDocData = {}) {
                     border-radius: 8px;
                     border: 1px solid rgba(244, 63, 94, 0.3);
                 }
+                /* Waiting နေရာဘေးရှိ Cancel ခလုတ်ပုံစံ (အနီမဟုတ်ဘဲ အပြာရောင်/နီယွန်စတိုင်) */
+                .card-cancel-btn {
+                    background: rgba(56, 189, 248, 0.1);
+                    color: #38bdf8;
+                    border: 1px solid rgba(56, 189, 248, 0.5);
+                    padding: 4px 8px;
+                    border-radius: 6px;
+                    font-size: 10.5px;
+                    font-weight: 700;
+                    cursor: pointer;
+                    transition: background 0.2s;
+                    margin-top: 4px;
+                }
+                .card-cancel-btn:hover {
+                    background: rgba(56, 189, 248, 0.25);
+                }
                 .room-bottom-actions {
-                    display: ${isCreated ? 'none' : 'flex'};
+                    display: flex;
                     gap: 12px;
                     width: 100%;
                     max-width: 330px;
@@ -163,16 +177,10 @@ export function renderRoomScreen(container, roomTitleText, userDocData = {}) {
                     transform: scale(1.02);
                 }
                 .btn-new-room {
-                    background: linear-gradient(135deg, #0284c7, #9333ea);
-                    color: #fff;
-                    box-shadow: 0 4px 15px rgba(147, 51, 234, 0.4);
-                }
-                .btn-new-room:disabled {
-                    background: #1e293b;
-                    color: #64748b;
-                    cursor: not-allowed;
-                    box-shadow: none;
-                    transform: none;
+                    background: ${isCreated ? '#1e293b' : 'linear-gradient(135deg, #0284c7, #9333ea)'};
+                    color: ${isCreated ? '#64748b' : '#fff'};
+                    box-shadow: ${isCreated ? 'none' : '0 4px 15px rgba(147, 51, 234, 0.4)'};
+                    cursor: ${isCreated ? 'not-allowed' : 'pointer'};
                 }
                 .btn-cancel {
                     background: rgba(30, 41, 59, 0.9);
@@ -199,12 +207,14 @@ export function renderRoomScreen(container, roomTitleText, userDocData = {}) {
                                     <span class="player-name">${userName}</span>
                                 </div>
                                 <div class="vs-badge">VS</div>
-                                <div class="player-side right">
-                                    <span class="player-name" style="color: #94a3b8;">Waiting...</span>
-                                    <div class="mystery-avatar">?</div>
+                                <div class="player-side right" style="flex-direction: column; align-items: flex-end; gap: 4px;">
+                                    <div style="display: flex; align-items: center; gap: 8px;">
+                                        <span class="player-name" style="color: #94a3b8;">Waiting...</span>
+                                        <div class="mystery-avatar">?</div>
+                                    </div>
+                                    <button class="card-cancel-btn" id="cardCancelBtn">Cancel Room</button>
                                 </div>
                             </div>
-                            <button class="room-btn btn-cancel" id="cardCancelBtn" style="width: 100%; padding: 10px 0; font-size: 13px;">Cancel</button>
                         </div>
                     ` : `
                         <p style="margin-bottom: 6px;">Required Key: <span style="color: #38bdf8; font-weight: bold;">${targetMode.toUpperCase()} - ${targetKeyType.toUpperCase()}</span></p>
@@ -214,9 +224,9 @@ export function renderRoomScreen(container, roomTitleText, userDocData = {}) {
                     `}
                 </div>
 
-                <div class="room-bottom-actions" id="bottomActionButtons">
-                    <button class="room-btn btn-new-room" id="newRoomBtn" ${!hasKey ? 'disabled' : ''}>
-                        ${hasKey ? 'Create Room' : 'No Key'}
+                <div class="room-bottom-actions">
+                    <button class="room-btn btn-new-room" id="newRoomBtn" ${!hasKey || isCreated ? 'disabled' : ''}>
+                        ${isCreated ? 'Room Created' : (hasKey ? 'Create Room' : 'No Key')}
                     </button>
                     <button class="room-btn btn-cancel" id="cancelBtn">Cancel</button>
                 </div>
@@ -224,10 +234,8 @@ export function renderRoomScreen(container, roomTitleText, userDocData = {}) {
         `;
     }
 
-    // ပထမအကြိမ် screen ကို render လုပ်ခြင်း
     container.innerHTML = renderScreenHTML(false);
 
-    // Event Listeners များကို ချိတ်ဆက်ပေးသည့် function
     function attachEventListeners() {
         const newRoomBtn = container.querySelector('#newRoomBtn');
         if (newRoomBtn && hasKey) {
@@ -238,9 +246,9 @@ export function renderRoomScreen(container, roomTitleText, userDocData = {}) {
 
                     deductKey(targetMode, targetKeyType);
 
-                    // Room Card ပုံစံသို့ ပြောင်းလဲပြသခြင်း
+                    // Room Card ပုံစံပြောင်းလဲပြီး Create Room ခလုတ်ကို မည်းသွားစေခြင်း (Disabled)
                     container.innerHTML = renderScreenHTML(true);
-                    attachEventListeners(); // Card ထဲပါလာမည့် Cancel ခလုတ်အတွက် ပြန်ချိတ်ပေးခြင်း
+                    attachEventListeners();
                     
                 } catch (err) {
                     console.error("Room create error:", err);
@@ -261,7 +269,7 @@ export function renderRoomScreen(container, roomTitleText, userDocData = {}) {
         const cardCancelBtn = container.querySelector('#cardCancelBtn');
         if (cardCancelBtn) {
             cardCancelBtn.addEventListener('click', () => {
-                // Card ကိုဖြုတ်ပြီး မူလ Create Room အနေအထားသို့ ပြန်ပြောင်းပေးခြင်း
+                // Card ကို ပျောက်စေပြီး မူလအခြေအနေသို့ ပြန်ပြောင်းပေးခြင်း
                 container.innerHTML = renderScreenHTML(false);
                 attachEventListeners();
             });
