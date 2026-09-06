@@ -323,8 +323,8 @@ export function renderMatchScreen(container) {
     const gridCells = container.querySelectorAll('.grid-cell');
     gridCells.forEach(cell => {
         cell.addEventListener('click', () => {
-            const selectedValue = cell.getAttribute('data-value');
-            renderRoomScreen(container, selectedValue);
+            // နှိပ်လိုက်ရင် ဘာမှမဖြစ်စေရန် (Room ဆီသို့ မသွားစေရန်) ရပ်တန့်ထားသည်
+            return;
         });
     });
 }
