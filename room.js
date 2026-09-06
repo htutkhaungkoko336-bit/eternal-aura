@@ -4,6 +4,12 @@ import { getKeyData, deductKey } from './keysStore.js';
 export function renderRoomScreen(container, roomTitleText, userDocData = {}) {
     const upperTitle = roomTitleText.toUpperCase();
     
+    // ခေါင်းစဉ်မှာ ROOM ပါမလာရင် အလိုအလျောက် ဖြည့်စွက်ပေးရန်
+    let displayTitle = upperTitle;
+    if (!displayTitle.includes('ROOM')) {
+        displayTitle = `${displayTitle} ROOM`;
+    }
+
     let targetMode = '5v5';
     let targetKeyType = '5k';
 
@@ -37,26 +43,27 @@ export function renderRoomScreen(container, roomTitleText, userDocData = {}) {
                 box-sizing: border-box;
                 user-select: none;
             }
-            /* ခေါင်းစဉ်အတွက် Button ပုံစံ လန်းလန်းလေး */
+            /* လေးထောင့်ပုံစံ ပိုကြီးပြီး လန်းတဲ့ ခေါင်းစဉ်ကတ်ပြား */
             .room-title-card {
                 width: 100%;
-                max-width: 320px;
-                padding: 14px 20px;
-                background: linear-gradient(135deg, rgba(30, 41, 59, 0.9), rgba(15, 23, 42, 0.95));
-                border: 1px solid rgba(56, 189, 248, 0.4);
-                border-radius: 14px;
+                max-width: 340px;
+                padding: 18px 15px;
+                background: linear-gradient(135deg, rgba(15, 23, 42, 0.95), rgba(30, 41, 59, 0.9));
+                border: 2px solid rgba(56, 189, 248, 0.6);
+                border-radius: 12px;
                 text-align: center;
-                box-shadow: 0 10px 25px rgba(0, 0, 0, 0.5), 0 0 15px rgba(56, 189, 248, 0.2);
+                box-shadow: 0 10px 30px rgba(0, 0, 0, 0.6), 0 0 20px rgba(56, 189, 248, 0.3);
                 margin-top: 15px;
             }
             .room-title {
-                font-size: 18px;
-                font-weight: 800;
+                font-size: 22px;
+                font-weight: 900;
                 background: linear-gradient(135deg, #38bdf8, #818cf8);
                 -webkit-background-clip: text;
                 -webkit-text-fill-color: transparent;
-                letter-spacing: 1px;
+                letter-spacing: 1.5px;
                 margin: 0;
+                text-transform: uppercase;
             }
             .room-content-center {
                 font-size: 13.5px;
@@ -105,9 +112,9 @@ export function renderRoomScreen(container, roomTitleText, userDocData = {}) {
         </style>
 
         <div class="room-screen-wrapper">
-            <!-- အပေါ်က ခေါင်းစဉ်ကို Button ပုံစံ ကတ်ပြားလေးအဖြစ် ပြောင်းထားသည် -->
+            <!-- လေးထောင့်ပုံစံကြီးပြီး ROOM ပါဝင်သော ခေါင်းစဉ် -->
             <div class="room-title-card">
-                <h2 class="room-title">${roomTitleText}</h2>
+                <h2 class="room-title">${displayTitle}</h2>
             </div>
             
             <div class="room-content-center">
@@ -125,9 +132,6 @@ export function renderRoomScreen(container, roomTitleText, userDocData = {}) {
     const newRoomBtn = container.querySelector('#newRoomBtn');
     if (newRoomBtn) {
         newRoomBtn.addEventListener('click', async () => {
-            const userId = localStorage.getItem('user_id') || userDocData.userId || 'current_user_id';
-            
-            // 1. Store ထဲကနေ လက်ရှိ Key လုံလောက်မှုရှိမရှိ စစ်ဆေးခြင်း
             const currentStoreData = getKeyData();
             const availableKeys = currentStoreData.modes[targetMode]?.[targetKeyType] || 0;
 
@@ -140,10 +144,9 @@ export function renderRoomScreen(container, roomTitleText, userDocData = {}) {
                 newRoomBtn.disabled = true;
                 newRoomBtn.textContent = 'Creating...';
 
-                // 2. Room အောင်မြင်စွာဆောက်ပြီးပါက Store ထဲက Key ကို တစ်ခု နှုတ်ပေးခြင်း
                 deductKey(targetMode, targetKeyType);
 
-                alert(`Successfully created room for ${roomTitleText}! (Key successfully deducted)`);
+                alert(`Successfully created room for ${displayTitle}! (Key successfully deducted)`);
                 
             } catch (err) {
                 console.error("Room create error:", err);
