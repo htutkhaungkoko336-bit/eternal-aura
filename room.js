@@ -26,7 +26,6 @@ export function renderRoomScreen(container, roomTitleText, userDocData = {}) {
         }
     }
 
-    // Key အမျိုးအစားအလိုက် BO သတ်မှတ်ခြင်း (25k နဲ့ 50k ဆိုရင် BO3၊ ကျန်တာ BO1)
     let boType = 'BO1';
     if (targetKeyType === '25k' || targetKeyType === '50k') {
         boType = 'BO3';
@@ -36,7 +35,6 @@ export function renderRoomScreen(container, roomTitleText, userDocData = {}) {
     const availableKeys = currentStoreData.modes[targetMode]?.[targetKeyType] || 0;
     const hasKey = availableKeys > 0;
 
-    // User နမည် (သို့မဟုတ် Default နမည်)
     const userName = userDocData.userName || userDocData.name || 'Player';
     const userAvatar = userDocData.photoURL || userDocData.avatar || 'FrontLogo.jpg';
 
@@ -57,7 +55,7 @@ export function renderRoomScreen(container, roomTitleText, userDocData = {}) {
                 user-select: none;
             }
             .room-content-center {
-                font-size: 13.5px;
+                font-size: 13px;
                 color: #94a3b8;
                 text-align: center;
                 width: 100%;
@@ -68,93 +66,80 @@ export function renderRoomScreen(container, roomTitleText, userDocData = {}) {
                 align-items: center;
                 flex: 1;
             }
-            /* iOS ပုံစံ Glassmorphism Room Card */
+            /* သေးငယ်ပြီး ရိုးရှင်းတဲ့ iOS ပုံစံ Room Card */
             .ios-room-card {
-                background: rgba(15, 23, 42, 0.75);
-                backdrop-filter: blur(16px);
-                -webkit-backdrop-filter: blur(16px);
-                border: 1px solid rgba(56, 189, 248, 0.3);
-                border-radius: 20px;
-                padding: 16px;
+                background: rgba(15, 23, 42, 0.85);
+                border: 1px solid rgba(56, 189, 248, 0.25);
+                border-radius: 14px;
+                padding: 12px 14px;
                 width: 100%;
-                max-width: 320px;
-                box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5), inset 0 1px 0 rgba(255, 255, 255, 0.1);
-                animation: fadeIn 0.3s ease-in-out;
+                max-width: 280px;
+                box-shadow: 0 4px 15px rgba(0, 0, 0, 0.4);
+                animation: fadeIn 0.25s ease-in-out;
                 box-sizing: border-box;
             }
             @keyframes fadeIn {
-                from { opacity: 0; transform: scale(0.95); }
+                from { opacity: 0; transform: scale(0.96); }
                 to { opacity: 1; transform: scale(1); }
-            }
-            .card-header-row {
-                display: flex;
-                justify-content: space-between;
-                align-items: center;
-                margin-bottom: 12px;
-                font-size: 12px;
-                font-weight: 700;
-                color: #38bdf8;
-                border-bottom: 1px solid rgba(255, 255, 255, 0.08);
-                padding-bottom: 8px;
             }
             .matchup-container {
                 display: flex;
                 align-items: center;
                 justify-content: space-between;
-                gap: 10px;
-                margin: 10px 0;
+                gap: 8px;
             }
             .player-side {
                 display: flex;
-                flex-direction: column;
                 align-items: center;
+                gap: 8px;
                 flex: 1;
             }
+            .player-side.right {
+                flex-direction: row-reverse;
+                text-align: right;
+            }
             .player-avatar {
-                width: 50px;
-                height: 50px;
+                width: 36px;
+                height: 36px;
                 border-radius: 50%;
-                border: 2px solid #38bdf8;
+                border: 1.5px solid #38bdf8;
                 object-fit: cover;
-                box-shadow: 0 0 10px rgba(56, 189, 248, 0.4);
                 background: #1e293b;
             }
             .mystery-avatar {
-                width: 50px;
-                height: 50px;
+                width: 36px;
+                height: 36px;
                 border-radius: 50%;
-                border: 2px dashed rgba(148, 163, 184, 0.5);
+                border: 1.5px dashed rgba(148, 163, 184, 0.5);
                 display: flex;
                 align-items: center;
                 justify-content: center;
-                font-size: 22px;
+                font-size: 16px;
                 font-weight: bold;
                 color: #94a3b8;
                 background: rgba(30, 41, 59, 0.5);
             }
             .player-name {
-                font-size: 12px;
+                font-size: 11.5px;
                 font-weight: 600;
                 color: #f8fafc;
-                margin-top: 6px;
-                text-align: center;
-                max-width: 90px;
+                max-width: 75px;
                 overflow: hidden;
                 text-overflow: ellipsis;
                 white-space: nowrap;
             }
             .vs-badge {
-                font-size: 14px;
-                font-weight: 900;
+                font-size: 11px;
+                font-weight: 800;
                 color: #f43f5e;
                 background: rgba(244, 63, 94, 0.1);
-                padding: 6px 10px;
-                border-radius: 10px;
-                border: 1px solid rgba(244, 63, 94, 0.3);
+                padding: 4px 6px;
+                border-radius: 6px;
+                border: 1px solid rgba(244, 63, 94, 0.2);
             }
             .room-bottom-actions {
                 display: flex;
-                gap: 15px;
+                gap: 12px;
                 width: 100%;
                 max-width: 320px;
                 margin-bottom: 10px;
@@ -162,7 +147,7 @@ export function renderRoomScreen(container, roomTitleText, userDocData = {}) {
             .room-btn {
                 flex: 1;
                 padding: 12px 0;
-                border-radius: 14px;
+                border-radius: 12px;
                 font-weight: 700;
                 font-size: 14px;
                 text-align: center;
@@ -194,16 +179,16 @@ export function renderRoomScreen(container, roomTitleText, userDocData = {}) {
         </style>
 
         <div class="room-screen-wrapper">
-            <!-- ခေါင်းစဉ် Box (BO ပါဝင်သည်) -->
-            <div style="position: relative; border: 2px solid #38bdf8; border-radius: 6px; padding: 12px 16px; margin-top: 10px; background-color: rgba(15, 23, 42, 0.8); text-align: center; width: 100%; max-width: 320px; box-sizing: border-box; box-shadow: 0 0 10px rgba(56, 189, 248, 0.3);">
+            <!-- Header Box -->
+            <div style="position: relative; border: 2px solid #38bdf8; border-radius: 6px; padding: 10px 14px; margin-top: 10px; background-color: rgba(15, 23, 42, 0.8); text-align: center; width: 100%; max-width: 320px; box-sizing: border-box; box-shadow: 0 0 10px rgba(56, 189, 248, 0.3);">
                 <div style="position: absolute; top: -3px; left: -3px; width: 6px; height: 6px; background-color: #38bdf8;"></div>
                 <div style="position: absolute; bottom: -3px; right: -3px; width: 6px; height: 6px; background-color: #38bdf8;"></div>
-                <h2 style="color: #f8fafc; font-size: 18px; font-weight: 800; letter-spacing: 1px; margin: 0; text-transform: uppercase; background: linear-gradient(to right, #38bdf8, #818cf8); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">${displayTitle} (${boType})</h2>
+                <h2 style="color: #f8fafc; font-size: 17px; font-weight: 800; letter-spacing: 1px; margin: 0; text-transform: uppercase; background: linear-gradient(to right, #38bdf8, #818cf8); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">${displayTitle} (${boType})</h2>
             </div>
             
             <div class="room-content-center" id="roomContentArea">
-                <p style="margin-bottom: 8px;">Required Key: <span style="color: #38bdf8; font-weight: bold;">${targetMode.toUpperCase()} - ${targetKeyType.toUpperCase()}</span></p>
-                <p style="font-size: 12px; color: ${hasKey ? '#10b981' : '#f43f5e'}; margin: 0;">
+                <p style="margin-bottom: 6px;">Required Key: <span style="color: #38bdf8; font-weight: bold;">${targetMode.toUpperCase()} - ${targetKeyType.toUpperCase()}</span></p>
+                <p style="font-size: 11.5px; color: ${hasKey ? '#10b981' : '#f43f5e'}; margin: 0;">
                     Available Keys: ${availableKeys}
                 </p>
             </div>
@@ -228,11 +213,11 @@ export function renderRoomScreen(container, roomTitleText, userDocData = {}) {
 
                 deductKey(targetMode, targetKeyType);
 
-                // နှိပ်ပြီးပါက တောင်းဆိုထားသည့်အတိုင်း iOS ပုံစံ Room Card ကို ပြသပေးမည်
+                // သေးငယ်ပြီး ရိုးရှင်းတဲ့ ရလဒ် Card လေး
                 roomContentArea.innerHTML = `
                     <div class="ios-room-card">
-                        <div class="card-header-row">
-                            <span>🎮 ${displayTitle}</span>
+                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; font-size: 11px;">
+                            <span style="color: #38bdf8; font-weight: bold;">${displayTitle}</span>
                             <span style="color: #10b981;">● Active (${boType})</span>
                         </div>
                         <div class="matchup-container">
@@ -241,9 +226,9 @@ export function renderRoomScreen(container, roomTitleText, userDocData = {}) {
                                 <span class="player-name">${userName}</span>
                             </div>
                             <div class="vs-badge">VS</div>
-                            <div class="player-side">
-                                <div class="mystery-avatar">?</div>
+                            <div class="player-side right">
                                 <span class="player-name" style="color: #94a3b8;">Waiting...</span>
+                                <div class="mystery-avatar">?</div>
                             </div>
                         </div>
                     </div>
