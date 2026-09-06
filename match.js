@@ -318,4 +318,4 @@ export function renderMatchScreen(container, userDocData = {}) {
             renderRoomScreen(container, roomValue, userDocData);
         });
     });
-}
+} 
