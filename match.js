@@ -1,7 +1,7 @@
 import { renderModeScreen } from './mode.js';
-import { renderRoomScreen } from './room.js';
+import { renderRoomScreen } from './room.js'; // room.js ကို import လုပ်ပါ
 
-export function renderMatchScreen(container) {
+export function renderMatchScreen(container, userDocData = {}) {
     container.innerHTML = `
         <style>
             .setup-wrapper {
@@ -279,7 +279,7 @@ export function renderMatchScreen(container) {
                         <div class="key" style="grid-column: span 3;"></div>
                         <div class="key"></div><div class="key"></div><div class="key"></div><div class="key"></div><div class="key"></div><div class="key"></div><div class="key"></div><div class="key"></div><div class="key"></div><div class="key"></div><div class="key" style="grid-column: span 2;"></div>
                         <div class="key accent-blue" style="grid-column: span 3;"></div>
-                        <div class="key"></div><div class="key"></div><div class="key"></div><div class="key"></div><div class="key"></div><div class="key"></div><div class="key"></div><div class="key"></div><div class="key"></div><div class="key" style="grid-column: span 2;"></div>
+                        <div class="key"></div><div class="key"></div><div class="key"></div><div class="key"></div><div class="key"></div><div class="key"></div><div class="key"></div><div class="key"></div><div class="key" style="grid-column: span 2;"></div>
                         <div class="key" style="grid-column: span 4;"></div>
                         <div class="key accent-pink" style="grid-column: span 6;"></div>
                         <div class="key" style="grid-column: span 4;"></div>
@@ -307,6 +307,7 @@ export function renderMatchScreen(container) {
     const screenGrid = container.querySelector('#screenGrid');
     let isGridOpen = false;
 
+    // မော်နီတာကို နှိပ်လျှင် Grid ဖွင့်/ပိတ် လုပ်ခြင်း
     monitor.addEventListener('click', (e) => {
         if (e.target.closest('.grid-cell')) return;
 
@@ -320,11 +321,15 @@ export function renderMatchScreen(container) {
         }
     });
 
+    // Grid ဆဲလ် (Cell) တစ်ခုချင်းစီကို နှိပ်လျှင် သက်ဆိုင်ရာ Room Screen သို့ သွားစေရန်
     const gridCells = container.querySelectorAll('.grid-cell');
     gridCells.forEach(cell => {
         cell.addEventListener('click', (e) => {
-            e.stopPropagation(); // မော်နီတာကလစ်လုပ်တာပါ ထပ်မံမပါသွားအောင် တားဆီးသည်
-            return; // နှိပ်လိုက်ရင် ဘာမှမဖြစ်စေရန် ရပ်တန့်ထားသည်
+            e.stopPropagation(); // မော်နီတာကလစ်ဆီသို့ ပုံစံမကူးသွားအောင် တားဆီးသည်
+            const roomValue = cell.getAttribute('data-value'); // ဥပမာ: "5V5 - 5K"
+            
+            // room.js ထဲက renderRoomScreen ကို ခေါ်ပြီး မျက်နှာပြင်အသစ်သို့ ပြောင်းပေးသည်
+            renderRoomScreen(container, roomValue, userDocData);
         });
     });
 }
