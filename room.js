@@ -6,9 +6,10 @@ export function renderRoomScreen(container, roomTitleText, userDocData = {}) {
     let targetMode = '5v5';
     let targetKeyType = '5k';
 
-    if (upperTitle.includes('1V1')) {
+    // 1v1 သို့မဟုတ် 1vs1 (နှင့် 5v5 / 5vs5) ပါဝင်မှုများကိုပါ စစ်ဆေးရန်
+    if (upperTitle.includes('1V1') || upperTitle.includes('1VS1')) {
         targetMode = '1v1';
-    } else if (upperTitle.includes('5V5')) {
+    } else if (upperTitle.includes('5V5') || upperTitle.includes('5VS5')) {
         targetMode = '5v5';
     }
 
@@ -136,7 +137,7 @@ export function renderRoomScreen(container, roomTitleText, userDocData = {}) {
         });
     }
 
-    // Cancel ခလုတ် Event (ပုံမှန်အတိုင်း အလုပ်လုပ်မည်)
+    // Cancel ခလုတ် Event
     container.querySelector('#cancelBtn').addEventListener('click', () => {
         renderMatchScreen(container);
     });
