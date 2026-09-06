@@ -138,12 +138,3 @@ export function renderRoomScreen(container, roomTitleText, userDocData = {}) {
         });
     }
 }
-
-
-
-
-
-
-
-
-
