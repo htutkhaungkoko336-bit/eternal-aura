@@ -1,5 +1,4 @@
-import { renderModeScreen } from './mode.js';
-import { renderRoomScreen } from './room.js'; // room.js ကို import လုပ်ပါ
+import { renderRoomScreen } from './room.js';
 
 export function renderMatchScreen(container, userDocData = {}) {
     container.innerHTML = `
@@ -19,21 +18,18 @@ export function renderMatchScreen(container, userDocData = {}) {
                 overflow: hidden;
                 padding: 10px;
             }
-
             .main-workspace {
                 display: flex;
                 flex-direction: column;
                 align-items: center;
                 gap: 12px;
             }
-
             .monitor-group {
                 display: flex;
                 flex-direction: column;
                 align-items: center;
                 gap: 8px;
             }
-
             .monitor {
                 width: 310px;
                 height: 180px;
@@ -62,7 +58,6 @@ export function renderMatchScreen(container, userDocData = {}) {
                 text-shadow: 0 0 10px rgba(255,255,255,0.8);
                 line-height: 1.4;
             }
-
             .screen-grid {
                 display: none;
                 width: 100%;
@@ -101,7 +96,6 @@ export function renderMatchScreen(container, userDocData = {}) {
                 background: rgba(255, 255, 255, 0.3);
                 transform: scale(1.03);
             }
-
             .monitor-stand {
                 width: 65px;
                 height: 22px;
@@ -109,7 +103,6 @@ export function renderMatchScreen(container, userDocData = {}) {
                 border-radius: 4px;
                 border: 1px solid #00f2ff44;
             }
-
             .desk-accessories {
                 display: flex;
                 justify-content: center;
@@ -117,7 +110,6 @@ export function renderMatchScreen(container, userDocData = {}) {
                 gap: 15px;
                 perspective: 350px;
             }
-
             .keyboard {
                 width: 215px;
                 height: 52px;
@@ -155,7 +147,6 @@ export function renderMatchScreen(container, userDocData = {}) {
                 background: #00f2ff33;
                 border-color: #00f2ff99;
             }
-
             .mouse {
                 width: 20px;
                 height: 35px;
@@ -188,7 +179,6 @@ export function renderMatchScreen(container, userDocData = {}) {
                 border-radius: 50%;
                 filter: blur(2px);
             }
-
             .pc-tower {
                 display: flex;
                 width: 65px;
@@ -307,7 +297,6 @@ export function renderMatchScreen(container, userDocData = {}) {
     const screenGrid = container.querySelector('#screenGrid');
     let isGridOpen = false;
 
-    // မော်နီတာကို နှိပ်လျှင် Grid ဖွင့်/ပိတ် လုပ်ခြင်း
     monitor.addEventListener('click', (e) => {
         if (e.target.closest('.grid-cell')) return;
 
@@ -321,14 +310,11 @@ export function renderMatchScreen(container, userDocData = {}) {
         }
     });
 
-    // Grid ဆဲလ် (Cell) တစ်ခုချင်းစီကို နှိပ်လျှင် သက်ဆိုင်ရာ Room Screen သို့ သွားစေရန်
     const gridCells = container.querySelectorAll('.grid-cell');
     gridCells.forEach(cell => {
         cell.addEventListener('click', (e) => {
-            e.stopPropagation(); // မော်နီတာကလစ်ဆီသို့ ပုံစံမကူးသွားအောင် တားဆီးသည်
-            const roomValue = cell.getAttribute('data-value'); // ဥပမာ: "5V5 - 5K"
-            
-            // room.js ထဲက renderRoomScreen ကို ခေါ်ပြီး မျက်နှာပြင်အသစ်သို့ ပြောင်းပေးသည်
+            e.stopPropagation();
+            const roomValue = cell.getAttribute('data-value');
             renderRoomScreen(container, roomValue, userDocData);
         });
     });

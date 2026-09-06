@@ -1,22 +1,18 @@
 import { renderMatchScreen } from './match.js';
 
 export function renderRoomScreen(container, roomTitleText, userDocData = {}) {
-    // Room Title ကနေ Mode နဲ့ Key Type ကို တိကျစွာ ခွဲထုတ်ခြင်း
     const upperTitle = roomTitleText.toUpperCase();
     
-    // Default တန်ဖိုးများ
     let targetMode = '5v5';
     let targetKeyType = '5k';
 
-    // 1v1 သို့မဟုတ် 1vs1 ပါဝင်မှု ရှိမရှိ စစ်ဆေးခြင်း (1v1 ကို ဦးစားပေးစစ်ရန်)
     if (upperTitle.includes('1V1') || upperTitle.includes('1VS1')) {
         targetMode = '1v1';
     } else if (upperTitle.includes('5V5') || upperTitle.includes('5VS5')) {
         targetMode = '5v5';
     }
 
-    // Key Type (5k, 10k, 15k, 25k, 50k) ကို စစ်ဆေးခြင်း
-    const possibleTypes = ['50k', '25k', '15k', '10k', '5k']; // ရှည်တဲ့နာမည်တွေကို အရင်စစ်ရန် (ဥပမာ 50k က 5k ထဲ မပါသွားအောင်)
+    const possibleTypes = ['50k', '25k', '15k', '10k', '5k'];
     for (let t of possibleTypes) {
         if (upperTitle.includes(t.toUpperCase())) {
             targetKeyType = t;
@@ -24,9 +20,8 @@ export function renderRoomScreen(container, roomTitleText, userDocData = {}) {
         }
     }
 
-    // User မှာ ဒီ targetMode နဲ့ targetKeyType နဲ့ ကိုက်ညီတဲ့ key ပမာဏ ရှိမရှိ စစ်ဆေးခြင်း
     let keyCount = 0;
-    const directKeyField = `${targetMode}-${targetKeyType}`; // ဥပမာ: '1v1-5k' သို့မဟုတ် '5v5-10k'
+    const directKeyField = `${targetMode}-${targetKeyType}`;
     
     if (userDocData[directKeyField] !== undefined) {
         keyCount = userDocData[directKeyField];
@@ -130,7 +125,6 @@ export function renderRoomScreen(container, roomTitleText, userDocData = {}) {
         </div>
     `;
 
-    // New Room ခလုတ် Event
     const newRoomBtn = container.querySelector('#newRoomBtn');
     if (newRoomBtn) {
         newRoomBtn.addEventListener('click', () => {
@@ -142,11 +136,10 @@ export function renderRoomScreen(container, roomTitleText, userDocData = {}) {
         });
     }
 
-    // Cancel ခလုတ် Event
     const cancelBtn = container.querySelector('#cancelBtn');
     if (cancelBtn) {
         cancelBtn.addEventListener('click', () => {
-            renderMatchScreen(container);
+            renderMatchScreen(container, userDocData);
         });
     }
 }
