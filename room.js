@@ -95,7 +95,6 @@ export function renderRoomScreen(container, roomTitleText, userDocData = {}) {
             <div class="room-title">${roomTitleText}</div>
             
             <div class="room-content-center">
-                <p>Ready to create your room!</p>
             </div>
 
             <div class="room-bottom-actions">
