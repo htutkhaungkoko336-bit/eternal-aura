@@ -34,7 +34,6 @@ export function renderMatchScreen(container) {
                 gap: 8px;
             }
 
-            /* ကြီးမားကျယ်ပြန့်သော Monitor */
             .monitor {
                 width: 310px;
                 height: 180px;
@@ -64,7 +63,6 @@ export function renderMatchScreen(container) {
                 line-height: 1.4;
             }
 
-            /* Grid System (Monitor အတွင်း ၁၀ ကွက်) */
             .screen-grid {
                 display: none;
                 width: 100%;
@@ -104,7 +102,6 @@ export function renderMatchScreen(container) {
                 transform: scale(1.03);
             }
 
-            /* Monitor ခြေထောက် */
             .monitor-stand {
                 width: 65px;
                 height: 22px;
@@ -113,7 +110,6 @@ export function renderMatchScreen(container) {
                 border: 1px solid #00f2ff44;
             }
 
-            /* ကီးဘုတ်နှင့် မောက်စ် ဇုန် */
             .desk-accessories {
                 display: flex;
                 justify-content: center;
@@ -122,7 +118,6 @@ export function renderMatchScreen(container) {
                 perspective: 350px;
             }
 
-            /* RGB Mechanical Keyboard */
             .keyboard {
                 width: 215px;
                 height: 52px;
@@ -161,7 +156,6 @@ export function renderMatchScreen(container) {
                 border-color: #00f2ff99;
             }
 
-            /* RGB Gaming Mouse */
             .mouse {
                 width: 20px;
                 height: 35px;
@@ -195,7 +189,6 @@ export function renderMatchScreen(container) {
                 filter: blur(2px);
             }
 
-            /* PC ပုံး (Fish Tank Style) */
             .pc-tower {
                 display: flex;
                 width: 65px;
@@ -261,16 +254,16 @@ export function renderMatchScreen(container) {
                     <div class="monitor" id="monitor">
                         <span class="btn-text" id="btnText">WELCOME FROM<br>ETERNAL AURA<br><span style="font-size: 11px; font-weight: 600; letter-spacing: 1px;">CLICK HERE</span></span>
                         <div class="screen-grid" id="screenGrid">
-                            <div class="grid-cell" data-value="5vs5 - 5k"><span>5vs5</span><span>5k</span></div>
-                            <div class="grid-cell" data-value="5vs5 - 10k"><span>5vs5</span><span>10k</span></div>
-                            <div class="grid-cell" data-value="5vs5 - 15k"><span>5vs5</span><span>15k</span></div>
-                            <div class="grid-cell" data-value="5vs5 - 25k"><span>5vs5</span><span>25k</span></div>
-                            <div class="grid-cell" data-value="5vs5 - 50k"><span>5vs5</span><span>50k</span></div>
-                            <div class="grid-cell" data-value="1vs1 - 5k"><span>1vs1</span><span>5k</span></div>
-                            <div class="grid-cell" data-value="1vs1 - 10k"><span>1vs1</span><span>10k</span></div>
-                            <div class="grid-cell" data-value="1vs1 - 15k"><span>1vs1</span><span>15k</span></div>
-                            <div class="grid-cell" data-value="1vs1 - 25k"><span>1vs1</span><span>25k</span></div>
-                            <div class="grid-cell" data-value="1vs1 - 50k"><span>1vs1</span><span>50k</span></div>
+                            <div class="grid-cell" data-value="5V5 - 5K"><span>5v5</span><span>5k</span></div>
+                            <div class="grid-cell" data-value="5V5 - 10K"><span>5v5</span><span>10k</span></div>
+                            <div class="grid-cell" data-value="5V5 - 15K"><span>5v5</span><span>15k</span></div>
+                            <div class="grid-cell" data-value="5V5 - 25K"><span>5v5</span><span>25k</span></div>
+                            <div class="grid-cell" data-value="5V5 - 50K"><span>5v5</span><span>50k</span></div>
+                            <div class="grid-cell" data-value="1V1 - 5K"><span>1v1</span><span>5k</span></div>
+                            <div class="grid-cell" data-value="1V1 - 10K"><span>1v1</span><span>10k</span></div>
+                            <div class="grid-cell" data-value="1V1 - 15K"><span>1v1</span><span>15k</span></div>
+                            <div class="grid-cell" data-value="1V1 - 25K"><span>1v1</span><span>25k</span></div>
+                            <div class="grid-cell" data-value="1V1 - 50K"><span>1v1</span><span>50k</span></div>
                         </div>
                     </div>
                     <div class="monitor-stand"></div>
@@ -331,8 +324,6 @@ export function renderMatchScreen(container) {
     gridCells.forEach(cell => {
         cell.addEventListener('click', () => {
             const selectedValue = cell.getAttribute('data-value');
-            
-            // Grid ကွက်ကို နှိပ်လိုက်ရင် room.js ထဲက function ကို ခေါ်မည်
             renderRoomScreen(container, selectedValue);
         });
     });
