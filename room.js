@@ -1,31 +1,35 @@
 import { renderMatchScreen } from './match.js';
 
 export function renderRoomScreen(container, roomTitleText, userDocData = {}) {
-    const upperTitle = roomTitleText.toUpperCase();
+    const upperTitle = roomTitleText ? roomTitleText.toUpperCase().trim() : '';
     
-    // Default 
+    // Default တန်ဖိုးများ
     let targetMode = '5v5';
     let targetKeyType = '5k';
 
-    // 1v1 လား 5v5 လား တိကျစွာ ခွဲထုတ်ခြင်း (1v1 ကို အရင်စစ်သည်)
-    if (upperTitle.includes('1V1') || upperTitle.includes('1VS1')) {
+    // ၁။ 1v1 လား 5v5 လား တိကျစွာ ခွဲထုတ်ခြင်း (Regex ဖြင့် ရှာဖွေခြင်း)
+    if (/1V1|1VS1/.test(upperTitle)) {
         targetMode = '1v1';
-    } else if (upperTitle.includes('5V5') || upperTitle.includes('5VS5')) {
+    } else if (/5V5|5VS5/.test(upperTitle)) {
         targetMode = '5v5';
     }
 
-    // Key Type များကို အကြီးမှ အငယ်သို့ စစ်ဆေးခြင်း (ဥပမာ 50k ပါတာကို 5k နဲ့ မရောသွားအောင်)
-    const possibleTypes = ['50K', '25K', '15K', '10K', '5K'];
-    for (let t of possibleTypes) {
-        if (upperTitle.includes(t)) {
-            targetKeyType = t.toLowerCase(); // '5k', '10k' စသည်ဖြင့် lowercase ပြောင်းသိမ်းမည်
-            break;
-        }
+    // ၂။ Key Type (50k, 25k, 15k, 10k, 5k) များကို ရှာဖွေခြင်း
+    if (/50K/.test(upperTitle)) {
+        targetKeyType = '50k';
+    } else if (/25K/.test(upperTitle)) {
+        targetKeyType = '25k';
+    } else if (/15K/.test(upperTitle)) {
+        targetKeyType = '15k';
+    } else if (/10K/.test(upperTitle)) {
+        targetKeyType = '10k';
+    } else if (/5K/.test(upperTitle)) {
+        targetKeyType = '5k';
     }
 
-    // User Data ထဲမှ သက်ဆိုင်ရာ Key ပမာဏကို ရှာဖွေခြင်း
+    // ၃။ User Data ထဲမှ သက်ဆိုင်ရာ Key ပမာဏကို ရှာဖွေခြင်း
     let keyCount = 0;
-    const directKeyField = `${targetMode}-${targetKeyType}`; // ဥပမာ: '1v1-5k' သို့မဟုတ် '5v5-50k'
+    const directKeyField = `${targetMode}-${targetKeyType}`; // ဥပမာ: '1v1-5k' သို့မဟုတ် '5v5-10k'
     
     if (userDocData[directKeyField] !== undefined) {
         keyCount = userDocData[directKeyField];
