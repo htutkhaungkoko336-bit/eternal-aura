@@ -1,30 +1,25 @@
+import { setKeyData, getKeyData, deductKey } from './keysStore.js';
+
 export async function initKeyManagement() {
     const keyCardBtn = document.getElementById('key-card-btn');
     if (!keyCardBtn) return;
 
-    // ဥပမာအနေနဲ့ user ရဲ့ id ကို localStorage သို့မဟုတ် global variable တစ်ခုခုကနေ ရယူတယ်လို့ ယူဆပါတယ်
-    // (ဥပမာ - localStorage.getItem('user_id') သို့မဟုတ် သက်ဆိုင်ရာ variable နဲ့ အစားထိုးနိုင်ပါတယ်)
     const userId = localStorage.getItem('user_id') || 'current_user_id'; 
-
-    let keyData = {
-        modes: {
-            '5v5': { '5k': 0, '10k': 0, '15k': 0, '25k': 0, '50k': 0 },
-            '1v1': { '5k': 0, '10k': 0, '15k': 0, '25k': 0, '50k': 0 },
-            'tournament': { 'pass': 0 }
-        }
-    };
 
     // Backend API ကနေ Key ဒေတာများကို လှမ်းဆွဲခြင်း
     try {
         const response = await fetch(`/api/get-keys?userId=${userId}`);
         const result = await response.json();
         if (result.success && result.keys) {
-            // Backend ကလာတဲ့ keys တွေကို keyData ထဲ ထည့်သွင်းခြင်း
-            keyData.modes = result.keys.modes || keyData.modes;
+            // Store ထဲသို့ ဒေတာ အဓိက သွင်းပေးခြင်း
+            setKeyData(result.keys);
         }
     } catch (error) {
         console.error("Failed to fetch keys from server:", error);
     }
+
+    // လက်ရှိ Store ထဲက ဒေတာကို ယူသုံးမည်
+    let keyData = getKeyData();
 
     function getKeyValues(type) {
         switch(type) {
@@ -75,7 +70,7 @@ export async function initKeyManagement() {
                 <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; border-bottom: 1px solid rgba(255, 255, 255, 0.1); padding-bottom: 10px;">
                     <div>
                         <h3 style="margin: 0; color: #38bdf8; font-size: 14px; letter-spacing: 0.5px; font-weight: 700;">KEY MANAGEMENT</h3>
-                        <p style="margin: 2px 0 0 0; font-size: 9.5px; color: #94a3b8;">Cyber  Secure Vault</p>
+                        <p style="margin: 2px 0 0 0; font-size: 9.5px; color: #94a3b8;">Cyber Secure Vault</p>
                     </div>
                     <div style="background: rgba(192, 132, 252, 0.15); border: 1px solid rgba(192, 132, 252, 0.4); padding: 5px 10px; border-radius: 10px; text-align: right;">
                         <div style="font-size: 8.5px; color: #d8b4fe; text-transform: uppercase; font-weight: 600;">TOTAL BALANCE</div>
@@ -215,7 +210,8 @@ export async function initKeyManagement() {
     const kpayPhoneInput = document.getElementById('kpay-phone');
 
     keyCardBtn.addEventListener('click', async () => {
-        // Modal ဖွင့်တိုင်းလည်း Server ကနေ ဒေတာအသစ် တစ်ခါထပ်လှမ်းဆွဲချင်ရင် ဒီမှာ fetch ထည့်လို့ရပါတယ်။
+        keyData = getKeyData(); // Modal ဖွင့်တိုင်း Store ထဲက Updated Data ကို ဆွဲသုံးမည်
+        updateUI(keyData);
         modalOverlay.style.opacity = '1';
         modalOverlay.style.visibility = 'visible';
         modalContent.style.transform = 'scale(1)';
@@ -362,7 +358,7 @@ export async function initKeyManagement() {
         }).join('');
     }
 
-const executeRefundBtn = document.getElementById('execute-refund-btn');
+    const executeRefundBtn = document.getElementById('execute-refund-btn');
 
     executeRefundBtn.addEventListener('click', async () => {
         const selectedVal = refundKeyValue.value;
@@ -389,11 +385,9 @@ const executeRefundBtn = document.getElementById('execute-refund-btn');
 
         if (keyData.modes[mode] && keyData.modes[mode][type] >= qty) {
             try {
-                // Loading ပြသရန် သို့မဟုတ် ခလုတ်ကို ယာယီပိတ်ရန်
                 executeRefundBtn.disabled = true;
                 executeRefundBtn.textContent = 'Sending...';
 
-                // Backend API သို့ ဒေတာများ ပို့ဆောင်ခြင်း (Telegram သို့ ပို့ပေးမည့် API)
                 const response = await fetch('/api/request-refund', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
@@ -411,6 +405,7 @@ const executeRefundBtn = document.getElementById('execute-refund-btn');
                 const result = await response.json();
 
                 if (result.success) {
+                    // Store ထဲက Key ကိုပါ နှုတ်ပေးဖို့ deductKey သုံးနိုင်သလို လက်ရှိ object ကိုလည်း နှုတ်လို့ရပါတယ်
                     keyData.modes[mode][type] -= qty;
                     updateUI(keyData);
                     alert(`Refund request submitted successfully! Telegram သို့ ပို့လိုက်ပါပြီ။`);

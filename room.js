@@ -1,4 +1,5 @@
 import { renderMatchScreen } from './match.js';
+import { getKeyData, deductKey } from './keysStore.js';
 
 export function renderRoomScreen(container, roomTitleText, userDocData = {}) {
     const upperTitle = roomTitleText.toUpperCase();
@@ -95,6 +96,7 @@ export function renderRoomScreen(container, roomTitleText, userDocData = {}) {
             <div class="room-title">${roomTitleText}</div>
             
             <div class="room-content-center">
+                <p>Required Key: <span style="color: #00f2ff; font-weight: bold;">${targetMode.toUpperCase()} - ${targetKeyType.toUpperCase()}</span></p>
             </div>
 
             <div class="room-bottom-actions">
@@ -110,15 +112,29 @@ export function renderRoomScreen(container, roomTitleText, userDocData = {}) {
         newRoomBtn.addEventListener('click', async () => {
             const userId = localStorage.getItem('user_id') || userDocData.userId || 'current_user_id';
             
+            // 1. Store ထဲကနေ လက်ရှိ Key လုံလောက်မှုရှိမရှိ စစ်ဆေးခြင်း
+            const currentStoreData = getKeyData();
+            const availableKeys = currentStoreData.modes[targetMode]?.[targetKeyType] || 0;
+
+            if (availableKeys <= 0) {
+                alert(`⚠️ ဒီ Room ဖွင့်ဖို့အတွက် ${targetMode.toUpperCase()} (${targetKeyType.toUpperCase()}) Key လက်ကျန် မလုံလောက်ပါ။`);
+                return;
+            }
+
             try {
                 newRoomBtn.disabled = true;
                 newRoomBtn.textContent = 'Creating...';
 
-                // လိုအပ်ပါက ဆာဗာသို့ အချက်အလက်ပို့ရန် (သို့) Room တည်ဆောက်သည့် Logic ထည့်ရန်
-                alert(`Successfully created room for ${roomTitleText}!`);
+                // (Optional) Server ဘက်ကို Room ဖန်တီးဖို့ API လှမ်းခေါ်တဲ့နေရာ
+                // const response = await fetch('/api/create-room', { ... });
+
+                // 2. Room အောင်မြင်စွာဆောက်ပြီးပါက Store ထဲက Key ကို တစ်ခု နှုတ်ပေးခြင်း
+                deductKey(targetMode, targetKeyType);
+
+                alert(`Successfully created room for ${roomTitleText}! (Key successfully deducted)`);
                 
                 // Room ထဲရောက်သွားသည့်အခါ လုပ်ဆောင်ရမည့် နောက်ထပ် Screen သို့ပြောင်းရန်
-                // ဥပမာ - renderMatchScreen(container, userDocData);
+                // renderMatchScreen(container, userDocData);
                 
             } catch (err) {
                 console.error("Room create error:", err);
