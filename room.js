@@ -1,19 +1,22 @@
 import { renderMatchScreen } from './match.js';
 
 export function renderRoomScreen(container, roomTitleText, userDocData = {}) {
-    // Room Title ကနေ Mode နဲ့ Key Type ကို ခွဲထုတ်ခြင်း
+    // Room Title ကနေ Mode နဲ့ Key Type ကို တိကျစွာ ခွဲထုတ်ခြင်း
     const upperTitle = roomTitleText.toUpperCase();
+    
+    // Default တန်ဖိုးများ
     let targetMode = '5v5';
     let targetKeyType = '5k';
 
-    // 1v1 သို့မဟုတ် 1vs1 (နှင့် 5v5 / 5vs5) ပါဝင်မှုများကိုပါ စစ်ဆေးရန်
+    // 1v1 သို့မဟုတ် 1vs1 ပါဝင်မှု ရှိမရှိ စစ်ဆေးခြင်း (1v1 ကို ဦးစားပေးစစ်ရန်)
     if (upperTitle.includes('1V1') || upperTitle.includes('1VS1')) {
         targetMode = '1v1';
     } else if (upperTitle.includes('5V5') || upperTitle.includes('5VS5')) {
         targetMode = '5v5';
     }
 
-    const possibleTypes = ['5k', '10k', '15k', '25k', '50k'];
+    // Key Type (5k, 10k, 15k, 25k, 50k) ကို စစ်ဆေးခြင်း
+    const possibleTypes = ['50k', '25k', '15k', '10k', '5k']; // ရှည်တဲ့နာမည်တွေကို အရင်စစ်ရန် (ဥပမာ 50k က 5k ထဲ မပါသွားအောင်)
     for (let t of possibleTypes) {
         if (upperTitle.includes(t.toUpperCase())) {
             targetKeyType = t;
@@ -21,9 +24,9 @@ export function renderRoomScreen(container, roomTitleText, userDocData = {}) {
         }
     }
 
-    // User မှာ ဒီ key ပမာဏ ရှိမရှိ စစ်ဆေးခြင်း
+    // User မှာ ဒီ targetMode နဲ့ targetKeyType နဲ့ ကိုက်ညီတဲ့ key ပမာဏ ရှိမရှိ စစ်ဆေးခြင်း
     let keyCount = 0;
-    const directKeyField = `${targetMode}-${targetKeyType}`;
+    const directKeyField = `${targetMode}-${targetKeyType}`; // ဥပမာ: '1v1-5k' သို့မဟုတ် '5v5-10k'
     
     if (userDocData[directKeyField] !== undefined) {
         keyCount = userDocData[directKeyField];
@@ -127,25 +130,19 @@ export function renderRoomScreen(container, roomTitleText, userDocData = {}) {
         </div>
     `;
 
-    // New Room ခလုတ် Event (Backend API သို့မဟုတ် Room ဖန်တီးမည့်လုပ်ငန်းစဉ်များ ချိတ်ရန်)
+    // New Room ခလုတ် Event
     const newRoomBtn = container.querySelector('#newRoomBtn');
     if (newRoomBtn) {
-        newRoomBtn.addEventListener('click', async () => {
+        newRoomBtn.addEventListener('click', () => {
             if (!hasKey) {
                 alert('Key မလုံလောက်ပါသဖြင့် Room အသစ်ဖန်တီး၍ မရပါ။');
                 return;
             }
-
-            // တကယ်လို့ Server ကိုပါ တစ်ခါတည်း API လှမ်းခေါ်ချင်ရင် ဒီနေရာမှာ ထည့်နိုင်ပါတယ်
-            console.log(`Creating new room for Mode: ${targetMode}, Type: ${targetKeyType}`);
-            alert('Creating a New Room Successfully!');
-            
-            // ဥပမာ - Room ဝင်ပြီးရင် Match Screen သို့မဟုတ် Game Room Screen သို့ ပြောင်းချင် Swicth လုပ်နိုင်ပါတယ်
-            // renderMatchScreen(container);
+            alert(`Creating a New Room for ${targetMode.toUpperCase()} - ${targetKeyType.toUpperCase()}...`);
         });
     }
 
-    // Cancel ခလုတ် Event (Match Screen သို့ ပြန်သွားရန်)
+    // Cancel ခလုတ် Event
     const cancelBtn = container.querySelector('#cancelBtn');
     if (cancelBtn) {
         cancelBtn.addEventListener('click', () => {
