@@ -1,35 +1,33 @@
 import { renderMatchScreen } from './match.js';
 
 export function renderRoomScreen(container, roomTitleText, userDocData = {}) {
-    const upperTitle = roomTitleText ? roomTitleText.toUpperCase().trim() : '';
-    
-    // Default တန်ဖိုးများ
+    // 1. Room ခေါင်းစဉ်က စာသားကို ရှင်းလင်းစွာရယူခြင်း (ဥပမာ: "1V1 - 50K")
+    const cleanTitle = roomTitleText ? roomTitleText.trim() : '';
+    const upperTitle = cleanTitle.toUpperCase();
+
+    // 2. Default တန်ဖိုးများ
     let targetMode = '5v5';
     let targetKeyType = '5k';
 
-    // ၁။ 1v1 လား 5v5 လား တိကျစွာ ခွဲထုတ်ခြင်း (Regex ဖြင့် ရှာဖွေခြင်း)
-    if (/1V1|1VS1/.test(upperTitle)) {
+    // 3. Room ခေါင်းစဉ်ထဲတွင် ပါရှိသည့် Mode ကို တိကျစွာ ခွဲထုတ်ခြင်း
+    if (upperTitle.includes('1V1') || upperTitle.includes('1VS1')) {
         targetMode = '1v1';
-    } else if (/5V5|5VS5/.test(upperTitle)) {
+    } else if (upperTitle.includes('5V5') || upperTitle.includes('5VS5')) {
         targetMode = '5v5';
     }
 
-    // ၂။ Key Type (50k, 25k, 15k, 10k, 5k) များကို ရှာဖွေခြင်း
-    if (/50K/.test(upperTitle)) {
-        targetKeyType = '50k';
-    } else if (/25K/.test(upperTitle)) {
-        targetKeyType = '25k';
-    } else if (/15K/.test(upperTitle)) {
-        targetKeyType = '15k';
-    } else if (/10K/.test(upperTitle)) {
-        targetKeyType = '10k';
-    } else if (/5K/.test(upperTitle)) {
-        targetKeyType = '5k';
+    // 4. Room ခေါင်းစဉ်ထဲတွင် ပါရှိသည့် Key Type (50k, 25k, 15k, 10k, 5k) များကို အကြီးမှအငယ်သို့ တိကျစွာ စစ်ဆေးခြင်း
+    const possibleTypes = ['50K', '25K', '15K', '10K', '5K'];
+    for (let t of possibleTypes) {
+        if (upperTitle.includes(t)) {
+            targetKeyType = t.toLowerCase(); // '5k', '10k', '15k', '25k', '50k'
+            break;
+        }
     }
 
-    // ၃။ User Data ထဲမှ သက်ဆိုင်ရာ Key ပမာဏကို ရှာဖွေခြင်း
+    // 5. User ဒေတာထဲမှ Room ခေါင်းစဉ်နဲ့ ကိုက်ညီသော Key ပမာဏကို တိုက်ရိုက်ရှာဖွေခြင်း
     let keyCount = 0;
-    const directKeyField = `${targetMode}-${targetKeyType}`; // ဥပမာ: '1v1-5k' သို့မဟုတ် '5v5-10k'
+    const directKeyField = `${targetMode}-${targetKeyType}`; // ဥပမာ: '1v1-50k' သို့မဟုတ် '5v5-5k'
     
     if (userDocData[directKeyField] !== undefined) {
         keyCount = userDocData[directKeyField];
@@ -114,7 +112,7 @@ export function renderRoomScreen(container, roomTitleText, userDocData = {}) {
         </style>
 
         <div class="room-screen-wrapper">
-            <div class="room-title">${roomTitleText}</div>
+            <div class="room-title">${cleanTitle}</div>
             
             <div class="room-content-center">
                 <div class="key-status-box">
@@ -141,7 +139,7 @@ export function renderRoomScreen(container, roomTitleText, userDocData = {}) {
                 alert('Key မလုံလောက်ပါသဖြင့် Room အသစ်ဖန်တီး၍ မရပါ။');
                 return;
             }
-            alert(`Creating a New Room for ${targetMode.toUpperCase()} - ${targetKeyType.toUpperCase()}...`);
+            alert(`Creating a New Room for ${cleanTitle}...`);
         });
     }
 
