@@ -37,18 +37,30 @@ export function renderRoomScreen(container, roomTitleText, userDocData = {}) {
                 box-sizing: border-box;
                 user-select: none;
             }
-            .room-title {
-                font-size: 22px;
-                font-weight: 800;
-                color: #00f2ff;
-                text-shadow: 0 0 10px rgba(0, 242, 255, 0.6);
-                margin-top: 10px;
-                letter-spacing: 1px;
+            /* ခေါင်းစဉ်အတွက် Button ပုံစံ လန်းလန်းလေး */
+            .room-title-card {
+                width: 100%;
+                max-width: 320px;
+                padding: 14px 20px;
+                background: linear-gradient(135deg, rgba(30, 41, 59, 0.9), rgba(15, 23, 42, 0.95));
+                border: 1px solid rgba(56, 189, 248, 0.4);
+                border-radius: 14px;
                 text-align: center;
+                box-shadow: 0 10px 25px rgba(0, 0, 0, 0.5), 0 0 15px rgba(56, 189, 248, 0.2);
+                margin-top: 15px;
+            }
+            .room-title {
+                font-size: 18px;
+                font-weight: 800;
+                background: linear-gradient(135deg, #38bdf8, #818cf8);
+                -webkit-background-clip: text;
+                -webkit-text-fill-color: transparent;
+                letter-spacing: 1px;
+                margin: 0;
             }
             .room-content-center {
-                font-size: 14px;
-                color: #a0a0c0;
+                font-size: 13.5px;
+                color: #94a3b8;
                 text-align: center;
                 width: 100%;
                 max-width: 300px;
@@ -68,7 +80,7 @@ export function renderRoomScreen(container, roomTitleText, userDocData = {}) {
             .room-btn {
                 flex: 1;
                 padding: 12px 0;
-                border-radius: 8px;
+                border-radius: 12px;
                 font-weight: 700;
                 font-size: 14px;
                 text-align: center;
@@ -80,23 +92,26 @@ export function renderRoomScreen(container, roomTitleText, userDocData = {}) {
                 transform: scale(1.03);
             }
             .btn-new-room {
-                background: linear-gradient(135deg, #7c3aed, #2563eb);
+                background: linear-gradient(135deg, #0284c7, #9333ea);
                 color: #fff;
-                box-shadow: 0 0 15px rgba(124, 58, 237, 0.5);
+                box-shadow: 0 4px 15px rgba(147, 51, 234, 0.4);
             }
             .btn-cancel {
-                background: #181824;
-                color: #ff007f;
-                border: 1px solid #ff007f66;
-                box-shadow: 0 0 10px rgba(255, 0, 127, 0.2);
+                background: rgba(30, 41, 59, 0.8);
+                color: #f43f5e;
+                border: 1px solid rgba(244, 63, 94, 0.4);
+                box-shadow: 0 4px 15px rgba(244, 63, 94, 0.15);
             }
         </style>
 
         <div class="room-screen-wrapper">
-            <div class="room-title">${roomTitleText}</div>
+            <!-- အပေါ်က ခေါင်းစဉ်ကို Button ပုံစံ ကတ်ပြားလေးအဖြစ် ပြောင်းထားသည် -->
+            <div class="room-title-card">
+                <h2 class="room-title">${roomTitleText}</h2>
+            </div>
             
             <div class="room-content-center">
-                <p>Required Key: <span style="color: #00f2ff; font-weight: bold;">${targetMode.toUpperCase()} - ${targetKeyType.toUpperCase()}</span></p>
+                <p>Required Key: <span style="color: #38bdf8; font-weight: bold;">${targetMode.toUpperCase()} - ${targetKeyType.toUpperCase()}</span></p>
             </div>
 
             <div class="room-bottom-actions">
@@ -125,16 +140,10 @@ export function renderRoomScreen(container, roomTitleText, userDocData = {}) {
                 newRoomBtn.disabled = true;
                 newRoomBtn.textContent = 'Creating...';
 
-                // (Optional) Server ဘက်ကို Room ဖန်တီးဖို့ API လှမ်းခေါ်တဲ့နေရာ
-                // const response = await fetch('/api/create-room', { ... });
-
                 // 2. Room အောင်မြင်စွာဆောက်ပြီးပါက Store ထဲက Key ကို တစ်ခု နှုတ်ပေးခြင်း
                 deductKey(targetMode, targetKeyType);
 
                 alert(`Successfully created room for ${roomTitleText}! (Key successfully deducted)`);
-                
-                // Room ထဲရောက်သွားသည့်အခါ လုပ်ဆောင်ရမည့် နောက်ထပ် Screen သို့ပြောင်းရန်
-                // renderMatchScreen(container, userDocData);
                 
             } catch (err) {
                 console.error("Room create error:", err);
