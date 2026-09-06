@@ -20,6 +20,7 @@ export function renderRoomScreen(container, roomTitleText, userDocData = {}) {
         }
     }
 
+    // Key အရေအတွက်ကို userDocData သို့မဟုတ် userDocData.modes ထဲမှ စစ်ဆေးခြင်း
     let keyCount = 0;
     const directKeyField = `${targetMode}-${targetKeyType}`;
     
@@ -115,24 +116,63 @@ export function renderRoomScreen(container, roomTitleText, userDocData = {}) {
                         Your Balance: <b>${keyCount} pcs</b>
                     </div>
                 </div>
-                <p style="margin-top: 10px;">${hasKey ? 'Room initialized successfully.<br>Ready to create a new room!' : '⚠️ ဒီ Room ကိုဖွင့်ရန် Key မလုံလောက်ပါ။'}</p>
+                <p style="margin-top: 10px;">${hasKey ? 'Room initialized successfully.<br>Ready to join / create room!' : '⚠️ ဒီ Room ကိုဖွင့်ရန် Key မလုံလောက်ပါ။'}</p>
             </div>
 
             <div class="room-bottom-actions">
-                <button class="room-btn btn-new-room" id="newRoomBtn" ${!hasKey ? 'disabled' : ''} style="${!hasKey ? 'opacity: 0.35; cursor: not-allowed; filter: grayscale(80%); box-shadow: none;' : 'cursor: pointer;'}">New Room</button>
+                <button class="room-btn btn-new-room" id="newRoomBtn" ${!hasKey ? 'disabled' : ''} style="${!hasKey ? 'opacity: 0.35; cursor: not-allowed; filter: grayscale(80%); box-shadow: none;' : 'cursor: pointer;'}">Join / Create</button>
                 <button class="room-btn btn-cancel" id="cancelBtn">Cancel</button>
             </div>
         </div>
     `;
 
+    // New Room / Join ခလုတ်ကို နှိပ်တဲ့အခါ Key စစ်ဆေးပြီး Room ထဲဝင်ရန် API သို့မဟုတ် Logic ထည့်ခြင်း
     const newRoomBtn = container.querySelector('#newRoomBtn');
     if (newRoomBtn) {
-        newRoomBtn.addEventListener('click', () => {
+        newRoomBtn.addEventListener('click', async () => {
             if (!hasKey) {
-                alert('Key မလုံလောက်ပါသဖြင့် Room အသစ်ဖန်တီး၍ မရပါ။');
+                alert('Key မလုံလောက်ပါသဖြင့် Room သို့ ဝင်ရောက်၍ မရပါ။');
                 return;
             }
-            alert(`Creating a New Room for ${targetMode.toUpperCase()} - ${targetKeyType.toUpperCase()}...`);
+
+            const userId = localStorage.getItem('user_id') || userDocData.userId || 'current_user_id';
+            
+            try {
+                newRoomBtn.disabled = true;
+                newRoomBtn.textContent = 'Joining...';
+
+                // ဆာဗာသို့ Room join ဖို့ Key ဖြတ်တောက်ရန် အချက်အလက်ပို့ခြင်း (Backend API ရှိပါက အသုံးပြုရန်)
+                /*
+                const response = await fetch('/api/join-room', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ userId, mode: targetMode, type: targetKeyType })
+                });
+                const result = await response.json();
+                if (!result.success) {
+                    alert(result.message || 'Room ဝင်ရောက်မှု မအောင်မြင်ပါ။');
+                    return;
+                }
+                */
+
+                // Local Data ထဲမှာ Key ကို ဖြတ်တောက်ခြင်း
+                if (userDocData.modes && userDocData.modes[targetMode]) {
+                    userDocData.modes[targetMode][targetKeyType] -= 1;
+                } else if (userDocData[directKeyField] !== undefined) {
+                    userDocData[directKeyField] -= 1;
+                }
+
+                alert(`Successfully joined the room for ${targetMode.toUpperCase()} - ${targetKeyType.toUpperCase()}!`);
+                
+                // Room ထဲရောက်သွားသည့်အခါ လုပ်ဆောင်ရမည့် နောက်ထပ် Screen သို့မဟုတ် Function ကို ဒီနေရာမှာ ဆက်ထည့်နိုင်ပါတယ်
+                
+            } catch (err) {
+                console.error("Room join error:", err);
+                alert('ဆာဗာသို့ ချိတ်ဆက်၍ မရပါ။');
+            } finally {
+                newRoomBtn.disabled = false;
+                newRoomBtn.textContent = 'Join / Create';
+            }
         });
     }
 
