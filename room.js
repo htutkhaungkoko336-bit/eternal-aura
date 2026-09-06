@@ -1,41 +1,7 @@
 import { renderMatchScreen } from './match.js';
 
 export function renderRoomScreen(container, roomTitleText, userDocData = {}) {
-    // 1. Room ခေါင်းစဉ်က စာသားကို ရှင်းလင်းစွာရယူခြင်း (ဥပမာ: "1V1 - 50K")
     const cleanTitle = roomTitleText ? roomTitleText.trim() : '';
-    const upperTitle = cleanTitle.toUpperCase();
-
-    // 2. Default တန်ဖိုးများ
-    let targetMode = '5v5';
-    let targetKeyType = '5k';
-
-    // 3. Room ခေါင်းစဉ်ထဲတွင် ပါရှိသည့် Mode ကို တိကျစွာ ခွဲထုတ်ခြင်း
-    if (upperTitle.includes('1V1') || upperTitle.includes('1VS1')) {
-        targetMode = '1v1';
-    } else if (upperTitle.includes('5V5') || upperTitle.includes('5VS5')) {
-        targetMode = '5v5';
-    }
-
-    // 4. Room ခေါင်းစဉ်ထဲတွင် ပါရှိသည့် Key Type (50k, 25k, 15k, 10k, 5k) များကို အကြီးမှအငယ်သို့ တိကျစွာ စစ်ဆေးခြင်း
-    const possibleTypes = ['50K', '25K', '15K', '10K', '5K'];
-    for (let t of possibleTypes) {
-        if (upperTitle.includes(t)) {
-            targetKeyType = t.toLowerCase(); // '5k', '10k', '15k', '25k', '50k'
-            break;
-        }
-    }
-
-    // 5. User ဒေတာထဲမှ Room ခေါင်းစဉ်နဲ့ ကိုက်ညီသော Key ပမာဏကို တိုက်ရိုက်ရှာဖွေခြင်း
-    let keyCount = 0;
-    const directKeyField = `${targetMode}-${targetKeyType}`; // ဥပမာ: '1v1-50k' သို့မဟုတ် '5v5-5k'
-    
-    if (userDocData[directKeyField] !== undefined) {
-        keyCount = userDocData[directKeyField];
-    } else if (userDocData.modes && userDocData.modes[targetMode]) {
-        keyCount = userDocData.modes[targetMode][targetKeyType] || 0;
-    }
-
-    const hasKey = keyCount > 0;
 
     container.innerHTML = `
         <style>
@@ -69,14 +35,6 @@ export function renderRoomScreen(container, roomTitleText, userDocData = {}) {
                 width: 100%;
                 max-width: 300px;
             }
-            .key-status-box {
-                background: rgba(15, 23, 42, 0.8);
-                border: 1px solid ${hasKey ? 'rgba(56, 189, 248, 0.4)' : 'rgba(239, 68, 68, 0.4)'};
-                padding: 12px 15px;
-                border-radius: 12px;
-                margin: 10px 0;
-                text-align: center;
-            }
             .room-bottom-actions {
                 display: flex;
                 gap: 15px;
@@ -92,9 +50,10 @@ export function renderRoomScreen(container, roomTitleText, userDocData = {}) {
                 font-size: 14px;
                 text-align: center;
                 border: none;
+                cursor: pointer;
                 transition: transform 0.2s, box-shadow 0.2s;
             }
-            .room-btn:not(:disabled):hover {
+            .room-btn:hover {
                 transform: scale(1.03);
             }
             .btn-new-room {
@@ -107,7 +66,6 @@ export function renderRoomScreen(container, roomTitleText, userDocData = {}) {
                 color: #ff007f;
                 border: 1px solid #ff007f66;
                 box-shadow: 0 0 10px rgba(255, 0, 127, 0.2);
-                cursor: pointer;
             }
         </style>
 
@@ -115,30 +73,20 @@ export function renderRoomScreen(container, roomTitleText, userDocData = {}) {
             <div class="room-title">${cleanTitle}</div>
             
             <div class="room-content-center">
-                <div class="key-status-box">
-                    <div style="font-size: 11px; color: #94a3b8;">Required Key: <span style="color: #fff; font-weight: bold;">${targetMode.toUpperCase()} (${targetKeyType.toUpperCase()})</span></div>
-                    <div style="font-size: 12px; margin-top: 6px; color: ${hasKey ? '#38bdf8' : '#ef4444'};">
-                        Your Balance: <b>${keyCount} pcs</b>
-                    </div>
-                </div>
-                <p style="margin-top: 10px;">${hasKey ? 'Room initialized successfully.<br>Ready to create a new room!' : '⚠️ ဒီ Room ကိုဖွင့်ရန် Key မလုံလောက်ပါ။'}</p>
+                <p style="margin-top: 10px; color: #38bdf8;">Room initialized successfully.<br>Ready to create a new room!</p>
             </div>
 
             <div class="room-bottom-actions">
-                <button class="room-btn btn-new-room" id="newRoomBtn" ${!hasKey ? 'disabled' : ''} style="${!hasKey ? 'opacity: 0.35; cursor: not-allowed; filter: grayscale(80%); box-shadow: none;' : 'cursor: pointer;'}">New Room</button>
+                <button class="room-btn btn-new-room" id="newRoomBtn">New Room</button>
                 <button class="room-btn btn-cancel" id="cancelBtn">Cancel</button>
             </div>
         </div>
     `;
 
-    // New Room ခလုတ် Event
+    // New Room ခလုတ် Event (Key စစ်ဆေးခြင်းမရှိတော့ဘဲ တိုက်ရိုက် ဖွင့်နိုင်ပါပြီ)
     const newRoomBtn = container.querySelector('#newRoomBtn');
     if (newRoomBtn) {
         newRoomBtn.addEventListener('click', () => {
-            if (!hasKey) {
-                alert('Key မလုံလောက်ပါသဖြင့် Room အသစ်ဖန်တီး၍ မရပါ။');
-                return;
-            }
             alert(`Creating a New Room for ${cleanTitle}...`);
         });
     }
