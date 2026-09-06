@@ -322,9 +322,9 @@ export function renderMatchScreen(container) {
 
     const gridCells = container.querySelectorAll('.grid-cell');
     gridCells.forEach(cell => {
-        cell.addEventListener('click', () => {
-            // နှိပ်လိုက်ရင် ဘာမှမဖြစ်စေရန် (Room ဆီသို့ မသွားစေရန်) ရပ်တန့်ထားသည်
-            return;
+        cell.addEventListener('click', (e) => {
+            e.stopPropagation(); // မော်နီတာကလစ်လုပ်တာပါ ထပ်မံမပါသွားအောင် တားဆီးသည်
+            return; // နှိပ်လိုက်ရင် ဘာမှမဖြစ်စေရန် ရပ်တန့်ထားသည်
         });
     });
 }
