@@ -62,11 +62,13 @@ export function renderRoomScreen(container, roomTitleText, userDocData = {}) {
                 font-size: 14px;
                 color: #a0a0c0;
                 text-align: center;
+                width: 100%;
+                max-width: 300px;
             }
             .key-status-box {
                 background: rgba(15, 23, 42, 0.8);
                 border: 1px solid ${hasKey ? 'rgba(56, 189, 248, 0.4)' : 'rgba(239, 68, 68, 0.4)'};
-                padding: 10px 15px;
+                padding: 12px 15px;
                 border-radius: 12px;
                 margin: 10px 0;
                 text-align: center;
@@ -111,11 +113,11 @@ export function renderRoomScreen(container, roomTitleText, userDocData = {}) {
             <div class="room-content-center">
                 <div class="key-status-box">
                     <div style="font-size: 11px; color: #94a3b8;">Required Key: <span style="color: #fff; font-weight: bold;">${targetMode.toUpperCase()} (${targetKeyType.toUpperCase()})</span></div>
-                    <div style="font-size: 12px; margin-top: 4px; color: ${hasKey ? '#38bdf8' : '#ef4444'};">
+                    <div style="font-size: 12px; margin-top: 6px; color: ${hasKey ? '#38bdf8' : '#ef4444'};">
                         Your Balance: <b>${keyCount} pcs</b>
                     </div>
                 </div>
-                <p>${hasKey ? 'Room initialized successfully.<br>Ready to create a new room!' : '⚠️ ဒီ Room ကိုဖွင့်ရန် Key မလုံလောက်ပါ။'}</p>
+                <p style="margin-top: 10px;">${hasKey ? 'Room initialized successfully.<br>Ready to create a new room!' : '⚠️ ဒီ Room ကိုဖွင့်ရန် Key မလုံလောက်ပါ။'}</p>
             </div>
 
             <div class="room-bottom-actions">
@@ -125,20 +127,29 @@ export function renderRoomScreen(container, roomTitleText, userDocData = {}) {
         </div>
     `;
 
-    // New Room ခလုတ် Event
+    // New Room ခလုတ် Event (Backend API သို့မဟုတ် Room ဖန်တီးမည့်လုပ်ငန်းစဉ်များ ချိတ်ရန်)
     const newRoomBtn = container.querySelector('#newRoomBtn');
     if (newRoomBtn) {
-        newRoomBtn.addEventListener('click', () => {
+        newRoomBtn.addEventListener('click', async () => {
             if (!hasKey) {
                 alert('Key မလုံလောက်ပါသဖြင့် Room အသစ်ဖန်တီး၍ မရပါ။');
                 return;
             }
-            alert('Creating a New Room...');
+
+            // တကယ်လို့ Server ကိုပါ တစ်ခါတည်း API လှမ်းခေါ်ချင်ရင် ဒီနေရာမှာ ထည့်နိုင်ပါတယ်
+            console.log(`Creating new room for Mode: ${targetMode}, Type: ${targetKeyType}`);
+            alert('Creating a New Room Successfully!');
+            
+            // ဥပမာ - Room ဝင်ပြီးရင် Match Screen သို့မဟုတ် Game Room Screen သို့ ပြောင်းချင် Swicth လုပ်နိုင်ပါတယ်
+            // renderMatchScreen(container);
         });
     }
 
-    // Cancel ခလုတ် Event
-    container.querySelector('#cancelBtn').addEventListener('click', () => {
-        renderMatchScreen(container);
-    });
+    // Cancel ခလုတ် Event (Match Screen သို့ ပြန်သွားရန်)
+    const cancelBtn = container.querySelector('#cancelBtn');
+    if (cancelBtn) {
+        cancelBtn.addEventListener('click', () => {
+            renderMatchScreen(container);
+        });
+    }
 }
