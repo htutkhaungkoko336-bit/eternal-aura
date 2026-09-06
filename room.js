@@ -4,7 +4,6 @@ import { getKeyData, deductKey } from './keysStore.js';
 export function renderRoomScreen(container, roomTitleText, userDocData = {}) {
     const upperTitle = roomTitleText.toUpperCase();
     
-    // ခေါင်းစဉ်မှာ ROOM ပါမလာရင် အလိုအလျောက် ဖြည့်စွက်ပေးရန်
     let displayTitle = upperTitle;
     if (!displayTitle.includes('ROOM')) {
         displayTitle = `${displayTitle} ROOM`;
@@ -42,28 +41,6 @@ export function renderRoomScreen(container, roomTitleText, userDocData = {}) {
                 padding: 20px;
                 box-sizing: border-box;
                 user-select: none;
-            }
-            /* လေးထောင့်ပုံစံ ပိုကြီးပြီး လန်းတဲ့ ခေါင်းစဉ်ကတ်ပြား */
-            .room-title-card {
-                width: 100%;
-                max-width: 340px;
-                padding: 18px 15px;
-                background: linear-gradient(135deg, rgba(15, 23, 42, 0.95), rgba(30, 41, 59, 0.9));
-                border: 2px solid rgba(56, 189, 248, 0.6);
-                border-radius: 12px;
-                text-align: center;
-                box-shadow: 0 10px 30px rgba(0, 0, 0, 0.6), 0 0 20px rgba(56, 189, 248, 0.3);
-                margin-top: 15px;
-            }
-            .room-title {
-                font-size: 22px;
-                font-weight: 900;
-                background: linear-gradient(135deg, #38bdf8, #818cf8);
-                -webkit-background-clip: text;
-                -webkit-text-fill-color: transparent;
-                letter-spacing: 1.5px;
-                margin: 0;
-                text-transform: uppercase;
             }
             .room-content-center {
                 font-size: 13.5px;
@@ -112,9 +89,11 @@ export function renderRoomScreen(container, roomTitleText, userDocData = {}) {
         </style>
 
         <div class="room-screen-wrapper">
-            <!-- လေးထောင့်ပုံစံကြီးပြီး ROOM ပါဝင်သော ခေါင်းစဉ် -->
-            <div class="room-title-card">
-                <h2 class="room-title">${displayTitle}</h2>
+            <!-- Eternal Aura Header Box ပုံစံတူ ခေါင်းစဉ် -->
+            <div style="position: relative; border: 2px solid #38bdf8; border-radius: 4px; padding: 12px 16px; margin-top: 10px; background-color: rgba(15, 23, 42, 0.8); text-align: center; width: 100%; max-width: 320px; box-sizing: border-box; box-shadow: 0 0 10px rgba(56, 189, 248, 0.3);">
+                <div style="position: absolute; top: -3px; left: -3px; width: 6px; height: 6px; background-color: #38bdf8;"></div>
+                <div style="position: absolute; bottom: -3px; right: -3px; width: 6px; height: 6px; background-color: #38bdf8;"></div>
+                <h2 style="color: #f8fafc; font-size: 20px; font-weight: 800; letter-spacing: 1px; margin: 0; text-transform: uppercase; background: linear-gradient(to right, #38bdf8, #818cf8); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">${displayTitle}</h2>
             </div>
             
             <div class="room-content-center">
@@ -128,7 +107,6 @@ export function renderRoomScreen(container, roomTitleText, userDocData = {}) {
         </div>
     `;
 
-    // Create Room ခလုတ်ကို နှိပ်တဲ့အခါ
     const newRoomBtn = container.querySelector('#newRoomBtn');
     if (newRoomBtn) {
         newRoomBtn.addEventListener('click', async () => {
