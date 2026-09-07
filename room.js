@@ -71,7 +71,6 @@ export function renderRoomScreen(container, roomTitleText, userDocData = {}) {
                 }
                 .ios-room-card {
                     background: linear-gradient(135deg, rgba(15, 23, 42, 0.9), rgba(30, 41, 59, 0.8));
-                    /* Create Room ခလုတ်လိုမျိုး အပြာနဲ့ ခရမ်း နှစ်ရောင်စပ် Gradient Border စတိုင် */
                     border: 2px solid transparent;
                     border-image: linear-gradient(135deg, #0284c7, #9333ea) 1;
                     border-radius: 12px;
@@ -114,24 +113,26 @@ export function renderRoomScreen(container, roomTitleText, userDocData = {}) {
                     text-overflow: ellipsis;
                     white-space: nowrap;
                 }
+                /* VS Badge ကို အပြာရောင် Theme ပုံစံသို့ ပြောင်းထားသည် */
                 .vs-badge {
                     font-size: 10px;
                     font-weight: 900;
-                    color: #f43f5e;
-                    background: rgba(244, 63, 94, 0.15);
+                    color: #38bdf8;
+                    background: rgba(56, 189, 248, 0.15);
                     padding: 3px 6px;
                     border-radius: 6px;
-                    border: 1px solid rgba(244, 63, 94, 0.3);
+                    border: 1px solid rgba(56, 189, 248, 0.4);
                 }
                 .right-action-group {
                     display: flex;
                     align-items: center;
                     gap: 6px;
                 }
+                /* Cancel button ကို အပြာရောင် Theme သို့ ပြောင်းထားသည် */
                 .card-cancel-btn {
-                    background: rgba(147, 51, 234, 0.1);
-                    color: #c084fc;
-                    border: 1px solid rgba(147, 51, 234, 0.4);
+                    background: rgba(2, 132, 199, 0.15);
+                    color: #38bdf8;
+                    border: 1px solid rgba(56, 189, 248, 0.4);
                     padding: 4px 8px;
                     border-radius: 6px;
                     font-size: 10px;
@@ -140,7 +141,7 @@ export function renderRoomScreen(container, roomTitleText, userDocData = {}) {
                     white-space: nowrap;
                 }
                 .card-cancel-btn:hover {
-                    background: rgba(147, 51, 234, 0.25);
+                    background: rgba(2, 132, 199, 0.3);
                 }
                 .card-join-btn {
                     background: linear-gradient(135deg, #0284c7, #9333ea);
@@ -182,15 +183,15 @@ export function renderRoomScreen(container, roomTitleText, userDocData = {}) {
                     color: ${hasKey ? '#fff' : '#64748b'};
                     cursor: ${hasKey ? 'pointer' : 'not-allowed'};
                 }
+                /* Back ခလုတ်ကို အပြာရောင်အလင်းပါတဲ့ ဘောင်နဲ့ စတိုင်ပြောင်းထားသည် */
                 .btn-cancel {
-                    /* Back ခလုတ်အတွက် ခရမ်းရောင်အလင်းပါတဲ့ Dark background နဲ့ ခရမ်းဖျော့ရောင် ဘောင်စတိုင် */
                     background: linear-gradient(135deg, rgba(30, 41, 59, 0.9), rgba(15, 23, 42, 0.9));
-                    color: #e2e8f0;
-                    border: 1px solid rgba(147, 51, 234, 0.4);
+                    color: #38bdf8;
+                    border: 1px solid rgba(56, 189, 248, 0.4);
                 }
                 .btn-cancel:hover {
-                    background: rgba(147, 51, 234, 0.15);
-                    border-color: rgba(147, 51, 234, 0.7);
+                    background: rgba(2, 132, 199, 0.15);
+                    border-color: rgba(56, 189, 248, 0.7);
                 }
             </style>
 
