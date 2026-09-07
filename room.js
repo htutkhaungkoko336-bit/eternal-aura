@@ -9,15 +9,16 @@ export function renderRoomScreen(container, roomTitleText, userDocData = {}) {
         displayTitle = `${displayTitle} ROOM`;
     }
 
+    // Dynamic ဖြစ်အောင် Title ထဲကနေ Mode (1v1 သို့မဟုတ် 5v5) ကို ရှာဖွေခြင်း
     let targetMode = '5v5';
-    let targetKeyType = '5k';
-
     if (upperTitle.includes('1V1') || upperTitle.includes('1VS1')) {
         targetMode = '1v1';
     } else if (upperTitle.includes('5V5') || upperTitle.includes('5VS5')) {
         targetMode = '5v5';
     }
 
+    // Dynamic ဖြစ်အောင် Key Type (50k, 25k, 15k, 10k, 5k) ကို ရှာဖွေခြင်း
+    let targetKeyType = '5k';
     const possibleTypes = ['50k', '25k', '15k', '10k', '5k'];
     for (let t of possibleTypes) {
         if (upperTitle.includes(t.toUpperCase())) {
@@ -35,10 +36,11 @@ export function renderRoomScreen(container, roomTitleText, userDocData = {}) {
     const availableKeys = currentStoreData.modes[targetMode]?.[targetKeyType] || 0;
     const hasKey = availableKeys > 0;
 
-    const userName = userDocData.userName || userDocData.name || 'Player';
-    const userAvatar = userDocData.photoURL || userDocData.avatar || 'FrontLogo.jpg';
+    // Default user details
+    const defaultUserName = userDocData.userName || userDocData.name || 'Player';
+    const defaultUserAvatar = userDocData.photoURL || userDocData.avatar || 'FrontLogo.jpg';
 
-    function renderScreenHTML(isCreated = false) {
+    function renderScreenHTML(isCreated = false, currentUserName = defaultUserName, currentUserAvatar = defaultUserAvatar) {
         return `
             <style>
                 .room-screen-wrapper {
@@ -108,19 +110,6 @@ export function renderRoomScreen(container, roomTitleText, userDocData = {}) {
                     background: #1e293b;
                     box-shadow: 0 0 8px rgba(56, 189, 248, 0.4);
                 }
-                .mystery-avatar {
-                    width: 40px;
-                    height: 40px;
-                    border-radius: 8px;
-                    border: 2px dashed rgba(148, 163, 184, 0.5);
-                    display: flex;
-                    align-items: center;
-                    justify-content: center;
-                    font-size: 16px;
-                    font-weight: bold;
-                    color: #94a3b8;
-                    background: rgba(30, 41, 59, 0.5);
-                }
                 .player-name {
                     font-size: 11.5px;
                     font-weight: 600;
@@ -139,7 +128,6 @@ export function renderRoomScreen(container, roomTitleText, userDocData = {}) {
                     border-radius: 6px;
                     border: 1px solid rgba(244, 63, 94, 0.3);
                 }
-                /* Waiting နဲ့ Cancel ကို အတန်းလိုက် တူတူပေါ်စေရန် ပြင်ဆင်ထားသော ပုံစံ */
                 .right-action-group {
                     display: flex;
                     align-items: center;
@@ -196,7 +184,6 @@ export function renderRoomScreen(container, roomTitleText, userDocData = {}) {
             </style>
 
             <div class="room-screen-wrapper">
-                <!-- Header Box -->
                 <div style="position: relative; border: 2px solid #38bdf8; border-radius: 6px; padding: 10px 14px; margin-top: 10px; background-color: rgba(15, 23, 42, 0.8); text-align: center; width: 100%; max-width: 330px; box-sizing: border-box; box-shadow: 0 0 10px rgba(56, 189, 248, 0.3);">
                     <div style="position: absolute; top: -3px; left: -3px; width: 6px; height: 6px; background-color: #38bdf8;"></div>
                     <div style="position: absolute; bottom: -3px; right: -3px; width: 6px; height: 6px; background-color: #38bdf8;"></div>
@@ -208,8 +195,8 @@ export function renderRoomScreen(container, roomTitleText, userDocData = {}) {
                         <div class="ios-room-card">
                             <div class="matchup-container">
                                 <div class="player-side">
-                                    <img src="${userAvatar}" alt="Logo" class="player-avatar" onerror="this.src='FrontLogo.jpg'">
-                                    <span class="player-name">${userName}</span>
+                                    <img src="${currentUserAvatar}" alt="Logo" class="player-avatar" onerror="this.src='FrontLogo.jpg'">
+                                    <span class="player-name">${currentUserName}</span>
                                 </div>
                                 <div class="vs-badge">VS</div>
                                 <div class="player-side right">
@@ -248,9 +235,38 @@ export function renderRoomScreen(container, roomTitleText, userDocData = {}) {
                     newRoomBtn.disabled = true;
                     newRoomBtn.textContent = 'Creating...';
 
+                    // Backend API သို့ Room ဖန်တီးရန် လှမ်းခေါ်ခြင်း (Registration ထဲက Logo နဲ့ Name ကို ယူမည်)
+                    const userId = userDocData.userId || userDocData.id;
+                    const response = await fetch('/api/create-room', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({
+                            userId: userId,
+                            roomTitle: displayTitle,
+                            targetMode: targetMode,          // ဥပမာ - '5v5'
+                            targetKeyType: targetKeyType,    // ဥပမာ - '50k'
+                            boType: boType
+                        })
+                    });
+
+                    const result = await response.json();
+
+                    if (!result.success) {
+                        alert(result.message || 'Room ဖန်တီး၍ မရပါ');
+                        newRoomBtn.disabled = false;
+                        newRoomBtn.textContent = 'Create Room';
+                        return;
+                    }
+
+                    // Local key ကိုလည်း နှုတ်ပေးရန်
                     deductKey(targetMode, targetKeyType);
 
-                    container.innerHTML = renderScreenHTML(true);
+                    // Backend မှ ပြန်လာသော Registration ၏ Team Name နှင့် Logo ကို ယူသုံးမည်
+                    const finalTeamName = result.roomData?.teamName || defaultUserName;
+                    const finalTeamLogo = result.roomData?.teamLogo || defaultUserAvatar;
+
+                    // Screen ကို Room Created ပုံစံသို့ ပြောင်းလဲပြသခြင်း
+                    container.innerHTML = renderScreenHTML(true, finalTeamName, finalTeamLogo);
                     attachEventListeners();
                     
                 } catch (err) {
@@ -269,7 +285,7 @@ export function renderRoomScreen(container, roomTitleText, userDocData = {}) {
             });
         }
 
-        const cardCancelBtn = container.querySelector('#cardCancelBtn');
+        const cardCancelBtn = container.querySelector('#cardCardCancelBtn') || container.querySelector('#cardCancelBtn');
         if (cardCancelBtn) {
             cardCancelBtn.addEventListener('click', () => {
                 container.innerHTML = renderScreenHTML(false);
