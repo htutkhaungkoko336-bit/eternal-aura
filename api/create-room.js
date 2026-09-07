@@ -22,31 +22,39 @@ function getYangonTimeStr() {
 }
 
 module.exports = async function handler(req, res) {
-    // 🔥 1. GET Method - active_rooms ထဲက Room အားလုံးကို Global မြင်ရအောင် လှမ်းထုတ်ပေးခြင်း
-    if (req.method === 'GET') {
+    const { method } = req;
+
+    // 🔥 1. GET Method - Global Room များကို Mode နဲ့ KeyType အလိုက် လှမ်းထုတ်ပေးခြင်း
+    if (method === 'GET') {
         try {
-            const roomsSnapshot = await db.collection('active_rooms').get();
-            let activeRooms = [];
-            
-            roomsSnapshot.forEach(doc => {
-                activeRooms.push({
-                    hostId: doc.id,
+            const { mode, keyType } = req.query;
+            let query = db.collection('active_rooms');
+
+            if (mode) {
+                query = query.where('mode', '==', mode);
+            }
+            if (keyType) {
+                query = query.where('keyType', '==', keyType);
+            }
+
+            const snapshot = await query.get();
+            let rooms = [];
+            snapshot.forEach(doc => {
+                rooms.push({
+                    id: doc.id,
                     ...doc.data()
                 });
             });
 
-            return res.status(200).json({ 
-                success: true, 
-                rooms: activeRooms 
-            });
+            return res.status(200).json({ success: true, rooms });
         } catch (error) {
-            console.error("Fetch Rooms Error:", error);
+            console.error("Get Rooms Error:", error);
             return res.status(500).json({ success: false, message: "Server Error", error: error.message });
         }
     }
 
-    // 🔥 2. POST Method - Room အသစ်ဖန်တီးခြင်း (အရင်က ကုဒ်အတိုင်း)
-    if (req.method === 'POST') {
+    // 🔥 2. POST Method - Room အသစ်ဖန်တီးပြီး active_rooms ထဲ သိမ်းမည် (Cancel မလုပ်မချင်း ဆက်ရှိနေမည်)
+    if (method === 'POST') {
         try {
             const { userId, roomTitle, targetMode, targetKeyType, boType } = req.body;
 
@@ -128,6 +136,7 @@ module.exports = async function handler(req, res) {
                 createdAt: getYangonTimeStr()
             };
 
+            // userId ကို Doc ID အဖြစ်သုံး၍ active_rooms ထဲ သိမ်းမည် (Cancel မလုပ်မချင်း ဤနေရာတွင် ရှိနေမည်)
             await db.collection('active_rooms').doc(userId).set(roomData);
 
             return res.status(200).json({ 
@@ -142,6 +151,26 @@ module.exports = async function handler(req, res) {
         }
     }
 
-    res.setHeader('Allow', ['GET', 'POST']);
-    return res.status(405).json({ success: false, message: `Method ${req.method} not allowed` });
+    // 🔥 3. DELETE Method - Cancel နှိပ်လိုက်မှ active_rooms ထဲမှ Room ကို ဖျက်ပစ်ခြင်း
+    if (method === 'DELETE') {
+        try {
+            const { userId } = req.body; // သို့မဟုတ် URL query မှတစ်ဆင့်
+            if (!userId) {
+                return res.status(400).json({ success: false, message: "Missing userId for cancellation" });
+            }
+
+            await db.collection('active_rooms').doc(userId).delete();
+
+            return res.status(200).json({ 
+                success: true, 
+                message: "Room cancelled and deleted successfully" 
+            });
+        } catch (error) {
+            console.error("Delete Room Error:", error);
+            return res.status(500).json({ success: false, message: "Server Error", error: error.message });
+        }
+    }
+
+    res.setHeader('Allow', ['GET', 'POST', 'DELETE']);
+    return res.status(405).json({ success: false, message: `Method ${method} not allowed` });
 };

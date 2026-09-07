@@ -39,6 +39,9 @@ export function renderRoomScreen(container, roomTitleText, userDocData = {}) {
     // Default user details
     const defaultUserName = userDocData.userName || userDocData.name || 'Player';
     const defaultUserAvatar = userDocData.photoURL || userDocData.avatar || 'FrontLogo.jpg';
+    
+    // User ID ကို ရှာယူခြင်း
+    const userId = userDocData.userId || userDocData.id || localStorage.getItem('userId');
 
     function renderScreenHTML(isCreated = false, currentUserName = defaultUserName, currentUserAvatar = defaultUserAvatar) {
         return `
@@ -68,22 +71,19 @@ export function renderRoomScreen(container, roomTitleText, userDocData = {}) {
                     justify-content: center;
                     align-items: center;
                     flex: 1;
+                    gap: 10px;
+                    overflow-y: auto;
                 }
                 .ios-room-card {
                     background: linear-gradient(135deg, rgba(15, 23, 42, 0.9), rgba(30, 41, 59, 0.8));
                     border: 2px solid transparent;
                     border-image: linear-gradient(135deg, #38bdf8, #9333ea, #f43f5e) 1;
                     border-radius: 12px;
-                    padding: 16px 20px;
+                    padding: 12px 16px;
                     width: 100%;
                     max-width: 330px;
                     box-shadow: 0 0 20px rgba(56, 189, 248, 0.2), inset 0 0 10px rgba(147, 51, 234, 0.1);
-                    animation: fadeIn 0.25s ease-in-out;
                     box-sizing: border-box;
-                }
-                @keyframes fadeIn {
-                    from { opacity: 0; transform: scale(0.96); }
-                    to { opacity: 1; transform: scale(1); }
                 }
                 .matchup-container {
                     display: flex;
@@ -102,16 +102,15 @@ export function renderRoomScreen(container, roomTitleText, userDocData = {}) {
                     text-align: right;
                 }
                 .player-avatar {
-                    width: 40px;
-                    height: 40px;
+                    width: 36px;
+                    height: 36px;
                     border-radius: 8px;
                     border: 2px solid #38bdf8;
                     object-fit: cover;
                     background: #1e293b;
-                    box-shadow: 0 0 8px rgba(56, 189, 248, 0.4);
                 }
                 .player-name {
-                    font-size: 11.5px;
+                    font-size: 11px;
                     font-weight: 600;
                     color: #f8fafc;
                     max-width: 75px;
@@ -120,33 +119,32 @@ export function renderRoomScreen(container, roomTitleText, userDocData = {}) {
                     white-space: nowrap;
                 }
                 .vs-badge {
-                    font-size: 11px;
+                    font-size: 10px;
                     font-weight: 900;
                     color: #f43f5e;
                     background: rgba(244, 63, 94, 0.15);
-                    padding: 4px 6px;
+                    padding: 3px 6px;
                     border-radius: 6px;
                     border: 1px solid rgba(244, 63, 94, 0.3);
                 }
                 .right-action-group {
                     display: flex;
                     align-items: center;
-                    gap: 8px;
+                    gap: 6px;
                 }
                 .card-cancel-btn {
-                    background: rgba(56, 189, 248, 0.1);
-                    color: #38bdf8;
-                    border: 1px solid rgba(56, 189, 248, 0.5);
-                    padding: 5px 10px;
+                    background: rgba(244, 63, 94, 0.1);
+                    color: #f43f5e;
+                    border: 1px solid rgba(244, 63, 94, 0.5);
+                    padding: 4px 8px;
                     border-radius: 6px;
-                    font-size: 11px;
+                    font-size: 10px;
                     font-weight: 700;
                     cursor: pointer;
-                    transition: background 0.2s;
                     white-space: nowrap;
                 }
                 .card-cancel-btn:hover {
-                    background: rgba(56, 189, 248, 0.25);
+                    background: rgba(244, 63, 94, 0.25);
                 }
                 .room-bottom-actions {
                     display: flex;
@@ -163,31 +161,23 @@ export function renderRoomScreen(container, roomTitleText, userDocData = {}) {
                     font-size: 14px;
                     text-align: center;
                     border: none;
-                    transition: transform 0.2s, box-shadow 0.2s;
                     cursor: pointer;
-                }
-                .room-btn:hover:not(:disabled) {
-                    transform: scale(1.02);
                 }
                 .btn-new-room {
                     background: ${isCreated ? '#1e293b' : 'linear-gradient(135deg, #0284c7, #9333ea)'};
                     color: ${isCreated ? '#64748b' : '#fff'};
-                    box-shadow: ${isCreated ? 'none' : '0 4px 15px rgba(147, 51, 234, 0.4)'};
                     cursor: ${isCreated ? 'not-allowed' : 'pointer'};
                 }
                 .btn-cancel {
                     background: rgba(30, 41, 59, 0.9);
                     color: #f43f5e;
                     border: 1px solid rgba(244, 63, 94, 0.4);
-                    box-shadow: 0 4px 15px rgba(244, 63, 94, 0.15);
                 }
             </style>
 
             <div class="room-screen-wrapper">
-                <div style="position: relative; border: 2px solid #38bdf8; border-radius: 6px; padding: 10px 14px; margin-top: 10px; background-color: rgba(15, 23, 42, 0.8); text-align: center; width: 100%; max-width: 330px; box-sizing: border-box; box-shadow: 0 0 10px rgba(56, 189, 248, 0.3);">
-                    <div style="position: absolute; top: -3px; left: -3px; width: 6px; height: 6px; background-color: #38bdf8;"></div>
-                    <div style="position: absolute; bottom: -3px; right: -3px; width: 6px; height: 6px; background-color: #38bdf8;"></div>
-                    <h2 style="color: #f8fafc; font-size: 17px; font-weight: 800; letter-spacing: 1px; margin: 0; text-transform: uppercase; background: linear-gradient(to right, #38bdf8, #818cf8); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">${displayTitle} (${boType})</h2>
+                <div style="position: relative; border: 2px solid #38bdf8; border-radius: 6px; padding: 10px 14px; margin-top: 10px; background-color: rgba(15, 23, 42, 0.8); text-align: center; width: 100%; max-width: 330px; box-sizing: border-box;">
+                    <h2 style="color: #f8fafc; font-size: 17px; font-weight: 800; margin: 0; text-transform: uppercase; background: linear-gradient(to right, #38bdf8, #818cf8); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">${displayTitle} (${boType})</h2>
                 </div>
                 
                 <div class="room-content-center" id="roomContentArea">
@@ -202,16 +192,20 @@ export function renderRoomScreen(container, roomTitleText, userDocData = {}) {
                                 <div class="player-side right">
                                     <div class="right-action-group">
                                         <span class="player-name" style="color: #94a3b8;">Waiting...</span>
-                                        <button class="card-cancel-btn" id="cardCancelBtn">Cancel</button>
+                                        <button class="card-cancel-btn" data-hostid="${userId}">Cancel</button>
                                     </div>
                                 </div>
                             </div>
                         </div>
                     ` : `
-                        <p style="margin-bottom: 6px;">Required Key: <span style="color: #38bdf8; font-weight: bold;">${targetMode.toUpperCase()} - ${targetKeyType.toUpperCase()}</span></p>
-                        <p style="font-size: 11.5px; color: ${hasKey ? '#10b981' : '#f43f5e'}; margin: 0;">
-                            Available Keys: ${availableKeys}
-                        </p>
+                        <div id="globalRoomsList" style="width: 100%; display: flex; flex-direction: column; gap: 8px;">
+                            <p style="margin-bottom: 4px;">Required Key: <span style="color: #38bdf8; font-weight: bold;">${targetMode.toUpperCase()} - ${targetKeyType.toUpperCase()}</span></p>
+                            <p style="font-size: 11.5px; color: ${hasKey ? '#10b981' : '#f43f5e'}; margin: 0 0 10px 0;">Available Keys: ${availableKeys}</p>
+                            <div style="font-size: 11px; color: #38bdf8; margin-bottom: 4px; text-align: left; width: 100%;">Active Rooms:</div>
+                            <div id="roomsContainer" style="width: 100%; display: flex; flex-direction: column; gap: 8px;">
+                                <span style="color: #64748b; font-size: 11px;">Loading rooms...</span>
+                            </div>
+                        </div>
                     `}
                 </div>
 
@@ -219,13 +213,106 @@ export function renderRoomScreen(container, roomTitleText, userDocData = {}) {
                     <button class="room-btn btn-new-room" id="newRoomBtn" ${!hasKey || isCreated ? 'disabled' : ''}>
                         ${isCreated ? 'Room Created' : (hasKey ? 'Create Room' : 'No Key')}
                     </button>
-                    <button class="room-btn btn-cancel" id="cancelBtn">Cancel</button>
+                    <button class="room-btn btn-cancel" id="cancelBtn">Back</button>
                 </div>
             </div>
         `;
     }
 
-    container.innerHTML = renderScreenHTML(false);
+    // Global Active Rooms များကို Backend မှ ဆွဲထုတ်ပြသသည့် Function
+    async function fetchAndRenderGlobalRooms() {
+        const roomsContainer = container.querySelector('#roomsContainer');
+        if (!roomsContainer) return;
+
+        try {
+            const response = await fetch(`/api/create-room?mode=${targetMode}&keyType=${targetKeyType}`);
+            const data = await response.json();
+
+            if (data.success && data.rooms && data.rooms.length > 0) {
+                roomsContainer.innerHTML = data.rooms.map(room => `
+                    <div class="ios-room-card" style="max-width: 100%;">
+                        <div class="matchup-container">
+                            <div class="player-side">
+                                <img src="${room.teamLogo || 'FrontLogo.jpg'}" alt="Logo" class="player-avatar" onerror="this.src='FrontLogo.jpg'">
+                                <span class="player-name">${room.teamName || 'Player'}</span>
+                            </div>
+                            <div class="vs-badge">VS</div>
+                            <div class="player-side right">
+                                <div class="right-action-group">
+                                    <span class="player-name" style="color: #94a3b8;">Waiting...</span>
+                                    ${room.hostId === userId ? `<button class="card-cancel-btn" data-hostid="${room.hostId}">Cancel</button>` : ''}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                `).join('');
+
+                // Global list ထဲက Cancel ခလုတ်များအတွက် Event ချိတ်ပေးခြင်း
+                roomsContainer.querySelectorAll('.card-cancel-btn').forEach(btn => {
+                    btn.addEventListener('click', async (e) => {
+                        const hostIdToCancel = e.target.getAttribute('data-hostid');
+                        await cancelRoomAPI(hostIdToCancel);
+                    });
+                });
+            } else {
+                roomsContainer.innerHTML = `<span style="color: #64748b; font-size: 11px;">Active room မရှိသေးပါ။ Room အသစ်ထောင်နိုင်ပါသည်။</span>`;
+            }
+        } catch (err) {
+            console.error("Fetch rooms error:", err);
+            roomsContainer.innerHTML = `<span style="color: #f43f5e; font-size: 11px;">Rooms များကို ဆွဲထုတ်၍ မရပါ။</span>`;
+        }
+    }
+
+    // Room ဖျက်ရန် (DELETE API ခေါ်ရန်) Common Function
+    async function cancelRoomAPI(targetHostId) {
+        try {
+            const response = await fetch('/api/create-room', {
+                method: 'DELETE',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ userId: targetHostId })
+            });
+            const result = await response.json();
+
+            if (result.success) {
+                // ကိုယ့် Room ကို Cancel လိုက်တာဖြစ်ရင် ပုံမှန် screen (Global list ပြတဲ့ screen) သို့ ပြန်သွားမည်
+                if (targetHostId === userId) {
+                    container.innerHTML = renderScreenHTML(false);
+                    attachEventListeners();
+                } else {
+                    fetchAndRenderGlobalRooms();
+                }
+            } else {
+                alert(result.message || 'Room ဖျက်၍ မရပါ။');
+            }
+        } catch (err) {
+            console.error("Cancel room error:", err);
+            alert('ဆာဗာသို့ ချိတ်ဆက်၍ မရပါ။');
+        }
+    }
+
+    // ပထမအကြိမ် render လုပ်ခြင်း (လက်ရှိ User ထောင်ထားပြီးသား room ရှိမရှိ စစ်ဆေးနိုင်ရန် ချက်ချင်း GET ခေါ်မည်)
+    async function initScreen() {
+        try {
+            const response = await fetch(`/api/create-room?mode=${targetMode}&keyType=${targetKeyType}`);
+            const data = await response.json();
+            
+            let myExistingRoom = null;
+            if (data.success && data.rooms) {
+                myExistingRoom = data.rooms.find(r => r.hostId === userId);
+            }
+
+            if (myExistingRoom) {
+                container.innerHTML = renderScreenHTML(true, myExistingRoom.teamName, myExistingRoom.teamLogo);
+            } else {
+                container.innerHTML = renderScreenHTML(false);
+                fetchAndRenderGlobalRooms();
+            }
+            attachEventListeners();
+        } catch (e) {
+            container.innerHTML = renderScreenHTML(false);
+            attachEventListeners();
+        }
+    }
 
     function attachEventListeners() {
         const newRoomBtn = container.querySelector('#newRoomBtn');
@@ -234,9 +321,6 @@ export function renderRoomScreen(container, roomTitleText, userDocData = {}) {
                 try {
                     newRoomBtn.disabled = true;
                     newRoomBtn.textContent = 'Creating...';
-
-                    // User ID ကို ရှာယူပုံ (userDocData ထဲမှာ userId, id သို့မဟုတ် သက်ဆိုင်ရာ field ရှိမရှိ စစ်ဆေးခြင်း)
-                    const userId = userDocData.userId || userDocData.id || localStorage.getItem('userId');
 
                     if (!userId) {
                         alert('User ID မတွေ့ရှိရပါ။ ကျေးဇူးပြု၍ Login ပြန်ဝင်ပါ။');
@@ -249,7 +333,7 @@ export function renderRoomScreen(container, roomTitleText, userDocData = {}) {
                         method: 'POST',
                         headers: { 'Content-Type': 'application/json' },
                         body: JSON.stringify({
-                            userId: userId, // 👈 ဒီနေရာမှာ userId အမှန်တကယ် ပါသွားပါပြီ
+                            userId: userId,
                             roomTitle: displayTitle,
                             targetMode: targetMode,
                             targetKeyType: targetKeyType,
@@ -265,14 +349,12 @@ export function renderRoomScreen(container, roomTitleText, userDocData = {}) {
                         return;
                     }
 
-                    // Local key ကိုလည်း နှုတ်ပေးရန်
+                    // Local key ကို နှုတ်ပေးရန်
                     deductKey(targetMode, targetKeyType);
 
-                    // Backend မှ ပြန်လာသော Registration ၏ Team Name နှင့် Logo ကို ယူသုံးမည်
                     const finalTeamName = result.roomData?.teamName || defaultUserName;
                     const finalTeamLogo = result.roomData?.teamLogo || defaultUserAvatar;
 
-                    // Screen ကို Room Created ပုံစံသို့ ပြောင်းလဲပြသခြင်း
                     container.innerHTML = renderScreenHTML(true, finalTeamName, finalTeamLogo);
                     attachEventListeners();
                     
@@ -292,14 +374,14 @@ export function renderRoomScreen(container, roomTitleText, userDocData = {}) {
             });
         }
 
-        const cardCancelBtn = container.querySelector('#cardCardCancelBtn') || container.querySelector('#cardCancelBtn');
+        const cardCancelBtn = container.querySelector('.card-cancel-btn');
         if (cardCancelBtn) {
-            cardCancelBtn.addEventListener('click', () => {
-                container.innerHTML = renderScreenHTML(false);
-                attachEventListeners();
+            cardCancelBtn.addEventListener('click', async () => {
+                const hostIdToCancel = cardCancelBtn.getAttribute('data-hostid') || userId;
+                await cancelRoomAPI(hostIdToCancel);
             });
         }
     }
 
-    attachEventListeners();
+    initScreen();
 }
