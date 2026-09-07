@@ -62,6 +62,16 @@ module.exports = async function handler(req, res) {
                 return res.status(400).json({ success: false, message: "Missing required fields" });
             }
 
+            // 🛑 User မှာ active_rooms ထဲမှာ hostId နဲ့ တူတဲ့ Room ရှိပြီးသားလား အရင်စစ်ဆေးခြင်း
+            const existingRoomCheck = await db.collection('active_rooms').where('hostId', '==', userId).get();
+
+            if (!existingRoomCheck.empty) {
+                return res.status(400).json({ 
+                    success: false, 
+                    message: 'သင့်တွင် Active ဖြစ်နေသော Room တစ်ခု ရှိနှင့်ပြီးသား ဖြစ်ပါသည်။ Room အသစ်ထပ်ထောင်လိုပါက ရှိပြီးသား Room ကို အရင် Cancel ပါ။' 
+                });
+            }
+
             const userDoc = await db.collection('users').doc(userId).get();
             if (!userDoc.exists) {
                 return res.status(404).json({ success: false, message: "User not found" });
@@ -137,6 +147,7 @@ module.exports = async function handler(req, res) {
             };
 
             // userId ကို Doc ID အဖြစ်သုံး၍ active_rooms ထဲ သိမ်းမည် (Cancel မလုပ်မချင်း ဤနေရာတွင် ရှိနေမည်)
+            // ဒီနေရာမှာ .doc(userId).set() ကို သုံးထားတဲ့အတွက် User တစ်ယောက်မှာ Room တစ်ခုပဲ အမြဲ ရှိနေစေမှာ ဖြစ်ပါတယ်
             await db.collection('active_rooms').doc(userId).set(roomData);
 
             return res.status(200).json({ 
@@ -154,7 +165,7 @@ module.exports = async function handler(req, res) {
     // 🔥 3. DELETE Method - Cancel နှိပ်လိုက်မှ active_rooms ထဲမှ Room ကို ဖျက်ပစ်ခြင်း
     if (method === 'DELETE') {
         try {
-            const { userId } = req.body; // သို့မဟုတ် URL query မှတစ်ဆင့်
+            const { userId } = req.body; 
             if (!userId) {
                 return res.status(400).json({ success: false, message: "Missing userId for cancellation" });
             }

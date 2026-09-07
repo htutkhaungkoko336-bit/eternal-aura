@@ -209,8 +209,6 @@ export function renderRoomScreen(container, roomTitleText, userDocData = {}) {
             let hasMyRoom = false;
 
             if (data.success && data.rooms && data.rooms.length > 0) {
-                // Global active_rooms အားလုံးထဲမှာ User တစ်ယောက်တည်းက နေရာအမျိုးမျိုးမှာ Room တွေထောင်ထားတာမျိုးကိုပါ စစ်ဆေးဖို့အတွက် 
-                // အကယ်၍ ဒီ User ရဲ့ hostId နဲ့ တူတဲ့ Room ရှိနှင့်ပြီးသားဆိုရင် hasMyRoom ကို true လုပ်ပါမယ်
                 roomsContainer.innerHTML = data.rooms.map(room => {
                     if (room.hostId === userId) {
                         hasMyRoom = true;
@@ -237,7 +235,7 @@ export function renderRoomScreen(container, roomTitleText, userDocData = {}) {
                 roomsContainer.innerHTML = `<span style="color: #64748b; font-size: 11px; padding: 10px 0;">Active room မရှိသေးပါ။ Room အသစ်ထောင်နိုင်ပါသည်။</span>`;
             }
 
-            // User မှာ Room ရှိပြီးသားဆိုရင် (Key ဘယ်လောက်ပဲရှိရှိ) Create Room ခလုတ်ကို ပိတ်ထားပါမယ်
+            // User မှာ Room ရှိနေရင် Create Room ခလုတ်ကို နှိပ်မရအောင် တားဆီးခြင်း
             const newRoomBtn = container.querySelector('#newRoomBtn');
             if (newRoomBtn) {
                 if (hasMyRoom) {
@@ -285,7 +283,7 @@ export function renderRoomScreen(container, roomTitleText, userDocData = {}) {
             const result = await response.json();
 
             if (result.success) {
-                // Room ဖျက်ပြီးတာနဲ့ Global စာရင်းကို အလိုအလျောက် Refresh လုပ်မည် (ကိုယ်ပိုင် Room မရှိတော့တဲ့အတွက် Create Room ခလုတ် ပြန်ပွင့်ပါမယ်)
+                // Room ဖျက်ပြီးတာနဲ့ Global စာရင်းကို Refresh လုပ်မည် (ကိုယ့် Room ပျောက်သွားတာကြောင့် Create Room ခလုတ် ပြန်ပွင့်ပါမယ်)
                 fetchAndRenderGlobalRooms();
             } else {
                 alert(result.message || 'Room ဖျက်၍ မရပါ။');
@@ -296,11 +294,9 @@ export function renderRoomScreen(container, roomTitleText, userDocData = {}) {
         }
     }
 
-    // စတင်ဖွင့်ချင်း Screen တည်ဆောက်ခြင်း
     container.innerHTML = renderScreenHTML();
     fetchAndRenderGlobalRooms();
 
-    // Event Listeners များ
     const newRoomBtn = container.querySelector('#newRoomBtn');
     if (newRoomBtn) {
         newRoomBtn.addEventListener('click', async () => {
