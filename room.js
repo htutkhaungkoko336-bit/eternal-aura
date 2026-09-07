@@ -71,13 +71,14 @@ export function renderRoomScreen(container, roomTitleText, userDocData = {}) {
                 }
                 .ios-room-card {
                     background: linear-gradient(135deg, rgba(15, 23, 42, 0.9), rgba(30, 41, 59, 0.8));
-                    /* အပေါ်ခေါင်းစဉ်ဘောင်လိုမျိုး အပြာရောင်တောက်တောက်စတိုင် ပြောင်းထားပါသည် */
-                    border: 2px solid #38bdf8;
+                    /* Create Room ခလုတ်လိုမျိုး အပြာနဲ့ ခရမ်း နှစ်ရောင်စပ် Gradient Border စတိုင် */
+                    border: 2px solid transparent;
+                    border-image: linear-gradient(135deg, #0284c7, #9333ea) 1;
                     border-radius: 12px;
                     padding: 12px 16px;
                     width: 100%;
                     max-width: 330px;
-                    box-shadow: 0 0 15px rgba(56, 189, 248, 0.3);
+                    box-shadow: 0 0 15px rgba(147, 51, 234, 0.25);
                     box-sizing: border-box;
                 }
                 .matchup-container {
@@ -128,10 +129,9 @@ export function renderRoomScreen(container, roomTitleText, userDocData = {}) {
                     gap: 6px;
                 }
                 .card-cancel-btn {
-                    background: rgba(56, 189, 248, 0.1);
-                    /* ကဒ်အပြာရောင်နဲ့ လိုက်ဖက်မယ့် Sky blue/Cyan ဘောင်အရောင် */
-                    color: #38bdf8;
-                    border: 1px solid rgba(56, 189, 248, 0.5);
+                    background: rgba(147, 51, 234, 0.1);
+                    color: #c084fc;
+                    border: 1px solid rgba(147, 51, 234, 0.4);
                     padding: 4px 8px;
                     border-radius: 6px;
                     font-size: 10px;
@@ -140,7 +140,7 @@ export function renderRoomScreen(container, roomTitleText, userDocData = {}) {
                     white-space: nowrap;
                 }
                 .card-cancel-btn:hover {
-                    background: rgba(56, 189, 248, 0.25);
+                    background: rgba(147, 51, 234, 0.25);
                 }
                 .card-join-btn {
                     background: linear-gradient(135deg, #0284c7, #9333ea);
@@ -183,9 +183,14 @@ export function renderRoomScreen(container, roomTitleText, userDocData = {}) {
                     cursor: ${hasKey ? 'pointer' : 'not-allowed'};
                 }
                 .btn-cancel {
-                    background: rgba(30, 41, 59, 0.9);
-                    color: #f43f5e;
-                    border: 1px solid rgba(244, 63, 94, 0.4);
+                    /* Back ခလုတ်အတွက် ခရမ်းရောင်အလင်းပါတဲ့ Dark background နဲ့ ခရမ်းဖျော့ရောင် ဘောင်စတိုင် */
+                    background: linear-gradient(135deg, rgba(30, 41, 59, 0.9), rgba(15, 23, 42, 0.9));
+                    color: #e2e8f0;
+                    border: 1px solid rgba(147, 51, 234, 0.4);
+                }
+                .btn-cancel:hover {
+                    background: rgba(147, 51, 234, 0.15);
+                    border-color: rgba(147, 51, 234, 0.7);
                 }
             </style>
 
