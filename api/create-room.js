@@ -57,7 +57,6 @@ module.exports = async function handler(req, res) {
         }
 
         if (regCollectionName) {
-            // 🔥 Index Error မတက်အောင် userId တစ်ခုတည်းနဲ့အရင် query ထုတ်မည်
             const regSnapshot = await db.collection(regCollectionName)
                 .where('userId', '==', userId)
                 .get();
@@ -65,20 +64,25 @@ module.exports = async function handler(req, res) {
             let matchedRegs = [];
             regSnapshot.forEach(doc => {
                 const regData = doc.data();
-                // fee တူညီမှုကို စစ်ဆေးပြီး Array ထဲ စုထည့်မည်
                 if (regData.fee && regData.fee.toString().toUpperCase() === targetKeyType.toUpperCase()) {
                     matchedRegs.push(regData);
                 }
             });
 
-            // 🔥 JavaScript ဘက်မှ createdAt ကို အခြေခံ၍ အစောဆုံး (ရှေးအကျဆုံး/မနေ့က) ကောင်ကို ရှာယူခြင်း
             if (matchedRegs.length > 0) {
+                // 🔥 Firestore Timestamp ကို အသုံးပြု၍ အစောဆုံး (အရင်တင်ခဲ့သော) စာရင်းကို ဦးစားပေး Sort လုပ်ခြင်း
                 matchedRegs.sort((a, b) => {
-                    const timeA = a.createdAt ? new Date(a.createdAt).getTime() : 0;
-                    const timeB = b.createdAt ? new Date(b.createdAt).getTime() : 0;
-                    return timeA - timeB; // Ascending (အစောဆုံး အရင်လာမည်)
+                    const getTimeVal = (createdAt) => {
+                        if (!createdAt) return 0;
+                        if (typeof createdAt.toMillis === 'function') return createdAt.toMillis();
+                        if (typeof createdAt.toDate === 'function') return createdAt.toDate().getTime();
+                        const parsed = new Date(createdAt).getTime();
+                        return isNaN(parsed) ? 0 : parsed;
+                    };
+                    return getTimeVal(a.createdAt) - getTimeVal(b.createdAt); // Ascending (အစောဆုံး အရင်လာမည်)
                 });
 
+                // အစောဆုံး (အရင်ဆုံးတင်ခဲ့တဲ့) ဇယားကွက်ကို ရွေးမည်
                 const matchedReg = matchedRegs[0];
 
                 if (lowerMode.includes('5v5') || lowerMode.includes('5vs5')) {
@@ -112,7 +116,7 @@ module.exports = async function handler(req, res) {
 
         return res.status(200).json({ 
             success: true, 
-            message: "Room created successfully with earlier registration data", 
+            message: "Room created successfully with the earliest registration data", 
             roomData: roomData 
         });
 
