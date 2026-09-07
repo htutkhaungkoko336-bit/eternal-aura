@@ -141,6 +141,25 @@ export function renderRoomScreen(container, roomTitleText, userDocData = {}) {
                 .card-cancel-btn:hover {
                     background: rgba(244, 63, 94, 0.25);
                 }
+                /* တစ်ခြားသူများ Room အတွက် `+` ခလုတ်စတိုင် */
+                .card-join-btn {
+                    background: linear-gradient(135deg, #0284c7, #9333ea);
+                    color: #fff;
+                    border: none;
+                    width: 24px;
+                    height: 24px;
+                    border-radius: 6px;
+                    font-size: 14px;
+                    font-weight: 900;
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+                    cursor: pointer;
+                    box-shadow: 0 0 10px rgba(56, 189, 248, 0.4);
+                }
+                .card-join-btn:hover {
+                    opacity: 0.9;
+                }
                 .room-bottom-actions {
                     display: flex;
                     gap: 12px;
@@ -210,9 +229,11 @@ export function renderRoomScreen(container, roomTitleText, userDocData = {}) {
 
             if (data.success && data.rooms && data.rooms.length > 0) {
                 roomsContainer.innerHTML = data.rooms.map(room => {
-                    if (room.hostId === userId) {
+                    const isMyRoom = (room.hostId === userId);
+                    if (isMyRoom) {
                         hasMyRoom = true;
                     }
+
                     return `
                         <div class="ios-room-card" style="max-width: 100%;">
                             <div class="matchup-container">
@@ -223,8 +244,11 @@ export function renderRoomScreen(container, roomTitleText, userDocData = {}) {
                                 <div class="vs-badge">VS</div>
                                 <div class="player-side right">
                                     <div class="right-action-group">
-                                        <span class="player-name" style="color: #94a3b8;">Waiting...</span>
-                                        ${room.hostId === userId ? `<button class="card-cancel-btn" data-hostid="${room.hostId}">Cancel</button>` : ''}
+                                        ${isMyRoom 
+                                            ? `<span class="player-name" style="color: #94a3b8;">Waiting...</span>
+                                               <button class="card-cancel-btn" data-hostid="${room.hostId}">Cancel</button>`
+                                            : `<button class="card-join-btn" data-roomid="${room.id}" data-hostid="${room.hostId}" title="Join Room">+</button>`
+                                        }
                                     </div>
                                 </div>
                             </div>
@@ -235,7 +259,7 @@ export function renderRoomScreen(container, roomTitleText, userDocData = {}) {
                 roomsContainer.innerHTML = `<span style="color: #64748b; font-size: 11px; padding: 10px 0;">Active room မရှိသေးပါ။ Room အသစ်ထောင်နိုင်ပါသည်။</span>`;
             }
 
-            // User မှာ Room ရှိနေရင် Create Room ခလုတ်ကို နှိပ်မရအောင် တားဆီးခြင်း
+            // Create Room ခလုတ် အနေအထားကို စစ်ဆေးခြင်း
             const newRoomBtn = container.querySelector('#newRoomBtn');
             if (newRoomBtn) {
                 if (hasMyRoom) {
@@ -259,11 +283,20 @@ export function renderRoomScreen(container, roomTitleText, userDocData = {}) {
                 }
             }
 
-            // Cancel ခလုတ်များအတွက် Event ချိတ်ပေးခြင်း
+            // Cancel ခလုတ်အတွက် Event
             roomsContainer.querySelectorAll('.card-cancel-btn').forEach(btn => {
                 btn.addEventListener('click', async (e) => {
                     const hostIdToCancel = e.target.getAttribute('data-hostid');
                     await cancelRoomAPI(hostIdToCancel);
+                });
+            });
+
+            // `+` (Join) ခလုတ်အတွက် Event 
+            roomsContainer.querySelectorAll('.card-join-btn').forEach(btn => {
+                btn.addEventListener('click', (e) => {
+                    const hostIdToJoin = e.target.getAttribute('data-hostid');
+                    // တစ်ခြားသူ့ Room ကို ဝင်မည့် လုပ်ဆောင်ချက် (ဥပမာ Match Screen သို့မဟုတ် Join API သို့ သွားရန်)
+                    alert(`Room (Host ID: ${hostIdToJoin}) သို့ ချိတ်ဆက်ရန် အသင့်ဖြစ်ပါပြီ။`);
                 });
             });
 
@@ -283,7 +316,6 @@ export function renderRoomScreen(container, roomTitleText, userDocData = {}) {
             const result = await response.json();
 
             if (result.success) {
-                // Room ဖျက်ပြီးတာနဲ့ Global စာရင်းကို Refresh လုပ်မည် (ကိုယ့် Room ပျောက်သွားတာကြောင့် Create Room ခလုတ် ပြန်ပွင့်ပါမယ်)
                 fetchAndRenderGlobalRooms();
             } else {
                 alert(result.message || 'Room ဖျက်၍ မရပါ။');
