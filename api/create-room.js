@@ -22,106 +22,126 @@ function getYangonTimeStr() {
 }
 
 module.exports = async function handler(req, res) {
-    if (req.method !== 'POST') {
-        res.setHeader('Allow', ['POST']);
-        return res.status(405).json({ success: false, message: `Method ${req.method} not allowed` });
-    }
-
-    try {
-        const { userId, roomTitle, targetMode, targetKeyType, boType } = req.body;
-
-        if (!userId || !targetMode || !targetKeyType) {
-            return res.status(400).json({ success: false, message: "Missing required fields (userId, targetMode, targetKeyType)" });
-        }
-
-        const usersRef = db.collection('users');
-        const userDoc = await usersRef.doc(userId).get();
-
-        if (!userDoc.exists) {
-            return res.status(404).json({ success: false, message: "User not found" });
-        }
-
-        const userData = userDoc.data();
-        let teamName = userData.name || 'Player';
-        let teamLogo = userData.photoURL || userData.avatar || 'FrontLogo.jpg';
-
-        let regCollectionName = '';
-        const lowerMode = targetMode.toLowerCase();
-        
-        if (lowerMode.includes('1v1') || lowerMode.includes('1vs1')) {
-            regCollectionName = '1vs1_registrations';
-        } else if (lowerMode.includes('5v5') || lowerMode.includes('5vs5')) {
-            regCollectionName = '5vs5_registrations';
-        } else if (lowerMode.includes('tournament')) {
-            regCollectionName = 'tournament_registrations';
-        }
-
-        if (regCollectionName) {
-            const regSnapshot = await db.collection(regCollectionName)
-                .where('userId', '==', userId)
-                .get();
-
-            let matchedRegs = [];
-            regSnapshot.forEach(doc => {
-                const regData = doc.data();
-                if (regData.fee && regData.fee.toString().toUpperCase() === targetKeyType.toUpperCase()) {
-                    matchedRegs.push(regData);
-                }
+    // 🔥 1. GET Method - active_rooms ထဲက Room အားလုံးကို Global မြင်ရအောင် လှမ်းထုတ်ပေးခြင်း
+    if (req.method === 'GET') {
+        try {
+            const roomsSnapshot = await db.collection('active_rooms').get();
+            let activeRooms = [];
+            
+            roomsSnapshot.forEach(doc => {
+                activeRooms.push({
+                    hostId: doc.id,
+                    ...doc.data()
+                });
             });
 
-            if (matchedRegs.length > 0) {
-                // 🔥 Firestore Timestamp ကို အသုံးပြု၍ အစောဆုံး (အရင်တင်ခဲ့သော) စာရင်းကို ဦးစားပေး Sort လုပ်ခြင်း
-                matchedRegs.sort((a, b) => {
-                    const getTimeVal = (createdAt) => {
-                        if (!createdAt) return 0;
-                        if (typeof createdAt.toMillis === 'function') return createdAt.toMillis();
-                        if (typeof createdAt.toDate === 'function') return createdAt.toDate().getTime();
-                        const parsed = new Date(createdAt).getTime();
-                        return isNaN(parsed) ? 0 : parsed;
-                    };
-                    return getTimeVal(a.createdAt) - getTimeVal(b.createdAt); // Ascending (အစောဆုံး အရင်လာမည်)
+            return res.status(200).json({ 
+                success: true, 
+                rooms: activeRooms 
+            });
+        } catch (error) {
+            console.error("Fetch Rooms Error:", error);
+            return res.status(500).json({ success: false, message: "Server Error", error: error.message });
+        }
+    }
+
+    // 🔥 2. POST Method - Room အသစ်ဖန်တီးခြင်း (အရင်က ကုဒ်အတိုင်း)
+    if (req.method === 'POST') {
+        try {
+            const { userId, roomTitle, targetMode, targetKeyType, boType } = req.body;
+
+            if (!userId || !targetMode || !targetKeyType) {
+                return res.status(400).json({ success: false, message: "Missing required fields" });
+            }
+
+            const userDoc = await db.collection('users').doc(userId).get();
+            if (!userDoc.exists) {
+                return res.status(404).json({ success: false, message: "User not found" });
+            }
+
+            const userData = userDoc.data();
+            let teamName = userData.name || 'Player';
+            let teamLogo = userData.photoURL || userData.avatar || 'FrontLogo.jpg';
+
+            let regCollectionName = '';
+            const lowerMode = targetMode.toLowerCase();
+            
+            if (lowerMode.includes('1v1') || lowerMode.includes('1vs1')) {
+                regCollectionName = '1vs1_registrations';
+            } else if (lowerMode.includes('5v5') || lowerMode.includes('5vs5')) {
+                regCollectionName = '5vs5_registrations';
+            } else if (lowerMode.includes('tournament')) {
+                regCollectionName = 'tournament_registrations';
+            }
+
+            if (regCollectionName) {
+                const regSnapshot = await db.collection(regCollectionName)
+                    .where('userId', '==', userId)
+                    .get();
+
+                let matchedRegs = [];
+                regSnapshot.forEach(doc => {
+                    const regData = doc.data();
+                    if (regData.fee && regData.fee.toString().toUpperCase() === targetKeyType.toUpperCase()) {
+                        matchedRegs.push(regData);
+                    }
                 });
 
-                // အစောဆုံး (အရင်ဆုံးတင်ခဲ့တဲ့) ဇယားကွက်ကို ရွေးမည်
-                const matchedReg = matchedRegs[0];
+                if (matchedRegs.length > 0) {
+                    matchedRegs.sort((a, b) => {
+                        const getTimeVal = (createdAt) => {
+                            if (!createdAt) return 0;
+                            if (typeof createdAt.toMillis === 'function') return createdAt.toMillis();
+                            if (typeof createdAt.toDate === 'function') return createdAt.toDate().getTime();
+                            const parsed = new Date(createdAt).getTime();
+                            return isNaN(parsed) ? 0 : parsed;
+                        };
+                        return getTimeVal(a.createdAt) - getTimeVal(b.createdAt);
+                    });
 
-                if (lowerMode.includes('5v5') || lowerMode.includes('5vs5')) {
-                    teamName = matchedReg.sqName || teamName;
-                } else if (lowerMode.includes('tournament')) {
-                    teamName = matchedReg.teamName || teamName;
-                    teamLogo = matchedReg.teamLogo || matchedReg.teamLogoUrl || teamLogo;
-                } else {
-                    teamName = matchedReg.inGameName || teamName;
-                }
-                
-                if (matchedReg.logo || matchedReg.paymentSlip) {
-                    teamLogo = matchedReg.logo || matchedReg.paymentSlip;
+                    const matchedReg = matchedRegs[0];
+
+                    if (lowerMode.includes('5v5') || lowerMode.includes('5vs5')) {
+                        teamName = matchedReg.sqName || teamName;
+                    } else if (lowerMode.includes('tournament')) {
+                        teamName = matchedReg.teamName || teamName;
+                        teamLogo = matchedReg.teamLogo || matchedReg.teamLogoUrl || teamLogo;
+                    } else {
+                        teamName = matchedReg.inGameName || teamName;
+                    }
+                    
+                    if (matchedReg.logo || matchedReg.paymentSlip) {
+                        teamLogo = matchedReg.logo || matchedReg.paymentSlip;
+                    }
                 }
             }
+
+            const roomData = {
+                hostId: userId,
+                teamName: teamName,
+                teamLogo: teamLogo,
+                roomTitle: roomTitle || `${targetMode} Room`,
+                mode: targetMode,
+                keyType: targetKeyType,
+                boType: boType || 'BO1',
+                status: 'waiting',
+                createdAt: getYangonTimeStr()
+            };
+
+            await db.collection('active_rooms').doc(userId).set(roomData);
+
+            return res.status(200).json({ 
+                success: true, 
+                message: "Room created successfully", 
+                roomData: roomData 
+            });
+
+        } catch (error) {
+            console.error("Create Room Error:", error);
+            return res.status(500).json({ success: false, message: "Server Error", error: error.message });
         }
-
-        const roomData = {
-            hostId: userId,
-            teamName: teamName,
-            teamLogo: teamLogo,
-            roomTitle: roomTitle || `${targetMode} Room`,
-            mode: targetMode,
-            keyType: targetKeyType,
-            boType: boType || 'BO1',
-            status: 'waiting',
-            createdAt: getYangonTimeStr()
-        };
-
-        await db.collection('active_rooms').doc(userId).set(roomData);
-
-        return res.status(200).json({ 
-            success: true, 
-            message: "Room created successfully with the earliest registration data", 
-            roomData: roomData 
-        });
-
-    } catch (error) {
-        console.error("Create Room Error:", error);
-        return res.status(500).json({ success: false, message: "Server Error", error: error.message });
     }
+
+    res.setHeader('Allow', ['GET', 'POST']);
+    return res.status(405).json({ success: false, message: `Method ${req.method} not allowed` });
 };
