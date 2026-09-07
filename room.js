@@ -235,20 +235,27 @@ export function renderRoomScreen(container, roomTitleText, userDocData = {}) {
                     newRoomBtn.disabled = true;
                     newRoomBtn.textContent = 'Creating...';
 
-                    // Backend API သို့ Room ဖန်တီးရန် လှမ်းခေါ်ခြင်း (Registration ထဲက Logo နဲ့ Name ကို ယူမည်)
-                    const userId = userDocData.userId || userDocData.id;
+                    // User ID ကို ရှာယူပုံ (userDocData ထဲမှာ userId, id သို့မဟုတ် သက်ဆိုင်ရာ field ရှိမရှိ စစ်ဆေးခြင်း)
+                    const userId = userDocData.userId || userDocData.id || localStorage.getItem('userId');
+
+                    if (!userId) {
+                        alert('User ID မတွေ့ရှိရပါ။ ကျေးဇူးပြု၍ Login ပြန်ဝင်ပါ။');
+                        newRoomBtn.disabled = false;
+                        newRoomBtn.textContent = 'Create Room';
+                        return;
+                    }
+
                     const response = await fetch('/api/create-room', {
                         method: 'POST',
                         headers: { 'Content-Type': 'application/json' },
                         body: JSON.stringify({
-                            userId: userId,
+                            userId: userId, // 👈 ဒီနေရာမှာ userId အမှန်တကယ် ပါသွားပါပြီ
                             roomTitle: displayTitle,
-                            targetMode: targetMode,          // ဥပမာ - '5v5'
-                            targetKeyType: targetKeyType,    // ဥပမာ - '50k'
+                            targetMode: targetMode,
+                            targetKeyType: targetKeyType,
                             boType: boType
                         })
                     });
-
                     const result = await response.json();
 
                     if (!result.success) {
