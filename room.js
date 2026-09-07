@@ -38,7 +38,7 @@ export function renderRoomScreen(container, roomTitleText, userDocData = {}) {
     const defaultUserAvatar = userDocData.photoURL || userDocData.avatar || 'FrontLogo.jpg';
     const userId = userDocData.userId || userDocData.id || localStorage.getItem('userId');
 
-    function renderScreenHTML(hasMyRoom = false) {
+    function renderScreenHTML() {
         return `
             <style>
                 .room-screen-wrapper {
@@ -159,9 +159,9 @@ export function renderRoomScreen(container, roomTitleText, userDocData = {}) {
                     cursor: pointer;
                 }
                 .btn-new-room {
-                    background: ${hasMyRoom ? '#1e293b' : 'linear-gradient(135deg, #0284c7, #9333ea)'};
-                    color: ${hasMyRoom ? '#64748b' : '#fff'};
-                    cursor: ${hasMyRoom ? 'not-allowed' : 'pointer'};
+                    background: ${hasKey ? 'linear-gradient(135deg, #0284c7, #9333ea)' : '#1e293b'};
+                    color: ${hasKey ? '#fff' : '#64748b'};
+                    cursor: ${hasKey ? 'pointer' : 'not-allowed'};
                 }
                 .btn-cancel {
                     background: rgba(30, 41, 59, 0.9);
@@ -183,15 +183,14 @@ export function renderRoomScreen(container, roomTitleText, userDocData = {}) {
 
                     <div style="font-size: 11px; color: #38bdf8; text-align: left; width: 100%; margin-top: 4px;">Global Active Rooms:</div>
                     
-                    <!-- Global Rooms အားလုံး ပေါ်လာမယ့် Container -->
                     <div id="roomsContainer" style="width: 100%; display: flex; flex-direction: column; gap: 8px;">
                         <span style="color: #64748b; font-size: 11px;">Loading rooms...</span>
                     </div>
                 </div>
 
                 <div class="room-bottom-actions">
-                    <button class="room-btn btn-new-room" id="newRoomBtn" ${!hasKey || hasMyRoom ? 'disabled' : ''}>
-                        ${hasMyRoom ? 'Room Created' : (hasKey ? 'Create Room' : 'No Key')}
+                    <button class="room-btn btn-new-room" id="newRoomBtn" ${!hasKey ? 'disabled' : ''}>
+                        ${hasKey ? 'Create Room' : 'No Key'}
                     </button>
                     <button class="room-btn btn-cancel" id="cancelBtn">Back</button>
                 </div>
@@ -199,7 +198,6 @@ export function renderRoomScreen(container, roomTitleText, userDocData = {}) {
         `;
     }
 
-    // Database ထဲမှာရှိတဲ့ Global Room အားလုံးကို ဆွဲထုတ်ပြီး Card တိုင်းပြပေးမယ့် Function
     async function fetchAndRenderGlobalRooms() {
         const roomsContainer = container.querySelector('#roomsContainer');
         if (!roomsContainer) return;
@@ -233,19 +231,26 @@ export function renderRoomScreen(container, roomTitleText, userDocData = {}) {
                         </div>
                     `;
                 }).join('');
+            } else {
+                roomsContainer.innerHTML = `<span style="color: #64748b; font-size: 11px; padding: 10px 0;">Active room မရှိသေးပါ။ Room အသစ်ထောင်နိုင်ပါသည်။</span>`;
+            }
 
-                // ကိုယ့် Room ရှိနေရင် Create Room ခလုတ်ကို ပိတ်ပေးမည်
-                const newRoomBtn = container.querySelector('#newRoomBtn');
-                if (newRoomBtn && hasKey) {
+            // Create Room ခလုတ်၏ အခြေအနေကို ကိုယ့် Room ရှိမရှိအပေါ်မူတည်၍ အလိုအလျောက် ပြောင်းလဲပေးခြင်း
+            const newRoomBtn = container.querySelector('#newRoomBtn');
+            if (newRoomBtn && hasKey) {
+                if (hasMyRoom) {
                     newRoomBtn.disabled = true;
                     newRoomBtn.textContent = 'Room Created';
                     newRoomBtn.style.background = '#1e293b';
                     newRoomBtn.style.color = '#64748b';
                     newRoomBtn.style.cursor = 'not-allowed';
+                } else {
+                    newRoomBtn.disabled = false;
+                    newRoomBtn.textContent = 'Create Room';
+                    newRoomBtn.style.background = 'linear-gradient(135deg, #0284c7, #9333ea)';
+                    newRoomBtn.style.color = '#fff';
+                    newRoomBtn.style.cursor = 'pointer';
                 }
-
-            } else {
-                roomsContainer.innerHTML = `<span style="color: #64748b; font-size: 11px; padding: 10px 0;">Active room မရှိသေးပါ။ Room အသစ်ထောင်နိုင်ပါသည်။</span>`;
             }
 
             // Cancel ခလုတ်များအတွက် Event ချိတ်ပေးခြင်း
@@ -262,7 +267,6 @@ export function renderRoomScreen(container, roomTitleText, userDocData = {}) {
         }
     }
 
-    // Room ဖျက်ရန် (DELETE API ခေါ်ရန်)
     async function cancelRoomAPI(targetHostId) {
         try {
             const response = await fetch('/api/create-room', {
@@ -273,20 +277,8 @@ export function renderRoomScreen(container, roomTitleText, userDocData = {}) {
             const result = await response.json();
 
             if (result.success) {
-                // Room ဖျက်ပြီးတာနဲ့ စာရင်းကို အလိုအလျောက် Refresh လုပ်မည်
+                // Room ဖျက်ပြီးတာနဲ့ Global စာရင်းကို အသစ်ပြန်ဆွဲမည် (Button တွေပါ အလိုအလျောက် ဖြည့်ပေးသွားပါလိမ့်မည်)
                 fetchAndRenderGlobalRooms();
-                
-                // ကိုယ်တိုင်ထောင်ထားတာကို ဖျက်လိုက်တာဆိုရင် Create Room ခလုတ်ကို ပုံမှန်အတိုင်း ပြန်ဖွင့်ပေးမည်
-                if (targetHostId === userId) {
-                    const newRoomBtn = container.querySelector('#newRoomBtn');
-                    if (newRoomBtn && hasKey) {
-                        newRoomBtn.disabled = false;
-                        newRoomBtn.textContent = 'Create Room';
-                        newRoomBtn.style.background = 'linear-gradient(135deg, #0284c7, #9333ea)';
-                        newRoomBtn.style.color = '#fff';
-                        newRoomBtn.style.cursor = 'pointer';
-                    }
-                }
             } else {
                 alert(result.message || 'Room ဖျက်၍ မရပါ။');
             }
@@ -297,7 +289,7 @@ export function renderRoomScreen(container, roomTitleText, userDocData = {}) {
     }
 
     // စတင်ဖွင့်ချင်း Screen တည်ဆောက်ခြင်း
-    container.innerHTML = renderScreenHTML(false);
+    container.innerHTML = renderScreenHTML();
     fetchAndRenderGlobalRooms();
 
     // Event Listeners များ
@@ -337,10 +329,7 @@ export function renderRoomScreen(container, roomTitleText, userDocData = {}) {
                     return;
                 }
 
-                // Local key ကို နှုတ်ပေးရန်
                 deductKey(targetMode, targetKeyType);
-
-                // Room ဖန်တီးပြီးတာနဲ့ Global Room စာရင်းကို ချက်ချင်းပြန်ဆွဲပြမည်
                 fetchAndRenderGlobalRooms();
                 
             } catch (err) {
