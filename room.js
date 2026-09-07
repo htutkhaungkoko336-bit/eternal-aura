@@ -9,7 +9,6 @@ export function renderRoomScreen(container, roomTitleText, userDocData = {}) {
         displayTitle = `${displayTitle} ROOM`;
     }
 
-    // Dynamic ဖြစ်အောင် Title ထဲကနေ Mode (1v1 သို့မဟုတ် 5v5) ကို ရှာဖွေခြင်း
     let targetMode = '5v5';
     if (upperTitle.includes('1V1') || upperTitle.includes('1VS1')) {
         targetMode = '1v1';
@@ -17,7 +16,6 @@ export function renderRoomScreen(container, roomTitleText, userDocData = {}) {
         targetMode = '5v5';
     }
 
-    // Dynamic ဖြစ်အောင် Key Type (50k, 25k, 15k, 10k, 5k) ကို ရှာဖွေခြင်း
     let targetKeyType = '5k';
     const possibleTypes = ['50k', '25k', '15k', '10k', '5k'];
     for (let t of possibleTypes) {
@@ -36,14 +34,11 @@ export function renderRoomScreen(container, roomTitleText, userDocData = {}) {
     const availableKeys = currentStoreData.modes[targetMode]?.[targetKeyType] || 0;
     const hasKey = availableKeys > 0;
 
-    // Default user details
     const defaultUserName = userDocData.userName || userDocData.name || 'Player';
     const defaultUserAvatar = userDocData.photoURL || userDocData.avatar || 'FrontLogo.jpg';
-    
-    // User ID ကို ရှာယူခြင်း
     const userId = userDocData.userId || userDocData.id || localStorage.getItem('userId');
 
-    function renderScreenHTML(isCreated = false, currentUserName = defaultUserName, currentUserAvatar = defaultUserAvatar) {
+    function renderScreenHTML(hasMyRoom = false) {
         return `
             <style>
                 .room-screen-wrapper {
@@ -68,11 +63,11 @@ export function renderRoomScreen(container, roomTitleText, userDocData = {}) {
                     max-width: 330px;
                     display: flex;
                     flex-direction: column;
-                    justify-content: center;
                     align-items: center;
                     flex: 1;
                     gap: 10px;
                     overflow-y: auto;
+                    margin-top: 10px;
                 }
                 .ios-room-card {
                     background: linear-gradient(135deg, rgba(15, 23, 42, 0.9), rgba(30, 41, 59, 0.8));
@@ -82,7 +77,7 @@ export function renderRoomScreen(container, roomTitleText, userDocData = {}) {
                     padding: 12px 16px;
                     width: 100%;
                     max-width: 330px;
-                    box-shadow: 0 0 20px rgba(56, 189, 248, 0.2), inset 0 0 10px rgba(147, 51, 234, 0.1);
+                    box-shadow: 0 0 20px rgba(56, 189, 248, 0.2);
                     box-sizing: border-box;
                 }
                 .matchup-container {
@@ -164,9 +159,9 @@ export function renderRoomScreen(container, roomTitleText, userDocData = {}) {
                     cursor: pointer;
                 }
                 .btn-new-room {
-                    background: ${isCreated ? '#1e293b' : 'linear-gradient(135deg, #0284c7, #9333ea)'};
-                    color: ${isCreated ? '#64748b' : '#fff'};
-                    cursor: ${isCreated ? 'not-allowed' : 'pointer'};
+                    background: ${hasMyRoom ? '#1e293b' : 'linear-gradient(135deg, #0284c7, #9333ea)'};
+                    color: ${hasMyRoom ? '#64748b' : '#fff'};
+                    cursor: ${hasMyRoom ? 'not-allowed' : 'pointer'};
                 }
                 .btn-cancel {
                     background: rgba(30, 41, 59, 0.9);
@@ -181,37 +176,22 @@ export function renderRoomScreen(container, roomTitleText, userDocData = {}) {
                 </div>
                 
                 <div class="room-content-center" id="roomContentArea">
-                    ${isCreated ? `
-                        <div class="ios-room-card">
-                            <div class="matchup-container">
-                                <div class="player-side">
-                                    <img src="${currentUserAvatar}" alt="Logo" class="player-avatar" onerror="this.src='FrontLogo.jpg'">
-                                    <span class="player-name">${currentUserName}</span>
-                                </div>
-                                <div class="vs-badge">VS</div>
-                                <div class="player-side right">
-                                    <div class="right-action-group">
-                                        <span class="player-name" style="color: #94a3b8;">Waiting...</span>
-                                        <button class="card-cancel-btn" data-hostid="${userId}">Cancel</button>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    ` : `
-                        <div id="globalRoomsList" style="width: 100%; display: flex; flex-direction: column; gap: 8px;">
-                            <p style="margin-bottom: 4px;">Required Key: <span style="color: #38bdf8; font-weight: bold;">${targetMode.toUpperCase()} - ${targetKeyType.toUpperCase()}</span></p>
-                            <p style="font-size: 11.5px; color: ${hasKey ? '#10b981' : '#f43f5e'}; margin: 0 0 10px 0;">Available Keys: ${availableKeys}</p>
-                            <div style="font-size: 11px; color: #38bdf8; margin-bottom: 4px; text-align: left; width: 100%;">Active Rooms:</div>
-                            <div id="roomsContainer" style="width: 100%; display: flex; flex-direction: column; gap: 8px;">
-                                <span style="color: #64748b; font-size: 11px;">Loading rooms...</span>
-                            </div>
-                        </div>
-                    `}
+                    <div style="width: 100%; display: flex; justify-content: space-between; font-size: 11.5px; padding: 0 4px; box-sizing: border-box;">
+                        <span>Req Key: <b style="color: #38bdf8;">${targetMode.toUpperCase()} - ${targetKeyType.toUpperCase()}</b></span>
+                        <span style="color: ${hasKey ? '#10b981' : '#f43f5e'};">Keys: ${availableKeys}</span>
+                    </div>
+
+                    <div style="font-size: 11px; color: #38bdf8; text-align: left; width: 100%; margin-top: 4px;">Global Active Rooms:</div>
+                    
+                    <!-- Global Rooms အားလုံး ပေါ်လာမယ့် Container -->
+                    <div id="roomsContainer" style="width: 100%; display: flex; flex-direction: column; gap: 8px;">
+                        <span style="color: #64748b; font-size: 11px;">Loading rooms...</span>
+                    </div>
                 </div>
 
                 <div class="room-bottom-actions">
-                    <button class="room-btn btn-new-room" id="newRoomBtn" ${!hasKey || isCreated ? 'disabled' : ''}>
-                        ${isCreated ? 'Room Created' : (hasKey ? 'Create Room' : 'No Key')}
+                    <button class="room-btn btn-new-room" id="newRoomBtn" ${!hasKey || hasMyRoom ? 'disabled' : ''}>
+                        ${hasMyRoom ? 'Room Created' : (hasKey ? 'Create Room' : 'No Key')}
                     </button>
                     <button class="room-btn btn-cancel" id="cancelBtn">Back</button>
                 </div>
@@ -219,7 +199,7 @@ export function renderRoomScreen(container, roomTitleText, userDocData = {}) {
         `;
     }
 
-    // Global Active Rooms များကို Backend မှ ဆွဲထုတ်ပြသသည့် Function
+    // Database ထဲမှာရှိတဲ့ Global Room အားလုံးကို ဆွဲထုတ်ပြီး Card တိုင်းပြပေးမယ့် Function
     async function fetchAndRenderGlobalRooms() {
         const roomsContainer = container.querySelector('#roomsContainer');
         if (!roomsContainer) return;
@@ -228,42 +208,61 @@ export function renderRoomScreen(container, roomTitleText, userDocData = {}) {
             const response = await fetch(`/api/create-room?mode=${targetMode}&keyType=${targetKeyType}`);
             const data = await response.json();
 
+            let hasMyRoom = false;
+
             if (data.success && data.rooms && data.rooms.length > 0) {
-                roomsContainer.innerHTML = data.rooms.map(room => `
-                    <div class="ios-room-card" style="max-width: 100%;">
-                        <div class="matchup-container">
-                            <div class="player-side">
-                                <img src="${room.teamLogo || 'FrontLogo.jpg'}" alt="Logo" class="player-avatar" onerror="this.src='FrontLogo.jpg'">
-                                <span class="player-name">${room.teamName || 'Player'}</span>
-                            </div>
-                            <div class="vs-badge">VS</div>
-                            <div class="player-side right">
-                                <div class="right-action-group">
-                                    <span class="player-name" style="color: #94a3b8;">Waiting...</span>
-                                    ${room.hostId === userId ? `<button class="card-cancel-btn" data-hostid="${room.hostId}">Cancel</button>` : ''}
+                roomsContainer.innerHTML = data.rooms.map(room => {
+                    if (room.hostId === userId) {
+                        hasMyRoom = true;
+                    }
+                    return `
+                        <div class="ios-room-card" style="max-width: 100%;">
+                            <div class="matchup-container">
+                                <div class="player-side">
+                                    <img src="${room.teamLogo || defaultUserAvatar}" alt="Logo" class="player-avatar" onerror="this.src='FrontLogo.jpg'">
+                                    <span class="player-name">${room.teamName || 'Player'}</span>
+                                </div>
+                                <div class="vs-badge">VS</div>
+                                <div class="player-side right">
+                                    <div class="right-action-group">
+                                        <span class="player-name" style="color: #94a3b8;">Waiting...</span>
+                                        ${room.hostId === userId ? `<button class="card-cancel-btn" data-hostid="${room.hostId}">Cancel</button>` : ''}
+                                    </div>
                                 </div>
                             </div>
                         </div>
-                    </div>
-                `).join('');
+                    `;
+                }).join('');
 
-                // Global list ထဲက Cancel ခလုတ်များအတွက် Event ချိတ်ပေးခြင်း
-                roomsContainer.querySelectorAll('.card-cancel-btn').forEach(btn => {
-                    btn.addEventListener('click', async (e) => {
-                        const hostIdToCancel = e.target.getAttribute('data-hostid');
-                        await cancelRoomAPI(hostIdToCancel);
-                    });
-                });
+                // ကိုယ့် Room ရှိနေရင် Create Room ခလုတ်ကို ပိတ်ပေးမည်
+                const newRoomBtn = container.querySelector('#newRoomBtn');
+                if (newRoomBtn && hasKey) {
+                    newRoomBtn.disabled = true;
+                    newRoomBtn.textContent = 'Room Created';
+                    newRoomBtn.style.background = '#1e293b';
+                    newRoomBtn.style.color = '#64748b';
+                    newRoomBtn.style.cursor = 'not-allowed';
+                }
+
             } else {
-                roomsContainer.innerHTML = `<span style="color: #64748b; font-size: 11px;">Active room မရှိသေးပါ။ Room အသစ်ထောင်နိုင်ပါသည်။</span>`;
+                roomsContainer.innerHTML = `<span style="color: #64748b; font-size: 11px; padding: 10px 0;">Active room မရှိသေးပါ။ Room အသစ်ထောင်နိုင်ပါသည်။</span>`;
             }
+
+            // Cancel ခလုတ်များအတွက် Event ချိတ်ပေးခြင်း
+            roomsContainer.querySelectorAll('.card-cancel-btn').forEach(btn => {
+                btn.addEventListener('click', async (e) => {
+                    const hostIdToCancel = e.target.getAttribute('data-hostid');
+                    await cancelRoomAPI(hostIdToCancel);
+                });
+            });
+
         } catch (err) {
             console.error("Fetch rooms error:", err);
             roomsContainer.innerHTML = `<span style="color: #f43f5e; font-size: 11px;">Rooms များကို ဆွဲထုတ်၍ မရပါ။</span>`;
         }
     }
 
-    // Room ဖျက်ရန် (DELETE API ခေါ်ရန်) Common Function
+    // Room ဖျက်ရန် (DELETE API ခေါ်ရန်)
     async function cancelRoomAPI(targetHostId) {
         try {
             const response = await fetch('/api/create-room', {
@@ -274,12 +273,19 @@ export function renderRoomScreen(container, roomTitleText, userDocData = {}) {
             const result = await response.json();
 
             if (result.success) {
-                // ကိုယ့် Room ကို Cancel လိုက်တာဖြစ်ရင် ပုံမှန် screen (Global list ပြတဲ့ screen) သို့ ပြန်သွားမည်
+                // Room ဖျက်ပြီးတာနဲ့ စာရင်းကို အလိုအလျောက် Refresh လုပ်မည်
+                fetchAndRenderGlobalRooms();
+                
+                // ကိုယ်တိုင်ထောင်ထားတာကို ဖျက်လိုက်တာဆိုရင် Create Room ခလုတ်ကို ပုံမှန်အတိုင်း ပြန်ဖွင့်ပေးမည်
                 if (targetHostId === userId) {
-                    container.innerHTML = renderScreenHTML(false);
-                    attachEventListeners();
-                } else {
-                    fetchAndRenderGlobalRooms();
+                    const newRoomBtn = container.querySelector('#newRoomBtn');
+                    if (newRoomBtn && hasKey) {
+                        newRoomBtn.disabled = false;
+                        newRoomBtn.textContent = 'Create Room';
+                        newRoomBtn.style.background = 'linear-gradient(135deg, #0284c7, #9333ea)';
+                        newRoomBtn.style.color = '#fff';
+                        newRoomBtn.style.cursor = 'pointer';
+                    }
                 }
             } else {
                 alert(result.message || 'Room ဖျက်၍ မရပါ။');
@@ -290,98 +296,66 @@ export function renderRoomScreen(container, roomTitleText, userDocData = {}) {
         }
     }
 
-    // ပထမအကြိမ် render လုပ်ခြင်း (လက်ရှိ User ထောင်ထားပြီးသား room ရှိမရှိ စစ်ဆေးနိုင်ရန် ချက်ချင်း GET ခေါ်မည်)
-    async function initScreen() {
-        try {
-            const response = await fetch(`/api/create-room?mode=${targetMode}&keyType=${targetKeyType}`);
-            const data = await response.json();
-            
-            let myExistingRoom = null;
-            if (data.success && data.rooms) {
-                myExistingRoom = data.rooms.find(r => r.hostId === userId);
-            }
+    // စတင်ဖွင့်ချင်း Screen တည်ဆောက်ခြင်း
+    container.innerHTML = renderScreenHTML(false);
+    fetchAndRenderGlobalRooms();
 
-            if (myExistingRoom) {
-                container.innerHTML = renderScreenHTML(true, myExistingRoom.teamName, myExistingRoom.teamLogo);
-            } else {
-                container.innerHTML = renderScreenHTML(false);
-                fetchAndRenderGlobalRooms();
-            }
-            attachEventListeners();
-        } catch (e) {
-            container.innerHTML = renderScreenHTML(false);
-            attachEventListeners();
-        }
-    }
+    // Event Listeners များ
+    const newRoomBtn = container.querySelector('#newRoomBtn');
+    if (newRoomBtn) {
+        newRoomBtn.addEventListener('click', async () => {
+            if (!hasKey || newRoomBtn.disabled) return;
 
-    function attachEventListeners() {
-        const newRoomBtn = container.querySelector('#newRoomBtn');
-        if (newRoomBtn && hasKey) {
-            newRoomBtn.addEventListener('click', async () => {
-                try {
-                    newRoomBtn.disabled = true;
-                    newRoomBtn.textContent = 'Creating...';
+            try {
+                newRoomBtn.disabled = true;
+                newRoomBtn.textContent = 'Creating...';
 
-                    if (!userId) {
-                        alert('User ID မတွေ့ရှိရပါ။ ကျေးဇူးပြု၍ Login ပြန်ဝင်ပါ။');
-                        newRoomBtn.disabled = false;
-                        newRoomBtn.textContent = 'Create Room';
-                        return;
-                    }
-
-                    const response = await fetch('/api/create-room', {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({
-                            userId: userId,
-                            roomTitle: displayTitle,
-                            targetMode: targetMode,
-                            targetKeyType: targetKeyType,
-                            boType: boType
-                        })
-                    });
-                    const result = await response.json();
-
-                    if (!result.success) {
-                        alert(result.message || 'Room ဖန်တီး၍ မရပါ');
-                        newRoomBtn.disabled = false;
-                        newRoomBtn.textContent = 'Create Room';
-                        return;
-                    }
-
-                    // Local key ကို နှုတ်ပေးရန်
-                    deductKey(targetMode, targetKeyType);
-
-                    const finalTeamName = result.roomData?.teamName || defaultUserName;
-                    const finalTeamLogo = result.roomData?.teamLogo || defaultUserAvatar;
-
-                    container.innerHTML = renderScreenHTML(true, finalTeamName, finalTeamLogo);
-                    attachEventListeners();
-                    
-                } catch (err) {
-                    console.error("Room create error:", err);
-                    alert('ဆာဗာသို့ ချိတ်ဆက်၍ မရပါ။');
+                if (!userId) {
+                    alert('User ID မတွေ့ရှိရပါ။ ကျေးဇူးပြု၍ Login ပြန်ဝင်ပါ။');
                     newRoomBtn.disabled = false;
                     newRoomBtn.textContent = 'Create Room';
+                    return;
                 }
-            });
-        }
 
-        const cancelBtn = container.querySelector('#cancelBtn');
-        if (cancelBtn) {
-            cancelBtn.addEventListener('click', () => {
-                renderMatchScreen(container, userDocData);
-            });
-        }
+                const response = await fetch('/api/create-room', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        userId: userId,
+                        roomTitle: displayTitle,
+                        targetMode: targetMode,
+                        targetKeyType: targetKeyType,
+                        boType: boType
+                    })
+                });
+                const result = await response.json();
 
-        const cardCancelBtn = container.querySelector('.card-cancel-btn');
-        if (cardCancelBtn) {
-            cardCancelBtn.addEventListener('click', async () => {
-                const hostIdToCancel = cardCancelBtn.getAttribute('data-hostid') || userId;
-                await cancelRoomAPI(hostIdToCancel);
-            });
-        }
+                if (!result.success) {
+                    alert(result.message || 'Room ဖန်တီး၍ မရပါ');
+                    newRoomBtn.disabled = false;
+                    newRoomBtn.textContent = 'Create Room';
+                    return;
+                }
+
+                // Local key ကို နှုတ်ပေးရန်
+                deductKey(targetMode, targetKeyType);
+
+                // Room ဖန်တီးပြီးတာနဲ့ Global Room စာရင်းကို ချက်ချင်းပြန်ဆွဲပြမည်
+                fetchAndRenderGlobalRooms();
+                
+            } catch (err) {
+                console.error("Room create error:", err);
+                alert('ဆာဗာသို့ ချိတ်ဆက်၍ မရပါ။');
+                newRoomBtn.disabled = false;
+                newRoomBtn.textContent = 'Create Room';
+            }
+        });
     }
 
-    initScreen();
+    const cancelBtn = container.querySelector('#cancelBtn');
+    if (cancelBtn) {
+        cancelBtn.addEventListener('click', () => {
+            renderMatchScreen(container, userDocData);
+        });
+    }
 }
