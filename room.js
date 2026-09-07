@@ -209,6 +209,8 @@ export function renderRoomScreen(container, roomTitleText, userDocData = {}) {
             let hasMyRoom = false;
 
             if (data.success && data.rooms && data.rooms.length > 0) {
+                // Global active_rooms အားလုံးထဲမှာ User တစ်ယောက်တည်းက နေရာအမျိုးမျိုးမှာ Room တွေထောင်ထားတာမျိုးကိုပါ စစ်ဆေးဖို့အတွက် 
+                // အကယ်၍ ဒီ User ရဲ့ hostId နဲ့ တူတဲ့ Room ရှိနှင့်ပြီးသားဆိုရင် hasMyRoom ကို true လုပ်ပါမယ်
                 roomsContainer.innerHTML = data.rooms.map(room => {
                     if (room.hostId === userId) {
                         hasMyRoom = true;
@@ -235,21 +237,27 @@ export function renderRoomScreen(container, roomTitleText, userDocData = {}) {
                 roomsContainer.innerHTML = `<span style="color: #64748b; font-size: 11px; padding: 10px 0;">Active room မရှိသေးပါ။ Room အသစ်ထောင်နိုင်ပါသည်။</span>`;
             }
 
-            // Create Room ခလုတ်၏ အခြေအနေကို ကိုယ့် Room ရှိမရှိအပေါ်မူတည်၍ အလိုအလျောက် ပြောင်းလဲပေးခြင်း
+            // User မှာ Room ရှိပြီးသားဆိုရင် (Key ဘယ်လောက်ပဲရှိရှိ) Create Room ခလုတ်ကို ပိတ်ထားပါမယ်
             const newRoomBtn = container.querySelector('#newRoomBtn');
-            if (newRoomBtn && hasKey) {
+            if (newRoomBtn) {
                 if (hasMyRoom) {
                     newRoomBtn.disabled = true;
                     newRoomBtn.textContent = 'Room Created';
                     newRoomBtn.style.background = '#1e293b';
                     newRoomBtn.style.color = '#64748b';
                     newRoomBtn.style.cursor = 'not-allowed';
-                } else {
+                } else if (hasKey) {
                     newRoomBtn.disabled = false;
                     newRoomBtn.textContent = 'Create Room';
                     newRoomBtn.style.background = 'linear-gradient(135deg, #0284c7, #9333ea)';
                     newRoomBtn.style.color = '#fff';
                     newRoomBtn.style.cursor = 'pointer';
+                } else {
+                    newRoomBtn.disabled = true;
+                    newRoomBtn.textContent = 'No Key';
+                    newRoomBtn.style.background = '#1e293b';
+                    newRoomBtn.style.color = '#64748b';
+                    newRoomBtn.style.cursor = 'not-allowed';
                 }
             }
 
@@ -277,7 +285,7 @@ export function renderRoomScreen(container, roomTitleText, userDocData = {}) {
             const result = await response.json();
 
             if (result.success) {
-                // Room ဖျက်ပြီးတာနဲ့ Global စာရင်းကို အသစ်ပြန်ဆွဲမည် (Button တွေပါ အလိုအလျောက် ဖြည့်ပေးသွားပါလိမ့်မည်)
+                // Room ဖျက်ပြီးတာနဲ့ Global စာရင်းကို အလိုအလျောက် Refresh လုပ်မည် (ကိုယ်ပိုင် Room မရှိတော့တဲ့အတွက် Create Room ခလုတ် ပြန်ပွင့်ပါမယ်)
                 fetchAndRenderGlobalRooms();
             } else {
                 alert(result.message || 'Room ဖျက်၍ မရပါ။');
@@ -296,7 +304,7 @@ export function renderRoomScreen(container, roomTitleText, userDocData = {}) {
     const newRoomBtn = container.querySelector('#newRoomBtn');
     if (newRoomBtn) {
         newRoomBtn.addEventListener('click', async () => {
-            if (!hasKey || newRoomBtn.disabled) return;
+            if (newRoomBtn.disabled) return;
 
             try {
                 newRoomBtn.disabled = true;
