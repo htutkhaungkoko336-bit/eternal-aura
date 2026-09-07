@@ -72,12 +72,13 @@ export function renderRoomScreen(container, roomTitleText, userDocData = {}) {
                 .ios-room-card {
                     background: linear-gradient(135deg, rgba(15, 23, 42, 0.9), rgba(30, 41, 59, 0.8));
                     border: 2px solid transparent;
-                    border-image: linear-gradient(135deg, #38bdf8, #9333ea, #f43f5e) 1;
+                    /* + BTN နဲ့ လိုက်ဖက်တဲ့ အပြာ/ခရမ်းရောင် Gradient ဘောင် */
+                    border-image: linear-gradient(135deg, #0ea5e9, #a855f7, #6366f1) 1;
                     border-radius: 12px;
                     padding: 12px 16px;
                     width: 100%;
                     max-width: 330px;
-                    box-shadow: 0 0 20px rgba(56, 189, 248, 0.2);
+                    box-shadow: 0 0 15px rgba(14, 165, 233, 0.2);
                     box-sizing: border-box;
                 }
                 .matchup-container {
@@ -116,21 +117,22 @@ export function renderRoomScreen(container, roomTitleText, userDocData = {}) {
                 .vs-badge {
                     font-size: 10px;
                     font-weight: 900;
-                    color: #f43f5e;
-                    background: rgba(244, 63, 94, 0.15);
+                    color: #38bdf8;
+                    background: rgba(56, 189, 248, 0.15);
                     padding: 3px 6px;
                     border-radius: 6px;
-                    border: 1px solid rgba(244, 63, 94, 0.3);
+                    border: 1px solid rgba(56, 189, 248, 0.3);
                 }
                 .right-action-group {
                     display: flex;
                     align-items: center;
                     gap: 6px;
                 }
+                /* CANCEL ခလုတ်ကို လိမ္မော်/ရွှေဝါရောင် (Amber/Orange) ဖက်သို့ ပြောင်းထားသည် */
                 .card-cancel-btn {
-                    background: rgba(244, 63, 94, 0.1);
-                    color: #f43f5e;
-                    border: 1px solid rgba(244, 63, 94, 0.5);
+                    background: rgba(245, 158, 11, 0.15);
+                    color: #f59e0b;
+                    border: 1px solid rgba(245, 158, 11, 0.5);
                     padding: 4px 8px;
                     border-radius: 6px;
                     font-size: 10px;
@@ -139,11 +141,11 @@ export function renderRoomScreen(container, roomTitleText, userDocData = {}) {
                     white-space: nowrap;
                 }
                 .card-cancel-btn:hover {
-                    background: rgba(244, 63, 94, 0.25);
+                    background: rgba(245, 158, 11, 0.3);
                 }
-                /* တစ်ခြားသူများ Room အတွက် `+` ခလုတ်စတိုင် */
+                /* `+` ခလုတ်စတိုင် */
                 .card-join-btn {
-                    background: linear-gradient(135deg, #0284c7, #9333ea);
+                    background: linear-gradient(135deg, #0ea5e9, #a855f7);
                     color: #fff;
                     border: none;
                     width: 24px;
@@ -155,7 +157,7 @@ export function renderRoomScreen(container, roomTitleText, userDocData = {}) {
                     align-items: center;
                     justify-content: center;
                     cursor: pointer;
-                    box-shadow: 0 0 10px rgba(56, 189, 248, 0.4);
+                    box-shadow: 0 0 10px rgba(14, 165, 233, 0.4);
                 }
                 .card-join-btn:hover {
                     opacity: 0.9;
@@ -178,29 +180,29 @@ export function renderRoomScreen(container, roomTitleText, userDocData = {}) {
                     cursor: pointer;
                 }
                 .btn-new-room {
-                    background: ${hasKey ? 'linear-gradient(135deg, #0284c7, #9333ea)' : '#1e293b'};
+                    background: ${hasKey ? 'linear-gradient(135deg, #0ea5e9, #a855f7)' : '#1e293b'};
                     color: ${hasKey ? '#fff' : '#64748b'};
                     cursor: ${hasKey ? 'pointer' : 'not-allowed'};
                 }
                 .btn-cancel {
                     background: rgba(30, 41, 59, 0.9);
-                    color: #f43f5e;
-                    border: 1px solid rgba(244, 63, 94, 0.4);
+                    color: #94a3b8;
+                    border: 1px solid rgba(148, 163, 184, 0.4);
                 }
             </style>
 
             <div class="room-screen-wrapper">
-                <div style="position: relative; border: 2px solid #38bdf8; border-radius: 6px; padding: 10px 14px; margin-top: 10px; background-color: rgba(15, 23, 42, 0.8); text-align: center; width: 100%; max-width: 330px; box-sizing: border-box;">
-                    <h2 style="color: #f8fafc; font-size: 17px; font-weight: 800; margin: 0; text-transform: uppercase; background: linear-gradient(to right, #38bdf8, #818cf8); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">${displayTitle} (${boType})</h2>
+                <div style="position: relative; border: 2px solid #0ea5e9; border-radius: 6px; padding: 10px 14px; margin-top: 10px; background-color: rgba(15, 23, 42, 0.8); text-align: center; width: 100%; max-width: 330px; box-sizing: border-box;">
+                    <h2 style="color: #f8fafc; font-size: 17px; font-weight: 800; margin: 0; text-transform: uppercase; background: linear-gradient(to right, #0ea5e9, #a855f7); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">${displayTitle} (${boType})</h2>
                 </div>
                 
                 <div class="room-content-center" id="roomContentArea">
                     <div style="width: 100%; display: flex; justify-content: space-between; font-size: 11.5px; padding: 0 4px; box-sizing: border-box;">
-                        <span>Req Key: <b style="color: #38bdf8;">${targetMode.toUpperCase()} - ${targetKeyType.toUpperCase()}</b></span>
+                        <span>Req Key: <b style="color: #0ea5e9;">${targetMode.toUpperCase()} - ${targetKeyType.toUpperCase()}</b></span>
                         <span style="color: ${hasKey ? '#10b981' : '#f43f5e'};">Keys: ${availableKeys}</span>
                     </div>
 
-                    <div style="font-size: 11px; color: #38bdf8; text-align: left; width: 100%; margin-top: 4px;">Global Active Rooms:</div>
+                    <div style="font-size: 11px; color: #0ea5e9; text-align: left; width: 100%; margin-top: 4px;">Global Active Rooms:</div>
                     
                     <div id="roomsContainer" style="width: 100%; display: flex; flex-direction: column; gap: 8px;">
                         <span style="color: #64748b; font-size: 11px;">Loading rooms...</span>
@@ -245,7 +247,7 @@ export function renderRoomScreen(container, roomTitleText, userDocData = {}) {
                                 <div class="player-side right">
                                     <div class="right-action-group">
                                         ${isMyRoom 
-                                            ? `<span class="player-name" style="color: #94a3b8;">Waiting...</span>
+                                            ? `<span class="player-name" style="color: #f59e0b;">Waiting...</span>
                                                <button class="card-cancel-btn" data-hostid="${room.hostId}">Cancel</button>`
                                             : `<button class="card-join-btn" data-roomid="${room.id}" data-hostid="${room.hostId}" title="Join Room">+</button>`
                                         }
@@ -259,7 +261,6 @@ export function renderRoomScreen(container, roomTitleText, userDocData = {}) {
                 roomsContainer.innerHTML = `<span style="color: #64748b; font-size: 11px; padding: 10px 0;">Active room မရှိသေးပါ။ Room အသစ်ထောင်နိုင်ပါသည်။</span>`;
             }
 
-            // Create Room ခလုတ် အနေအထားကို စစ်ဆေးခြင်း
             const newRoomBtn = container.querySelector('#newRoomBtn');
             if (newRoomBtn) {
                 if (hasMyRoom) {
@@ -271,7 +272,7 @@ export function renderRoomScreen(container, roomTitleText, userDocData = {}) {
                 } else if (hasKey) {
                     newRoomBtn.disabled = false;
                     newRoomBtn.textContent = 'Create Room';
-                    newRoomBtn.style.background = 'linear-gradient(135deg, #0284c7, #9333ea)';
+                    newRoomBtn.style.background = 'linear-gradient(135deg, #0ea5e9, #a855f7)';
                     newRoomBtn.style.color = '#fff';
                     newRoomBtn.style.cursor = 'pointer';
                 } else {
@@ -283,7 +284,6 @@ export function renderRoomScreen(container, roomTitleText, userDocData = {}) {
                 }
             }
 
-            // Cancel ခလုတ်အတွက် Event
             roomsContainer.querySelectorAll('.card-cancel-btn').forEach(btn => {
                 btn.addEventListener('click', async (e) => {
                     const hostIdToCancel = e.target.getAttribute('data-hostid');
@@ -291,11 +291,9 @@ export function renderRoomScreen(container, roomTitleText, userDocData = {}) {
                 });
             });
 
-            // `+` (Join) ခလုတ်အတွက် Event 
             roomsContainer.querySelectorAll('.card-join-btn').forEach(btn => {
                 btn.addEventListener('click', (e) => {
                     const hostIdToJoin = e.target.getAttribute('data-hostid');
-                    // တစ်ခြားသူ့ Room ကို ဝင်မည့် လုပ်ဆောင်ချက် (ဥပမာ Match Screen သို့မဟုတ် Join API သို့ သွားရန်)
                     alert(`Room (Host ID: ${hostIdToJoin}) သို့ ချိတ်ဆက်ရန် အသင့်ဖြစ်ပါပြီ။`);
                 });
             });
