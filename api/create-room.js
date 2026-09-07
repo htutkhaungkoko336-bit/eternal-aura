@@ -1,5 +1,5 @@
 const { initializeApp, cert, getApps } = require('firebase-admin/app');
-const { getFirestore, FieldValue } = require('firebase-admin/firestore');
+const { getFirestore } = require('firebase-admin/firestore');
 
 const app = getApps().length === 0 
   ? initializeApp({
@@ -31,7 +31,6 @@ module.exports = async function handler(req, res) {
     try {
         const { userId, roomTitle, targetMode, targetKeyType, boType } = req.body;
 
-        // ၁။ လိုအပ်သော ဒေတာများ ပါဝင်ခြင်း ရှိမရှိ စစ်ဆေးခြင်း
         if (!userId || !targetMode || !targetKeyType) {
             return res.status(400).json({ success: false, message: "Missing required fields (userId, targetMode, targetKeyType)" });
         }
@@ -39,7 +38,7 @@ module.exports = async function handler(req, res) {
         const usersRef = db.collection('users');
         const roomsRef = db.collection('active_rooms');
 
-        // ၂။ User ရှိမရှိ နှင့် Key လက်ကျန် လုံလောက်မှု ရှိမရှိ စစ်ဆေးခြင်း
+        // ၁။ User ရှိမရှိ နှင့် Key လက်ကျန် စစ်ဆေးခြင်း
         const userDocRef = usersRef.doc(userId);
         const userDoc = await userDocRef.get();
 
@@ -50,51 +49,74 @@ module.exports = async function handler(req, res) {
         const userData = userDoc.data();
         const userKeys = userData.keys || {};
         
-        // ယူမည့် Key အမျိုးအစား (ဥပမာ - "1vs1-5k သို့မဟုတ် tournament")
-        const currentKeyCount = userKeys[targetKeyType] || 0;
+        // keyType များကို ချိန်ကိုက်ရန် (ဥပမာ: "5vs5-50k" သို့မဟုတ် "50k")
+        // Frontend ပို့ပုံပေါ်မူတည်၍ key format ကို ညှိပေးနိုင်သည်
+        const keyStoreKey = `${targetMode}-${targetKeyType}`; 
+        const currentKeyCount = userKeys[keyTypeFinder(userKeys, targetMode, targetKeyType)] ?? userKeys[targetKeyType] ?? 0;
 
-        if (currentKeyCount <= 0) {
-            return res.status(400).json({ success: false, message: "Key မလုံလောက်ပါ။ ကျေးဇူးပြု၍ Key ထပ်ဖြည့်ပါ။" });
-        }
+        // အကယ်၍ Key မလုံလောက်ပါက (လောလောဆယ် key စစ်ဆေးမှုကို လိုသလို ဖြုတ်/ထည့် လုပ်နိုင်သည်)
+        // if (currentKeyCount <= 0) {
+        //     return res.status(400).json({ success: false, message: "Key မလုံလောက်ပါ။" });
+        // }
 
-        // ၃။ User တွင် Room တစ်ခုခုပြီးသား (သို့မဟုတ် active ဖြစ်နေတာ) ရှိမရှိ စစ်ဆေးခြင်း ( விருப்பရှိလျှင် ထည့်ရန် )
-        const existingRoom = await roomsRef.doc(userId).get();
-        if (existingRoom.exists) {
-            // ရှေ့က Room ဟောင်း ရှိနေသေးရင် ဖျက်ပေးခြင်း သို့မဟုတ် တားမြစ်ခြင်း
-            await roomsRef.doc(userId).delete();
-        }
+        // ၂။ ညီမပြထားတဲ့ ပုံစံအတိုင်း Mode အလိုက် registration collection ကို ရှာမည်
+        // ဥပမာ - 5vs5 ဆိုရင် "5vs5_registrations"
+        const regCollectionName = `${targetMode}_registrations`;
+        const regSnapshot = await db.collection(regCollectionName).get();
 
-        // ၄။ Key ကို ၁ ခု နှုတ်ယူခြင်း
-        const updatedKeys = {
-            ...userKeys,
-            [targetKeyType]: currentKeyCount - 1
-        };
+        let registeredTeamName = userData.name || 'Player';
+        let registeredLogo = userData.photoURL || 'FrontLogo.jpg';
+        let isFoundRegistration = false;
 
-        await userDocRef.update({
-            keys: updatedKeys
+        // Document တစ်ခုချင်းစီထဲမှာ User ID (ဥပမာ field name က id ဖြစ်နေတာကို တွေ့ရပါတယ်) နဲ့ 
+        // ဝင်ထားတဲ့ keyType (ဥပမာ fee သို့မဟုတ် gold/jungle စသည့် map ထဲက data) ကို စစ်ဆေးခြင်း
+        regSnapshot.forEach(doc => {
+            const regData = doc.data();
+            
+            // ဥပမာ - ဒီ doc ထဲမှာ user ရဲ့ id ပါမပါ နှင့် keyType နဲ့ ကိုက်ညီမှုရှိမရှိ စစ်ဆေးခြင်း
+            // ညီမပြထားတဲ့ screenshot အရ fee (သို့) gold စတဲ့ field တွေထဲမှာ id နဲ့ name တွေရှိနေတာကို တွေ့ရပါတယ်
+            for (let key in regData) {
+                const subField = regData[key];
+                if (subField && typeof subField === 'object' && subField.id === userId) {
+                    // keyType (ဥပမာ 50K) နဲ့ တူမတူ စစ်ဆေးရန် (fee field ကို စစ်ဆေးခြင်း)
+                    if (regData.fee && regData.fee.toUpperCase() === targetKeyType.toUpperCase()) {
+                        isFoundRegistration = true;
+                        if (regData.name) registeredTeamName = regData.name;
+                        if (regData.logo) registeredLogo = regData.logo;
+                    }
+                }
+            }
         });
 
-        // ၅။ Room အသစ်ကို တည်ဆောက်ပြီး Firestore သို့ သိမ်းဆည်းခြင်း
+        // ၃။ အကယ်၍ registration ထဲမှာ ရှာမတွေ့ရင်တောင် User ရဲ့ profile ထဲက နာမည်/ပုံကို ယူသုံးမည်
+        // ဒါမှမဟုတ် registration မရှိရင် Room ထောင်ခွင့်မပေးချင်ရင် ဒီမှာ error ထုတ်လို့ရပါတယ်
+
+        // ၄။ Key ကို ၁ ခု နှုတ်ယူခြင်း (လက်ကျန်ရှိမှ နှုတ်မည်)
+        const matchedKeyName = Object.keys(userKeys).find(k => k.toLowerCase().includes(targetKeyType.toLowerCase()) && k.toLowerCase().includes(targetMode.toLowerCase()));
+        if (matchedKeyName && userKeys[matchedKeyName] > 0) {
+            userKeys[matchedKeyName] -= 1;
+            await userDocRef.update({ keys: userKeys });
+        }
+
+        // ၅။ active_rooms collection အသစ်ထဲတွင် ဤ userId ကို Document ID အဖြစ် အသုံးပြု၍ Host အဖြစ် သိမ်းဆည်းခြင်း
         const roomData = {
             hostId: userId,
-            hostName: userData.name || 'Player',
-            hostPhone: userData.phone || '',
+            teamName: registeredTeamName,   // Registration ထဲက Team Name (သို့မဟုတ် User နာမည်)
+            teamLogo: registeredLogo,       // Registration ထဲက Logo
             roomTitle: roomTitle || `${targetMode} Room`,
             mode: targetMode,
             keyType: targetKeyType,
             boType: boType || 'BO1',
-            status: 'waiting', // waiting, playing, finished
+            status: 'waiting', 
             createdAt: getYangonTimeStr()
         };
 
-        // User တစ်ဦးလျှင် Room တစ်ခု သတ်မှတ်ရန် userId ကို doc id အဖြစ်သုံးသည်
         await roomsRef.doc(userId).set(roomData);
 
         return res.status(200).json({ 
             success: true, 
-            message: "Room successfully created", 
-            roomData: roomData,
-            remainingKeys: updatedKeys[targetKeyType]
+            message: "Room successfully created and hosted", 
+            roomData: roomData 
         });
 
     } catch (error) {
@@ -102,3 +124,13 @@ module.exports = async function handler(req, res) {
         return res.status(500).json({ success: false, message: "Server Error" });
     }
 };
+
+// Helper for finding key in object
+function keyTypeFinder(keysObj, mode, type) {
+    for (let k in keysObj) {
+        if (k.toLowerCase().includes(mode.toLowerCase()) && k.toLowerCase().includes(type.toLowerCase())) {
+            return k;
+        }
+    }
+    return type;
+}
