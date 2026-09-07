@@ -1,5 +1,5 @@
 const { initializeApp, cert, getApps } = require('firebase-admin/app');
-const { getFirestore, FieldValue } = require('firebase-admin/firestore');
+const { getFirestore } = require('firebase-admin/firestore');
 
 const app = getApps().length === 0 
   ? initializeApp({
@@ -30,7 +30,6 @@ module.exports = async function handler(req, res) {
     try {
         const { userId, roomTitle, targetMode, targetKeyType, boType } = req.body;
 
-        // ၁။ User ID, Mode နှင့် Key Type ပါမပါ စစ်ဆေးခြင်း
         if (!userId || !targetMode || !targetKeyType) {
             return res.status(400).json({ success: false, message: "Missing required fields (userId, targetMode, targetKeyType)" });
         }
@@ -46,38 +45,33 @@ module.exports = async function handler(req, res) {
         let teamName = userData.name || 'Player';
         let teamLogo = userData.photoURL || userData.avatar || 'FrontLogo.jpg';
 
-        // ၂။ Mode ကိုစစ်ဆေးပြီး သက်ဆိုင်ရာ Registration Collection ကို ရွေးချယ်ခြင်း
         let regCollectionName = '';
-        let gameModeKey = '';
-
         const lowerMode = targetMode.toLowerCase();
+        
         if (lowerMode.includes('1v1') || lowerMode.includes('1vs1')) {
             regCollectionName = '1vs1_registrations';
-            gameModeKey = `1vs1-${targetKeyType.toLowerCase()}`;
         } else if (lowerMode.includes('5v5') || lowerMode.includes('5vs5')) {
             regCollectionName = '5vs5_registrations';
-            gameModeKey = `5vs5-${targetKeyType.toLowerCase()}`;
         } else if (lowerMode.includes('tournament')) {
             regCollectionName = 'tournament_registrations';
-            gameModeKey = 'tournament';
         }
 
         if (regCollectionName) {
-            // ၃။ userId ဖြင့် Registration စာရင်းများကို ရှာဖွေခြင်း
+            // 🔥 createdAt ကို အခြေခံ၍ အစောဆုံး (မနေ့က / ရှေးကျသော) စာရင်းကို ဦးစားပေး ယူရန် asc သုံးခြင်း
             const regSnapshot = await db.collection(regCollectionName)
                 .where('userId', '==', userId)
+                .orderBy('createdAt', 'asc')
                 .get();
 
             let matchedReg = null;
             regSnapshot.forEach(doc => {
                 const regData = doc.data();
-                // fee (ဥပမာ '50K' သို့မဟုတ် '5k') တိုက်ဆိုင်စစ်ဆေးခြင်း
-                if (regData.fee && regData.fee.toString().toUpperCase() === targetKeyType.toUpperCase()) {
+                // fee တူညီမှုကို စစ်ဆေးခြင်း (ပထမဆုံး တွေ့ရှိသည့် ရှေးကျသောစာရင်းကို ယူမည်)
+                if (!matchedReg && regData.fee && regData.fee.toString().toUpperCase() === targetKeyType.toUpperCase()) {
                     matchedReg = regData;
                 }
             });
 
-            // ၄။ တွေ့ရှိပါက Registration ထဲက Name နဲ့ Logo ကို အစားထိုးယူမည်
             if (matchedReg) {
                 if (lowerMode.includes('5v5') || lowerMode.includes('5vs5')) {
                     teamName = matchedReg.sqName || teamName;
@@ -94,7 +88,6 @@ module.exports = async function handler(req, res) {
             }
         }
 
-        // ၅။ active_rooms ထဲသို့ သိမ်းဆည်းခြင်း (userId ကို doc id အဖြစ်သုံးမည်)
         const roomData = {
             hostId: userId,
             teamName: teamName,
@@ -111,7 +104,7 @@ module.exports = async function handler(req, res) {
 
         return res.status(200).json({ 
             success: true, 
-            message: "Room created successfully", 
+            message: "Room created successfully with earlier registration data", 
             roomData: roomData 
         });
 
