@@ -1,5 +1,5 @@
 const { initializeApp, cert, getApps } = require('firebase-admin/app');
-const { getFirestore } = require('firebase-admin/firestore');
+const { getFirestore, FieldValue } = require('firebase-admin/firestore');
 
 const app = getApps().length === 0 
   ? initializeApp({
@@ -30,83 +30,93 @@ module.exports = async function handler(req, res) {
     try {
         const { userId, roomTitle, targetMode, targetKeyType, boType } = req.body;
 
+        // ၁။ User ID, Mode နှင့် Key Type ပါမပါ စစ်ဆေးခြင်း
         if (!userId || !targetMode || !targetKeyType) {
             return res.status(400).json({ success: false, message: "Missing required fields (userId, targetMode, targetKeyType)" });
         }
 
         const usersRef = db.collection('users');
-        const roomsRef = db.collection('active_rooms');
-
-        // ၁။ User ရှိမရှိ စစ်ဆေးခြင်း
-        const userDocRef = usersRef.doc(userId);
-        const userDoc = await userDocRef.get();
+        const userDoc = await usersRef.doc(userId).get();
 
         if (!userDoc.exists) {
             return res.status(404).json({ success: false, message: "User not found" });
         }
 
         const userData = userDoc.data();
-        let registeredTeamName = userData.name || 'Player';
-        let registeredLogo = userData.photoURL || userData.avatar || 'FrontLogo.jpg';
+        let teamName = userData.name || 'Player';
+        let teamLogo = userData.photoURL || userData.avatar || 'FrontLogo.jpg';
 
-        // ၂. ညီမတောင်းဆိုထားတဲ့အတိုင်း Registration Collection ထဲမှာ လိုက်ရှာခြင်း
-        // ဥပမာ - 5v5 ဆိုရင် "5v5_registrations" သို့မဟုတ် "5vs5_registrations"
-        const normalizedMode = targetMode.toLowerCase().replace('v', 'vs'); // 5v5 -> 5vs5
-        const regCollectionName = `${normalizedMode}_registrations`;
-        
-        try {
-            const regSnapshot = await db.collection(regCollectionName).get();
-            
+        // ၂။ Mode ကိုစစ်ဆေးပြီး သက်ဆိုင်ရာ Registration Collection ကို ရွေးချယ်ခြင်း
+        let regCollectionName = '';
+        let gameModeKey = '';
+
+        const lowerMode = targetMode.toLowerCase();
+        if (lowerMode.includes('1v1') || lowerMode.includes('1vs1')) {
+            regCollectionName = '1vs1_registrations';
+            gameModeKey = `1vs1-${targetKeyType.toLowerCase()}`;
+        } else if (lowerMode.includes('5v5') || lowerMode.includes('5vs5')) {
+            regCollectionName = '5vs5_registrations';
+            gameModeKey = `5vs5-${targetKeyType.toLowerCase()}`;
+        } else if (lowerMode.includes('tournament')) {
+            regCollectionName = 'tournament_registrations';
+            gameModeKey = 'tournament';
+        }
+
+        if (regCollectionName) {
+            // ၃။ userId ဖြင့် Registration စာရင်းများကို ရှာဖွေခြင်း
+            const regSnapshot = await db.collection(regCollectionName)
+                .where('userId', '==', userId)
+                .get();
+
+            let matchedReg = null;
             regSnapshot.forEach(doc => {
                 const regData = doc.data();
-                // Registration ထဲက field တစ်ခုချင်းစီကို စစ်ဆေးခြင်း
-                for (let key in regData) {
-                    const subField = regData[key];
-                    if (subField && typeof subField === 'object' && subField.id === userId) {
-                        // Key Type (ဥပမာ 50k) နဲ့ ကိုက်ညီမှု ရှိမရှိ စစ်ဆေးခြင်း
-                        if (regData.fee && regData.fee.toUpperCase() === targetKeyType.toUpperCase()) {
-                            if (regData.name) registeredTeamName = regData.name;
-                            if (regData.logo) registeredLogo = regData.logo;
-                        }
-                    }
+                // fee (ဥပမာ '50K' သို့မဟုတ် '5k') တိုက်ဆိုင်စစ်ဆေးခြင်း
+                if (regData.fee && regData.fee.toString().toUpperCase() === targetKeyType.toUpperCase()) {
+                    matchedReg = regData;
                 }
             });
-        } catch (err) {
-            console.log("Registration collection not found or error:", err);
+
+            // ၄။ တွေ့ရှိပါက Registration ထဲက Name နဲ့ Logo ကို အစားထိုးယူမည်
+            if (matchedReg) {
+                if (lowerMode.includes('5v5') || lowerMode.includes('5vs5')) {
+                    teamName = matchedReg.sqName || teamName;
+                } else if (lowerMode.includes('tournament')) {
+                    teamName = matchedReg.teamName || teamName;
+                    teamLogo = matchedReg.teamLogo || matchedReg.teamLogoUrl || teamLogo;
+                } else {
+                    teamName = matchedReg.inGameName || teamName;
+                }
+                
+                if (matchedReg.logo || matchedReg.paymentSlip) {
+                    teamLogo = matchedReg.logo || matchedReg.paymentSlip;
+                }
+            }
         }
 
-        // ၃။ Key များကို နှုတ်ယူခြင်း
-        const userKeys = userData.keys || {};
-        const matchedKeyName = Object.keys(userKeys).find(k => k.toLowerCase().includes(targetKeyType.toLowerCase()) && k.toLowerCase().includes(targetMode.toLowerCase()));
-        
-        if (matchedKeyName && userKeys[matchedKeyName] > 0) {
-            userKeys[matchedKeyName] -= 1;
-            await userDocRef.update({ keys: userKeys });
-        }
-
-        // ၄။ active_rooms ထဲတွင် userId ကို doc id အဖြစ် သိမ်းဆည်းခြင်း
+        // ၅။ active_rooms ထဲသို့ သိမ်းဆည်းခြင်း (userId ကို doc id အဖြစ်သုံးမည်)
         const roomData = {
             hostId: userId,
-            teamName: registeredTeamName,   // Registration ထဲက ရလာတဲ့ Team Name
-            teamLogo: registeredLogo,       // Registration ထဲက ရလာတဲ့ Logo
+            teamName: teamName,
+            teamLogo: teamLogo,
             roomTitle: roomTitle || `${targetMode} Room`,
             mode: targetMode,
             keyType: targetKeyType,
             boType: boType || 'BO1',
-            status: 'waiting', 
+            status: 'waiting',
             createdAt: getYangonTimeStr()
         };
 
-        await roomsRef.doc(userId).set(roomData);
+        await db.collection('active_rooms').doc(userId).set(roomData);
 
         return res.status(200).json({ 
             success: true, 
-            message: "Room successfully created", 
+            message: "Room created successfully", 
             roomData: roomData 
         });
 
     } catch (error) {
         console.error("Create Room Error:", error);
-        return res.status(500).json({ success: false, message: "Server Error" });
+        return res.status(500).json({ success: false, message: "Server Error", error: error.message });
     }
 };
