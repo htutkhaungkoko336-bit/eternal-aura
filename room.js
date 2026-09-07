@@ -87,12 +87,12 @@ export function renderRoomScreen(container, roomTitleText, userDocData = {}) {
                     display: flex;
                     align-items: center;
                     justify-content: space-between;
-                    gap: 12px;
+                    gap: 10px;
                 }
                 .player-side {
                     display: flex;
                     align-items: center;
-                    gap: 10px;
+                    gap: 8px;
                     flex: 1;
                 }
                 .player-side.right {
@@ -100,8 +100,8 @@ export function renderRoomScreen(container, roomTitleText, userDocData = {}) {
                     text-align: right;
                 }
                 .player-avatar {
-                    width: 42px;
-                    height: 42px;
+                    width: 40px;
+                    height: 40px;
                     border-radius: 8px;
                     border: 2px solid #38bdf8;
                     object-fit: cover;
@@ -109,48 +109,53 @@ export function renderRoomScreen(container, roomTitleText, userDocData = {}) {
                     box-shadow: 0 0 8px rgba(56, 189, 248, 0.4);
                 }
                 .mystery-avatar {
-                    width: 42px;
-                    height: 42px;
+                    width: 40px;
+                    height: 40px;
                     border-radius: 8px;
                     border: 2px dashed rgba(148, 163, 184, 0.5);
                     display: flex;
                     align-items: center;
                     justify-content: center;
-                    font-size: 18px;
+                    font-size: 16px;
                     font-weight: bold;
                     color: #94a3b8;
                     background: rgba(30, 41, 59, 0.5);
                 }
                 .player-name {
-                    font-size: 12px;
+                    font-size: 11.5px;
                     font-weight: 600;
                     color: #f8fafc;
-                    max-width: 85px;
+                    max-width: 75px;
                     overflow: hidden;
                     text-overflow: ellipsis;
                     white-space: nowrap;
                 }
                 .vs-badge {
-                    font-size: 12px;
+                    font-size: 11px;
                     font-weight: 900;
                     color: #f43f5e;
                     background: rgba(244, 63, 94, 0.15);
-                    padding: 6px 8px;
-                    border-radius: 8px;
+                    padding: 4px 6px;
+                    border-radius: 6px;
                     border: 1px solid rgba(244, 63, 94, 0.3);
                 }
-                /* Waiting နေရာဘေးရှိ Cancel ခလုတ်ပုံစံ (အနီမဟုတ်ဘဲ အပြာရောင်/နီယွန်စတိုင်) */
+                /* Waiting နဲ့ Cancel ကို အတန်းလိုက် တူတူပေါ်စေရန် ပြင်ဆင်ထားသော ပုံစံ */
+                .right-action-group {
+                    display: flex;
+                    align-items: center;
+                    gap: 8px;
+                }
                 .card-cancel-btn {
                     background: rgba(56, 189, 248, 0.1);
                     color: #38bdf8;
                     border: 1px solid rgba(56, 189, 248, 0.5);
-                    padding: 4px 8px;
+                    padding: 5px 10px;
                     border-radius: 6px;
-                    font-size: 10.5px;
+                    font-size: 11px;
                     font-weight: 700;
                     cursor: pointer;
                     transition: background 0.2s;
-                    margin-top: 4px;
+                    white-space: nowrap;
                 }
                 .card-cancel-btn:hover {
                     background: rgba(56, 189, 248, 0.25);
@@ -207,12 +212,11 @@ export function renderRoomScreen(container, roomTitleText, userDocData = {}) {
                                     <span class="player-name">${userName}</span>
                                 </div>
                                 <div class="vs-badge">VS</div>
-                                <div class="player-side right" style="flex-direction: column; align-items: flex-end; gap: 4px;">
-                                    <div style="display: flex; align-items: center; gap: 8px;">
+                                <div class="player-side right">
+                                    <div class="right-action-group">
                                         <span class="player-name" style="color: #94a3b8;">Waiting...</span>
-                                        <div class="mystery-avatar">?</div>
+                                        <button class="card-cancel-btn" id="cardCancelBtn">Cancel</button>
                                     </div>
-                                    <button class="card-cancel-btn" id="cardCancelBtn">Cancel Room</button>
                                 </div>
                             </div>
                         </div>
@@ -246,7 +250,6 @@ export function renderRoomScreen(container, roomTitleText, userDocData = {}) {
 
                     deductKey(targetMode, targetKeyType);
 
-                    // Room Card ပုံစံပြောင်းလဲပြီး Create Room ခလုတ်ကို မည်းသွားစေခြင်း (Disabled)
                     container.innerHTML = renderScreenHTML(true);
                     attachEventListeners();
                     
@@ -269,7 +272,6 @@ export function renderRoomScreen(container, roomTitleText, userDocData = {}) {
         const cardCancelBtn = container.querySelector('#cardCancelBtn');
         if (cardCancelBtn) {
             cardCancelBtn.addEventListener('click', () => {
-                // Card ကို ပျောက်စေပြီး မူလအခြေအနေသို့ ပြန်ပြောင်းပေးခြင်း
                 container.innerHTML = renderScreenHTML(false);
                 attachEventListeners();
             });
