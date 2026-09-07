@@ -71,13 +71,13 @@ export function renderRoomScreen(container, roomTitleText, userDocData = {}) {
                 }
                 .ios-room-card {
                     background: linear-gradient(135deg, rgba(15, 23, 42, 0.9), rgba(30, 41, 59, 0.8));
-                    border: 2px solid transparent;
-                    border-image: linear-gradient(135deg, #38bdf8, #9333ea, #f43f5e) 1;
+                    /* အပေါ်ခေါင်းစဉ်ဘောင်လိုမျိုး အပြာရောင်တောက်တောက်စတိုင် ပြောင်းထားပါသည် */
+                    border: 2px solid #38bdf8;
                     border-radius: 12px;
                     padding: 12px 16px;
                     width: 100%;
                     max-width: 330px;
-                    box-shadow: 0 0 20px rgba(56, 189, 248, 0.2);
+                    box-shadow: 0 0 15px rgba(56, 189, 248, 0.3);
                     box-sizing: border-box;
                 }
                 .matchup-container {
@@ -128,9 +128,10 @@ export function renderRoomScreen(container, roomTitleText, userDocData = {}) {
                     gap: 6px;
                 }
                 .card-cancel-btn {
-                    background: rgba(244, 63, 94, 0.1);
-                    color: #f43f5e;
-                    border: 1px solid rgba(244, 63, 94, 0.5);
+                    background: rgba(56, 189, 248, 0.1);
+                    /* ကဒ်အပြာရောင်နဲ့ လိုက်ဖက်မယ့် Sky blue/Cyan ဘောင်အရောင် */
+                    color: #38bdf8;
+                    border: 1px solid rgba(56, 189, 248, 0.5);
                     padding: 4px 8px;
                     border-radius: 6px;
                     font-size: 10px;
@@ -139,9 +140,8 @@ export function renderRoomScreen(container, roomTitleText, userDocData = {}) {
                     white-space: nowrap;
                 }
                 .card-cancel-btn:hover {
-                    background: rgba(244, 63, 94, 0.25);
+                    background: rgba(56, 189, 248, 0.25);
                 }
-                /* တစ်ခြားသူများ Room အတွက် `+` ခလုတ်စတိုင် */
                 .card-join-btn {
                     background: linear-gradient(135deg, #0284c7, #9333ea);
                     color: #fff;
