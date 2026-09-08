@@ -181,8 +181,8 @@ export function renderRoomScreen(container, roomTitleText, userDocData = {}) {
                     border: 2px solid #38bdf8;
                     border-radius: 14px;
                     width: 100%;
-                    max-width: 280px;
-                    padding: 20px 16px;
+                    max-width: 310px;
+                    padding: 20px 18px;
                     box-shadow: 0 0 25px rgba(56, 189, 248, 0.3);
                     color: #fff;
                     font-size: 12px;
@@ -408,7 +408,7 @@ export function renderRoomScreen(container, roomTitleText, userDocData = {}) {
                     <div style="display: flex; flex-direction: column; width: 100%;">
                         <div class="popup-row"><span>Name:</span> <b style="color: #38bdf8;">${name}</b></div>
                         <div class="popup-row"><span>Hero Name:</span> <b style="color: #10b981;">${hero}</b></div>
-                        <div class="popup-row" style="border-bottom: none;"><span>Contact:</span> <b>${contact}</b></div>
+                        <div class="popup-row" style="border-bottom: none; border-top: 1px solid rgba(56, 189, 248, 0.4); margin-top: 6px; padding-top: 12px;"><span>Contact:</span> <b>${contact}</b></div>
                     </div>
                     <button class="popup-close-btn" id="closePopupBtn">Close</button>
                 </div>
@@ -441,8 +441,12 @@ export function renderRoomScreen(container, roomTitleText, userDocData = {}) {
                         <div class="popup-row"><span>EXP:</span> <b style="color: #38bdf8;">${exp}</b></div>
                         <div class="popup-row"><span>Gold:</span> <b style="color: #38bdf8;">${gold}</b></div>
                         <div class="popup-row"><span>Mid:</span> <b style="color: #38bdf8;">${mid}</b></div>
-                        <div class="popup-row"><span>Jungle:</span> <b style="color: #38bdf8;">${jungle}</b></div>
-                        <div class="popup-row" style="border-bottom: none; margin-top: 4px;"><span>Contact:</span> <b style="color: #38bdf8;">${contact}</b></div>
+                        <div class="popup-row" style="border-bottom: none;"><span>Jungle:</span> <b style="color: #38bdf8;">${jungle}</b></div>
+                        
+                        <!-- Contact အပေါ်က မျဉ်းကို အရောင်ထည့်ပေးထားသည် -->
+                        <div class="popup-row" style="border-bottom: none; border-top: 1px solid rgba(56, 189, 248, 0.4); margin-top: 8px; padding-top: 12px;">
+                            <span>Contact:</span> <b style="color: #38bdf8;">${contact}</b>
+                        </div>
                     </div>
 
                     <button class="popup-close-btn" id="closePopupBtn">Close</button>
