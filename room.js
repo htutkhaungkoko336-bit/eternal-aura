@@ -181,7 +181,7 @@ export function renderRoomScreen(container, roomTitleText, userDocData = {}) {
                     border: 2px solid #38bdf8;
                     border-radius: 14px;
                     width: 100%;
-                    max-width: 280px; /* ဘောက်စ်အကျယ်ကို အနည်းငယ် လျှော့ချလိုက်သည် */
+                    max-width: 280px;
                     padding: 20px 16px;
                     box-shadow: 0 0 25px rgba(56, 189, 248, 0.3);
                     color: #fff;
@@ -205,9 +205,9 @@ export function renderRoomScreen(container, roomTitleText, userDocData = {}) {
                     display: flex;
                     justify-content: space-between;
                     align-items: center;
-                    padding: 8px 10px; /* ဘေးဘောင်နှင့် ကပ်မနေစေရန် padding ပိုပေးထားသည် */
+                    padding: 8px 10px;
                     margin-bottom: 4px;
-                    background: rgba(255, 255, 255, 0.03); /* လိုင်းတစ်ခုချင်းစီကို နောက်ခံပါးပါးလေး ထည့်ပေးထားသည် */
+                    background: rgba(255, 255, 255, 0.03);
                     border-radius: 6px;
                     font-size: 12px;
                 }
@@ -294,13 +294,22 @@ export function renderRoomScreen(container, roomTitleText, userDocData = {}) {
             const data = await response.json();
 
             let hasMyRoom = false;
+            let hasJoinedAnyRoom = false;
 
             if (data.success && data.rooms && data.rooms.length > 0) {
                 roomsContainer.innerHTML = data.rooms.map(room => {
                     const isMyRoom = (room.hostId === userId);
+                    const isJoinedByMe = (room.joinedUserId === userId); // ကိုယ် join ထထားတဲ့ room ဖြစ်မဖြစ် စစ်ရန်
+
                     if (isMyRoom) {
                         hasMyRoom = true;
                     }
+                    if (isJoinedByMe) {
+                        hasJoinedAnyRoom = true;
+                    }
+
+                    // room က host မဟုတ်ဘဲ တခြားသူ join ပြီးသားဆိုရင် (Locked ဖြစ်နေရင်)
+                    const isLocked = room.joinedUserId && room.joinedUserId !== userId;
 
                     return `
                         <div class="ios-room-card" style="max-width: 100%;" data-room-index="${room.id}">
@@ -312,9 +321,11 @@ export function renderRoomScreen(container, roomTitleText, userDocData = {}) {
                                 <div class="vs-badge">VS</div>
                                 <div class="player-side right">
                                     <div class="right-action-group">
-                                        ${isMyRoom 
-                                            ? `<button class="card-cancel-btn" data-hostid="${room.hostId}">Cancel</button>` 
-                                            : `<button class="card-join-btn" data-roomid="${room.id}" data-hostid="${room.hostId}">Join</button>`
+                                        ${isMyRoom || isJoinedByMe
+                                            ? `<button class="card-cancel-btn" data-roomid="${room.id}" data-hostid="${room.hostId}">Cancel</button>` 
+                                            : isLocked
+                                                ? `<span style="font-size: 10px; color: #f43f5e; font-weight: 700; background: rgba(244,63,94,0.15); padding: 4px 8px; border-radius: 6px;">Locked</span>`
+                                                : `<button class="card-join-btn" data-roomid="${room.id}" data-hostid="${room.hostId}">Join</button>`
                                         }
                                     </div>
                                 </div>
@@ -343,6 +354,12 @@ export function renderRoomScreen(container, roomTitleText, userDocData = {}) {
                     newRoomBtn.style.background = '#1e293b';
                     newRoomBtn.style.color = '#64748b';
                     newRoomBtn.style.cursor = 'not-allowed';
+                } else if (hasJoinedAnyRoom) {
+                    newRoomBtn.disabled = true;
+                    newRoomBtn.textContent = 'Joined Room';
+                    newRoomBtn.style.background = '#1e293b';
+                    newRoomBtn.style.color = '#64748b';
+                    newRoomBtn.style.cursor = 'not-allowed';
                 } else if (hasKey) {
                     newRoomBtn.disabled = false;
                     newRoomBtn.textContent = 'Create Room';
@@ -361,14 +378,15 @@ export function renderRoomScreen(container, roomTitleText, userDocData = {}) {
             roomsContainer.querySelectorAll('.card-cancel-btn').forEach(btn => {
                 btn.addEventListener('click', (e) => {
                     const targetHostId = e.target.getAttribute('data-hostid');
-                    cancelRoomAPI(targetHostId);
+                    const targetRoomId = e.target.getAttribute('data-roomid');
+                    cancelRoomAPI(targetHostId, targetRoomId);
                 });
             });
 
             roomsContainer.querySelectorAll('.card-join-btn').forEach(btn => {
                 btn.addEventListener('click', (e) => {
-                    const hostIdToJoin = e.target.getAttribute('data-hostid');
-                    alert(`Room (Host ID: ${hostIdToJoin}) သို့ ချိတ်ဆက်ရန် အသင့်ဖြစ်ပါပြီ။`);
+                    const roomIdToJoin = e.target.getAttribute('data-roomid');
+                    joinRoomAPI(roomIdToJoin);
                 });
             });
 
@@ -450,12 +468,37 @@ export function renderRoomScreen(container, roomTitleText, userDocData = {}) {
         });
     }
 
-    async function cancelRoomAPI(targetHostId) {
+    // Room Join လုပ်သည့် API function
+    async function joinRoomAPI(roomId) {
         try {
+            const response = await fetch('/api/join-room', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ userId: userId, roomId: roomId })
+            });
+            const result = await response.json();
+
+            if (result.success) {
+                fetchAndRenderGlobalRooms();
+            } else {
+                alert(result.message || 'Room သို့ Join၍ မရပါ။');
+            }
+        } catch (err) {
+            console.error("Join room error:", err);
+            alert('ဆာဗာသို့ ချိတ်ဆက်၍ မရပါ။');
+        }
+    }
+
+    async function cancelRoomAPI(targetHostId, roomId) {
+        try {
+            // ကိုယ် join ထားတာကို Cancel တာလား (သို့) ကိုယ့် Room ကို Flee/Delete လုပ်တာလား စစ်ရန်
+            const endpoint = (targetHostId === userId) ? '/api/create-room' : '/api/join-room';
+            const method = (targetHostId === userId) ? 'DELETE' : 'PUT'; // Backend ပေါ်မူတည်ပြီး adjust လုပ်လို့ရပါတယ်
+
             const response = await fetch('/api/create-room', {
                 method: 'DELETE',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ userId: targetHostId })
+                body: JSON.stringify({ userId: userId, roomId: roomId })
             });
             const result = await response.json();
 
