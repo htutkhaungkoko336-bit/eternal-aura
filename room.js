@@ -113,7 +113,6 @@ export function renderRoomScreen(container, roomTitleText, userDocData = {}) {
                     text-overflow: ellipsis;
                     white-space: nowrap;
                 }
-                /* VS Badge ကို အပြာရောင် Theme ပုံစံသို့ ပြောင်းထားသည် */
                 .vs-badge {
                     font-size: 10px;
                     font-weight: 900;
@@ -128,38 +127,38 @@ export function renderRoomScreen(container, roomTitleText, userDocData = {}) {
                     align-items: center;
                     gap: 6px;
                 }
-                /* Cancel button ကို အပြာရောင် Theme သို့ ပြောင်းထားသည် */
-                .card-cancel-btn {
-                    background: rgba(2, 132, 199, 0.15);
-                    color: #38bdf8;
-                    border: 1px solid rgba(56, 189, 248, 0.4);
-                    padding: 4px 8px;
-                    border-radius: 6px;
-                    font-size: 10px;
-                    font-weight: 700;
-                    cursor: pointer;
-                    white-space: nowrap;
-                }
-                .card-cancel-btn:hover {
-                    background: rgba(2, 132, 199, 0.3);
-                }
+                /* Join ခလုတ်နှင့် Cancel ခလုတ်ငယ်အတွက် CSS */
                 .card-join-btn {
                     background: linear-gradient(135deg, #0284c7, #9333ea);
                     color: #fff;
                     border: none;
-                    width: 24px;
-                    height: 24px;
+                    padding: 5px 12px;
                     border-radius: 6px;
-                    font-size: 14px;
-                    font-weight: 900;
+                    font-size: 11px;
+                    font-weight: 700;
                     display: flex;
                     align-items: center;
                     justify-content: center;
                     cursor: pointer;
                     box-shadow: 0 0 10px rgba(56, 189, 248, 0.4);
+                    white-space: nowrap;
                 }
                 .card-join-btn:hover {
                     opacity: 0.9;
+                }
+                .card-cancel-btn {
+                    background: rgba(244, 63, 94, 0.15);
+                    color: #f43f5e;
+                    border: 1px solid rgba(244, 63, 94, 0.4);
+                    padding: 5px 10px;
+                    border-radius: 6px;
+                    font-size: 11px;
+                    font-weight: 700;
+                    cursor: pointer;
+                    white-space: nowrap;
+                }
+                .card-cancel-btn:hover {
+                    background: rgba(244, 63, 94, 0.3);
                 }
                 .room-bottom-actions {
                     display: flex;
@@ -183,7 +182,6 @@ export function renderRoomScreen(container, roomTitleText, userDocData = {}) {
                     color: ${hasKey ? '#fff' : '#64748b'};
                     cursor: ${hasKey ? 'pointer' : 'not-allowed'};
                 }
-                /* Back ခလုတ်ကို အပြာရောင်အလင်းပါတဲ့ ဘောင်နဲ့ စတိုင်ပြောင်းထားသည် */
                 .btn-cancel {
                     background: linear-gradient(135deg, rgba(30, 41, 59, 0.9), rgba(15, 23, 42, 0.9));
                     color: #38bdf8;
@@ -251,9 +249,8 @@ export function renderRoomScreen(container, roomTitleText, userDocData = {}) {
                                 <div class="player-side right">
                                     <div class="right-action-group">
                                         ${isMyRoom 
-                                            ? `<span class="player-name" style="color: #94a3b8;">Waiting...</span>
-                                               <button class="card-cancel-btn" data-hostid="${room.hostId}">Cancel</button>`
-                                            : `<button class="card-join-btn" data-roomid="${room.id}" data-hostid="${room.hostId}" title="Join Room">+</button>`
+                                            ? `<button class="card-cancel-btn" data-hostid="${room.hostId}">Cancel</button>` 
+                                            : `<button class="card-join-btn" data-roomid="${room.id}" data-hostid="${room.hostId}">Join</button>`
                                         }
                                     </div>
                                 </div>
@@ -288,13 +285,15 @@ export function renderRoomScreen(container, roomTitleText, userDocData = {}) {
                 }
             }
 
+            // Cancel ခလုတ်အတွက် Event Listener
             roomsContainer.querySelectorAll('.card-cancel-btn').forEach(btn => {
-                btn.addEventListener('click', async (e) => {
-                    const hostIdToCancel = e.target.getAttribute('data-hostid');
-                    await cancelRoomAPI(hostIdToCancel);
+                btn.addEventListener('click', (e) => {
+                    const targetHostId = e.target.getAttribute('data-hostid');
+                    cancelRoomAPI(targetHostId);
                 });
             });
 
+            // Join ခလုတ်အတွက် Event Listener
             roomsContainer.querySelectorAll('.card-join-btn').forEach(btn => {
                 btn.addEventListener('click', (e) => {
                     const hostIdToJoin = e.target.getAttribute('data-hostid');
