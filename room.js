@@ -161,7 +161,7 @@ export function renderRoomScreen(container, roomTitleText, userDocData = {}) {
                     background: rgba(244, 63, 94, 0.3);
                 }
                 
-                /* Pop-up Modal Styles - Padding and Width adjusted */
+                /* Pop-up Modal Styles */
                 .popup-overlay {
                     position: fixed;
                     top: 0;
@@ -181,8 +181,8 @@ export function renderRoomScreen(container, roomTitleText, userDocData = {}) {
                     border: 2px solid #38bdf8;
                     border-radius: 14px;
                     width: 100%;
-                    max-width: 320px;
-                    padding: 20px 18px; /* ဘေးဘောင်နှင့် အပေါ်အောက် Space ပိုပေးထားသည် */
+                    max-width: 280px; /* ဘောက်စ်အကျယ်ကို အနည်းငယ် လျှော့ချလိုက်သည် */
+                    padding: 20px 16px;
                     box-shadow: 0 0 25px rgba(56, 189, 248, 0.3);
                     color: #fff;
                     font-size: 12px;
@@ -204,8 +204,11 @@ export function renderRoomScreen(container, roomTitleText, userDocData = {}) {
                 .popup-row {
                     display: flex;
                     justify-content: space-between;
-                    padding: 8px 4px; /* ဘေးဘောင်နှင့် ကပ်မနေစေရန် padding အနည်းငယ်တိုးပေးထားသည် */
-                    border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+                    align-items: center;
+                    padding: 8px 10px; /* ဘေးဘောင်နှင့် ကပ်မနေစေရန် padding ပိုပေးထားသည် */
+                    margin-bottom: 4px;
+                    background: rgba(255, 255, 255, 0.03); /* လိုင်းတစ်ခုချင်းစီကို နောက်ခံပါးပါးလေး ထည့်ပေးထားသည် */
+                    border-radius: 6px;
                     font-size: 12px;
                 }
                 .popup-close-btn {
@@ -422,7 +425,7 @@ export function renderRoomScreen(container, roomTitleText, userDocData = {}) {
                     <div class="popup-row"><span>Mid:</span> <b style="color: #38bdf8;">${mid}</b></div>
                     <div class="popup-row"><span>Jungle:</span> <b style="color: #38bdf8;">${jungle}</b></div>
                     
-                    <div class="popup-row" style="margin-top: 10px; border-top: 1px solid rgba(56, 189, 248, 0.3); padding-top: 10px;">
+                    <div class="popup-row" style="margin-top: 10px; border-top: 1px solid rgba(56, 189, 248, 0.3); padding-top: 10px; background: transparent;">
                         <span>Contact:</span> <b style="color: #38bdf8;">${contact}</b>
                     </div>
                     
