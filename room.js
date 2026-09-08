@@ -161,7 +161,7 @@ export function renderRoomScreen(container, roomTitleText, userDocData = {}) {
                     background: rgba(244, 63, 94, 0.3);
                 }
                 
-                /* Pop-up Modal Styles */
+                /* Pop-up Modal Styles - Padding and Width adjusted */
                 .popup-overlay {
                     position: fixed;
                     top: 0;
@@ -173,7 +173,7 @@ export function renderRoomScreen(container, roomTitleText, userDocData = {}) {
                     justify-content: center;
                     align-items: center;
                     z-index: 1000;
-                    padding: 20px;
+                    padding: 16px;
                     box-sizing: border-box;
                 }
                 .popup-box {
@@ -182,7 +182,7 @@ export function renderRoomScreen(container, roomTitleText, userDocData = {}) {
                     border-radius: 14px;
                     width: 100%;
                     max-width: 320px;
-                    padding: 16px;
+                    padding: 20px 18px; /* ဘေးဘောင်နှင့် အပေါ်အောက် Space ပိုပေးထားသည် */
                     box-shadow: 0 0 25px rgba(56, 189, 248, 0.3);
                     color: #fff;
                     font-size: 12px;
@@ -204,13 +204,13 @@ export function renderRoomScreen(container, roomTitleText, userDocData = {}) {
                 .popup-row {
                     display: flex;
                     justify-content: space-between;
-                    padding: 6px 0;
-                    border-bottom: 1px solid rgba(255, 255, 255, 0.05);
-                    font-size: 11.5px;
+                    padding: 8px 4px; /* ဘေးဘောင်နှင့် ကပ်မနေစေရန် padding အနည်းငယ်တိုးပေးထားသည် */
+                    border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+                    font-size: 12px;
                 }
                 .popup-close-btn {
                     width: 100%;
-                    margin-top: 14px;
+                    margin-top: 16px;
                     background: linear-gradient(135deg, #0284c7, #9333ea);
                     color: #fff;
                     border: none;
@@ -397,7 +397,6 @@ export function renderRoomScreen(container, roomTitleText, userDocData = {}) {
             const sqName = room.sqName || room.teamName || 'Unknown Squad';
             const contact = room.contactPhNo || room.kpayPhNo || 'N/A';
 
-            // ID များကို ဖြုတ်ပြီး Player Name ကိုသာ သပ်ရပ်စွာ ထုတ်ယူပေးမည့် ပုံစံ
             const formatPlayerName = (p) => {
                 if (!p) return '-';
                 if (typeof p === 'object') {
@@ -415,7 +414,7 @@ export function renderRoomScreen(container, roomTitleText, userDocData = {}) {
             contentHTML = `
                 <div class="popup-box">
                     <div class="popup-title">SQ: ${sqName}</div>
-                    <div style="font-size: 11px; color: #94a3b8; margin-bottom: 8px; text-align: center;">5VS5 Players List</div>
+                    <div style="font-size: 11px; color: #94a3b8; margin-bottom: 10px; text-align: center;">5VS5 Players List</div>
                     
                     <div class="popup-row"><span>Roamer:</span> <b style="color: #38bdf8;">${roamer}</b></div>
                     <div class="popup-row"><span>EXP:</span> <b style="color: #38bdf8;">${exp}</b></div>
@@ -423,7 +422,7 @@ export function renderRoomScreen(container, roomTitleText, userDocData = {}) {
                     <div class="popup-row"><span>Mid:</span> <b style="color: #38bdf8;">${mid}</b></div>
                     <div class="popup-row"><span>Jungle:</span> <b style="color: #38bdf8;">${jungle}</b></div>
                     
-                    <div class="popup-row" style="margin-top: 8px; border-top: 1px solid rgba(56, 189, 248, 0.3); padding-top: 8px;">
+                    <div class="popup-row" style="margin-top: 10px; border-top: 1px solid rgba(56, 189, 248, 0.3); padding-top: 10px;">
                         <span>Contact:</span> <b style="color: #38bdf8;">${contact}</b>
                     </div>
                     
