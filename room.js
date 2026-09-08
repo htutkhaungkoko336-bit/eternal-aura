@@ -397,22 +397,20 @@ export function renderRoomScreen(container, roomTitleText, userDocData = {}) {
             const sqName = room.sqName || room.teamName || 'Unknown Squad';
             const contact = room.contactPhNo || room.kpayPhNo || 'N/A';
 
-            // 5v5 Player တစ်ဦးချင်းစီအတွက် Name နဲ့ ID ကို object ထဲမှ သပ်ရပ်စွာ ထုတ်ယူခြင်း
-            const formatPlayerDetail = (p) => {
+            // ID များကို ဖြုတ်ပြီး Player Name ကိုသာ သပ်ရပ်စွာ ထုတ်ယူပေးမည့် ပုံစံ
+            const formatPlayerName = (p) => {
                 if (!p) return '-';
                 if (typeof p === 'object') {
-                    const name = p.name || '-';
-                    const id = p.id || '-';
-                    return `${name} <span style="color: #94a3b8; font-size: 10.5px;">(${id})</span>`;
+                    return p.name || '-';
                 }
                 return p;
             };
 
-            const roamer = formatPlayerDetail(room.roamer);
-            const exp = formatPlayerDetail(room.exp);
-            const gold = formatPlayerDetail(room.gold);
-            const mid = formatPlayerDetail(room.mid);
-            const jungle = formatPlayerDetail(room.jungle);
+            const roamer = formatPlayerName(room.roamer);
+            const exp = formatPlayerName(room.exp);
+            const gold = formatPlayerName(room.gold);
+            const mid = formatPlayerName(room.mid);
+            const jungle = formatPlayerName(room.jungle);
 
             contentHTML = `
                 <div class="popup-box">
