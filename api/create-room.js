@@ -21,7 +21,6 @@ function getYangonTimeStr() {
     return `${dateStr}    ${hours}:${minutes} ${ampm}`;
 }
 
-// 5v5 Player တစ်ဦးချင်းစီအတွက် Name နဲ့ ID ကို သပ်ရပ်စွာ ခွဲထုတ်ပေးမည့် Helper Function
 function formatPlayerField(player) {
     if (!player) return { name: '-', id: '-' };
     if (typeof player === 'object') {
@@ -30,7 +29,6 @@ function formatPlayerField(player) {
             id: player.id || player.gameId || '-'
         };
     }
-    // တစ်ခါတည်း string နာမည်သက်သက် ရောက်လာခဲ့ရင်
     return { name: player, id: '-' };
 }
 
@@ -66,22 +64,69 @@ module.exports = async function handler(req, res) {
         }
     }
 
-    // 🔥 2. POST Method - Room အသစ်ဖန်တီးပြီး Registration ဒေတာများနှင့်အတူ active_rooms ထဲ သိမ်းမည်
+    // 🔥 2. POST Method - Room အသစ်ဖန်တီးခြင်း (သို့မဟုတ်) Room ထဲသို့ Join ခြင်း
     if (method === 'POST') {
         try {
-            const { userId, roomTitle, targetMode, targetKeyType, boType } = req.body;
+            const { userId, roomTitle, targetMode, targetKeyType, boType, roomId } = req.body;
 
+            // အကယ်၍ roomId ပါလာလျှင် ဒါဟာ Room ဝင် Join တဲ့ Request ဖြစ်ပါတယ်
+            if (roomId) {
+                if (!userId) {
+                    return res.status(400).json({ success: false, message: "Missing userId for joining room" });
+                }
+
+                // တခြားသူ့ Room ကို Join မလုပ်ခင် ဒီ user ဟာ ကိုယ်ပိုင် room ထောင်ထားတာ (သို့) အခြား room တစ်ခုခု join ပြီးသားဖြစ်နေလား စစ်မယ်
+                const existingRoomHost = await db.collection('active_rooms').where('hostId', '==', userId).get();
+                if (!existingRoomHost.empty) {
+                    return res.status(400).json({ success: false, message: "သင့်တွင် Active ဖြစ်နေသော Room ရှိနှင့်ပြီးဖြစ်၍ တခြား Room သို့ Join ၍ မရပါ။" });
+                }
+
+                const existingRoomJoined = await db.collection('active_rooms').where('joinedUserId', '==', userId).get();
+                if (!existingRoomJoined.empty) {
+                    return res.status(400).json({ success: false, message: "သင်သည် အခြား Room တစ်ခုကို Join ပြီးသား ဖြစ်ပါသည်။" });
+                }
+
+                const roomRef = db.collection('active_rooms').doc(roomId);
+                const roomDoc = await roomRef.get();
+
+                if (!roomDoc.exists) {
+                    return res.status(404).json({ success: false, message: "Room not found or already deleted" });
+                }
+
+                const roomData = roomDoc.data();
+                if (roomData.hostId === userId) {
+                    return res.status(400).json({ success: false, message: "ကိုယ့် Room ကို ကိုယ်တိုင် Join ၍ မရပါ။" });
+                }
+                if (roomData.joinedUserId) {
+                    return res.status(400).json({ success: false, message: "ဤ Room သည် အခြားသူ Join ပြီးသား (Locked ဖြစ်နေသော) ဖြစ်ပါသည်။" });
+                }
+
+                // Room ထဲသို့ joinedUserId ကို ထည့်သွင်း update လုပ်မည်
+                await roomRef.update({
+                    joinedUserId: userId,
+                    status: 'matched'
+                });
+
+                return res.status(200).json({ success: true, message: "Successfully joined the room" });
+            }
+
+            // Room အသစ်ဖန်တီးသည့် Logic (roomId မပါလာလျှင်)
             if (!userId || !targetMode || !targetKeyType) {
                 return res.status(400).json({ success: false, message: "Missing required fields" });
             }
 
             const existingRoomCheck = await db.collection('active_rooms').where('hostId', '==', userId).get();
-
             if (!existingRoomCheck.empty) {
                 return res.status(400).json({ 
                     success: false, 
                     message: 'သင့်တွင် Active ဖြစ်နေသော Room တစ်ခု ရှိနှင့်ပြီးသား ဖြစ်ပါသည်။ Room အသစ်ထပ်ထောင်လိုပါက ရှိပြီးသား Room ကို အရင် Cancel ပါ။' 
                 });
+            }
+
+            // User က Join ပြီးသားဖြစ်နေရင်လည်း Room အသစ်ထောင်ခွင့်မပေးပါ
+            const existingJoinedCheck = await db.collection('active_rooms').where('joinedUserId', '==', userId).get();
+            if (!existingJoinedCheck.empty) {
+                return res.status(400).json({ success: false, message: "သင်သည် Room တစ်ခုကို Join ပြီးသားဖြစ်၍ Room အသစ်ထပ်မံ ဖန်တီး၍ မရပါ။" });
             }
 
             const userDoc = await db.collection('users').doc(userId).get();
@@ -148,7 +193,6 @@ module.exports = async function handler(req, res) {
                 }
             }
 
-            // တည်ဆောက်မည့် Room ဒေတာများ (1vs1 သို့မဟုတ် 5vs5 အလိုက် ပါဝင်မည့် အချက်အလက်များ)
             const roomData = {
                 hostId: userId,
                 teamName: teamName,
@@ -159,12 +203,11 @@ module.exports = async function handler(req, res) {
                 boType: boType || 'BO1',
                 status: 'waiting',
                 createdAt: getYangonTimeStr(),
+                joinedUserId: null, // Join မည့်သူ့ ID အလွတ်စထားမည်
                 
-                // 1vs1 အတွက် လိုအပ်သော fields များ
                 inGameName: matchedReg?.inGameName || teamName,
                 heroName: matchedReg?.heroName || '',
                 
-                // 5vs5 အတွက် လိုအပ်သော sqName နှင့် player ၅ ယောက်အချက်အလက်များ (Name နဲ့ ID ကို သပ်ရပ်စွာ ပုံစံထုတ်ပေးခြင်း)
                 sqName: matchedReg?.sqName || teamName,
                 roamer: formatPlayerField(matchedReg?.roamer),
                 exp: formatPlayerField(matchedReg?.exp),
@@ -172,7 +215,6 @@ module.exports = async function handler(req, res) {
                 mid: formatPlayerField(matchedReg?.mid),
                 jungle: formatPlayerField(matchedReg?.jungle),
 
-                // Contact ဖုန်းနံပါတ်များ
                 contactPhNo: matchedReg?.contactPhNo || matchedReg?.kpayPhNo || ''
             };
 
@@ -185,20 +227,45 @@ module.exports = async function handler(req, res) {
             });
 
         } catch (error) {
-            console.error("Create Room Error:", error);
+            console.error("Create/Join Room Error:", error);
             return res.status(500).json({ success: false, message: "Server Error", error: error.message });
         }
     }
 
-    // 🔥 3. DELETE Method - Cancel နှိပ်လိုက်မှ active_rooms ထဲမှ Room ကို ဖျက်ပစ်ခြင်း
+    // 🔥 3. DELETE Method - Room ဖျက်ခြင်း (သို့မဟုတ်) Join ထားတာကို Cancel လုပ်ခြင်း
     if (method === 'DELETE') {
         try {
-            const { userId } = req.body; 
+            const { userId, roomId } = req.body; 
             if (!userId) {
                 return res.status(400).json({ success: false, message: "Missing userId for cancellation" });
             }
 
+            // အကယ်၍ roomId ပို့ပေးထားပြီး ကိုယ်က host မဟုတ်ဘဲ join ထားသူဆိုရင် joinedUserId ကို ပြန်ဖြုတ်မယ်
+            if (roomId) {
+                const roomRef = db.collection('active_rooms').doc(roomId);
+                const roomDoc = await roomRef.get();
+                if (roomDoc.exists) {
+                    const rData = roomDoc.data();
+                    if (rData.joinedUserId === userId) {
+                        await roomRef.update({
+                            joinedUserId: null,
+                            status: 'waiting'
+                        });
+                        return res.status(200).json({ success: true, message: "Left room successfully" });
+                    }
+                }
+            }
+
+            // ဒါမှမဟုတ်ရင် Host အနေနဲ့ ထောင်ထားတဲ့ Room ကို လုံးဝ ဖျက်ပစ်မယ်
             await db.collection('active_rooms').doc(userId).delete();
+
+            // တခြား room တွေမှာ joined လုပ်ထားတာရှိရင်လည်း အဲ့ဒီ room တွေထဲက joinedUserId ကို ရှင်းထုတ်ပေးမယ်
+            const joinedSnapshot = await db.collection('active_rooms').where('joinedUserId', '==', userId).get();
+            const batch = db.batch();
+            joinedSnapshot.forEach(doc => {
+                batch.update(doc.ref, { joinedUserId: null, status: 'waiting' });
+            });
+            await batch.commit();
 
             return res.status(200).json({ 
                 success: true, 
@@ -212,4 +279,4 @@ module.exports = async function handler(req, res) {
 
     res.setHeader('Allow', ['GET', 'POST', 'DELETE']);
     return res.status(405).json({ success: false, message: `Method ${method} not allowed` });
-};
+}
