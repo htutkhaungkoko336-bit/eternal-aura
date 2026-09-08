@@ -299,7 +299,7 @@ export function renderRoomScreen(container, roomTitleText, userDocData = {}) {
             if (data.success && data.rooms && data.rooms.length > 0) {
                 roomsContainer.innerHTML = data.rooms.map(room => {
                     const isMyRoom = (room.hostId === userId);
-                    const isJoinedByMe = (room.joinedUserId === userId); // ကိုယ် join ထထားတဲ့ room ဖြစ်မဖြစ် စစ်ရန်
+                    const isJoinedByMe = (room.joinedUserId === userId);
 
                     if (isMyRoom) {
                         hasMyRoom = true;
@@ -308,7 +308,6 @@ export function renderRoomScreen(container, roomTitleText, userDocData = {}) {
                         hasJoinedAnyRoom = true;
                     }
 
-                    // room က host မဟုတ်ဘဲ တခြားသူ join ပြီးသားဆိုရင် (Locked ဖြစ်နေရင်)
                     const isLocked = room.joinedUserId && room.joinedUserId !== userId;
 
                     return `
@@ -491,10 +490,6 @@ export function renderRoomScreen(container, roomTitleText, userDocData = {}) {
 
     async function cancelRoomAPI(targetHostId, roomId) {
         try {
-            // ကိုယ် join ထားတာကို Cancel တာလား (သို့) ကိုယ့် Room ကို Flee/Delete လုပ်တာလား စစ်ရန်
-            const endpoint = (targetHostId === userId) ? '/api/create-room' : '/api/join-room';
-            const method = (targetHostId === userId) ? 'DELETE' : 'PUT'; // Backend ပေါ်မူတည်ပြီး adjust လုပ်လို့ရပါတယ်
-
             const response = await fetch('/api/create-room', {
                 method: 'DELETE',
                 headers: { 'Content-Type': 'application/json' },
