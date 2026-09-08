@@ -395,7 +395,7 @@ export function renderRoomScreen(container, roomTitleText, userDocData = {}) {
         }
     }
 
-function showRoomDetailsPopup(room, mode) {
+    function showRoomDetailsPopup(room, mode) {
         let contentHTML = '';
         const is1v1 = mode.toLowerCase().includes('1v1');
 
@@ -442,7 +442,7 @@ function showRoomDetailsPopup(room, mode) {
                     <div class="popup-row"><span>Mid:</span> <b style="color: #38bdf8;">${mid}</b></div>
                     <div class="popup-row"><span>Jungle:</span> <b style="color: #38bdf8;">${jungle}</b></div>
                     
-                    <div class="popup-row" style="margin-top: 10px; border-top: 1px solid rgba(56, 189, 248, 0.3); padding-top: 10px; background: transparent;">
+                    <div class="popup-row" style="margin-top: 10px; border-top: 1px solid rgba(56, 189, 248, 0.3); padding-top: 10px;">
                         <span>Contact:</span> <b style="color: #38bdf8;">${contact}</b>
                     </div>
                     
@@ -466,7 +466,7 @@ function showRoomDetailsPopup(room, mode) {
             }
         });
     }
-    // Room Join လုပ်သည့် API function
+
     async function joinRoomAPI(roomId) {
         try {
             const response = await fetch('/api/join-room', {
