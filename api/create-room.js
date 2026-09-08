@@ -2,10 +2,10 @@ const { initializeApp, cert, getApps } = require('firebase-admin/app');
 const { getFirestore } = require('firebase-admin/firestore');
 
 const app = getApps().length === 0 
-  ? initializeApp({
-      credential: cert(JSON.parse(process.env.FIREBASE_SERVICE_ACCOUNT))
-    }) 
-  : getApps()[0];
+    ? initializeApp({
+        credential: cert(JSON.parse(process.env.FIREBASE_SERVICE_ACCOUNT))
+      }) 
+    : getApps()[0];
 
 const db = getFirestore(app);
 
@@ -19,6 +19,19 @@ function getYangonTimeStr() {
     const ampm = hours >= 12 ? 'pm' : 'am';
     hours = hours % 12 || 12;
     return `${dateStr}    ${hours}:${minutes} ${ampm}`;
+}
+
+// 5v5 Player တစ်ဦးချင်းစီအတွက် Name နဲ့ ID ကို သပ်ရပ်စွာ ခွဲထုတ်ပေးမည့် Helper Function
+function formatPlayerField(player) {
+    if (!player) return { name: '-', id: '-' };
+    if (typeof player === 'object') {
+        return {
+            name: player.name || player.inGameName || '-',
+            id: player.id || player.gameId || '-'
+        };
+    }
+    // တစ်ခါတည်း string နာမည်သက်သက် ရောက်လာခဲ့ရင်
+    return { name: player, id: '-' };
 }
 
 module.exports = async function handler(req, res) {
@@ -151,13 +164,13 @@ module.exports = async function handler(req, res) {
                 inGameName: matchedReg?.inGameName || teamName,
                 heroName: matchedReg?.heroName || '',
                 
-                // 5vs5 အတွက် လိုအပ်သော sqName နှင့် player ၅ ယောက်အချက်အလက်များ
+                // 5vs5 အတွက် လိုအပ်သော sqName နှင့် player ၅ ယောက်အချက်အလက်များ (Name နဲ့ ID ကို သပ်ရပ်စွာ ပုံစံထုတ်ပေးခြင်း)
                 sqName: matchedReg?.sqName || teamName,
-                roamer: matchedReg?.roamer || { name: '-', id: '-' },
-                exp: matchedReg?.exp || { name: '-', id: '-' },
-                gold: matchedReg?.gold || { name: '-', id: '-' },
-                mid: matchedReg?.mid || { name: '-', id: '-' },
-                jungle: matchedReg?.jungle || { name: '-', id: '-' },
+                roamer: formatPlayerField(matchedReg?.roamer),
+                exp: formatPlayerField(matchedReg?.exp),
+                gold: formatPlayerField(matchedReg?.gold),
+                mid: formatPlayerField(matchedReg?.mid),
+                jungle: formatPlayerField(matchedReg?.jungle),
 
                 // Contact ဖုန်းနံပါတ်များ
                 contactPhNo: matchedReg?.contactPhNo || matchedReg?.kpayPhNo || ''

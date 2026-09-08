@@ -320,10 +320,8 @@ export function renderRoomScreen(container, roomTitleText, userDocData = {}) {
                     `;
                 }).join('');
 
-                // Room Card များကို နှိပ်လိုက်ရင် Pop-up ပေါ်လာစေရန် ချိတ်ဆက်ခြင်း
                 roomsContainer.querySelectorAll('.ios-room-card').forEach((card, idx) => {
                     card.addEventListener('click', (e) => {
-                        // Cancel သို့မဟုတ် Join ခလုတ်ကို နှိပ်မိရင် Pop-up အပေါ်ထပ် မရောက်သွားစေရန် တားဆီးခြင်း
                         if (e.target.tagName === 'BUTTON') return;
                         const room = data.rooms[idx];
                         showRoomDetailsPopup(room, targetMode);
@@ -357,7 +355,6 @@ export function renderRoomScreen(container, roomTitleText, userDocData = {}) {
                 }
             }
 
-            // Cancel ခလုတ်အတွက် Event Listener
             roomsContainer.querySelectorAll('.card-cancel-btn').forEach(btn => {
                 btn.addEventListener('click', (e) => {
                     const targetHostId = e.target.getAttribute('data-hostid');
@@ -365,7 +362,6 @@ export function renderRoomScreen(container, roomTitleText, userDocData = {}) {
                 });
             });
 
-            // Join ခလုတ်အတွက် Event Listener
             roomsContainer.querySelectorAll('.card-join-btn').forEach(btn => {
                 btn.addEventListener('click', (e) => {
                     const hostIdToJoin = e.target.getAttribute('data-hostid');
@@ -401,22 +397,33 @@ export function renderRoomScreen(container, roomTitleText, userDocData = {}) {
             const sqName = room.sqName || room.teamName || 'Unknown Squad';
             const contact = room.contactPhNo || room.kpayPhNo || 'N/A';
 
-            const roamer = room.roamer || { name: '-', id: '-' };
-            const exp = room.exp || { name: '-', id: '-' };
-            const gold = room.gold || { name: '-', id: '-' };
-            const mid = room.mid || { name: '-', id: '-' };
-            const jungle = room.jungle || { name: '-', id: '-' };
+            // 5v5 Player တစ်ဦးချင်းစီအတွက် Name နဲ့ ID ကို object ထဲမှ သပ်ရပ်စွာ ထုတ်ယူခြင်း
+            const formatPlayerDetail = (p) => {
+                if (!p) return '-';
+                if (typeof p === 'object') {
+                    const name = p.name || '-';
+                    const id = p.id || '-';
+                    return `${name} <span style="color: #94a3b8; font-size: 10.5px;">(${id})</span>`;
+                }
+                return p;
+            };
+
+            const roamer = formatPlayerDetail(room.roamer);
+            const exp = formatPlayerDetail(room.exp);
+            const gold = formatPlayerDetail(room.gold);
+            const mid = formatPlayerDetail(room.mid);
+            const jungle = formatPlayerDetail(room.jungle);
 
             contentHTML = `
                 <div class="popup-box">
                     <div class="popup-title">SQ: ${sqName}</div>
                     <div style="font-size: 11px; color: #94a3b8; margin-bottom: 8px; text-align: center;">5VS5 Players List</div>
                     
-                    <div class="popup-row"><span>Roamer:</span> <span><b>${roamer.name || '-'}</b> (${roamer.id || '-'})</span></div>
-                    <div class="popup-row"><span>EXP:</span> <span><b>${exp.name || '-'}</b> (${exp.id || '-'})</span></div>
-                    <div class="popup-row"><span>Gold:</span> <span><b>${gold.name || '-'}</b> (${gold.id || '-'})</span></div>
-                    <div class="popup-row"><span>Mid:</span> <span><b>${mid.name || '-'}</b> (${mid.id || '-'})</span></div>
-                    <div class="popup-row"><span>Jungle:</span> <span><b>${jungle.name || '-'}</b> (${jungle.id || '-'})</span></div>
+                    <div class="popup-row"><span>Roamer:</span> <b style="color: #38bdf8;">${roamer}</b></div>
+                    <div class="popup-row"><span>EXP:</span> <b style="color: #38bdf8;">${exp}</b></div>
+                    <div class="popup-row"><span>Gold:</span> <b style="color: #38bdf8;">${gold}</b></div>
+                    <div class="popup-row"><span>Mid:</span> <b style="color: #38bdf8;">${mid}</b></div>
+                    <div class="popup-row"><span>Jungle:</span> <b style="color: #38bdf8;">${jungle}</b></div>
                     
                     <div class="popup-row" style="margin-top: 8px; border-top: 1px solid rgba(56, 189, 248, 0.3); padding-top: 8px;">
                         <span>Contact:</span> <b style="color: #38bdf8;">${contact}</b>
