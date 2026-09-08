@@ -205,10 +205,8 @@ export function renderRoomScreen(container, roomTitleText, userDocData = {}) {
                     display: flex;
                     justify-content: space-between;
                     align-items: center;
-                    padding: 8px 10px;
-                    margin-bottom: 4px;
-                    background: rgba(255, 255, 255, 0.03);
-                    border-radius: 6px;
+                    padding: 10px 4px;
+                    border-bottom: 1px solid rgba(255, 255, 255, 0.08);
                     font-size: 12px;
                 }
                 .popup-close-btn {
@@ -407,9 +405,11 @@ export function renderRoomScreen(container, roomTitleText, userDocData = {}) {
             contentHTML = `
                 <div class="popup-box">
                     <div class="popup-title">1VS1 Room Details</div>
-                    <div class="popup-row"><span>Name:</span> <b style="color: #38bdf8;">${name}</b></div>
-                    <div class="popup-row"><span>Hero Name:</span> <b style="color: #10b981;">${hero}</b></div>
-                    <div class="popup-row"><span>Contact:</span> <b>${contact}</b></div>
+                    <div style="display: flex; flex-direction: column; width: 100%;">
+                        <div class="popup-row"><span>Name:</span> <b style="color: #38bdf8;">${name}</b></div>
+                        <div class="popup-row"><span>Hero Name:</span> <b style="color: #10b981;">${hero}</b></div>
+                        <div class="popup-row" style="border-bottom: none;"><span>Contact:</span> <b>${contact}</b></div>
+                    </div>
                     <button class="popup-close-btn" id="closePopupBtn">Close</button>
                 </div>
             `;
@@ -434,16 +434,15 @@ export function renderRoomScreen(container, roomTitleText, userDocData = {}) {
             contentHTML = `
                 <div class="popup-box">
                     <div class="popup-title">SQ: ${sqName}</div>
+                    <div style="font-size: 11px; color: #94a3b8; margin-bottom: 10px; text-align: center;">5VS5 Players List</div>
                     
-                    <div style="display: flex; flex-direction: column; gap: 6px; width: 100%;">
-                        <div class="popup-row"><span>Roamer</span> <b style="color: #fff;">${roamer}</b></div>
-                        <div class="popup-row"><span>EXP</span> <b style="color: #fff;">${exp}</b></div>
-                        <div class="popup-row"><span>Gold</span> <b style="color: #fff;">${gold}</b></div>
-                        <div class="popup-row"><span>Mid</span> <b style="color: #fff;">${mid}</b></div>
-                        <div class="popup-row"><span>Jungle</span> <b style="color: #fff;">${jungle}</b></div>
-                        <div class="popup-row" style="margin-top: 4px; border-top: 1px solid rgba(255, 255, 255, 0.08); padding-top: 8px;">
-                            <span>Contact</span> <b style="color: #38bdf8;">${contact}</b>
-                        </div>
+                    <div style="display: flex; flex-direction: column; width: 100%;">
+                        <div class="popup-row"><span>Roamer:</span> <b style="color: #38bdf8;">${roamer}</b></div>
+                        <div class="popup-row"><span>EXP:</span> <b style="color: #38bdf8;">${exp}</b></div>
+                        <div class="popup-row"><span>Gold:</span> <b style="color: #38bdf8;">${gold}</b></div>
+                        <div class="popup-row"><span>Mid:</span> <b style="color: #38bdf8;">${mid}</b></div>
+                        <div class="popup-row"><span>Jungle:</span> <b style="color: #38bdf8;">${jungle}</b></div>
+                        <div class="popup-row" style="border-bottom: none; margin-top: 4px;"><span>Contact:</span> <b style="color: #38bdf8;">${contact}</b></div>
                     </div>
 
                     <button class="popup-close-btn" id="closePopupBtn">Close</button>
