@@ -79,6 +79,7 @@ export function renderRoomScreen(container, roomTitleText, userDocData = {}) {
                     max-width: 330px;
                     box-shadow: 0 0 15px rgba(147, 51, 234, 0.25);
                     box-sizing: border-box;
+                    cursor: pointer;
                 }
                 .matchup-container {
                     display: flex;
@@ -127,7 +128,6 @@ export function renderRoomScreen(container, roomTitleText, userDocData = {}) {
                     align-items: center;
                     gap: 6px;
                 }
-                /* Join ခလုတ်နှင့် Cancel ခလုတ်ငယ်အတွက် CSS */
                 .card-join-btn {
                     background: linear-gradient(135deg, #0284c7, #9333ea);
                     color: #fff;
@@ -160,6 +160,67 @@ export function renderRoomScreen(container, roomTitleText, userDocData = {}) {
                 .card-cancel-btn:hover {
                     background: rgba(244, 63, 94, 0.3);
                 }
+                
+                /* Pop-up Modal Styles */
+                .popup-overlay {
+                    position: fixed;
+                    top: 0;
+                    left: 0;
+                    width: 100%;
+                    height: 100%;
+                    background: rgba(4, 4, 8, 0.85);
+                    display: flex;
+                    justify-content: center;
+                    align-items: center;
+                    z-index: 1000;
+                    padding: 20px;
+                    box-sizing: border-box;
+                }
+                .popup-box {
+                    background: linear-gradient(135deg, rgba(15, 23, 42, 0.95), rgba(30, 41, 59, 0.95));
+                    border: 2px solid #38bdf8;
+                    border-radius: 14px;
+                    width: 100%;
+                    max-width: 320px;
+                    padding: 16px;
+                    box-shadow: 0 0 25px rgba(56, 189, 248, 0.3);
+                    color: #fff;
+                    font-size: 12px;
+                    box-sizing: border-box;
+                    position: relative;
+                    max-height: 85vh;
+                    overflow-y: auto;
+                }
+                .popup-title {
+                    font-size: 14px;
+                    font-weight: 800;
+                    color: #38bdf8;
+                    text-align: center;
+                    margin-bottom: 12px;
+                    text-transform: uppercase;
+                    border-bottom: 1px solid rgba(56, 189, 248, 0.3);
+                    padding-bottom: 8px;
+                }
+                .popup-row {
+                    display: flex;
+                    justify-content: space-between;
+                    padding: 6px 0;
+                    border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+                    font-size: 11.5px;
+                }
+                .popup-close-btn {
+                    width: 100%;
+                    margin-top: 14px;
+                    background: linear-gradient(135deg, #0284c7, #9333ea);
+                    color: #fff;
+                    border: none;
+                    padding: 10px;
+                    border-radius: 8px;
+                    font-weight: 700;
+                    cursor: pointer;
+                    text-align: center;
+                }
+
                 .room-bottom-actions {
                     display: flex;
                     gap: 12px;
@@ -239,7 +300,7 @@ export function renderRoomScreen(container, roomTitleText, userDocData = {}) {
                     }
 
                     return `
-                        <div class="ios-room-card" style="max-width: 100%;">
+                        <div class="ios-room-card" style="max-width: 100%;" data-room-index="${room.id}">
                             <div class="matchup-container">
                                 <div class="player-side">
                                     <img src="${room.teamLogo || defaultUserAvatar}" alt="Logo" class="player-avatar" onerror="this.src='FrontLogo.jpg'">
@@ -258,6 +319,17 @@ export function renderRoomScreen(container, roomTitleText, userDocData = {}) {
                         </div>
                     `;
                 }).join('');
+
+                // Room Card များကို နှိပ်လိုက်ရင် Pop-up ပေါ်လာစေရန် ချိတ်ဆက်ခြင်း
+                roomsContainer.querySelectorAll('.ios-room-card').forEach((card, idx) => {
+                    card.addEventListener('click', (e) => {
+                        // Cancel သို့မဟုတ် Join ခလုတ်ကို နှိပ်မိရင် Pop-up အပေါ်ထပ် မရောက်သွားစေရန် တားဆီးခြင်း
+                        if (e.target.tagName === 'BUTTON') return;
+                        const room = data.rooms[idx];
+                        showRoomDetailsPopup(room, targetMode);
+                    });
+                });
+
             } else {
                 roomsContainer.innerHTML = `<span style="color: #64748b; font-size: 11px; padding: 10px 0;">Active room မရှိသေးပါ။ Room အသစ်ထောင်နိုင်ပါသည်။</span>`;
             }
@@ -305,6 +377,70 @@ export function renderRoomScreen(container, roomTitleText, userDocData = {}) {
             console.error("Fetch rooms error:", err);
             roomsContainer.innerHTML = `<span style="color: #f43f5e; font-size: 11px;">Rooms များကို ဆွဲထုတ်၍ မရပါ။</span>`;
         }
+    }
+
+    function showRoomDetailsPopup(room, mode) {
+        let contentHTML = '';
+        const is1v1 = mode.toLowerCase().includes('1v1');
+
+        if (is1v1) {
+            const name = room.inGameName || room.teamName || 'Unknown Player';
+            const hero = room.heroName || 'Not Specified';
+            const contact = room.contactPhNo || room.kpayPhNo || 'N/A';
+
+            contentHTML = `
+                <div class="popup-box">
+                    <div class="popup-title">1VS1 Room Details</div>
+                    <div class="popup-row"><span>Name:</span> <b style="color: #38bdf8;">${name}</b></div>
+                    <div class="popup-row"><span>Hero Name:</span> <b style="color: #10b981;">${hero}</b></div>
+                    <div class="popup-row"><span>Contact:</span> <b>${contact}</b></div>
+                    <button class="popup-close-btn" id="closePopupBtn">Close</button>
+                </div>
+            `;
+        } else {
+            const sqName = room.sqName || room.teamName || 'Unknown Squad';
+            const contact = room.contactPhNo || room.kpayPhNo || 'N/A';
+
+            const roamer = room.roamer || { name: '-', id: '-' };
+            const exp = room.exp || { name: '-', id: '-' };
+            const gold = room.gold || { name: '-', id: '-' };
+            const mid = room.mid || { name: '-', id: '-' };
+            const jungle = room.jungle || { name: '-', id: '-' };
+
+            contentHTML = `
+                <div class="popup-box">
+                    <div class="popup-title">SQ: ${sqName}</div>
+                    <div style="font-size: 11px; color: #94a3b8; margin-bottom: 8px; text-align: center;">5VS5 Players List</div>
+                    
+                    <div class="popup-row"><span>Roamer:</span> <span><b>${roamer.name || '-'}</b> (${roamer.id || '-'})</span></div>
+                    <div class="popup-row"><span>EXP:</span> <span><b>${exp.name || '-'}</b> (${exp.id || '-'})</span></div>
+                    <div class="popup-row"><span>Gold:</span> <span><b>${gold.name || '-'}</b> (${gold.id || '-'})</span></div>
+                    <div class="popup-row"><span>Mid:</span> <span><b>${mid.name || '-'}</b> (${mid.id || '-'})</span></div>
+                    <div class="popup-row"><span>Jungle:</span> <span><b>${jungle.name || '-'}</b> (${jungle.id || '-'})</span></div>
+                    
+                    <div class="popup-row" style="margin-top: 8px; border-top: 1px solid rgba(56, 189, 248, 0.3); padding-top: 8px;">
+                        <span>Contact:</span> <b style="color: #38bdf8;">${contact}</b>
+                    </div>
+                    
+                    <button class="popup-close-btn" id="closePopupBtn">Close</button>
+                </div>
+            `;
+        }
+
+        const overlay = document.createElement('div');
+        overlay.className = 'popup-overlay';
+        overlay.innerHTML = contentHTML;
+        document.body.appendChild(overlay);
+
+        overlay.querySelector('#closePopupBtn').addEventListener('click', () => {
+            overlay.remove();
+        });
+
+        overlay.addEventListener('click', (e) => {
+            if (e.target === overlay) {
+                overlay.remove();
+            }
+        });
     }
 
     async function cancelRoomAPI(targetHostId) {

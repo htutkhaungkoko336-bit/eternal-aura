@@ -53,7 +53,7 @@ module.exports = async function handler(req, res) {
         }
     }
 
-    // 🔥 2. POST Method - Room အသစ်ဖန်တီးပြီး active_rooms ထဲ သိမ်းမည် (Cancel မလုပ်မချင်း ဆက်ရှိနေမည်)
+    // 🔥 2. POST Method - Room အသစ်ဖန်တီးပြီး Registration ဒေတာများနှင့်အတူ active_rooms ထဲ သိမ်းမည်
     if (method === 'POST') {
         try {
             const { userId, roomTitle, targetMode, targetKeyType, boType } = req.body;
@@ -62,7 +62,6 @@ module.exports = async function handler(req, res) {
                 return res.status(400).json({ success: false, message: "Missing required fields" });
             }
 
-            // 🛑 User မှာ active_rooms ထဲမှာ hostId နဲ့ တူတဲ့ Room ရှိပြီးသားလား အရင်စစ်ဆေးခြင်း
             const existingRoomCheck = await db.collection('active_rooms').where('hostId', '==', userId).get();
 
             if (!existingRoomCheck.empty) {
@@ -92,6 +91,8 @@ module.exports = async function handler(req, res) {
                 regCollectionName = 'tournament_registrations';
             }
 
+            let matchedReg = null;
+
             if (regCollectionName) {
                 const regSnapshot = await db.collection(regCollectionName)
                     .where('userId', '==', userId)
@@ -117,7 +118,7 @@ module.exports = async function handler(req, res) {
                         return getTimeVal(a.createdAt) - getTimeVal(b.createdAt);
                     });
 
-                    const matchedReg = matchedRegs[0];
+                    matchedReg = matchedRegs[0];
 
                     if (lowerMode.includes('5v5') || lowerMode.includes('5vs5')) {
                         teamName = matchedReg.sqName || teamName;
@@ -134,6 +135,7 @@ module.exports = async function handler(req, res) {
                 }
             }
 
+            // တည်ဆောက်မည့် Room ဒေတာများ (1vs1 သို့မဟုတ် 5vs5 အလိုက် ပါဝင်မည့် အချက်အလက်များ)
             const roomData = {
                 hostId: userId,
                 teamName: teamName,
@@ -143,11 +145,24 @@ module.exports = async function handler(req, res) {
                 keyType: targetKeyType,
                 boType: boType || 'BO1',
                 status: 'waiting',
-                createdAt: getYangonTimeStr()
+                createdAt: getYangonTimeStr(),
+                
+                // 1vs1 အတွက် လိုအပ်သော fields များ
+                inGameName: matchedReg?.inGameName || teamName,
+                heroName: matchedReg?.heroName || '',
+                
+                // 5vs5 အတွက် လိုအပ်သော sqName နှင့် player ၅ ယောက်အချက်အလက်များ
+                sqName: matchedReg?.sqName || teamName,
+                roamer: matchedReg?.roamer || { name: '-', id: '-' },
+                exp: matchedReg?.exp || { name: '-', id: '-' },
+                gold: matchedReg?.gold || { name: '-', id: '-' },
+                mid: matchedReg?.mid || { name: '-', id: '-' },
+                jungle: matchedReg?.jungle || { name: '-', id: '-' },
+
+                // Contact ဖုန်းနံပါတ်များ
+                contactPhNo: matchedReg?.contactPhNo || matchedReg?.kpayPhNo || ''
             };
 
-            // userId ကို Doc ID အဖြစ်သုံး၍ active_rooms ထဲ သိမ်းမည် (Cancel မလုပ်မချင်း ဤနေရာတွင် ရှိနေမည်)
-            // ဒီနေရာမှာ .doc(userId).set() ကို သုံးထားတဲ့အတွက် User တစ်ယောက်မှာ Room တစ်ခုပဲ အမြဲ ရှိနေစေမှာ ဖြစ်ပါတယ်
             await db.collection('active_rooms').doc(userId).set(roomData);
 
             return res.status(200).json({ 
