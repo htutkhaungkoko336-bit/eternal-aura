@@ -395,13 +395,13 @@ export function renderRoomScreen(container, roomTitleText, userDocData = {}) {
         }
     }
 
-    function showRoomDetailsPopup(room, mode) {
+function showRoomDetailsPopup(room, mode) {
         let contentHTML = '';
         const is1v1 = mode.toLowerCase().includes('1v1');
 
         if (is1v1) {
-            const name = room.inGameName || room.teamName || 'Unknown Player';
-            const hero = room.heroName || 'Not Specified';
+            const name = room.inGameName || room.teamName || room.userName || 'Unknown Player';
+            const hero = room.heroName || room.hero || 'Not Specified';
             const contact = room.contactPhNo || room.kpayPhNo || 'N/A';
 
             contentHTML = `
@@ -466,7 +466,6 @@ export function renderRoomScreen(container, roomTitleText, userDocData = {}) {
             }
         });
     }
-
     // Room Join လုပ်သည့် API function
     async function joinRoomAPI(roomId) {
         try {
