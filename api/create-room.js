@@ -101,71 +101,9 @@ module.exports = async function handler(req, res) {
                     return res.status(400).json({ success: false, message: "ဤ Room သည် အခြားသူ Join ပြီးသား (Locked ဖြစ်နေသော) ဖြစ်ပါသည်။" });
                 }
 
-                // Join မည့်သူ့ရဲ့ User Profile အချက်အလက်များကို ဆွဲထုတ်မည် (Popup တွင်ပြသရန်)
-                const joinerUserDoc = await db.collection('users').doc(userId).get();
-                let joinerUserData = {};
-                if (joinerUserDoc.exists) {
-                    joinerUserData = joinerUserDoc.data();
-                }
-
-                let joinerReg = null;
-                let regCollectionName = '';
-                const lowerMode = (roomData.mode || targetMode || '').toLowerCase();
-                
-                if (lowerMode.includes('1v1') || lowerMode.includes('1vs1')) {
-                    regCollectionName = '1vs1_registrations';
-                } else if (lowerMode.includes('5v5') || lowerMode.includes('5vs5')) {
-                    regCollectionName = '5vs5_registrations';
-                } else if (lowerMode.includes('tournament')) {
-                    regCollectionName = 'tournament_registrations';
-                }
-
-                if (regCollectionName) {
-                    const regSnapshot = await db.collection(regCollectionName)
-                        .where('userId', '==', userId)
-                        .get();
-
-                    let matchedRegs = [];
-                    regSnapshot.forEach(doc => {
-                        const regData = doc.data();
-                        if (regData.fee && regData.fee.toString().toUpperCase() === roomData.keyType.toUpperCase()) {
-                            matchedRegs.push(regData);
-                        }
-                    });
-
-                    if (matchedRegs.length > 0) {
-                        matchedRegs.sort((a, b) => {
-                            const getTimeVal = (createdAt) => {
-                                if (!createdAt) return 0;
-                                if (typeof createdAt.toMillis === 'function') return createdAt.toMillis();
-                                if (typeof createdAt.toDate === 'function') return createdAt.toDate().getTime();
-                                const parsed = new Date(createdAt).getTime();
-                                return isNaN(parsed) ? 0 : parsed;
-                            };
-                            return getTimeVal(a.createdAt) - getTimeVal(b.createdAt);
-                        });
-                        joinerReg = matchedRegs[0];
-                    }
-                }
-
-                // Room ထဲသို့ joinedUserId နှင့် Joiner ၏ အသေးစိတ်အချက်အလက်များကို Update လုပ်မည်
+                // Room ထဲသို့ joinedUserId ကို ထည့်သွင်း update လုပ်မည်
                 await roomRef.update({
                     joinedUserId: userId,
-                    joinedUserName: joinerReg?.inGameName || joinerReg?.sqName || joinerUserData.name || 'Joiner',
-                    joinedUserAvatar: joinerReg?.logo || joinerReg?.paymentSlip || joinerUserData.photoURL || joinerUserData.avatar || 'FrontLogo.jpg',
-                    
-                    joinerInGameName: joinerReg?.inGameName || '',
-                    joinerPlayerId: joinerReg?.playerId || joinerReg?.gameId || '',
-                    joinerHeroName: joinerReg?.heroName || '',
-                    joinerContactPhNo: joinerReg?.contactPhNo || joinerReg?.kpayPhNo || '',
-
-                    joinerSqName: joinerReg?.sqName || '',
-                    joinerRoamer: formatPlayerField(joinerReg?.roamer),
-                    joinerExp: formatPlayerField(joinerReg?.exp),
-                    joinerGold: formatPlayerField(joinerReg?.gold),
-                    joinerMid: formatPlayerField(joinerReg?.mid),
-                    joinerJungle: formatPlayerField(joinerReg?.jungle),
-
                     status: 'matched'
                 });
 
@@ -185,6 +123,7 @@ module.exports = async function handler(req, res) {
                 });
             }
 
+            // User က Join ပြီးသားဖြစ်နေရင်လည်း Room အသစ်ထောင်ခွင့်မပေးပါ
             const existingJoinedCheck = await db.collection('active_rooms').where('joinedUserId', '==', userId).get();
             if (!existingJoinedCheck.empty) {
                 return res.status(400).json({ success: false, message: "သင်သည် Room တစ်ခုကို Join ပြီးသားဖြစ်၍ Room အသစ်ထပ်မံ ဖန်တီး၍ မရပါ။" });
@@ -264,12 +203,9 @@ module.exports = async function handler(req, res) {
                 boType: boType || 'BO1',
                 status: 'waiting',
                 createdAt: getYangonTimeStr(),
-                joinedUserId: null,
-                joinedUserName: null,
-                joinedUserAvatar: null,
+                joinedUserId: null, // Join မည့်သူ့ ID အလွတ်စထားမည်
                 
                 inGameName: matchedReg?.inGameName || teamName,
-                playerId: matchedReg?.playerId || matchedReg?.gameId || '',
                 heroName: matchedReg?.heroName || '',
                 
                 sqName: matchedReg?.sqName || teamName,
@@ -282,13 +218,11 @@ module.exports = async function handler(req, res) {
                 contactPhNo: matchedReg?.contactPhNo || matchedReg?.kpayPhNo || ''
             };
 
-            // Firestore တွင် Document ID ကို userId အစား Auto ID ဖြင့် သိမ်းဆည်းရန် doc() ကို အသုံးပြုသည် (Frontend က room.id ဖြင့် ယူရန် လွယ်ကူစေရန်)
-            const newRoomRef = await db.collection('active_rooms').add(roomData);
+            await db.collection('active_rooms').doc(userId).set(roomData);
 
             return res.status(200).json({ 
                 success: true, 
                 message: "Room created successfully", 
-                roomId: newRoomRef.id,
                 roomData: roomData 
             });
 
@@ -306,7 +240,7 @@ module.exports = async function handler(req, res) {
                 return res.status(400).json({ success: false, message: "Missing userId for cancellation" });
             }
 
-            // အကယ်၍ roomId ပို့ပေးထားပြီး join ထားသူက ထွက်မည်ဆိုလျှင် joinedUserId နှင့် ဆက်စပ် field များကို ရှင်းမည်
+            // အကယ်၍ roomId ပို့ပေးထားပြီး ကိုယ်က host မဟုတ်ဘဲ join ထားသူဆိုရင် joinedUserId ကို ပြန်ဖြုတ်မယ်
             if (roomId) {
                 const roomRef = db.collection('active_rooms').doc(roomId);
                 const roomDoc = await roomRef.get();
@@ -315,48 +249,22 @@ module.exports = async function handler(req, res) {
                     if (rData.joinedUserId === userId) {
                         await roomRef.update({
                             joinedUserId: null,
-                            joinedUserName: null,
-                            joinedUserAvatar: null,
-                            joinerInGameName: null,
-                            joinerPlayerId: null,
-                            joinerHeroName: null,
-                            joinerContactPhNo: null,
-                            joinerSqName: null,
-                            joinerRoamer: null,
-                            joinerExp: null,
-                            joinerGold: null,
-                            joinerMid: null,
-                            joinerJungle: null,
                             status: 'waiting'
                         });
                         return res.status(200).json({ success: true, message: "Left room successfully" });
                     }
-                    // အကယ်၍ Host ကိုယ်တိုင်က Room ကို ဖျက်မည်ဆိုပါက
-                    if (rData.hostId === userId) {
-                        await roomRef.delete();
-                        return res.status(200).json({ success: true, message: "Room deleted successfully" });
-                    }
                 }
             }
 
-            // Host အနေနဲ့ hostId နဲ့ တိုက်ဆိုင်နေသော Room များကို ရှာပြီး ဖျက်ပစ်မည်
-            const hostRoomsSnapshot = await db.collection('active_rooms').where('hostId', '==', userId).get();
-            const batch = db.batch();
-            hostRoomsSnapshot.forEach(doc => {
-                batch.delete(doc.ref);
-            });
+            // ဒါမှမဟုတ်ရင် Host အနေနဲ့ ထောင်ထားတဲ့ Room ကို လုံးဝ ဖျက်ပစ်မယ်
+            await db.collection('active_rooms').doc(userId).delete();
 
-            // တခြား room တွေမှာ joined လုပ်ထားတာရှိရင်လည်း အဲ့ဒီ room တွေထဲက joinedUserId တွေကို ရှင်းထုတ်ပေးမည်
+            // တခြား room တွေမှာ joined လုပ်ထားတာရှိရင်လည်း အဲ့ဒီ room တွေထဲက joinedUserId ကို ရှင်းထုတ်ပေးမယ်
             const joinedSnapshot = await db.collection('active_rooms').where('joinedUserId', '==', userId).get();
+            const batch = db.batch();
             joinedSnapshot.forEach(doc => {
-                batch.update(doc.ref, { 
-                    joinedUserId: null, 
-                    joinedUserName: null, 
-                    joinedUserAvatar: null, 
-                    status: 'waiting' 
-                });
+                batch.update(doc.ref, { joinedUserId: null, status: 'waiting' });
             });
-
             await batch.commit();
 
             return res.status(200).json({ 
@@ -371,4 +279,4 @@ module.exports = async function handler(req, res) {
 
     res.setHeader('Allow', ['GET', 'POST', 'DELETE']);
     return res.status(405).json({ success: false, message: `Method ${method} not allowed` });
-};
+}
