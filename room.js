@@ -609,4 +609,4 @@ export function renderRoomScreen(container, roomTitleText, userDocData = {}) {
             renderMatchScreen(container, userDocData);
         });
     }
-}
+}  
