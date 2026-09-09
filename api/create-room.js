@@ -35,6 +35,7 @@ function formatPlayerField(player) {
 module.exports = async function handler(req, res) {
     const { method } = req;
 
+    // 🔥 1. GET Method - Global Room များကို Mode နဲ့ KeyType အလိုက် လှမ်းထုတ်ပေးခြင်း
     if (method === 'GET') {
         try {
             const { mode, keyType } = req.query;
@@ -63,16 +64,18 @@ module.exports = async function handler(req, res) {
         }
     }
 
+    // 🔥 2. POST Method - Room အသစ်ဖန်တီးခြင်း (သို့မဟုတ်) Room ထဲသို့ Join ခြင်း
     if (method === 'POST') {
         try {
             const { userId, roomTitle, targetMode, targetKeyType, boType, roomId } = req.body;
 
-            // 🔥 1. JOIN ROOM LOGIC (Joiner ဘက်မှ Room သို့ ဝင်ခြင်း)
+            // အကယ်၍ roomId ပါလာလျှင် ဒါဟာ Room ဝင် Join တဲ့ Request ဖြစ်ပါတယ်
             if (roomId) {
                 if (!userId) {
                     return res.status(400).json({ success: false, message: "Missing userId for joining room" });
                 }
 
+                // တခြားသူ့ Room ကို Join မလုပ်ခင် ဒီ user ဟာ ကိုယ်ပိုင် room ထောင်ထားတာ (သို့) အခြား room တစ်ခုခု join ပြီးသားဖြစ်နေလား စစ်မယ်
                 const existingRoomHost = await db.collection('active_rooms').where('hostId', '==', userId).get();
                 if (!existingRoomHost.empty) {
                     return res.status(400).json({ success: false, message: "သင့်တွင် Active ဖြစ်နေသော Room ရှိနှင့်ပြီးဖြစ်၍ တခြား Room သို့ Join ၍ မရပါ။" });
@@ -98,93 +101,16 @@ module.exports = async function handler(req, res) {
                     return res.status(400).json({ success: false, message: "ဤ Room သည် အခြားသူ Join ပြီးသား (Locked ဖြစ်နေသော) ဖြစ်ပါသည်။" });
                 }
 
-                const userDoc = await db.collection('users').doc(userId).get();
-                let userData = userDoc.exists ? userDoc.data() : {};
-
-                let joinerTeamName = userData.name || 'Player';
-                let joinerTeamLogo = userData.photoURL || userData.avatar || 'FrontLogo.jpg';
-
-                let regCollectionName = '';
-                const lowerMode = (roomData.mode || '').toLowerCase();
-                
-                if (lowerMode.includes('1v1') || lowerMode.includes('1vs1')) {
-                    regCollectionName = '1vs1_registrations';
-                } else if (lowerMode.includes('5v5') || lowerMode.includes('5vs5')) {
-                    regCollectionName = '5vs5_registrations';
-                } else if (lowerMode.includes('tournament')) {
-                    regCollectionName = 'tournament_registrations';
-                }
-
-                let joinerMatchedReg = null;
-
-                if (regCollectionName) {
-                    const regSnapshot = await db.collection(regCollectionName)
-                        .where('userId', '==', userId)
-                        .get();
-
-                    let matchedRegs = [];
-                    regSnapshot.forEach(doc => {
-                        const regData = doc.data();
-                        // fee ကို Mode / KeyType အတိုင်း တိုက်စစ်ခြင်း
-                        if (regData.fee && regData.fee.toString().toUpperCase() === roomData.keyType.toUpperCase()) {
-                            matchedRegs.push(regData);
-                        }
-                    });
-
-                    if (matchedRegs.length > 0) {
-                        // အရင်ဆုံး တတင်ထားသော register (createdAt အဟောင်းဆုံး) ကို ရှာရန် အစဉ်လိုက်စီခြင်း
-                        matchedRegs.sort((a, b) => {
-                            const getTimeVal = (createdAt) => {
-                                if (!createdAt) return 0;
-                                if (typeof createdAt.toMillis === 'function') return createdAt.toMillis();
-                                if (typeof createdAt.toDate === 'function') return createdAt.toDate().getTime();
-                                const parsed = new Date(createdAt).getTime();
-                                return isNaN(parsed) ? 0 : parsed;
-                            };
-                            return getTimeVal(a.createdAt) - getTimeVal(b.createdAt);
-                        });
-
-                        joinerMatchedReg = matchedRegs[0];
-
-                        // Joiner ၏ logo နှင့် sqName/TeamName ကို ဆွဲထုတ် သတ်မှတ်ခြင်း
-                        if (lowerMode.includes('5v5') || lowerMode.includes('5vs5')) {
-                            joinerTeamName = joinerMatchedReg.sqName || joinerTeamName;
-                        } else if (lowerMode.includes('tournament')) {
-                            joinerTeamName = joinerMatchedReg.teamName || joinerTeamName;
-                        } else {
-                            joinerTeamName = joinerMatchedReg.inGameName || joinerTeamName;
-                        }
-                        
-                        if (joinerMatchedReg.logo || joinerMatchedReg.teamLogo || joinerMatchedReg.paymentSlip) {
-                            joinerTeamLogo = joinerMatchedReg.logo || joinerMatchedReg.teamLogo || joinerMatchedReg.paymentSlip;
-                        }
-                    }
-                }
-
+                // Room ထဲသို့ joinedUserId ကို ထည့်သွင်း update လုပ်မည်
                 await roomRef.update({
                     joinedUserId: userId,
-                    joinedTeamName: joinerTeamName,
-                    joinedTeamLogo: joinerTeamLogo,
-                    
-                    joinerInGameName: joinerMatchedReg?.inGameName || joinerTeamName,
-                    joinerPlayerId: joinerMatchedReg?.playerId || joinerMatchedReg?.gameId || '',
-                    joinerHeroName: joinerMatchedReg?.heroName || '',
-                    
-                    joinerSqName: joinerMatchedReg?.sqName || joinerTeamName,
-                    joinerRoamer: formatPlayerField(joinerMatchedReg?.roamer || joinerMatchedReg?.playerRoamer),
-                    joinerExp: formatPlayerField(joinerMatchedReg?.exp || joinerMatchedReg?.playerExp),
-                    joinerGold: formatPlayerField(joinerMatchedReg?.gold || joinerMatchedReg?.playerGold),
-                    joinerMid: formatPlayerField(joinerMatchedReg?.mid || joinerMatchedReg?.playerMid),
-                    joinerJungle: formatPlayerField(joinerMatchedReg?.jungle || joinerMatchedReg?.playerJungle),
-
-                    joinerContactPhNo: joinerMatchedReg?.contactPhNo || joinerMatchedReg?.kpayPhNo || joinerMatchedReg?.contactPhoneNumber || '',
                     status: 'matched'
                 });
 
                 return res.status(200).json({ success: true, message: "Successfully joined the room" });
             }
 
-            // 🔥 2. CREATE ROOM LOGIC (Host ဘက်မှ Room အသစ်ဖန်တီးခြင်း)
+            // Room အသစ်ဖန်တီးသည့် Logic (roomId မပါလာလျှင်)
             if (!userId || !targetMode || !targetKeyType) {
                 return res.status(400).json({ success: false, message: "Missing required fields" });
             }
@@ -197,14 +123,18 @@ module.exports = async function handler(req, res) {
                 });
             }
 
+            // User က Join ပြီးသားဖြစ်နေရင်လည်း Room အသစ်ထောင်ခွင့်မပေးပါ
             const existingJoinedCheck = await db.collection('active_rooms').where('joinedUserId', '==', userId).get();
             if (!existingJoinedCheck.empty) {
                 return res.status(400).json({ success: false, message: "သင်သည် Room တစ်ခုကို Join ပြီးသားဖြစ်၍ Room အသစ်ထပ်မံ ဖန်တီး၍ မရပါ။" });
             }
 
             const userDoc = await db.collection('users').doc(userId).get();
-            let userData = userDoc.exists ? userDoc.data() : {};
+            if (!userDoc.exists) {
+                return res.status(404).json({ success: false, message: "User not found" });
+            }
 
+            const userData = userDoc.data();
             let teamName = userData.name || 'Player';
             let teamLogo = userData.photoURL || userData.avatar || 'FrontLogo.jpg';
 
@@ -229,14 +159,12 @@ module.exports = async function handler(req, res) {
                 let matchedRegs = [];
                 regSnapshot.forEach(doc => {
                     const regData = doc.data();
-                    // userId, mode (collection), နှင့် fee (targetKeyType) တို့ဖြင့် ကိုက်ညီမှုစစ်ဆေးခြင်း
                     if (regData.fee && regData.fee.toString().toUpperCase() === targetKeyType.toUpperCase()) {
                         matchedRegs.push(regData);
                     }
                 });
 
                 if (matchedRegs.length > 0) {
-                    // အရင်ဆုံး တတင်ထားသော register (createdAt အဟောင်းဆုံး) ကို ရှာရန် စီခြင်း
                     matchedRegs.sort((a, b) => {
                         const getTimeVal = (createdAt) => {
                             if (!createdAt) return 0;
@@ -250,17 +178,17 @@ module.exports = async function handler(req, res) {
 
                     matchedReg = matchedRegs[0];
 
-                    // Host ၏ logo နှင့် sqName/TeamName ကို မှတ်ပုံတင်ထဲမှ အဓိက ဆွဲထုတ်ခြင်း
                     if (lowerMode.includes('5v5') || lowerMode.includes('5vs5')) {
                         teamName = matchedReg.sqName || teamName;
                     } else if (lowerMode.includes('tournament')) {
                         teamName = matchedReg.teamName || teamName;
+                        teamLogo = matchedReg.teamLogo || matchedReg.teamLogoUrl || teamLogo;
                     } else {
                         teamName = matchedReg.inGameName || teamName;
                     }
                     
-                    if (matchedReg.logo || matchedReg.teamLogo || matchedReg.paymentSlip) {
-                        teamLogo = matchedReg.logo || matchedReg.teamLogo || matchedReg.paymentSlip;
+                    if (matchedReg.logo || matchedReg.paymentSlip) {
+                        teamLogo = matchedReg.logo || matchedReg.paymentSlip;
                     }
                 }
             }
@@ -275,43 +203,26 @@ module.exports = async function handler(req, res) {
                 boType: boType || 'BO1',
                 status: 'waiting',
                 createdAt: getYangonTimeStr(),
-                joinedUserId: null, 
+                joinedUserId: null, // Join မည့်သူ့ ID အလွတ်စထားမည်
                 
-                // Host ၏ အချက်အလက်များ
                 inGameName: matchedReg?.inGameName || teamName,
-                playerId: matchedReg?.playerId || matchedReg?.gameId || '',
                 heroName: matchedReg?.heroName || '',
                 
                 sqName: matchedReg?.sqName || teamName,
-                roamer: formatPlayerField(matchedReg?.roamer || matchedReg?.playerRoamer),
-                exp: formatPlayerField(matchedReg?.exp || matchedReg?.playerExp),
-                gold: formatPlayerField(matchedReg?.gold || matchedReg?.playerGold),
-                mid: formatPlayerField(matchedReg?.mid || matchedReg?.playerMid),
-                jungle: formatPlayerField(matchedReg?.jungle || matchedReg?.playerJungle),
+                roamer: formatPlayerField(matchedReg?.roamer),
+                exp: formatPlayerField(matchedReg?.exp),
+                gold: formatPlayerField(matchedReg?.gold),
+                mid: formatPlayerField(matchedReg?.mid),
+                jungle: formatPlayerField(matchedReg?.jungle),
 
-                contactPhNo: matchedReg?.contactPhNo || matchedReg?.kpayPhNo || matchedReg?.contactPhoneNumber || '',
-
-                // Joiner နေရာအတွက် အစပိုင်းတွင် အလွတ်ထားရှိခြင်း
-                joinedTeamName: null,
-                joinedTeamLogo: null,
-                joinerInGameName: '',
-                joinerPlayerId: '',
-                joinerHeroName: '',
-                joinerSqName: '',
-                joinerRoamer: { name: '-', id: '-' },
-                joinerExp: { name: '-', id: '-' },
-                joinerGold: { name: '-', id: '-' },
-                joinerMid: { name: '-', id: '-' },
-                joinerJungle: { name: '-', id: '-' },
-                joinerContactPhNo: ''
+                contactPhNo: matchedReg?.contactPhNo || matchedReg?.kpayPhNo || ''
             };
 
-            const newRoomRef = await db.collection('active_rooms').add(roomData);
+            await db.collection('active_rooms').doc(userId).set(roomData);
 
             return res.status(200).json({ 
                 success: true, 
                 message: "Room created successfully", 
-                roomId: newRoomRef.id,
                 roomData: roomData 
             });
 
@@ -321,6 +232,7 @@ module.exports = async function handler(req, res) {
         }
     }
 
+    // 🔥 3. DELETE Method - Room ဖျက်ခြင်း (သို့မဟုတ်) Join ထားတာကို Cancel လုပ်ခြင်း
     if (method === 'DELETE') {
         try {
             const { userId, roomId } = req.body; 
@@ -328,6 +240,7 @@ module.exports = async function handler(req, res) {
                 return res.status(400).json({ success: false, message: "Missing userId for cancellation" });
             }
 
+            // အကယ်၍ roomId ပို့ပေးထားပြီး ကိုယ်က host မဟုတ်ဘဲ join ထားသူဆိုရင် joinedUserId ကို ပြန်ဖြုတ်မယ်
             if (roomId) {
                 const roomRef = db.collection('active_rooms').doc(roomId);
                 const roomDoc = await roomRef.get();
@@ -336,18 +249,6 @@ module.exports = async function handler(req, res) {
                     if (rData.joinedUserId === userId) {
                         await roomRef.update({
                             joinedUserId: null,
-                            joinedTeamName: null,
-                            joinedTeamLogo: null,
-                            joinerInGameName: '',
-                            joinerPlayerId: '',
-                            joinerHeroName: '',
-                            joinerSqName: '',
-                            joinerRoamer: { name: '-', id: '-' },
-                            joinerExp: { name: '-', id: '-' },
-                            joinerGold: { name: '-', id: '-' },
-                            joinerMid: { name: '-', id: '-' },
-                            joinerJungle: { name: '-', id: '-' },
-                            joinerContactPhNo: '',
                             status: 'waiting'
                         });
                         return res.status(200).json({ success: true, message: "Left room successfully" });
@@ -355,30 +256,14 @@ module.exports = async function handler(req, res) {
                 }
             }
 
-            const hostRoomsSnapshot = await db.collection('active_rooms').where('hostId', '==', userId).get();
-            const batch = db.batch();
-            hostRoomsSnapshot.forEach(doc => {
-                batch.delete(doc.ref);
-            });
+            // ဒါမှမဟုတ်ရင် Host အနေနဲ့ ထောင်ထားတဲ့ Room ကို လုံးဝ ဖျက်ပစ်မယ်
+            await db.collection('active_rooms').doc(userId).delete();
 
+            // တခြား room တွေမှာ joined လုပ်ထားတာရှိရင်လည်း အဲ့ဒီ room တွေထဲက joinedUserId ကို ရှင်းထုတ်ပေးမယ်
             const joinedSnapshot = await db.collection('active_rooms').where('joinedUserId', '==', userId).get();
+            const batch = db.batch();
             joinedSnapshot.forEach(doc => {
-                batch.update(doc.ref, { 
-                    joinedUserId: null, 
-                    joinedTeamName: null,
-                    joinedTeamLogo: null,
-                    joinerInGameName: '',
-                    joinerPlayerId: '',
-                    joinerHeroName: '',
-                    joinerSqName: '',
-                    joinerRoamer: { name: '-', id: '-' },
-                    joinerExp: { name: '-', id: '-' },
-                    joinerGold: { name: '-', id: '-' },
-                    joinerMid: { name: '-', id: '-' },
-                    joinerJungle: { name: '-', id: '-' },
-                    joinerContactPhNo: '',
-                    status: 'waiting' 
-                });
+                batch.update(doc.ref, { joinedUserId: null, status: 'waiting' });
             });
             await batch.commit();
 
@@ -394,4 +279,4 @@ module.exports = async function handler(req, res) {
 
     res.setHeader('Allow', ['GET', 'POST', 'DELETE']);
     return res.status(405).json({ success: false, message: `Method ${method} not allowed` });
-};
+}
