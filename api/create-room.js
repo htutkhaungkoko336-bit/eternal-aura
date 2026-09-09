@@ -67,6 +67,7 @@ module.exports = async function handler(req, res) {
         try {
             const { userId, roomTitle, targetMode, targetKeyType, boType, roomId } = req.body;
 
+            // 🔥 1. JOIN ROOM LOGIC (Joiner ဘက်မှ Room သို့ ဝင်ခြင်း)
             if (roomId) {
                 if (!userId) {
                     return res.status(400).json({ success: false, message: "Missing userId for joining room" });
@@ -161,6 +162,7 @@ module.exports = async function handler(req, res) {
                     }
                 }
 
+                // Joiner ဘက်အတွက် 5v5 ဖြစ်စေ, 1v1 ဖြစ်စေ လိုအပ်သော ID များနှင့် အချက်အလက်များကို ထည့်သွင်းခြင်း
                 await roomRef.update({
                     joinedUserId: userId,
                     joinedTeamName: joinerTeamName,
@@ -177,13 +179,14 @@ module.exports = async function handler(req, res) {
                     joinerMid: formatPlayerField(joinerMatchedReg?.mid),
                     joinerJungle: formatPlayerField(joinerMatchedReg?.jungle),
 
-                    joinerContactPhNo: joinerMatchedReg?.contactPhNo || joinerMatchedReg?.kpayPhNo || '',
+                    joinerContactPhNo: joinerMatchedReg?.contactPhNo || joinerMatchedReg?.kpayPhNo || joinerMatchedReg?.contactPhoneNumber || '',
                     status: 'matched'
                 });
 
                 return res.status(200).json({ success: true, message: "Successfully joined the room" });
             }
 
+            // 🔥 2. CREATE ROOM LOGIC (Host ဘက်မှ Room အသစ်ဖန်တီးခြင်း)
             if (!userId || !targetMode || !targetKeyType) {
                 return res.status(400).json({ success: false, message: "Missing required fields" });
             }
@@ -216,7 +219,7 @@ module.exports = async function handler(req, res) {
             if (lowerMode.includes('1v1') || lowerMode.includes('1vs1')) {
                 regCollectionName = '1vs1_registrations';
             } else if (lowerMode.includes('5v5') || lowerMode.includes('5vs5')) {
-                regCollectionName = '5vs5_registrations';
+                regCollectionName = '5v5_registrations';
             } else if (lowerMode.includes('tournament')) {
                 regCollectionName = 'tournament_registrations';
             }
@@ -265,6 +268,8 @@ module.exports = async function handler(req, res) {
                 }
             }
 
+            // Host ဖန်တီးလိုက်သည့်အခါ 5v5 အတွက် Squad နာမည်၊ Role အချက်အလက်များနှင့် Contact များကို ထည့်ပေးမည်
+            // Joiner နေရာများကိုမူ အစပိုင်းတွင် အလွတ် (blank/null) ထားရှိမည်
             const roomData = {
                 hostId: userId,
                 teamName: teamName,
@@ -277,8 +282,9 @@ module.exports = async function handler(req, res) {
                 createdAt: getYangonTimeStr(),
                 joinedUserId: null, 
                 
+                // Host ၏ အချက်အလက်များ
                 inGameName: matchedReg?.inGameName || teamName,
-                playerId: matchedReg?.playerId || matchedReg?.gameId || matchedReg?.id || '', // 🔥 playerId အပြင် gameId/id များကိုပါ စစ်ထုတ်ပေးသည်
+                playerId: matchedReg?.playerId || matchedReg?.gameId || '',
                 heroName: matchedReg?.heroName || '',
                 
                 sqName: matchedReg?.sqName || teamName,
@@ -288,7 +294,21 @@ module.exports = async function handler(req, res) {
                 mid: formatPlayerField(matchedReg?.mid),
                 jungle: formatPlayerField(matchedReg?.jungle),
 
-                contactPhNo: matchedReg?.contactPhNo || matchedReg?.kpayPhNo || matchedReg?.contactPhoneNumber || ''
+                contactPhNo: matchedReg?.contactPhNo || matchedReg?.kpayPhNo || matchedReg?.contactPhoneNumber || '',
+
+                // Joiner ဘက်အတွက် အလွတ် (Blank) အနေဖြင့် စတင်သတ်မှတ်ပေးခြင်း
+                joinedTeamName: null,
+                joinedTeamLogo: null,
+                joinerInGameName: '',
+                joinerPlayerId: '',
+                joinerHeroName: '',
+                joinerSqName: '',
+                joinerRoamer: { name: '-', id: '-' },
+                joinerExp: { name: '-', id: '-' },
+                joinerGold: { name: '-', id: '-' },
+                joinerMid: { name: '-', id: '-' },
+                joinerJungle: { name: '-', id: '-' },
+                joinerContactPhNo: ''
             };
 
             const newRoomRef = await db.collection('active_rooms').add(roomData);
@@ -323,16 +343,16 @@ module.exports = async function handler(req, res) {
                             joinedUserId: null,
                             joinedTeamName: null,
                             joinedTeamLogo: null,
-                            joinerInGameName: null,
-                            joinerPlayerId: null,
-                            joinerHeroName: null,
-                            joinerSqName: null,
-                            joinerRoamer: null,
-                            joinerExp: null,
-                            joinerGold: null,
-                            joinerMid: null,
-                            joinerJungle: null,
-                            joinerContactPhNo: null,
+                            joinerInGameName: '',
+                            joinerPlayerId: '',
+                            joinerHeroName: '',
+                            joinerSqName: '',
+                            joinerRoamer: { name: '-', id: '-' },
+                            joinerExp: { name: '-', id: '-' },
+                            joinerGold: { name: '-', id: '-' },
+                            joinerMid: { name: '-', id: '-' },
+                            joinerJungle: { name: '-', id: '-' },
+                            joinerContactPhNo: '',
                             status: 'waiting'
                         });
                         return res.status(200).json({ success: true, message: "Left room successfully" });
@@ -352,16 +372,16 @@ module.exports = async function handler(req, res) {
                     joinedUserId: null, 
                     joinedTeamName: null,
                     joinedTeamLogo: null,
-                    joinerInGameName: null,
-                    joinerPlayerId: null,
-                    joinerHeroName: null,
-                    joinerSqName: null,
-                    joinerRoamer: null,
-                    joinerExp: null,
-                    joinerGold: null,
-                    joinerMid: null,
-                    joinerJungle: null,
-                    joinerContactPhNo: null,
+                    joinerInGameName: '',
+                    joinerPlayerId: '',
+                    joinerHeroName: '',
+                    joinerSqName: '',
+                    joinerRoamer: { name: '-', id: '-' },
+                    joinerExp: { name: '-', id: '-' },
+                    joinerGold: { name: '-', id: '-' },
+                    joinerMid: { name: '-', id: '-' },
+                    joinerJungle: { name: '-', id: '-' },
+                    joinerContactPhNo: '',
                     status: 'waiting' 
                 });
             });
@@ -373,7 +393,7 @@ module.exports = async function handler(req, res) {
             });
         } catch (error) {
             console.error("Delete Room Error:", error);
-            return res.status(500).json({ success: false, message: `Server Error` });
+            return res.status(500).json({ success: false, message: "Server Error", error: error.message });
         }
     }
 
