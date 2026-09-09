@@ -114,6 +114,12 @@ export function renderRoomScreen(container, roomTitleText, userDocData = {}) {
                     text-overflow: ellipsis;
                     white-space: nowrap;
                 }
+                .center-vs-wrapper {
+                    display: flex;
+                    flex-direction: column;
+                    align-items: center;
+                    gap: 4px;
+                }
                 .vs-badge {
                     font-size: 10px;
                     font-weight: 900;
@@ -122,6 +128,16 @@ export function renderRoomScreen(container, roomTitleText, userDocData = {}) {
                     padding: 3px 6px;
                     border-radius: 6px;
                     border: 1px solid rgba(56, 189, 248, 0.4);
+                }
+                .matched-top-badge {
+                    font-size: 9px;
+                    font-weight: 700;
+                    color: #10b981;
+                    background: rgba(16, 185, 129, 0.15);
+                    padding: 2px 6px;
+                    border-radius: 4px;
+                    border: 1px solid rgba(16, 185, 129, 0.4);
+                    white-space: nowrap;
                 }
                 .right-action-group {
                     display: flex;
@@ -307,7 +323,7 @@ export function renderRoomScreen(container, roomTitleText, userDocData = {}) {
                     }
 
                     const isLocked = room.joinedUserId && room.joinedUserId !== userId;
-                    const hasMatched = !!room.joinedUserId; // Joiner ပါဝင်ပြီးသား ဟုတ်မဟုတ် စစ်ဆေးရန်
+                    const hasMatched = !!room.joinedUserId;
 
                     const hostLogo = room.teamLogo || defaultUserAvatar;
                     const hostName = room.teamName || 'Player';
@@ -315,14 +331,12 @@ export function renderRoomScreen(container, roomTitleText, userDocData = {}) {
                     const joinerLogo = room.joinerTeamLogo || defaultUserAvatar;
                     const joinerName = room.joinerTeamName || (hasMatched ? 'Joined Player' : 'Waiting...');
 
-                    // Host ဖြစ်ပြီး joiner မရှိသေးမှသာ (یعنی !hasMatched) cancel ခလုတ်ပြမည်။
-                    // Joiner ဝင်လာပြီဆိုလျှင် cancel ခလုတ်ကို ဖြုတ်ပေးမည်။
                     let rightActionHTML = '';
                     if (isMyRoom) {
                         if (!hasMatched) {
                             rightActionHTML = `<button class="card-cancel-btn" data-roomid="${room.id}" data-hostid="${room.hostId}">Cancel</button>`;
                         } else {
-                            rightActionHTML = `<span style="font-size: 10px; color: #10b981; font-weight: 700; background: rgba(16,185,129,0.15); padding: 4px 8px; border-radius: 6px;">Matched</span>`;
+                            rightActionHTML = ''; // Joiner ပါလာရင် Host ဘက်က cancel ခလုတ်ကို ဖြုတ်ပေးသည်
                         }
                     } else if (isJoinedByMe) {
                         rightActionHTML = `<button class="card-cancel-btn" data-roomid="${room.id}" data-hostid="${room.hostId}">Cancel</button>`;
@@ -341,7 +355,11 @@ export function renderRoomScreen(container, roomTitleText, userDocData = {}) {
                                     <span class="player-name">${hostName}</span>
                                 </div>
 
-                                <div class="vs-badge">VS</div>
+                                <!-- Center VS & Matched Badge -->
+                                <div class="center-vs-wrapper">
+                                    ${hasMatched ? `<span class="matched-top-badge">Matched</span>` : ''}
+                                    <div class="vs-badge">VS</div>
+                                </div>
 
                                 <!-- Joiner Player Side -->
                                 <div class="player-side right">
