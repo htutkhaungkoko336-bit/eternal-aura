@@ -306,37 +306,67 @@ export function renderRoomScreen(container, roomTitleText, userDocData = {}) {
                         hasJoinedAnyRoom = true;
                     }
 
-                    const isLocked = room.joinedUserId && room.joinedUserId !== userId;
+                    const hasJoiner = Boolean(room.joinedUserId);
+                    const isLocked = hasJoiner && !isJoinedByMe;
+
+                    let rightSideContent = '';
+                    if (hasJoiner) {
+                        rightSideContent = `
+                            <div class="player-side right" style="cursor: pointer;" data-action="view-joiner">
+                                <img src="${room.joinedUserAvatar || defaultUserAvatar}" alt="Joiner Logo" class="player-avatar" onerror="this.src='FrontLogo.jpg'">
+                                <span class="player-name">${room.joinedUserName || 'Joiner'}</span>
+                            </div>
+                        `;
+                        if (isMyRoom || isJoinedByMe) {
+                            rightSideContent += `<button class="card-cancel-btn" data-roomid="${room.id}" data-hostid="${room.hostId}" style="margin-left: 4px;">Cancel</button>`;
+                        }
+                    } else {
+                        if (isMyRoom) {
+                            rightSideContent = `
+                                <div class="right-action-group">
+                                    <span style="font-size: 10px; color: #94a3b8;">Waiting...</span>
+                                    <button class="card-cancel-btn" data-roomid="${room.id}" data-hostid="${room.hostId}">Cancel</button>
+                                </div>
+                            `;
+                        } else {
+                            rightSideContent = `
+                                <div class="right-action-group">
+                                    <button class="card-join-btn" data-roomid="${room.id}" data-hostid="${room.hostId}">Join</button>
+                                </div>
+                            `;
+                        }
+                    }
 
                     return `
                         <div class="ios-room-card" style="max-width: 100%;" data-room-index="${room.id}">
                             <div class="matchup-container">
-                                <div class="player-side">
-                                    <img src="${room.teamLogo || defaultUserAvatar}" alt="Logo" class="player-avatar" onerror="this.src='FrontLogo.jpg'">
+                                <div class="player-side" style="cursor: pointer;" data-action="view-host">
+                                    <img src="${room.teamLogo || defaultUserAvatar}" alt="Host Logo" class="player-avatar" onerror="this.src='FrontLogo.jpg'">
                                     <span class="player-name">${room.teamName || 'Player'}</span>
                                 </div>
                                 <div class="vs-badge">VS</div>
-                                <div class="player-side right">
-                                    <div class="right-action-group">
-                                        ${isMyRoom || isJoinedByMe
-                                            ? `<button class="card-cancel-btn" data-roomid="${room.id}" data-hostid="${room.hostId}">Cancel</button>` 
-                                            : isLocked
-                                                ? `<span style="font-size: 10px; color: #f43f5e; font-weight: 700; background: rgba(244,63,94,0.15); padding: 4px 8px; border-radius: 6px;">Locked</span>`
-                                                : `<button class="card-join-btn" data-roomid="${room.id}" data-hostid="${room.hostId}">Join</button>`
-                                        }
-                                    </div>
-                                </div>
+                                ${rightSideContent}
                             </div>
                         </div>
                     `;
                 }).join('');
 
                 roomsContainer.querySelectorAll('.ios-room-card').forEach((card, idx) => {
-                    card.addEventListener('click', (e) => {
-                        if (e.target.tagName === 'BUTTON') return;
-                        const room = data.rooms[idx];
-                        showRoomDetailsPopup(room, targetMode);
-                    });
+                    const room = data.rooms[idx];
+                    
+                    const hostSide = card.querySelector('[data-action="view-host"]');
+                    if (hostSide) {
+                        hostSide.addEventListener('click', () => {
+                            showRoomDetailsPopup(room, targetMode, 'host');
+                        });
+                    }
+
+                    const joinerSide = card.querySelector('[data-action="view-joiner"]');
+                    if (joinerSide) {
+                        joinerSide.addEventListener('click', () => {
+                            showRoomDetailsPopup(room, targetMode, 'joiner');
+                        });
+                    }
                 });
 
             } else {
@@ -374,6 +404,7 @@ export function renderRoomScreen(container, roomTitleText, userDocData = {}) {
 
             roomsContainer.querySelectorAll('.card-cancel-btn').forEach(btn => {
                 btn.addEventListener('click', (e) => {
+                    e.stopPropagation();
                     const targetHostId = e.target.getAttribute('data-hostid');
                     const targetRoomId = e.target.getAttribute('data-roomid');
                     cancelRoomAPI(targetHostId, targetRoomId);
@@ -382,31 +413,36 @@ export function renderRoomScreen(container, roomTitleText, userDocData = {}) {
 
             roomsContainer.querySelectorAll('.card-join-btn').forEach(btn => {
                 btn.addEventListener('click', (e) => {
+                    e.stopPropagation();
                     const roomIdToJoin = e.target.getAttribute('data-roomid');
                     joinRoomAPI(roomIdToJoin);
                 });
             });
 
-        } catch (err) {
+        } catch (err) { // ပြင်ဆင်လိုက်သည့်နေရာ (else မှ catch သို့ ပြောင်းထားသည်)
             console.error("Fetch rooms error:", err);
             roomsContainer.innerHTML = `<span style="color: #f43f5e; font-size: 11px;">Rooms များကို ဆွဲထုတ်၍ မရပါ။</span>`;
         }
     }
 
-    function showRoomDetailsPopup(room, mode) {
+    function showRoomDetailsPopup(room, mode, targetType = 'host') {
         let contentHTML = '';
         const is1v1 = mode.toLowerCase().includes('1v1');
+        
+        const titlePrefix = targetType === 'joiner' ? 'Joiner Details' : (is1v1 ? '1VS1 Room Details' : `SQ: ${room.sqName || room.teamName || 'Unknown Squad'}`);
 
         if (is1v1) {
-            const name = room.inGameName || room.teamName || room.userName || 'Unknown Player';
-            const hero = room.heroName || room.hero || 'Not Specified';
-            const contact = room.contactPhNo || room.kpayPhNo || 'N/A';
+            const name = targetType === 'joiner' ? (room.joinerInGameName || room.joinerUserName || room.joinedUserName || 'Unknown Joiner') : (room.inGameName || room.teamName || room.userName || 'Unknown Player');
+            const playerId = targetType === 'joiner' ? (room.joinerPlayerId || room.joinerId || 'N/A') : (room.playerId || room.hostId || 'N/A');
+            const hero = targetType === 'joiner' ? (room.joinerHeroName || room.joinerHero || 'Not Specified') : (room.heroName || room.hero || 'Not Specified');
+            const contact = targetType === 'joiner' ? (room.joinerContactPhNo || room.joinerKpayPhNo || 'N/A') : (room.contactPhNo || room.kpayPhNo || 'N/A');
 
             contentHTML = `
                 <div class="popup-box">
-                    <div class="popup-title">1VS1 Room Details</div>
+                    <div class="popup-title">${titlePrefix}</div>
                     <div style="display: flex; flex-direction: column; width: 100%;">
                         <div class="popup-row"><span>Name:</span> <b style="color: #38bdf8;">${name}</b></div>
+                        <div class="popup-row"><span>Player ID:</span> <b style="color: #f59e0b;">${playerId}</b></div>
                         <div class="popup-row"><span>Hero Name:</span> <b style="color: #10b981;">${hero}</b></div>
                         <div class="popup-row" style="border-bottom: none; border-top: 1px solid rgba(56, 189, 248, 0.4); margin-top: 6px; padding-top: 12px;"><span>Contact:</span> <b>${contact}</b></div>
                     </div>
@@ -414,26 +450,26 @@ export function renderRoomScreen(container, roomTitleText, userDocData = {}) {
                 </div>
             `;
         } else {
-            const sqName = room.sqName || room.teamName || 'Unknown Squad';
-            const contact = room.contactPhNo || room.kpayPhNo || 'N/A';
+            const squadName = targetType === 'joiner' ? (room.joinerSqName || room.joinerTeamName || 'Joiner Squad') : (room.sqName || room.teamName || 'Unknown Squad');
+            const contact = targetType === 'joiner' ? (room.joinerContactPhNo || room.joinerKpayPhNo || 'N/A') : (room.contactPhNo || room.kpayPhNo || 'N/A');
 
             const formatPlayerName = (p) => {
                 if (!p) return '-';
                 if (typeof p === 'object') {
-                    return p.name || '-';
+                    return `${p.name || '-'} (ID: ${p.id || 'N/A'})`;
                 }
                 return p;
             };
 
-            const roamer = formatPlayerName(room.roamer);
-            const exp = formatPlayerName(room.exp);
-            const gold = formatPlayerName(room.gold);
-            const mid = formatPlayerName(room.mid);
-            const jungle = formatPlayerName(room.jungle);
+            const roamer = formatPlayerName(targetType === 'joiner' ? room.joinerRoamer : room.roamer);
+            const exp = formatPlayerName(targetType === 'joiner' ? room.joinerExp : room.exp);
+            const gold = formatPlayerName(targetType === 'joiner' ? room.joinerGold : room.gold);
+            const mid = formatPlayerName(targetType === 'joiner' ? room.joinerMid : room.mid);
+            const jungle = formatPlayerName(targetType === 'joiner' ? room.joinerJungle : room.jungle);
 
             contentHTML = `
                 <div class="popup-box">
-                    <div class="popup-title">SQ: ${sqName}</div>
+                    <div class="popup-title">${titlePrefix}: ${squadName}</div>
                     <div style="font-size: 11px; color: #94a3b8; margin-bottom: 10px; text-align: center;">5VS5 Players List</div>
                     
                     <div style="display: flex; flex-direction: column; width: 100%;">
@@ -443,7 +479,6 @@ export function renderRoomScreen(container, roomTitleText, userDocData = {}) {
                         <div class="popup-row"><span>Mid:</span> <b style="color: #38bdf8;">${mid}</b></div>
                         <div class="popup-row" style="border-bottom: none;"><span>Jungle:</span> <b style="color: #38bdf8;">${jungle}</b></div>
                         
-                        <!-- Contact အပေါ်က မျဉ်းကို အရောင်ထည့်ပေးထားသည် -->
                         <div class="popup-row" style="border-bottom: none; border-top: 1px solid rgba(56, 189, 248, 0.4); margin-top: 8px; padding-top: 12px;">
                             <span>Contact:</span> <b style="color: #38bdf8;">${contact}</b>
                         </div>
