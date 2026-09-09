@@ -98,14 +98,11 @@ module.exports = async function handler(req, res) {
                     return res.status(400).json({ success: false, message: "ဤ Room သည် အခြားသူ Join ပြီးသား (Locked ဖြစ်နေသော) ဖြစ်ပါသည်။" });
                 }
 
-                const joinerUserDoc = await db.collection('users').doc(userId).get();
-                let joinerUserData = {};
-                if (joinerUserDoc.exists) {
-                    joinerUserData = joinerUserDoc.data();
-                }
+                const userDoc = await db.collection('users').doc(userId).get();
+                let userData = userDoc.exists ? userDoc.data() : {};
 
-                let joinerTeamName = joinerUserData.name || 'Player';
-                let joinerTeamLogo = joinerUserData.photoURL || joinerUserData.avatar || 'FrontLogo.jpg';
+                let joinerTeamName = userData.name || 'Player';
+                let joinerTeamLogo = userData.photoURL || userData.avatar || 'FrontLogo.jpg';
 
                 let regCollectionName = '';
                 const lowerMode = (roomData.mode || '').toLowerCase();
@@ -128,12 +125,14 @@ module.exports = async function handler(req, res) {
                     let matchedRegs = [];
                     regSnapshot.forEach(doc => {
                         const regData = doc.data();
+                        // fee ကို Mode / KeyType အတိုင်း တိုက်စစ်ခြင်း
                         if (regData.fee && regData.fee.toString().toUpperCase() === roomData.keyType.toUpperCase()) {
                             matchedRegs.push(regData);
                         }
                     });
 
                     if (matchedRegs.length > 0) {
+                        // အရင်ဆုံး တတင်ထားသော register (createdAt အဟောင်းဆုံး) ကို ရှာရန် အစဉ်လိုက်စီခြင်း
                         matchedRegs.sort((a, b) => {
                             const getTimeVal = (createdAt) => {
                                 if (!createdAt) return 0;
@@ -147,22 +146,21 @@ module.exports = async function handler(req, res) {
 
                         joinerMatchedReg = matchedRegs[0];
 
+                        // Joiner ၏ logo နှင့် sqName/TeamName ကို ဆွဲထုတ် သတ်မှတ်ခြင်း
                         if (lowerMode.includes('5v5') || lowerMode.includes('5vs5')) {
                             joinerTeamName = joinerMatchedReg.sqName || joinerTeamName;
                         } else if (lowerMode.includes('tournament')) {
                             joinerTeamName = joinerMatchedReg.teamName || joinerTeamName;
-                            joinerTeamLogo = joinerMatchedReg.teamLogo || joinerMatchedReg.teamLogoUrl || joinerTeamLogo;
                         } else {
                             joinerTeamName = joinerMatchedReg.inGameName || joinerTeamName;
                         }
                         
-                        if (joinerMatchedReg.logo || joinerMatchedReg.paymentSlip) {
-                            joinerTeamLogo = joinerMatchedReg.logo || joinerMatchedReg.paymentSlip;
+                        if (joinerMatchedReg.logo || joinerMatchedReg.teamLogo || joinerMatchedReg.paymentSlip) {
+                            joinerTeamLogo = joinerMatchedReg.logo || joinerMatchedReg.teamLogo || joinerMatchedReg.paymentSlip;
                         }
                     }
                 }
 
-                // Joiner ဘက်အတွက် 5v5 ဖြစ်စေ, 1v1 ဖြစ်စေ လိုအပ်သော ID များနှင့် အချက်အလက်များကို ထည့်သွင်းခြင်း
                 await roomRef.update({
                     joinedUserId: userId,
                     joinedTeamName: joinerTeamName,
@@ -173,11 +171,11 @@ module.exports = async function handler(req, res) {
                     joinerHeroName: joinerMatchedReg?.heroName || '',
                     
                     joinerSqName: joinerMatchedReg?.sqName || joinerTeamName,
-                    joinerRoamer: formatPlayerField(joinerMatchedReg?.roamer),
-                    joinerExp: formatPlayerField(joinerMatchedReg?.exp),
-                    joinerGold: formatPlayerField(joinerMatchedReg?.gold),
-                    joinerMid: formatPlayerField(joinerMatchedReg?.mid),
-                    joinerJungle: formatPlayerField(joinerMatchedReg?.jungle),
+                    joinerRoamer: formatPlayerField(joinerMatchedReg?.roamer || joinerMatchedReg?.playerRoamer),
+                    joinerExp: formatPlayerField(joinerMatchedReg?.exp || joinerMatchedReg?.playerExp),
+                    joinerGold: formatPlayerField(joinerMatchedReg?.gold || joinerMatchedReg?.playerGold),
+                    joinerMid: formatPlayerField(joinerMatchedReg?.mid || joinerMatchedReg?.playerMid),
+                    joinerJungle: formatPlayerField(joinerMatchedReg?.jungle || joinerMatchedReg?.playerJungle),
 
                     joinerContactPhNo: joinerMatchedReg?.contactPhNo || joinerMatchedReg?.kpayPhNo || joinerMatchedReg?.contactPhoneNumber || '',
                     status: 'matched'
@@ -205,11 +203,8 @@ module.exports = async function handler(req, res) {
             }
 
             const userDoc = await db.collection('users').doc(userId).get();
-            if (!userDoc.exists) {
-                return res.status(404).json({ success: false, message: "User not found" });
-            }
+            let userData = userDoc.exists ? userDoc.data() : {};
 
-            const userData = userDoc.data();
             let teamName = userData.name || 'Player';
             let teamLogo = userData.photoURL || userData.avatar || 'FrontLogo.jpg';
 
@@ -219,7 +214,7 @@ module.exports = async function handler(req, res) {
             if (lowerMode.includes('1v1') || lowerMode.includes('1vs1')) {
                 regCollectionName = '1vs1_registrations';
             } else if (lowerMode.includes('5v5') || lowerMode.includes('5vs5')) {
-                regCollectionName = '5v5_registrations';
+                regCollectionName = '5vs5_registrations';
             } else if (lowerMode.includes('tournament')) {
                 regCollectionName = 'tournament_registrations';
             }
@@ -234,12 +229,14 @@ module.exports = async function handler(req, res) {
                 let matchedRegs = [];
                 regSnapshot.forEach(doc => {
                     const regData = doc.data();
+                    // userId, mode (collection), နှင့် fee (targetKeyType) တို့ဖြင့် ကိုက်ညီမှုစစ်ဆေးခြင်း
                     if (regData.fee && regData.fee.toString().toUpperCase() === targetKeyType.toUpperCase()) {
                         matchedRegs.push(regData);
                     }
                 });
 
                 if (matchedRegs.length > 0) {
+                    // အရင်ဆုံး တတင်ထားသော register (createdAt အဟောင်းဆုံး) ကို ရှာရန် စီခြင်း
                     matchedRegs.sort((a, b) => {
                         const getTimeVal = (createdAt) => {
                             if (!createdAt) return 0;
@@ -253,23 +250,21 @@ module.exports = async function handler(req, res) {
 
                     matchedReg = matchedRegs[0];
 
+                    // Host ၏ logo နှင့် sqName/TeamName ကို မှတ်ပုံတင်ထဲမှ အဓိက ဆွဲထုတ်ခြင်း
                     if (lowerMode.includes('5v5') || lowerMode.includes('5vs5')) {
                         teamName = matchedReg.sqName || teamName;
                     } else if (lowerMode.includes('tournament')) {
                         teamName = matchedReg.teamName || teamName;
-                        teamLogo = matchedReg.teamLogo || matchedReg.teamLogoUrl || teamLogo;
                     } else {
                         teamName = matchedReg.inGameName || teamName;
                     }
                     
-                    if (matchedReg.logo || matchedReg.paymentSlip) {
-                        teamLogo = matchedReg.logo || matchedReg.paymentSlip;
+                    if (matchedReg.logo || matchedReg.teamLogo || matchedReg.paymentSlip) {
+                        teamLogo = matchedReg.logo || matchedReg.teamLogo || matchedReg.paymentSlip;
                     }
                 }
             }
 
-            // Host ဖန်တီးလိုက်သည့်အခါ 5v5 အတွက် Squad နာမည်၊ Role အချက်အလက်များနှင့် Contact များကို ထည့်ပေးမည်
-            // Joiner နေရာများကိုမူ အစပိုင်းတွင် အလွတ် (blank/null) ထားရှိမည်
             const roomData = {
                 hostId: userId,
                 teamName: teamName,
@@ -288,15 +283,15 @@ module.exports = async function handler(req, res) {
                 heroName: matchedReg?.heroName || '',
                 
                 sqName: matchedReg?.sqName || teamName,
-                roamer: formatPlayerField(matchedReg?.roamer),
-                exp: formatPlayerField(matchedReg?.exp),
-                gold: formatPlayerField(matchedReg?.gold),
-                mid: formatPlayerField(matchedReg?.mid),
-                jungle: formatPlayerField(matchedReg?.jungle),
+                roamer: formatPlayerField(matchedReg?.roamer || matchedReg?.playerRoamer),
+                exp: formatPlayerField(matchedReg?.exp || matchedReg?.playerExp),
+                gold: formatPlayerField(matchedReg?.gold || matchedReg?.playerGold),
+                mid: formatPlayerField(matchedReg?.mid || matchedReg?.playerMid),
+                jungle: formatPlayerField(matchedReg?.jungle || matchedReg?.playerJungle),
 
                 contactPhNo: matchedReg?.contactPhNo || matchedReg?.kpayPhNo || matchedReg?.contactPhoneNumber || '',
 
-                // Joiner ဘက်အတွက် အလွတ် (Blank) အနေဖြင့် စတင်သတ်မှတ်ပေးခြင်း
+                // Joiner နေရာအတွက် အစပိုင်းတွင် အလွတ်ထားရှိခြင်း
                 joinedTeamName: null,
                 joinedTeamLogo: null,
                 joinerInGameName: '',
