@@ -35,7 +35,6 @@ function formatPlayerField(player) {
 module.exports = async function handler(req, res) {
     const { method } = req;
 
-    // 🔥 1. GET Method - Global Room များကို Mode နဲ့ KeyType အလိုက် လှမ်းထုတ်ပေးခြင်း
     if (method === 'GET') {
         try {
             const { mode, keyType } = req.query;
@@ -64,12 +63,10 @@ module.exports = async function handler(req, res) {
         }
     }
 
-    // 🔥 2. POST Method - Room အသစ်ဖန်တီးခြင်း (သို့မဟုတ်) Room ထဲသို့ Join ခြင်း
     if (method === 'POST') {
         try {
             const { userId, roomTitle, targetMode, targetKeyType, boType, roomId } = req.body;
 
-            // အကယ်၍ roomId ပါလာလျှင် ဒါဟာ Room ဝင် Join တဲ့ Request ဖြစ်ပါတယ်
             if (roomId) {
                 if (!userId) {
                     return res.status(400).json({ success: false, message: "Missing userId for joining room" });
@@ -100,7 +97,6 @@ module.exports = async function handler(req, res) {
                     return res.status(400).json({ success: false, message: "ဤ Room သည် အခြားသူ Join ပြီးသား (Locked ဖြစ်နေသော) ဖြစ်ပါသည်။" });
                 }
 
-                // Joiner ၏ User Profile အချက်အလက်များကို ဆွဲထုတ်မည်
                 const joinerUserDoc = await db.collection('users').doc(userId).get();
                 let joinerUserData = {};
                 if (joinerUserDoc.exists) {
@@ -165,7 +161,6 @@ module.exports = async function handler(req, res) {
                     }
                 }
 
-                // Room ထဲသို့ Joiner ၏ Data အပြည့်အစုံကို ထည့်သွင်း update လုပ်မည်
                 await roomRef.update({
                     joinedUserId: userId,
                     joinedTeamName: joinerTeamName,
@@ -189,7 +184,6 @@ module.exports = async function handler(req, res) {
                 return res.status(200).json({ success: true, message: "Successfully joined the room" });
             }
 
-            // Room အသစ်ဖန်တီးသည့် Logic (roomId မပါလာလျှင်)
             if (!userId || !targetMode || !targetKeyType) {
                 return res.status(400).json({ success: false, message: "Missing required fields" });
             }
@@ -284,7 +278,7 @@ module.exports = async function handler(req, res) {
                 joinedUserId: null, 
                 
                 inGameName: matchedReg?.inGameName || teamName,
-                playerId: matchedReg?.playerId || matchedReg?.gameId || '',
+                playerId: matchedReg?.playerId || matchedReg?.gameId || matchedReg?.id || '', // 🔥 playerId အပြင် gameId/id များကိုပါ စစ်ထုတ်ပေးသည်
                 heroName: matchedReg?.heroName || '',
                 
                 sqName: matchedReg?.sqName || teamName,
@@ -294,7 +288,7 @@ module.exports = async function handler(req, res) {
                 mid: formatPlayerField(matchedReg?.mid),
                 jungle: formatPlayerField(matchedReg?.jungle),
 
-                contactPhNo: matchedReg?.contactPhNo || matchedReg?.kpayPhNo || ''
+                contactPhNo: matchedReg?.contactPhNo || matchedReg?.kpayPhNo || matchedReg?.contactPhoneNumber || ''
             };
 
             const newRoomRef = await db.collection('active_rooms').add(roomData);
@@ -312,7 +306,6 @@ module.exports = async function handler(req, res) {
         }
     }
 
-    // 🔥 3. DELETE Method - Room ဖျက်ခြင်း (သို့မဟုတ်) Join ထားတာကို Cancel လုပ်ခြင်း
     if (method === 'DELETE') {
         try {
             const { userId, roomId } = req.body; 
@@ -380,7 +373,7 @@ module.exports = async function handler(req, res) {
             });
         } catch (error) {
             console.error("Delete Room Error:", error);
-            return res.status(500).json({ success: false, message: "Server Error", error: error.message });
+            return res.status(500).json({ success: false, message: `Server Error` });
         }
     }
 
