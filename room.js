@@ -307,15 +307,26 @@ export function renderRoomScreen(container, roomTitleText, userDocData = {}) {
                     }
 
                     const isLocked = room.joinedUserId && room.joinedUserId !== userId;
+                    const hasMatched = !!room.joinedUserId;
+
+                    const hostLogo = room.teamLogo || defaultUserAvatar;
+                    const hostName = room.teamName || 'Player';
+                    
+                    const joinerLogo = room.joinerTeamLogo || defaultUserAvatar;
+                    const joinerName = room.joinerTeamName || (hasMatched ? 'Joined Player' : 'Waiting...');
 
                     return `
                         <div class="ios-room-card" style="max-width: 100%;" data-room-index="${room.id}">
                             <div class="matchup-container">
+                                <!-- Host Player Side -->
                                 <div class="player-side">
-                                    <img src="${room.teamLogo || defaultUserAvatar}" alt="Logo" class="player-avatar" onerror="this.src='FrontLogo.jpg'">
-                                    <span class="player-name">${room.teamName || 'Player'}</span>
+                                    <img src="${hostLogo}" alt="Host Logo" class="player-avatar" onerror="this.src='FrontLogo.jpg'">
+                                    <span class="player-name">${hostName}</span>
                                 </div>
+
                                 <div class="vs-badge">VS</div>
+
+                                <!-- Joiner Player Side -->
                                 <div class="player-side right">
                                     <div class="right-action-group">
                                         ${isMyRoom || isJoinedByMe
@@ -325,6 +336,8 @@ export function renderRoomScreen(container, roomTitleText, userDocData = {}) {
                                                 : `<button class="card-join-btn" data-roomid="${room.id}" data-hostid="${room.hostId}">Join</button>`
                                         }
                                     </div>
+                                    <img src="${hasMatched ? joinerLogo : 'FrontLogo.jpg'}" alt="Joiner Logo" class="player-avatar" onerror="this.src='FrontLogo.jpg'" style="display: ${hasMatched ? 'block' : 'none'};">
+                                    <span class="player-name" style="color: ${hasMatched ? '#f8fafc' : '#64748b'};">${hasMatched ? joinerName : 'Waiting...'}</span>
                                 </div>
                             </div>
                         </div>
@@ -443,7 +456,6 @@ export function renderRoomScreen(container, roomTitleText, userDocData = {}) {
                         <div class="popup-row"><span>Mid:</span> <b style="color: #38bdf8;">${mid}</b></div>
                         <div class="popup-row" style="border-bottom: none;"><span>Jungle:</span> <b style="color: #38bdf8;">${jungle}</b></div>
                         
-                        <!-- Contact အပေါ်က မျဉ်းကို အရောင်ထည့်ပေးထားသည် -->
                         <div class="popup-row" style="border-bottom: none; border-top: 1px solid rgba(56, 189, 248, 0.4); margin-top: 8px; padding-top: 12px;">
                             <span>Contact:</span> <b style="color: #38bdf8;">${contact}</b>
                         </div>
@@ -472,7 +484,7 @@ export function renderRoomScreen(container, roomTitleText, userDocData = {}) {
 
     async function joinRoomAPI(roomId) {
         try {
-            const response = await fetch('/api/join-room', {
+            const response = await fetch('/api/create-room', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ userId: userId, roomId: roomId })

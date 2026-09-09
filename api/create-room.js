@@ -101,10 +101,69 @@ module.exports = async function handler(req, res) {
                     return res.status(400).json({ success: false, message: "ဤ Room သည် အခြားသူ Join ပြီးသား (Locked ဖြစ်နေသော) ဖြစ်ပါသည်။" });
                 }
 
-                // Room ထဲသို့ joinedUserId ကို ထည့်သွင်း update လုပ်မည်
+                // Joiner ရဲ့ User Document ကို ဆွဲထုတ်မည်
+                const userDoc = await db.collection('users').doc(userId).get();
+                const userData = userDoc.exists ? userDoc.data() : {};
+                let joinerTeamName = userData.name || 'Player';
+                let joinerTeamLogo = userData.photoURL || userData.avatar || 'FrontLogo.jpg';
+
+                let regCollectionName = '';
+                const lowerMode = (roomData.mode || '').toLowerCase();
+                
+                if (lowerMode.includes('1v1') || lowerMode.includes('1vs1')) {
+                    regCollectionName = '1vs1_registrations';
+                } else if (lowerMode.includes('5v5') || lowerMode.includes('5vs5')) {
+                    regCollectionName = '5vs5_registrations';
+                } else if (lowerMode.includes('tournament')) {
+                    regCollectionName = 'tournament_registrations';
+                }
+
+                let matchedReg = null;
+                if (regCollectionName) {
+                    const regSnapshot = await db.collection(regCollectionName)
+                        .where('userId', '==', userId)
+                        .get();
+
+                    let matchedRegs = [];
+                    regSnapshot.forEach(doc => {
+                        const regData = doc.data();
+                        if (regData.fee && regData.fee.toString().toUpperCase() === (roomData.keyType || '').toUpperCase()) {
+                            matchedRegs.push(regData);
+                        }
+                    });
+
+                    if (matchedRegs.length > 0) {
+                        matchedReg = matchedRegs[0];
+                        if (lowerMode.includes('5v5') || lowerMode.includes('5vs5')) {
+                            joinerTeamName = matchedReg.sqName || joinerTeamName;
+                        } else if (lowerMode.includes('tournament')) {
+                            joinerTeamName = matchedReg.teamName || joinerTeamName;
+                            joinerTeamLogo = matchedReg.teamLogo || matchedReg.teamLogoUrl || joinerTeamLogo;
+                        } else {
+                            joinerTeamName = matchedReg.inGameName || joinerTeamName;
+                        }
+                        
+                        if (matchedReg.logo || matchedReg.paymentSlip) {
+                            joinerTeamLogo = matchedReg.logo || matchedReg.paymentSlip;
+                        }
+                    }
+                }
+
+                // Room ထဲသို့ joinedUserId နှင့် Joiner ၏ Data များကို ထည့်သွင်း update လုပ်မည်
                 await roomRef.update({
                     joinedUserId: userId,
-                    status: 'matched'
+                    status: 'matched',
+                    joinerTeamName: joinerTeamName,
+                    joinerTeamLogo: joinerTeamLogo,
+                    joinerInGameName: matchedReg?.inGameName || joinerTeamName,
+                    joinerHeroName: matchedReg?.heroName || '',
+                    joinerSqName: matchedReg?.sqName || joinerTeamName,
+                    joinerRoamer: formatPlayerField(matchedReg?.roamer),
+                    joinerExp: formatPlayerField(matchedReg?.exp),
+                    joinerGold: formatPlayerField(matchedReg?.gold),
+                    joinerMid: formatPlayerField(matchedReg?.mid),
+                    joinerJungle: formatPlayerField(matchedReg?.jungle),
+                    joinerContactPhNo: matchedReg?.contactPhNo || matchedReg?.kpayPhNo || ''
                 });
 
                 return res.status(200).json({ success: true, message: "Successfully joined the room" });
@@ -123,7 +182,6 @@ module.exports = async function handler(req, res) {
                 });
             }
 
-            // User က Join ပြီးသားဖြစ်နေရင်လည်း Room အသစ်ထောင်ခွင့်မပေးပါ
             const existingJoinedCheck = await db.collection('active_rooms').where('joinedUserId', '==', userId).get();
             if (!existingJoinedCheck.empty) {
                 return res.status(400).json({ success: false, message: "သင်သည် Room တစ်ခုကို Join ပြီးသားဖြစ်၍ Room အသစ်ထပ်မံ ဖန်တီး၍ မရပါ။" });
@@ -203,7 +261,7 @@ module.exports = async function handler(req, res) {
                 boType: boType || 'BO1',
                 status: 'waiting',
                 createdAt: getYangonTimeStr(),
-                joinedUserId: null, // Join မည့်သူ့ ID အလွတ်စထားမည်
+                joinedUserId: null,
                 
                 inGameName: matchedReg?.inGameName || teamName,
                 heroName: matchedReg?.heroName || '',
@@ -240,7 +298,6 @@ module.exports = async function handler(req, res) {
                 return res.status(400).json({ success: false, message: "Missing userId for cancellation" });
             }
 
-            // အကယ်၍ roomId ပို့ပေးထားပြီး ကိုယ်က host မဟုတ်ဘဲ join ထားသူဆိုရင် joinedUserId ကို ပြန်ဖြုတ်မယ်
             if (roomId) {
                 const roomRef = db.collection('active_rooms').doc(roomId);
                 const roomDoc = await roomRef.get();
@@ -256,10 +313,8 @@ module.exports = async function handler(req, res) {
                 }
             }
 
-            // ဒါမှမဟုတ်ရင် Host အနေနဲ့ ထောင်ထားတဲ့ Room ကို လုံးဝ ဖျက်ပစ်မယ်
             await db.collection('active_rooms').doc(userId).delete();
 
-            // တခြား room တွေမှာ joined လုပ်ထားတာရှိရင်လည်း အဲ့ဒီ room တွေထဲက joinedUserId ကို ရှင်းထုတ်ပေးမယ်
             const joinedSnapshot = await db.collection('active_rooms').where('joinedUserId', '==', userId).get();
             const batch = db.batch();
             joinedSnapshot.forEach(doc => {
@@ -279,4 +334,4 @@ module.exports = async function handler(req, res) {
 
     res.setHeader('Allow', ['GET', 'POST', 'DELETE']);
     return res.status(405).json({ success: false, message: `Method ${method} not allowed` });
-}
+};
