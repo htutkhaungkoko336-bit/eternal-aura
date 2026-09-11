@@ -18,7 +18,14 @@ export function showRoomDetailsPopup(room, mode, userId, callbacks = {}) {
         pollInterval = setInterval(async () => {
             try {
                 const res = await fetch(`/api/rooms?roomId=${room.id}`);
-                const data = await res.json();
+                const text = await res.text(); // json အစား text နဲ့ အရင်ဖတ်ပါ
+                let data;
+                try {
+                    data = JSON.parse(text);
+                } catch (e) {
+                    console.error("API response is not valid JSON:", text);
+                    return;
+                }
 
                 if (!data.success || !data.room) {
                     clearInterval(pollInterval);
