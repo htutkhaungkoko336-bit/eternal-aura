@@ -9,7 +9,7 @@ export function showRoomDetailsPopup(room, mode, userId, callbacks = {}) {
     const overlay = document.createElement('div');
     overlay.className = 'popup-overlay';
 
-    // ၂ ယောက်စလုံး Ready ဖြစ်သွားတာနဲ့ လုပ်ဆောင်မယ့် Polling စနစ်
+    // Real-time နီးပါးဖြစ်အောင် 0.5 စက္ကန့် (500ms) တစ်ကြိမ်ဖြင့် Polling ပြုလုပ်ခြင်း
     let pollInterval = null;
 
     function startPollingForReady() {
@@ -17,7 +17,6 @@ export function showRoomDetailsPopup(room, mode, userId, callbacks = {}) {
         
         pollInterval = setInterval(async () => {
             try {
-                // `/api/rooms` အစား `/api/create-room` သို့ ပြင်ဆင်ထားပါသည်
                 const res = await fetch(`/api/create-room?roomId=${room.id}`);
                 const text = await res.text();
                 let data;
@@ -37,7 +36,7 @@ export function showRoomDetailsPopup(room, mode, userId, callbacks = {}) {
 
                 const updatedRoom = data.room;
                 
-                // ပြင်ပမှ state တွေ ပြောင်းသွားရင် Local variables တွေကို update လုပ်ပေးခြင်း
+                // State ပြောင်းလဲမှုရှိမရှိ စစ်ဆေးပြီး UI ကို အလိုအလျောက် Update လုပ်ရန်
                 if (updatedRoom.hostReady !== hostReadyState || updatedRoom.joinerReady !== joinerReadyState) {
                     hostReadyState = updatedRoom.hostReady;
                     joinerReadyState = updatedRoom.joinerReady;
@@ -52,7 +51,7 @@ export function showRoomDetailsPopup(room, mode, userId, callbacks = {}) {
             } catch (error) {
                 console.error("Polling check error:", error);
             }
-        }, 1000);
+        }, 500); // 0.5 စက္ကန့်ဖြင့် ပိုမိုမြန်ဆန်စေခြင်း
     }
 
     function updatePopupContent() {
@@ -201,7 +200,7 @@ export function showRoomDetailsPopup(room, mode, userId, callbacks = {}) {
                 
                 updatePopupContent();
 
-                // Backend သို့ `/api/create-room` သုံး၍ PATCH ပို့ရန် ပြင်ဆင်ထားသည်
+                // Backend သို့ ချက်ချင်း PATCH ပို့ရန်
                 try {
                     await fetch('/api/create-room', { 
                         method: 'PATCH',
