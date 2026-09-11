@@ -9,6 +9,44 @@ export function showRoomDetailsPopup(room, mode, userId, callbacks = {}) {
     const overlay = document.createElement('div');
     overlay.className = 'popup-overlay';
 
+    // ၂ ယောက်စလုံး Ready ဖြစ်သွားတာနဲ့ လုပ်ဆောင်မယ့် Polling စနစ်
+    let pollInterval = null;
+
+    function startPollingForReady() {
+        if (!room.id) return;
+        
+        pollInterval = setInterval(async () => {
+            try {
+                const res = await fetch(`/api/rooms?roomId=${room.id}`);
+                const data = await res.json();
+
+                if (!data.success || !data.room) {
+                    clearInterval(pollInterval);
+                    overlay.remove();
+                    if (callbacks.onCancelled) callbacks.onCancelled();
+                    return;
+                }
+
+                const updatedRoom = data.room;
+                
+                // ပြင်ပမှ state တွေ ပြောင်းသွားရင် Local variables တွေကို update လုပ်ပေးခြင်း
+                if (updatedRoom.hostReady !== hostReadyState || updatedRoom.joinerReady !== joinerReadyState) {
+                    hostReadyState = updatedRoom.hostReady;
+                    joinerReadyState = updatedRoom.joinerReady;
+                    updatePopupContent(); // UI ကိုပါ တခါတည်း update လုပ်ပေးသည်
+                }
+
+                // ၂ ယောက်လုံး Ready ဖြစ်သွားခြင်း စစ်ဆေးရန်
+                if (updatedRoom.hostReady && updatedRoom.joinerReady) {
+                    clearInterval(pollInterval);
+                    if (callbacks.onBothReady) callbacks.onBothReady(updatedRoom);
+                }
+            } catch (error) {
+                console.error("Polling check error:", error);
+            }
+        }, 1000); // ၁ စက္ကန့်တစ်ကြိမ် Real-time နီးပါးစစ်မည်
+    }
+
     function updatePopupContent() {
         let actionButtonsHTML = '';
 
@@ -136,25 +174,47 @@ export function showRoomDetailsPopup(room, mode, userId, callbacks = {}) {
         }
 
         // Re-bind events after innerHTML update
-        overlay.querySelector('#closePopupBtn').addEventListener('click', () => {
-            overlay.remove();
-        });
+        const closeBtn = overlay.querySelector('#closePopupBtn');
+        if (closeBtn) {
+            closeBtn.addEventListener('click', () => {
+                if (pollInterval) clearInterval(pollInterval);
+                overlay.remove();
+            });
+        }
 
         const readyBtn = overlay.querySelector('#popupReadyBtn');
         if (readyBtn) {
-            readyBtn.addEventListener('click', () => {
+            readyBtn.addEventListener('click', async () => {
                 if (userId === room.hostId) {
                     hostReadyState = !hostReadyState;
                 } else if (userId === room.joinedUserId) {
                     joinerReadyState = !joinerReadyState;
                 }
-                updatePopupContent();
+                
+                updatePopupContent(); // UI ကို ချက်ချင်း update လုပ်ရန်
+
+                // Backend ကို Ready status လှမ်းပို့မည်
+                try {
+                    await fetch('/api/rooms', { 
+                        method: 'PATCH',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({
+                            roomId: room.id,
+                            userId: userId,
+                            hostReady: userId === room.hostId ? hostReadyState : undefined,
+                            joinerReady: userId === room.joinedUserId ? joinerReadyState : undefined
+                        })
+                    });
+                } catch (err) {
+                    console.error("Failed to update ready state", err);
+                }
             });
         }
 
         const cancelBtn = overlay.querySelector('#popupCancelBtn');
         if (cancelBtn) {
             cancelBtn.addEventListener('click', () => {
+                if (pollInterval) clearInterval(pollInterval);
                 if (userId === room.joinedUserId) {
                     if (callbacks.onCancelJoiner) callbacks.onCancelJoiner(room.id);
                 } else if (userId === room.hostId) {
@@ -168,8 +228,12 @@ export function showRoomDetailsPopup(room, mode, userId, callbacks = {}) {
     updatePopupContent();
     document.body.appendChild(overlay);
 
+    // Polling ကို စတင်လိုက်ပါ
+    startPollingForReady();
+
     overlay.addEventListener('click', (e) => {
         if (e.target === overlay) {
+            if (pollInterval) clearInterval(pollInterval);
             overlay.remove();
         }
     });

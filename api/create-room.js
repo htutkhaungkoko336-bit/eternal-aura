@@ -38,7 +38,17 @@ module.exports = async function handler(req, res) {
     // 🔥 1. GET Method - Global Room များကို Mode နဲ့ KeyType အလိုက် လှမ်းထုတ်ပေးခြင်း
     if (method === 'GET') {
         try {
-            const { mode, keyType } = req.query;
+            const { mode, keyType, roomId } = req.query;
+            
+            // Room တစ်ခုချင်းစီကို တိတိကျကျ ဆွဲထုတ်လိုလျှင် (Polling အတွက်)
+            if (roomId) {
+                const roomDoc = await db.collection('active_rooms').doc(roomId).get();
+                if (!roomDoc.exists) {
+                    return res.status(404).json({ success: false, message: "Room not found" });
+                }
+                return res.status(200).json({ success: true, room: { id: roomDoc.id, ...roomDoc.data() } });
+            }
+
             let query = db.collection('active_rooms');
 
             if (mode) {
@@ -75,7 +85,6 @@ module.exports = async function handler(req, res) {
                     return res.status(400).json({ success: false, message: "Missing userId for joining room" });
                 }
 
-                // တခြားသူ့ Room ကို Join မလုပ်ခင် ဒီ user ဟာ ကိုယ်ပိုင် room ထောင်ထားတာ (သို့) အခြား room တစ်ခုခု join ပြီးသားဖြစ်နေလား စစ်မယ်
                 const existingRoomHost = await db.collection('active_rooms').where('hostId', '==', userId).get();
                 if (!existingRoomHost.empty) {
                     return res.status(400).json({ success: false, message: "သင့်တွင် Active ဖြစ်နေသော Room ရှိနှင့်ပြီးဖြစ်၍ တခြား Room သို့ Join ၍ မရပါ။" });
@@ -101,7 +110,6 @@ module.exports = async function handler(req, res) {
                     return res.status(400).json({ success: false, message: "ဤ Room သည် အခြားသူ Join ပြီးသား (Locked ဖြစ်နေသော) ဖြစ်ပါသည်။" });
                 }
 
-                // Joiner ရဲ့ User Document ကို ဆွဲထုတ်မည်
                 const userDoc = await db.collection('users').doc(userId).get();
                 const userData = userDoc.exists ? userDoc.data() : {};
                 let joinerTeamName = userData.name || 'Player';
@@ -149,7 +157,6 @@ module.exports = async function handler(req, res) {
                     }
                 }
 
-                // Room ထဲသို့ joinedUserId နှင့် Joiner ၏ Data များကို ထည့်သွင်း update လုပ်မည်
                 await roomRef.update({
                     joinedUserId: userId,
                     status: 'matched',
@@ -169,7 +176,7 @@ module.exports = async function handler(req, res) {
                 return res.status(200).json({ success: true, message: "Successfully joined the room" });
             }
 
-            // Room အသစ်ဖန်တီးသည့် Logic (roomId မပါလာလျှင်)
+            // Room အသစ်ဖန်တီးသည့် Logic
             if (!userId || !targetMode || !targetKeyType) {
                 return res.status(400).json({ success: false, message: "Missing required fields" });
             }
@@ -208,7 +215,6 @@ module.exports = async function handler(req, res) {
             }
 
             let matchedReg = null;
-
             if (regCollectionName) {
                 const regSnapshot = await db.collection(regCollectionName)
                     .where('userId', '==', userId)
@@ -260,6 +266,8 @@ module.exports = async function handler(req, res) {
                 keyType: targetKeyType,
                 boType: boType || 'BO1',
                 status: 'waiting',
+                hostReady: false,     // <-- အသစ်ထည့်သွင်းထားသော field
+                joinerReady: false,   // <-- အသစ်ထည့်သွင်းထားသော field
                 createdAt: getYangonTimeStr(),
                 joinedUserId: null,
                 
@@ -290,7 +298,46 @@ module.exports = async function handler(req, res) {
         }
     }
 
-    // 🔥 3. DELETE Method - Room ဖျက်ခြင်း (သို့မဟုတ်) Join ထားတာကို Cancel လုပ်ခြင်း
+    // 🔥 3. PATCH Method - Host (သို့) Joiner Ready နှိပ်သည့်အခါ status update လုပ်ရန်
+    if (method === 'PATCH') {
+        try {
+            const { userId, roomId, hostReady, joinerReady } = req.body;
+            if (!roomId) {
+                return res.status(400).json({ success: false, message: "Missing roomId" });
+            }
+
+            const roomRef = db.collection('active_rooms').doc(roomId);
+            const roomDoc = await roomRef.get();
+
+            if (!roomDoc.exists) {
+                return res.status(404).json({ success: false, message: "Room not found" });
+            }
+
+            let updateData = {};
+            if (hostReady !== undefined) updateData.hostReady = hostReady;
+            if (joinerReady !== undefined) updateData.joinerReady = joinerReady;
+
+            // နှစ်ယောက်စလုံး ready ဖြစ်သွားရင် room status ကို fully_matched သို့ ပြောင်းမည်
+            const currentData = roomDoc.data();
+            const finalHostReady = hostReady !== undefined ? hostReady : currentData.hostReady;
+            const finalJoinerReady = joinerReady !== undefined ? joinerReady : currentData.joinerReady;
+
+            if (finalHostReady && finalJoinerReady) {
+                updateData.status = 'fully_matched';
+            } else {
+                updateData.status = 'matched';
+            }
+
+            await roomRef.update(updateData);
+
+            return res.status(200).json({ success: true, message: "Status updated successfully" });
+        } catch (error) {
+            console.error("Update Ready Error:", error);
+            return res.status(500).json({ success: false, message: "Server Error", error: error.message });
+        }
+    }
+
+    // 🔥 4. DELETE Method - Room ဖျက်ခြင်း (သို့မဟုတ်) Join ထားတာကို Cancel လုပ်ခြင်း
     if (method === 'DELETE') {
         try {
             const { userId, roomId } = req.body; 
@@ -306,7 +353,8 @@ module.exports = async function handler(req, res) {
                     if (rData.joinedUserId === userId) {
                         await roomRef.update({
                             joinedUserId: null,
-                            status: 'waiting'
+                            status: 'waiting',
+                            joinerReady: false
                         });
                         return res.status(200).json({ success: true, message: "Left room successfully" });
                     }
@@ -318,7 +366,7 @@ module.exports = async function handler(req, res) {
             const joinedSnapshot = await db.collection('active_rooms').where('joinedUserId', '==', userId).get();
             const batch = db.batch();
             joinedSnapshot.forEach(doc => {
-                batch.update(doc.ref, { joinedUserId: null, status: 'waiting' });
+                batch.update(doc.ref, { joinedUserId: null, status: 'waiting', joinerReady: false });
             });
             await batch.commit();
 
@@ -332,6 +380,6 @@ module.exports = async function handler(req, res) {
         }
     }
 
-    res.setHeader('Allow', ['GET', 'POST', 'DELETE']);
+    res.setHeader('Allow', ['GET', 'POST', 'PATCH', 'DELETE']);
     return res.status(405).json({ success: false, message: `Method ${method} not allowed` });
 };
