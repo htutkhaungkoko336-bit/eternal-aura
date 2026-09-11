@@ -129,13 +129,13 @@ export function renderRoomScreen(container, roomTitleText, userDocData = {}) {
                     border-radius: 6px;
                     border: 1px solid rgba(56, 189, 248, 0.4);
                 }
-                .matched-top-badge {
-                    font-size: 9px;
-                    font-weight: 700;
+                .matched-badge {
+                    font-size: 10px;
+                    font-weight: 800;
                     color: #10b981;
                     background: rgba(16, 185, 129, 0.15);
-                    padding: 2px 6px;
-                    border-radius: 4px;
+                    padding: 3px 8px;
+                    border-radius: 6px;
                     border: 1px solid rgba(16, 185, 129, 0.4);
                     white-space: nowrap;
                 }
@@ -336,12 +336,12 @@ export function renderRoomScreen(container, roomTitleText, userDocData = {}) {
                         if (!hasMatched) {
                             rightActionHTML = `<button class="card-cancel-btn" data-roomid="${room.id}" data-hostid="${room.hostId}">Cancel</button>`;
                         } else {
-                            rightActionHTML = ''; // Joiner ပါလာရင် Host ဘက်က cancel ခလုတ်ကို ဖြုတ်ပေးသည်
+                            rightActionHTML = ''; // Host ဘက်က Joiner ပါလာရင် cancel ခလုတ်ကို ဖြုတ်ပေးသည်
                         }
                     } else if (isJoinedByMe) {
                         rightActionHTML = `<button class="card-cancel-btn" data-roomid="${room.id}" data-hostid="${room.hostId}">Cancel</button>`;
                     } else if (isLocked) {
-                        rightActionHTML = `<span style="font-size: 10px; color: #f43f5e; font-weight: 700; background: rgba(244,63,94,0.15); padding: 4px 8px; border-radius: 6px;">Locked</span>`;
+                        rightActionHTML = ``; // Match ဖြစ်သွားရင် Locked စာသားအစား ဘာမှမပြတော့ပါ (သို့တည်း- အခြားသူများအတွက် လုံးဝဖျောက်မည်)
                     } else {
                         rightActionHTML = `<button class="card-join-btn" data-roomid="${room.id}" data-hostid="${room.hostId}">Join</button>`;
                     }
@@ -355,10 +355,9 @@ export function renderRoomScreen(container, roomTitleText, userDocData = {}) {
                                     <span class="player-name">${hostName}</span>
                                 </div>
 
-                                <!-- Center VS & Matched Badge -->
+                                <!-- Center Center Area: Match ဖြစ်ရင် Matched, မဖြစ်ရင် VS ပြမည် -->
                                 <div class="center-vs-wrapper">
-                                    ${hasMatched ? `<span class="matched-top-badge">Matched</span>` : ''}
-                                    <div class="vs-badge">VS</div>
+                                    ${hasMatched ? `<span class="matched-badge">Matched</span>` : `<div class="vs-badge">VS</div>`}
                                 </div>
 
                                 <!-- Joiner Player Side -->
@@ -609,4 +608,4 @@ export function renderRoomScreen(container, roomTitleText, userDocData = {}) {
             renderMatchScreen(container, userDocData);
         });
     }
-}  
+}
