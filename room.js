@@ -163,7 +163,6 @@ export function renderRoomScreen(container, roomTitleText, userDocData = {}) {
                     opacity: 0.9;
                 }
                 
-                /* Pop-up Modal Styles (Required by roomPopup.js) */
                 .popup-overlay {
                     position: fixed;
                     top: 0;
@@ -319,7 +318,11 @@ export function renderRoomScreen(container, roomTitleText, userDocData = {}) {
 
                     let rightActionHTML = '';
                     if (isMyRoom) {
-                        rightActionHTML = ``; 
+                        if (!hasMatched) {
+                            rightActionHTML = `<button class="card-join-btn" style="background: linear-gradient(135deg, #f43f5e, #e11d48); box-shadow: 0 0 10px rgba(244, 63, 94, 0.4);" data-action="cancelRoom" data-roomid="${room.id}">Cancel</button>`;
+                        } else {
+                            rightActionHTML = ``; 
+                        }
                     } else if (isJoinedByMe) {
                         rightActionHTML = ``; 
                     } else if (isLocked) {
@@ -331,24 +334,21 @@ export function renderRoomScreen(container, roomTitleText, userDocData = {}) {
                     return `
                         <div class="ios-room-card" style="max-width: 100%;" data-room-index="${room.id}">
                             <div class="matchup-container">
-                                <!-- Host Player Side -->
                                 <div class="player-side">
                                     <img src="${hostLogo}" alt="Host Logo" class="player-avatar" onerror="this.src='FrontLogo.jpg'">
                                     <span class="player-name">${hostName}</span>
                                 </div>
 
-                                <!-- Center Center Area -->
                                 <div class="center-vs-wrapper">
                                     ${hasMatched ? `<span class="matched-badge">Matched</span>` : `<div class="vs-badge">VS</div>`}
                                 </div>
 
-                                <!-- Joiner Player Side -->
                                 <div class="player-side right">
                                     <div class="right-action-group">
                                         ${rightActionHTML}
                                     </div>
                                     <img src="${hasMatched ? joinerLogo : 'FrontLogo.jpg'}" alt="Joiner Logo" class="player-avatar" onerror="this.src='FrontLogo.jpg'" style="display: ${hasMatched ? 'block' : 'none'};">
-                                    <span class="player-name" style="color: ${hasMatched ? '#f8fafc' : '#64748b'};">${hasMatched ? joinerName : 'Waiting...'}</span>
+                                    <span class="player-name" style="color: ${hasMatched ? '#f8fafc' : '#64748b'};">${joinerName}</span>
                                 </div>
                             </div>
                         </div>
@@ -359,7 +359,6 @@ export function renderRoomScreen(container, roomTitleText, userDocData = {}) {
                     card.addEventListener('click', (e) => {
                         if (e.target.tagName === 'BUTTON') return;
                         const room = data.rooms[idx];
-                        // ခွဲထုတ်ထားသော popup function ကို အသုံးပြုခြင်း
                         showRoomDetailsPopup(room, targetMode, userId, {
                             onCancelJoiner: (roomId) => cancelJoinerAPI(roomId),
                             onTransferHost: (roomId) => transferHostAPI(roomId)
@@ -400,10 +399,17 @@ export function renderRoomScreen(container, roomTitleText, userDocData = {}) {
                 }
             }
 
-            roomsContainer.querySelectorAll('.card-join-btn').forEach(btn => {
+            roomsContainer.querySelectorAll('.card-join-btn:not([data-action="cancelRoom"])').forEach(btn => {
                 btn.addEventListener('click', (e) => {
                     const roomIdToJoin = e.target.getAttribute('data-roomid');
                     joinRoomAPI(roomIdToJoin);
+                });
+            });
+
+            roomsContainer.querySelectorAll('[data-action="cancelRoom"]').forEach(btn => {
+                btn.addEventListener('click', (e) => {
+                    const roomIdToCancel = e.target.getAttribute('data-roomid');
+                    cancelHostRoomAPI(roomIdToCancel);
                 });
             });
 
@@ -462,6 +468,25 @@ export function renderRoomScreen(container, roomTitleText, userDocData = {}) {
             }
         } catch (err) {
             console.error("Transfer host error:", err);
+        }
+    }
+
+    async function cancelHostRoomAPI(roomId) {
+        try {
+            const response = await fetch('/api/create-room', {
+                method: 'DELETE',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ userId: userId, roomId: roomId, action: 'cancelRoom' })
+            });
+            const result = await response.json();
+            if (result.success) {
+                fetchAndRenderGlobalRooms();
+            } else {
+                alert(result.message || 'Room ကို ဖျက်၍ မရပါ။');
+            }
+        } catch (err) {
+            console.error("Cancel room error:", err);
+            alert('ဆာဗာသို့ ချိတ်ဆက်၍ မရပါ။');
         }
     }
 
