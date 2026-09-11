@@ -17,8 +17,9 @@ export function showRoomDetailsPopup(room, mode, userId, callbacks = {}) {
         
         pollInterval = setInterval(async () => {
             try {
-                const res = await fetch(`/api/rooms?roomId=${room.id}`);
-                const text = await res.text(); // json အစား text နဲ့ အရင်ဖတ်ပါ
+                // `/api/rooms` အစား `/api/create-room` သို့ ပြင်ဆင်ထားပါသည်
+                const res = await fetch(`/api/create-room?roomId=${room.id}`);
+                const text = await res.text();
                 let data;
                 try {
                     data = JSON.parse(text);
@@ -40,7 +41,7 @@ export function showRoomDetailsPopup(room, mode, userId, callbacks = {}) {
                 if (updatedRoom.hostReady !== hostReadyState || updatedRoom.joinerReady !== joinerReadyState) {
                     hostReadyState = updatedRoom.hostReady;
                     joinerReadyState = updatedRoom.joinerReady;
-                    updatePopupContent(); // UI ကိုပါ တခါတည်း update လုပ်ပေးသည်
+                    updatePopupContent();
                 }
 
                 // ၂ ယောက်လုံး Ready ဖြစ်သွားခြင်း စစ်ဆေးရန်
@@ -51,7 +52,7 @@ export function showRoomDetailsPopup(room, mode, userId, callbacks = {}) {
             } catch (error) {
                 console.error("Polling check error:", error);
             }
-        }, 1000); // ၁ စက္ကန့်တစ်ကြိမ် Real-time နီးပါးစစ်မည်
+        }, 1000);
     }
 
     function updatePopupContent() {
@@ -60,7 +61,7 @@ export function showRoomDetailsPopup(room, mode, userId, callbacks = {}) {
         if (hasMatched) {
             actionButtonsHTML = `
                 <div style="display: flex; gap: 10px; margin-top: 14px;">
-                    <!-- Host Actions (Shown if current user is Host) -->
+                    <!-- Host Actions -->
                     ${userId === room.hostId ? `
                         <button id="popupReadyBtn" style="flex: 1; padding: 10px; border-radius: 8px; font-weight: 700; border: none; cursor: pointer; background: ${hostReadyState ? '#10b981' : 'linear-gradient(135deg, #0284c7, #9333ea)'}; color: #fff;">
                             ${hostReadyState ? 'Unready' : 'Ready'}
@@ -70,7 +71,7 @@ export function showRoomDetailsPopup(room, mode, userId, callbacks = {}) {
                         </button>
                     ` : ''}
 
-                    <!-- Joiner Actions (Shown if current user is Joiner) -->
+                    <!-- Joiner Actions -->
                     ${userId === room.joinedUserId ? `
                         <button id="popupReadyBtn" style="flex: 1; padding: 10px; border-radius: 8px; font-weight: 700; border: none; cursor: pointer; background: ${joinerReadyState ? '#10b981' : 'linear-gradient(135deg, #0284c7, #9333ea)'}; color: #fff;">
                             ${joinerReadyState ? 'Unready' : 'Ready'}
@@ -107,7 +108,7 @@ export function showRoomDetailsPopup(room, mode, userId, callbacks = {}) {
                             <div class="popup-row" style="font-size: 11px; border-bottom: none;"><span>Contact:</span> <b>${hostContact}</b></div>
                         </div>
 
-                        <!-- Joiner Info (If matched) -->
+                        <!-- Joiner Info -->
                         ${hasMatched ? `
                         <div style="flex: 1; background: rgba(16, 185, 129, 0.08); padding: 8px; border-radius: 6px; border: 1px solid rgba(16, 185, 129, 0.2);">
                             <div style="font-weight: 700; color: #10b981; margin-bottom: 6px; font-size: 12px; text-align: center;">
@@ -157,7 +158,7 @@ export function showRoomDetailsPopup(room, mode, userId, callbacks = {}) {
                             <div class="popup-row" style="font-size: 10px; border-bottom: none; border-top: 1px solid rgba(56, 189, 248, 0.3); margin-top: 4px; padding-top: 4px;"><span>Contact:</span> <b style="font-size: 9px;">${hostContact}</b></div>
                         </div>
 
-                        <!-- Joiner Squad (If matched) -->
+                        <!-- Joiner Squad -->
                         ${hasMatched ? `
                         <div style="flex: 1; background: rgba(16, 185, 129, 0.08); padding: 6px; border-radius: 6px; border: 1px solid rgba(16, 185, 129, 0.2);">
                             <div style="font-weight: 700; color: #10b981; margin-bottom: 6px; font-size: 11px; text-align: center; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">
@@ -198,11 +199,11 @@ export function showRoomDetailsPopup(room, mode, userId, callbacks = {}) {
                     joinerReadyState = !joinerReadyState;
                 }
                 
-                updatePopupContent(); // UI ကို ချက်ချင်း update လုပ်ရန်
+                updatePopupContent();
 
-                // Backend ကို Ready status လှမ်းပို့မည်
+                // Backend သို့ `/api/create-room` သုံး၍ PATCH ပို့ရန် ပြင်ဆင်ထားသည်
                 try {
-                    await fetch('/api/rooms', { 
+                    await fetch('/api/create-room', { 
                         method: 'PATCH',
                         headers: { 'Content-Type': 'application/json' },
                         body: JSON.stringify({
@@ -235,7 +236,6 @@ export function showRoomDetailsPopup(room, mode, userId, callbacks = {}) {
     updatePopupContent();
     document.body.appendChild(overlay);
 
-    // Polling ကို စတင်လိုက်ပါ
     startPollingForReady();
 
     overlay.addEventListener('click', (e) => {
