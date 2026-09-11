@@ -266,8 +266,9 @@ module.exports = async function handler(req, res) {
                 keyType: targetKeyType,
                 boType: boType || 'BO1',
                 status: 'waiting',
-                hostReady: false,     // <-- အသစ်ထည့်သွင်းထားသော field
-                joinerReady: false,   // <-- အသစ်ထည့်သွင်းထားသော field
+                hostReady: false,     
+                joinerReady: false,   
+                firstPick: null,      // <-- First Pick အတွက် default field အသစ်ထည့်ပေးထားပါသည်
                 createdAt: getYangonTimeStr(),
                 joinedUserId: null,
                 
@@ -298,10 +299,10 @@ module.exports = async function handler(req, res) {
         }
     }
 
-    // 🔥 3. PATCH Method - Host (သို့) Joiner Ready နှိပ်သည့်အခါ status update လုပ်ရန်
+    // 🔥 3. PATCH Method - Host (သို့) Joiner Ready နှိပ်သည့်အခါ နှင့် First Pick သိမ်းသည့်အခါ update လုပ်ရန်
     if (method === 'PATCH') {
         try {
-            const { userId, roomId, hostReady, joinerReady } = req.body;
+            const { userId, roomId, hostReady, joinerReady, firstPick } = req.body;
             if (!roomId) {
                 return res.status(400).json({ success: false, message: "Missing roomId" });
             }
@@ -316,6 +317,9 @@ module.exports = async function handler(req, res) {
             let updateData = {};
             if (hostReady !== undefined) updateData.hostReady = hostReady;
             if (joinerReady !== undefined) updateData.joinerReady = joinerReady;
+            
+            // <-- Frontend က ပို့လိုက်သော firstPick ပါလာပါက updateData ထဲသို့ ထည့်ပေးမည်
+            if (firstPick !== undefined) updateData.firstPick = firstPick;
 
             // နှစ်ယောက်စလုံး ready ဖြစ်သွားရင် room status ကို fully_matched သို့ ပြောင်းမည်
             const currentData = roomDoc.data();
@@ -354,7 +358,8 @@ module.exports = async function handler(req, res) {
                         await roomRef.update({
                             joinedUserId: null,
                             status: 'waiting',
-                            joinerReady: false
+                            joinerReady: false,
+                            firstPick: null // Cancel လုပ်ပါက firstPick ကိုပါ reset ပြန်လုပ်ပေးခြင်း
                         });
                         return res.status(200).json({ success: true, message: "Left room successfully" });
                     }
@@ -366,7 +371,7 @@ module.exports = async function handler(req, res) {
             const joinedSnapshot = await db.collection('active_rooms').where('joinedUserId', '==', userId).get();
             const batch = db.batch();
             joinedSnapshot.forEach(doc => {
-                batch.update(doc.ref, { joinedUserId: null, status: 'waiting', joinerReady: false });
+                batch.update(doc.ref, { joinedUserId: null, status: 'waiting', joinerReady: false, firstPick: null });
             });
             await batch.commit();
 

@@ -5,6 +5,7 @@ export function showRoomDetailsPopup(room, mode, userId, callbacks = {}) {
     // Ready & Cancel States tracking
     let hostReadyState = room.hostReady || false;
     let joinerReadyState = room.joinerReady || false;
+    let firstPickResult = room.firstPick || null; // Backend ကပါလာပြီးသားလား စစ်ရန်
 
     const overlay = document.createElement('div');
     overlay.className = 'popup-overlay';
@@ -36,16 +37,16 @@ export function showRoomDetailsPopup(room, mode, userId, callbacks = {}) {
                 const updatedRoom = data.room;
                 
                 // Server ဘက်က ပြောင်းလဲလာတဲ့ hostReady နဲ့ joinerReady ကို (true / false အမှန်အတိုင်း) တိုက်ရိုက်စစ်ဆေးခြင်း
-                if (updatedRoom.hostReady !== hostReadyState || updatedRoom.joinerReady !== joinerReadyState) {
+                if (updatedRoom.hostReady !== hostReadyState || updatedRoom.joinerReady !== joinerReadyState || updatedRoom.firstPick !== firstPickResult) {
                     hostReadyState = !!updatedRoom.hostReady;
                     joinerReadyState = !!updatedRoom.joinerReady;
+                    if (updatedRoom.firstPick) firstPickResult = updatedRoom.firstPick;
                     updatePopupContent();
                 }
 
                 // ၂ ယောက်လုံး Ready ဖြစ်သွားခြင်း စစ်ဆေးရန်
                 if (updatedRoom.hostReady && updatedRoom.joinerReady) {
                     clearInterval(pollInterval);
-                    // ၂ ယောက်လုံး ready ဖြစ်ပြီမို့ UI ကို lock ချဖို့ တစ်ချက်ထပ် update ခေါ်ပေးမယ်
                     updatePopupContent();
                     if (callbacks.onBothReady) callbacks.onBothReady(updatedRoom);
                 }
@@ -85,15 +86,26 @@ export function showRoomDetailsPopup(room, mode, userId, callbacks = {}) {
             `;
         }
 
-        // Spin Wheel HTML (၂ ယောက်လုံး Ready ဖြစ်မှ ပေါ်လာမည်)
+        // Host နာမည်နဲ့ Joiner နာမည်ကို သတ်မှတ်ခြင်း (1v1 နဲ့ SQ နှစ်ခုလုံးအတွက် အလုပ်လုပ်ရန်)
+        const team1Name = is1v1 ? (room.inGameName || room.teamName || room.userName || 'Host') : (room.sqName || room.teamName || 'Host SQ');
+        const team2Name = is1v1 ? (room.joinerTeamName || room.joinerUserName || 'Joiner') : (room.joinerSqName || room.joinerTeamName || 'Joiner SQ');
+
+        // Spin Wheel HTML (၂ ယောက်လုံး Ready ဖြစ်မှ ပေါ်လာမည် ပြီးတော့ auto လည်မည့် CSS animation ထည့်ထားသည်)
         const spinWheelHTML = bothReady ? `
             <div style="margin-top: 15px; padding: 12px; background: rgba(147, 51, 234, 0.1); border: 1px solid rgba(147, 51, 234, 0.3); border-radius: 10px; text-align: center; animation: fadeIn 0.4s ease-in-out;">
-                <div style="font-weight: 700; color: #c084fc; margin-bottom: 8px; font-size: 13px;">🎉 Both Players Ready! Spin Wheel</div>
-                <div style="position: relative; width: 100px; height: 100px; margin: 0 auto; background: conic-gradient(#0284c7 0deg 120deg, #10b981 120deg 240deg, #f43f5e 240deg 360deg); border-radius: 50%; border: 3px solid #fff; display: flex; align-items: center; justify-content: center; box-shadow: 0 0 15px rgba(147,51,234,0.5);">
+                <div style="font-weight: 700; color: #c084fc; margin-bottom: 8px; font-size: 13px;">
+                    ${firstPickResult ? `🎉 First Pick: <span style="color: #10b981;">${firstPickResult}</span>` : '🎲 Spinning for First Pick...'}
+                </div>
+                <div style="position: relative; width: 100px; height: 100px; margin: 0 auto; background: conic-gradient(#0284c7 0deg 180deg, #10b981 180deg 360deg); border-radius: 50%; border: 3px solid #fff; display: flex; align-items: center; justify-content: center; box-shadow: 0 0 15px rgba(147,51,234,0.5); animation: ${firstPickResult ? 'none' : 'spinWheelAnim 1s linear infinite'};">
                     <div style="width: 12px; height: 12px; background: #fff; border-radius: 50%; position: absolute; z-index: 2;"></div>
-                    <button id="spinBtn" style="position: absolute; bottom: -22px; padding: 4px 10px; background: #9333ea; color: #fff; border: none; border-radius: 4px; font-size: 10px; font-weight: 750; cursor: pointer;">SPIN</button>
                 </div>
             </div>
+            <style>
+                @keyframes spinWheelAnim {
+                    0% { transform: rotate(0deg); }
+                    100% { transform: rotate(360deg); }
+                }
+            </style>
         ` : '';
 
         if (is1v1) {
@@ -195,6 +207,32 @@ export function showRoomDetailsPopup(room, mode, userId, callbacks = {}) {
             `;
         }
 
+        // ၂ ယောက်လုံး Ready ဖြစ်သွားရင် Host ကပဲဖြစ်ဖြစ် Spin Wheel ရလဒ်ကို Backend ဆီ အဓိက တာဝန်ယူ ပို့ပေးစေရန်
+        if (bothReady && !firstPickResult && userId === room.hostId) {
+            setTimeout(async () => {
+                const teams = [team1Name, team2Name];
+                const selectedFirstPick = teams[Math.floor(Math.random() * teams.length)];
+                firstPickResult = selectedFirstPick;
+                
+                // UI ကို ချက်ချင်း update လုပ်ပေးမယ်
+                updatePopupContent();
+
+                try {
+                    await fetch('/api/create-room', { 
+                        method: 'PATCH',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({
+                            roomId: room.id,
+                            userId: userId,
+                            firstPick: selectedFirstPick
+                        })
+                    });
+                } catch (err) {
+                    console.error("Failed to save first pick to backend", err);
+                }
+            }, 1500); // 1.5 စက္ကန့်ကြာ spin ပြီးရင် ရလဒ်ထွက်မယ်
+        }
+
         const closeBtn = overlay.querySelector('#closePopupBtn');
         if (closeBtn) {
             closeBtn.addEventListener('click', () => {
@@ -206,7 +244,7 @@ export function showRoomDetailsPopup(room, mode, userId, callbacks = {}) {
         const readyBtn = overlay.querySelector('#popupReadyBtn');
         if (readyBtn) {
             readyBtn.addEventListener('click', async () => {
-                if (bothReady) return; // နှစ်ယောက်လုံး ready ပြီးသားဆိုရင် ထပ်နှိပ်လို့မရအောင် တားထားမည်
+                if (bothReady) return;
 
                 if (userId === room.hostId) {
                     hostReadyState = !hostReadyState;
@@ -244,13 +282,6 @@ export function showRoomDetailsPopup(room, mode, userId, callbacks = {}) {
                     if (callbacks.onTransferHost) callbacks.onTransferHost(room.id);
                 }
                 overlay.remove();
-            });
-        }
-
-        const spinBtn = overlay.querySelector('#spinBtn');
-        if (spinBtn) {
-            spinBtn.addEventListener('click', () => {
-                alert("Spinning the wheel! (Add your spin logic here)");
             });
         }
     }
