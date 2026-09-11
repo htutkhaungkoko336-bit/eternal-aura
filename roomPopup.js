@@ -44,7 +44,6 @@ export function showRoomDetailsPopup(room, mode, userId, callbacks = {}) {
                     joinerReadyState = !!updatedRoom.joinerReady;
                     if (updatedRoom.firstPick) firstPickResult = updatedRoom.firstPick;
                     if (updatedRoom.spinStartTime) room.spinStartTime = updatedRoom.spinStartTime;
-                    if (updatedRoom.selectedWinner) room.selectedWinner = updatedRoom.selectedWinner;
                     
                     updatePopupContent();
                 }
@@ -94,6 +93,7 @@ export function showRoomDetailsPopup(room, mode, userId, callbacks = {}) {
         const team1Name = is1v1 ? (room.inGameName || room.teamName || room.userName || 'Host') : (room.sqName || room.teamName || 'Host SQ');
         const team2Name = is1v1 ? (room.joinerTeamName || room.joinerUserName || 'Joiner') : (room.joinerSqName || room.joinerTeamName || 'Joiner SQ');
 
+        // အရောင်ကို အပေါ် (Team 1 - 0deg to 180deg) နှင့် အောက် (Team 2 - 180deg to 360deg) အတိအကျဖြစ်အောင် conic-gradient ကို 90deg လှည့်ပေးထားပါသည်
         const spinWheelHTML = bothReady ? `
             <div style="position: absolute; inset: 0; background: rgba(20, 20, 25, 0.95); backdrop-filter: blur(20px); z-index: 50; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 24px; border-radius: 24px; animation: fadeInScale 0.3s cubic-bezier(0.16, 1, 0.3, 1);">
                 <div style="width: 100%; text-align: center; margin-bottom: 20px;">
@@ -103,10 +103,10 @@ export function showRoomDetailsPopup(room, mode, userId, callbacks = {}) {
                     </div>
                 </div>
 
-                <div style="position: relative; width: 210px; height: 210px; margin: 10px auto; border-radius: 50%; background: conic-gradient(#34c759 0deg 180deg, #007aff 180deg 360deg); box-shadow: 0 0 40px rgba(0,122,255,0.3), inset 0 0 20px rgba(255,255,255,0.2); border: 4px solid rgba(255,255,255,0.8); display: flex; align-items: center; justify-content: center;">
-                    <div id="wheelElement" style="position: absolute; inset: 0; border-radius: 50%; display: flex; align-items: center; justify-content: center;">
-                        <div style="position: absolute; top: 40px; font-size: 12px; font-weight: 800; color: #fff; text-shadow: 0 1px 3px rgba(0,0,0,0.8); max-width: 120px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">${team1Name}</div>
-                        <div style="position: absolute; bottom: 40px; font-size: 12px; font-weight: 800; color: #fff; text-shadow: 0 1px 3px rgba(0,0,0,0.8); max-width: 120px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">${team2Name}</div>
+                <div style="position: relative; width: 210px; height: 210px; margin: 10px auto; border-radius: 50%; box-shadow: 0 0 40px rgba(0,122,255,0.3), inset 0 0 20px rgba(255,255,255,0.2); border: 4px solid rgba(255,255,255,0.8); display: flex; align-items: center; justify-content: center;">
+                    <div id="wheelElement" style="position: absolute; inset: 0; border-radius: 50%; background: conic-gradient(from 90deg, #34c759 0deg 180deg, #007aff 180deg 360deg); display: flex; align-items: center; justify-content: center; transition: transform 10s cubic-bezier(0.05, 0.9, 0.1, 1);">
+                        <div style="position: absolute; top: 35px; font-size: 12px; font-weight: 800; color: #fff; text-shadow: 0 1px 3px rgba(0,0,0,0.8); max-width: 120px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">${team1Name}</div>
+                        <div style="position: absolute; bottom: 35px; font-size: 12px; font-weight: 800; color: #fff; text-shadow: 0 1px 3px rgba(0,0,0,0.8); max-width: 120px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">${team2Name}</div>
                     </div>
                     <div style="position: absolute; top: -12px; left: 50%; transform: translateX(-50%); width: 0; height: 0; border-left: 8px solid transparent; border-right: 8px solid transparent; border-bottom: 16px solid #ff3b30; filter: drop-shadow(0 2px 4px rgba(0,0,0,0.3)); z-index: 10;"></div>
                     <div style="width: 44px; height: 44px; background: rgba(255,255,255,0.9); backdrop-filter: blur(10px); border-radius: 50%; box-shadow: 0 4px 10px rgba(0,0,0,0.3); display: flex; align-items: center; justify-content: center; z-index: 5;">
@@ -178,8 +178,8 @@ export function showRoomDetailsPopup(room, mode, userId, callbacks = {}) {
 
             overlay.innerHTML = `
                 <div class="popup-box" style="max-width: 500px; width: 95%; position: relative; overflow: hidden; background: #1c1c1e; border: 1px solid rgba(255,255,255,0.1); border-radius: 24px; box-shadow: 0 20px 40px rgba(0,0,0,0.6); color: #fff; padding: 20px;">
-                    <div class="popup-title" style="font-size: 17px; font-weight: 700; text-align: center; margin-bottom: 4px; letter-spacing: -0.5px;">SQ MATCH DETAILS</div>
-                    <div style="font-size: 11px; color: #8e8e93; margin-bottom: 14px; text-align: center;">5VS5 Players Comparison</div>
+                    <div class="popup-title" style="font-size: 17px; font-weight: 700; text-align: center; margin-bottom: 4px; letter-spacing: -0.5px;">5VS5 MATCH DETAILS</div>
+                    <div style="font-size: 11px; color: #8e8e93; margin-bottom: 14px; text-align: center;">Players Comparison</div>
                     
                     <div style="display: flex; gap: 10px; width: 100%; max-height: 50vh; overflow-y: auto;">
                         <div style="flex: 1; background: rgba(0, 122, 255, 0.08); padding: 10px; border-radius: 14px; border: 1px solid rgba(0, 122, 255, 0.2);">
@@ -216,11 +216,9 @@ export function showRoomDetailsPopup(room, mode, userId, callbacks = {}) {
             `;
         }
 
-        // စတင် Spin လုပ်မည့်အချိန်ကို Host ဘက်က သတ်မှတ်ပေးခြင်း (Database ထဲ Winner ကို ကြိုမထည့်သေးပါ)
         if (bothReady && userId === room.hostId && !room.isSpinningTriggered) {
             room.isSpinningTriggered = true;
-            
-            const spinStartTime = Date.now() + 3000; // 3 sec 3-2-1 countdown
+            const spinStartTime = Date.now() + 3000;
 
             fetch('/api/create-room', { 
                 method: 'PATCH',
@@ -229,7 +227,6 @@ export function showRoomDetailsPopup(room, mode, userId, callbacks = {}) {
                     roomId: room.id,
                     userId: userId,
                     spinStartTime: spinStartTime
-                    // firstPick ကို ဒီမှာ ထည့်မပေးထားပါဘူး (Spin ပြီးမှ တင်မှာဖြစ်ပါတယ်)
                 })
             }).catch(err => console.error("Failed to set spin start time", err));
         }
@@ -242,15 +239,16 @@ export function showRoomDetailsPopup(room, mode, userId, callbacks = {}) {
 
             const startTime = room.spinStartTime || (Date.now() + 3000);
             
-            function runAnimationSequence() {
+            // recursion ဖြင့် ပြဿနာဖြစ်စေသော setTimeout loop အစား setInterval ဖြင့် တိကျသေသပ်စွာ တည်ဆောက်ထားပါသည်
+            const countdownInterval = setInterval(() => {
                 const now = Date.now();
                 const timeLeft = startTime - now;
 
                 if (timeLeft > 0) {
                     const secs = Math.ceil(timeLeft / 1000);
                     if (numEl) numEl.textContent = secs;
-                    setTimeout(runAnimationSequence, 200);
                 } else {
+                    clearInterval(countdownInterval);
                     if (numEl) {
                         numEl.textContent = "GO!";
                         numEl.style.color = "#34c759";
@@ -258,17 +256,15 @@ export function showRoomDetailsPopup(room, mode, userId, callbacks = {}) {
 
                     if (statusText) statusText.innerHTML = `🎲 Spinning leisurely (10s)...`;
 
-                    // **ဤနေရာတွင် Spin စတင်လည်ပတ်သည့်အချိန်၌ တိုက်ဆိုင်ရာ Random ရွေးချယ်ခြင်းကို လုပ်ဆောင်သည်**
                     const teams = [team1Name, team2Name];
                     const chosenWinner = teams[Math.floor(Math.random() * teams.length)];
+                    // Team 1 (အပေါ်) ရပ်ရန် 360 degree အဆပေါင်းများစွာ၊ Team 2 (အောက်) ရပ်ရန် 180 degree ထပ်ပေါင်းရန်
                     const targetDegree = chosenWinner === team1Name ? 360 * 10 : 360 * 10 + 180;
 
                     if (wheelEl) {
-                        wheelEl.style.transition = 'transform 10s cubic-bezier(0.05, 0.9, 0.1, 1)';
                         wheelEl.style.transform = `rotate(${targetDegree}deg)`;
                     }
 
-                    // **၁၀ စက္ကန့် Spin လည်ပြီးဆုံးချိန် (Animation ပြီးဆုံးမှသာ) Winner ကို Database ထဲသို့ ပေးပို့ခြင်း**
                     setTimeout(() => {
                         if (statusText) {
                             statusText.innerHTML = `🎉 First Pick: <span style="color: #34c759; text-shadow: 0 0 20px rgba(52,199,89,0.4);">${chosenWinner}</span>`;
@@ -277,7 +273,6 @@ export function showRoomDetailsPopup(room, mode, userId, callbacks = {}) {
                             subText.textContent = 'Redirecting to draft phase...';
                         }
 
-                        // Host ဘက်မှသာ Winner ရလဒ်ကို database သို့ တရားဝင် အပ်ဒိတ်လုပ်ပေးခြင်း
                         if (userId === room.hostId) {
                             fetch('/api/create-room', { 
                                 method: 'PATCH',
@@ -291,9 +286,7 @@ export function showRoomDetailsPopup(room, mode, userId, callbacks = {}) {
                         }
                     }, 10000);
                 }
-            }
-
-            runAnimationSequence();
+            }, 200);
         }
 
         const closeBtn = overlay.querySelector('#closePopupBtn');
