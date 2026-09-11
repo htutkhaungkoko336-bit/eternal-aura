@@ -291,6 +291,7 @@ function showSpinWheelPopup(room, mode, userId, callbacks) {
 
     const startTime = room.spinStartTime || (Date.now() + 3000);
 
+    // Countdown and Wheel Spin Logic
     const countdownInterval = setInterval(() => {
         const now = Date.now();
         const timeLeft = startTime - now;
@@ -307,44 +308,72 @@ function showSpinWheelPopup(room, mode, userId, callbacks) {
 
             if (statusText) statusText.innerHTML = `🎲 Spinning leisurely (10s)...`;
 
-            const teams = [team1Name, team2Name];
-            const chosenWinner = teams[Math.floor(Math.random() * teams.length)];
-            const targetDegree = chosenWinner === team1Name ? 360 * 10 : 360 * 10 + 180;
+            // Host ဖြစ်မှသာ Winner ကို Random တွက်ပြီး Database ထဲ အရင်ပို့ပါမည်
+            let chosenWinner = room.firstPick;
 
-            if (wheelEl) {
-                wheelEl.style.transform = `rotate(${targetDegree}deg)`;
+            if (userId === room.hostId && !chosenWinner) {
+                const teams = [team1Name, team2Name];
+                chosenWinner = teams[Math.floor(Math.random() * teams.length)];
+                
+                // Database ထဲသို့ Winner ကို သိမ်းရန် API ခေါ်မည်
+                fetch('/api/create-room', { 
+                    method: 'PATCH',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        roomId: room.id,
+                        userId: userId,
+                        firstPick: chosenWinner
+                    })
+                }).catch(err => console.error("Failed to save final winner", err));
+            }
+
+            // Joiner ဖြစ်ပါက Database ထဲမှာ Host random တွက်ထားပေးတဲ့ firstPick တန်ဖိုးကို ခဏစောင့်ပြီး ယူပါမည်
+            if (userId === room.joinedUserId && !chosenWinner) {
+                // တစ်ခါတလေ Database ထဲ တန်ဖိုးရောက်ဖို့ စက္ကန့်ပိုင်းလေး နောက်ကျတတ်လို့ polling ခဏလုပ်ပေးပါမည်
+                const checkWinnerInterval = setInterval(async () => {
+                    try {
+                        const res = await fetch(`/api/create-room?roomId=${room.id}`);
+                        const data = await res.json();
+                        if (data.success && data.room && data.room.firstPick) {
+                            clearInterval(checkWinnerInterval);
+                            executeSpin(data.room.firstPick);
+                        }
+                    } catch (e) {
+                        console.error("Error fetching winner:", e);
+                    }
+                }, 500);
+                return; // Host မဟုတ်သူအတွက် winner ရလာမှ အောက်ဆက်လုပ်ရန် ဤနေရာတွင် ရပ်ထားမည်
+            }
+
+            // Winner သေချာပြီဆိုရင် Wheel ကို လည်စေမည့် function ခေါ်မည်
+            if (chosenWinner) {
+                executeSpin(chosenWinner);
+            }
+        }
+    }, 200);
+
+    function executeSpin(winner) {
+        const targetDegree = winner === team1Name ? 360 * 10 : 360 * 10 + 180;
+
+        if (wheelEl) {
+            wheelEl.style.transform = `rotate(${targetDegree}deg)`;
+        }
+
+        setTimeout(() => {
+            if (statusText) {
+                statusText.innerHTML = `🎉 First Pick: <span style="color: #34c759; text-shadow: 0 0 20px rgba(52,199,89,0.4);">${winner}</span>`;
+            }
+            if (subText) {
+                subText.textContent = 'Redirecting to draft phase...';
             }
 
             setTimeout(() => {
-                if (statusText) {
-                    statusText.innerHTML = `🎉 First Pick: <span style="color: #34c759; text-shadow: 0 0 20px rgba(52,199,89,0.4);">${chosenWinner}</span>`;
+                overlay.remove();
+                if (callbacks.onBothReady) {
+                    callbacks.onBothReady({ ...room, firstPick: winner });
                 }
-                if (subText) {
-                    subText.textContent = 'Redirecting to draft phase...';
-                }
+            }, 2500);
 
-                // Host ကသာ Database ထဲသို့ First Pick ရလဒ်ကို ပို့ပေးပါမည်
-                if (userId === room.hostId) {
-                    fetch('/api/create-room', { 
-                        method: 'PATCH',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({
-                            roomId: room.id,
-                            userId: userId,
-                            firstPick: chosenWinner
-                        })
-                    }).catch(err => console.error("Failed to save final winner", err));
-                }
-
-                // ပြီးသွားရင် callback ခေါ်ပြီး popup ကို ပိတ်ပေးမည်
-                setTimeout(() => {
-                    overlay.remove();
-                    if (callbacks.onBothReady) {
-                        callbacks.onBothReady({ ...room, firstPick: chosenWinner });
-                    }
-                }, 2500);
-
-            }, 10000);
-        }
-    }, 200);
+        }, 10000);
+    }
 }
