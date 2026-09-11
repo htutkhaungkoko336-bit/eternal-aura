@@ -162,20 +162,6 @@ export function renderRoomScreen(container, roomTitleText, userDocData = {}) {
                 .card-join-btn:hover {
                     opacity: 0.9;
                 }
-                .card-cancel-btn {
-                    background: rgba(244, 63, 94, 0.15);
-                    color: #f43f5e;
-                    border: 1px solid rgba(244, 63, 94, 0.4);
-                    padding: 5px 10px;
-                    border-radius: 6px;
-                    font-size: 10px;
-                    font-weight: 700;
-                    cursor: pointer;
-                    white-space: nowrap;
-                }
-                .card-cancel-btn:hover {
-                    background: rgba(244, 63, 94, 0.3);
-                }
                 
                 /* Pop-up Modal Styles */
                 .popup-overlay {
@@ -333,14 +319,9 @@ export function renderRoomScreen(container, roomTitleText, userDocData = {}) {
 
                     let rightActionHTML = '';
                     if (isMyRoom) {
-                        // Host အတွက် Joiner မလာသေးရင် (hasMatched က false ဖြစ်နေရင်) Cancel btn ပြမယ်၊ Joiner လာရင် (hasMatched ဖြစ်ရင်) ဖြုတ်မယ်
-                        if (!hasMatched) {
-                            rightActionHTML = `<button class="card-cancel-btn" data-roomid="${room.id}">Cancel</button>`;
-                        } else {
-                            rightActionHTML = ``; 
-                        }
+                        rightActionHTML = ``; // Card မှ Cancel ကို ဖြုတ်ပေးလိုက်ပါပြီ
                     } else if (isJoinedByMe) {
-                        rightActionHTML = ``; 
+                        rightActionHTML = ``; // Card မှ Cancel ကို ဖြုတ်ပေးလိုက်ပါပြီ
                     } else if (isLocked) {
                         rightActionHTML = ``;
                     } else {
@@ -422,14 +403,6 @@ export function renderRoomScreen(container, roomTitleText, userDocData = {}) {
                 });
             });
 
-            // Card ထဲက Host ရဲ့ Cancel button အတွက် Event listener ထည့်သွင်းခြင်း
-            roomsContainer.querySelectorAll('.card-cancel-btn').forEach(btn => {
-                btn.addEventListener('click', (e) => {
-                    const roomIdToCancel = e.target.getAttribute('data-roomid');
-                    transferHostAPI(roomIdToCancel);
-                });
-            });
-
         } catch (err) {
             console.error("Fetch rooms error:", err);
             roomsContainer.innerHTML = `<span style="color: #f43f5e; font-size: 11px;">Rooms များကို ဆွဲထုတ်၍ မရပါ။</span>`;
@@ -440,6 +413,7 @@ export function renderRoomScreen(container, roomTitleText, userDocData = {}) {
         const is1v1 = mode.toLowerCase().includes('1v1');
         const hasMatched = !!room.joinedUserId;
 
+        // Ready & Cancel States tracking
         let hostReadyState = room.hostReady || false;
         let joinerReadyState = room.joinerReady || false;
 
@@ -452,6 +426,7 @@ export function renderRoomScreen(container, roomTitleText, userDocData = {}) {
             if (hasMatched) {
                 actionButtonsHTML = `
                     <div style="display: flex; gap: 10px; margin-top: 14px;">
+                        <!-- Host Actions (Shown if current user is Host) -->
                         ${userId === room.hostId ? `
                             <button id="popupReadyBtn" style="flex: 1; padding: 10px; border-radius: 8px; font-weight: 700; border: none; cursor: pointer; background: ${hostReadyState ? '#10b981' : 'linear-gradient(135deg, #0284c7, #9333ea)'}; color: #fff;">
                                 ${hostReadyState ? 'Unready' : 'Ready'}
@@ -461,6 +436,7 @@ export function renderRoomScreen(container, roomTitleText, userDocData = {}) {
                             </button>
                         ` : ''}
 
+                        <!-- Joiner Actions (Shown if current user is Joiner) -->
                         ${userId === room.joinedUserId ? `
                             <button id="popupReadyBtn" style="flex: 1; padding: 10px; border-radius: 8px; font-weight: 700; border: none; cursor: pointer; background: ${joinerReadyState ? '#10b981' : 'linear-gradient(135deg, #0284c7, #9333ea)'}; color: #fff;">
                                 ${joinerReadyState ? 'Unready' : 'Ready'}
@@ -486,6 +462,8 @@ export function renderRoomScreen(container, roomTitleText, userDocData = {}) {
                     <div class="popup-box" style="max-width: 420px; width: 95%;">
                         <div class="popup-title">1VS1 Room Details</div>
                         <div style="display: flex; gap: 8px; width: 100%;">
+                            
+                            <!-- Host Info -->
                             <div style="flex: 1; background: rgba(56, 189, 248, 0.08); padding: 8px; border-radius: 6px; border: 1px solid rgba(56, 189, 248, 0.2);">
                                 <div style="font-weight: 700; color: #38bdf8; margin-bottom: 6px; font-size: 12px; text-align: center;">
                                     Host ${hostReadyState ? ' ✅' : ''}
@@ -495,6 +473,7 @@ export function renderRoomScreen(container, roomTitleText, userDocData = {}) {
                                 <div class="popup-row" style="font-size: 11px; border-bottom: none;"><span>Contact:</span> <b>${hostContact}</b></div>
                             </div>
 
+                            <!-- Joiner Info (If matched) -->
                             ${hasMatched ? `
                             <div style="flex: 1; background: rgba(16, 185, 129, 0.08); padding: 8px; border-radius: 6px; border: 1px solid rgba(16, 185, 129, 0.2);">
                                 <div style="font-weight: 700; color: #10b981; margin-bottom: 6px; font-size: 12px; text-align: center;">
@@ -530,6 +509,8 @@ export function renderRoomScreen(container, roomTitleText, userDocData = {}) {
                         <div style="font-size: 10px; color: #94a3b8; margin-bottom: 8px; text-align: center;">5VS5 Players Comparison</div>
                         
                         <div style="display: flex; gap: 8px; width: 100%; max-height: 65vh; overflow-y: auto;">
+                            
+                            <!-- Host Squad -->
                             <div style="flex: 1; background: rgba(56, 189, 248, 0.08); padding: 6px; border-radius: 6px; border: 1px solid rgba(56, 189, 248, 0.2);">
                                 <div style="font-weight: 700; color: #38bdf8; margin-bottom: 6px; font-size: 11px; text-align: center; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">
                                     ${hostSqName} ${hostReadyState ? ' ✅' : ''}
@@ -542,6 +523,7 @@ export function renderRoomScreen(container, roomTitleText, userDocData = {}) {
                                 <div class="popup-row" style="font-size: 10px; border-bottom: none; border-top: 1px solid rgba(56, 189, 248, 0.3); margin-top: 4px; padding-top: 4px;"><span>Contact:</span> <b style="font-size: 9px;">${hostContact}</b></div>
                             </div>
 
+                            <!-- Joiner Squad (If matched) -->
                             ${hasMatched ? `
                             <div style="flex: 1; background: rgba(16, 185, 129, 0.08); padding: 6px; border-radius: 6px; border: 1px solid rgba(16, 185, 129, 0.2);">
                                 <div style="font-weight: 700; color: #10b981; margin-bottom: 6px; font-size: 11px; text-align: center; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">
@@ -564,6 +546,7 @@ export function renderRoomScreen(container, roomTitleText, userDocData = {}) {
                 `;
             }
 
+            // Re-bind events after innerHTML update
             overlay.querySelector('#closePopupBtn').addEventListener('click', () => {
                 overlay.remove();
             });
@@ -584,8 +567,10 @@ export function renderRoomScreen(container, roomTitleText, userDocData = {}) {
             if (cancelBtn) {
                 cancelBtn.addEventListener('click', () => {
                     if (userId === room.joinedUserId) {
+                        // Joiner ဆိုရင် Room ကနေ ထွက်သွားမယ် (Joiner data တွေ ဖျက်မယ်)
                         cancelJoinerAPI(room.id);
                     } else if (userId === room.hostId) {
+                        // Host ဆိုရင် Cancel လုပ်ရင် Joiner က Host အဖြစ် ကျန်ခဲ့မယ်
                         transferHostAPI(room.id);
                     }
                     overlay.remove();
@@ -644,48 +629,72 @@ export function renderRoomScreen(container, roomTitleText, userDocData = {}) {
             const response = await fetch('/api/create-room', {
                 method: 'DELETE',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ userId: userId, roomId: roomId, action: 'cancelRoom' })
+                body: JSON.stringify({ userId: userId, roomId: roomId, action: 'transferHost' })
             });
             const result = await response.json();
             if (result.success) {
                 fetchAndRenderGlobalRooms();
             }
         } catch (err) {
-            console.error("Cancel room error:", err);
+            console.error("Transfer host error:", err);
         }
     }
 
-    // Screen ကို Container ထဲသို့ ပုံဖော်ခြင်းနှင့် အလုပ်စတင်ခြင်း
     container.innerHTML = renderScreenHTML();
     fetchAndRenderGlobalRooms();
+
+    const newRoomBtn = container.querySelector('#newRoomBtn');
+    if (newRoomBtn) {
+        newRoomBtn.addEventListener('click', async () => {
+            if (newRoomBtn.disabled) return;
+
+            try {
+                newRoomBtn.disabled = true;
+                newRoomBtn.textContent = 'Creating...';
+
+                if (!userId) {
+                    alert('User ID မတွေ့ရှိရပါ။ ကျေးဇူးပြု၍ Login ပြန်ဝင်ပါ။');
+                    newRoomBtn.disabled = false;
+                    newRoomBtn.textContent = 'Create Room';
+                    return;
+                }
+
+                const response = await fetch('/api/create-room', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        userId: userId,
+                        roomTitle: displayTitle,
+                        targetMode: targetMode,
+                        targetKeyType: targetKeyType,
+                        boType: boType
+                    })
+                });
+                const result = await response.json();
+
+                if (!result.success) {
+                    alert(result.message || 'Room ဖန်တီး၍ မရပါ');
+                    newRoomBtn.disabled = false;
+                    newRoomBtn.textContent = 'Create Room';
+                    return;
+                }
+
+                deductKey(targetMode, targetKeyType);
+                fetchAndRenderGlobalRooms();
+                
+            } catch (err) {
+                console.error("Room create error:", err);
+                alert('ဆာဗာသို့ ချိတ်ဆက်၍ မရပါ။');
+                newRoomBtn.disabled = false;
+                newRoomBtn.textContent = 'Create Room';
+            }
+        });
+    }
 
     const cancelBtn = container.querySelector('#cancelBtn');
     if (cancelBtn) {
         cancelBtn.addEventListener('click', () => {
             renderMatchScreen(container, userDocData);
-        });
-    }
-
-    const newRoomBtn = container.querySelector('#newRoomBtn');
-    if (newRoomBtn) {
-        newRoomBtn.addEventListener('click', async () => {
-            if (!hasKey) return;
-            try {
-                const response = await fetch('/api/create-room', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ userId: userId, mode: targetMode, keyType: targetKeyType })
-                });
-                const result = await response.json();
-                if (result.success) {
-                    deductKey(targetMode, targetKeyType);
-                    fetchAndRenderGlobalRooms();
-                } else {
-                    alert(result.message || 'Room တည်ဆောက်၍ မရပါ။');
-                }
-            } catch (err) {
-                console.error("Create room error:", err);
-            }
         });
     }
 }
