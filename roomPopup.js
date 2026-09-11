@@ -10,11 +10,15 @@ export function showRoomDetailsPopup(room, mode, userId, callbacks = {}) {
     overlay.className = 'popup-overlay';
 
     let pollInterval = null;
+    let isSpinningActive = false; // Spin Wheel လည်နေပြီလားဆိုတာကို ထိန်းချုပ်ဖို့ flag တစ်ခု ထည့်ပါမည်
 
     function startPollingForReady() {
         if (!room.id) return;
         
         pollInterval = setInterval(async () => {
+            // Spin Wheel လည်နေပြီဆိုရင် polling ကြောင့် UI အစကနေ ပြန်မစသွားအောင် တားထားပါမည်
+            if (isSpinningActive) return;
+
             try {
                 const res = await fetch(`/api/create-room?roomId=${room.id}`);
                 const text = await res.text();
@@ -64,6 +68,10 @@ export function showRoomDetailsPopup(room, mode, userId, callbacks = {}) {
 
     function updatePopupContent() {
         const bothReady = hostReadyState && joinerReadyState;
+        
+        // တစ်ခါ spin ဖို့စပြီဆိုရင် ဒီ condition ထဲ ထပ်မဝင်အောင် ကာကွယ်ပါမည်
+        if (bothReady && isSpinningActive) return;
+
         let actionButtonsHTML = '';
 
         if (hasMatched) {
@@ -93,7 +101,6 @@ export function showRoomDetailsPopup(room, mode, userId, callbacks = {}) {
         const team1Name = is1v1 ? (room.inGameName || room.teamName || room.userName || 'Host') : (room.sqName || room.teamName || 'Host SQ');
         const team2Name = is1v1 ? (room.joinerTeamName || room.joinerUserName || 'Joiner') : (room.joinerSqName || room.joinerTeamName || 'Joiner SQ');
 
-        // အရောင်ကို အပေါ် (Team 1 - 0deg to 180deg) နှင့် အောက် (Team 2 - 180deg to 360deg) အတိအကျဖြစ်အောင် conic-gradient ကို 90deg လှည့်ပေးထားပါသည်
         const spinWheelHTML = bothReady ? `
             <div style="position: absolute; inset: 0; background: rgba(20, 20, 25, 0.95); backdrop-filter: blur(20px); z-index: 50; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 24px; border-radius: 24px; animation: fadeInScale 0.3s cubic-bezier(0.16, 1, 0.3, 1);">
                 <div style="width: 100%; text-align: center; margin-bottom: 20px;">
@@ -232,6 +239,8 @@ export function showRoomDetailsPopup(room, mode, userId, callbacks = {}) {
         }
 
         if (bothReady && (room.spinStartTime || firstPickResult)) {
+            isSpinningActive = true; // Spin စတင်နေပြီဖြစ်ကြောင်း သတ်မှတ်လိုက်သည်
+
             const wheelEl = overlay.querySelector('#wheelElement');
             const statusText = overlay.querySelector('#spinStatusText');
             const subText = overlay.querySelector('#spinSubText');
@@ -239,7 +248,6 @@ export function showRoomDetailsPopup(room, mode, userId, callbacks = {}) {
 
             const startTime = room.spinStartTime || (Date.now() + 3000);
             
-            // recursion ဖြင့် ပြဿနာဖြစ်စေသော setTimeout loop အစား setInterval ဖြင့် တိကျသေသပ်စွာ တည်ဆောက်ထားပါသည်
             const countdownInterval = setInterval(() => {
                 const now = Date.now();
                 const timeLeft = startTime - now;
@@ -258,7 +266,6 @@ export function showRoomDetailsPopup(room, mode, userId, callbacks = {}) {
 
                     const teams = [team1Name, team2Name];
                     const chosenWinner = teams[Math.floor(Math.random() * teams.length)];
-                    // Team 1 (အပေါ်) ရပ်ရန် 360 degree အဆပေါင်းများစွာ၊ Team 2 (အောက်) ရပ်ရန် 180 degree ထပ်ပေါင်းရန်
                     const targetDegree = chosenWinner === team1Name ? 360 * 10 : 360 * 10 + 180;
 
                     if (wheelEl) {
