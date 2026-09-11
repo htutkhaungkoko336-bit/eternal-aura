@@ -435,59 +435,91 @@ export function renderRoomScreen(container, roomTitleText, userDocData = {}) {
         }
     }
 
-    function showRoomDetailsPopup(room, mode) {
+function showRoomDetailsPopup(room, mode) {
         let contentHTML = '';
         const is1v1 = mode.toLowerCase().includes('1v1');
+        const hasMatched = !!room.joinedUserId;
 
         if (is1v1) {
-            const name = room.inGameName || room.teamName || room.userName || 'Unknown Player';
-            const hero = room.heroName || room.hero || 'Not Specified';
-            const contact = room.contactPhNo || room.kpayPhNo || 'N/A';
+            const hostName = room.inGameName || room.teamName || room.userName || 'Unknown Player';
+            const hostHero = room.heroName || room.hero || 'Not Specified';
+            const hostContact = room.contactPhNo || room.kpayPhNo || 'N/A';
+
+            const joinerName = room.joinerTeamName || room.joinerUserName || 'Joined Player';
+            const joinerHero = room.joinerHeroName || room.joinerHero || 'Not Specified';
+            const joinerContact = room.joinerContactPhNo || room.joinerKpayPhNo || 'N/A';
 
             contentHTML = `
                 <div class="popup-box">
                     <div class="popup-title">1VS1 Room Details</div>
-                    <div style="display: flex; flex-direction: column; width: 100%;">
-                        <div class="popup-row"><span>Name:</span> <b style="color: #38bdf8;">${name}</b></div>
-                        <div class="popup-row"><span>Hero Name:</span> <b style="color: #10b981;">${hero}</b></div>
-                        <div class="popup-row" style="border-bottom: none; border-top: 1px solid rgba(56, 189, 248, 0.4); margin-top: 6px; padding-top: 12px;"><span>Contact:</span> <b>${contact}</b></div>
+                    <div style="display: flex; flex-direction: column; width: 100%; gap: 10px;">
+                        
+                        <!-- Host Info -->
+                        <div style="background: rgba(56, 189, 248, 0.1); padding: 8px; border-radius: 6px;">
+                            <div style="font-weight: 700; color: #38bdf8; margin-bottom: 4px;">Host Player</div>
+                            <div class="popup-row"><span>Name:</span> <b>${hostName}</b></div>
+                            <div class="popup-row"><span>Hero:</span> <b style="color: #10b981;">${hostHero}</b></div>
+                            <div class="popup-row" style="border-bottom: none;"><span>Contact:</span> <b>${hostContact}</b></div>
+                        </div>
+
+                        <!-- Joiner Info (If matched) -->
+                        ${hasMatched ? `
+                        <div style="background: rgba(16, 185, 129, 0.1); padding: 8px; border-radius: 6px;">
+                            <div style="font-weight: 700; color: #10b981; margin-bottom: 4px;">Joiner Player</div>
+                            <div class="popup-row"><span>Name:</span> <b>${joinerName}</b></div>
+                            <div class="popup-row"><span>Hero:</span> <b style="color: #10b981;">${joinerHero}</b></div>
+                            <div class="popup-row" style="border-bottom: none;"><span>Contact:</span> <b>${joinerContact}</b></div>
+                        </div>
+                        ` : '<div style="text-align: center; color: #64748b; font-size: 11px;">Waiting for joiner...</div>'}
+
                     </div>
                     <button class="popup-close-btn" id="closePopupBtn">Close</button>
                 </div>
             `;
         } else {
-            const sqName = room.sqName || room.teamName || 'Unknown Squad';
-            const contact = room.contactPhNo || room.kpayPhNo || 'N/A';
+            const hostSqName = room.sqName || room.teamName || 'Unknown Squad';
+            const hostContact = room.contactPhNo || room.kpayPhNo || 'N/A';
+
+            const joinerSqName = room.joinerSqName || room.joinerTeamName || 'Joined Squad';
+            const joinerContact = room.joinerContactPhNo || room.joinerKpayPhNo || 'N/A';
 
             const formatPlayerName = (p) => {
                 if (!p) return '-';
-                if (typeof p === 'object') {
-                    return p.name || '-';
-                }
+                if (typeof p === 'object') return p.name || '-';
                 return p;
             };
 
-            const roamer = formatPlayerName(room.roamer);
-            const exp = formatPlayerName(room.exp);
-            const gold = formatPlayerName(room.gold);
-            const mid = formatPlayerName(room.mid);
-            const jungle = formatPlayerName(room.jungle);
-
             contentHTML = `
                 <div class="popup-box">
-                    <div class="popup-title">SQ: ${sqName}</div>
-                    <div style="font-size: 11px; color: #94a3b8; margin-bottom: 10px; text-align: center;">5VS5 Players List</div>
+                    <div class="popup-title">SQ Match Details</div>
+                    <div style="font-size: 11px; color: #94a3b8; margin-bottom: 8px; text-align: center;">5VS5 Players List</div>
                     
-                    <div style="display: flex; flex-direction: column; width: 100%;">
-                        <div class="popup-row"><span>Roamer:</span> <b style="color: #38bdf8;">${roamer}</b></div>
-                        <div class="popup-row"><span>EXP:</span> <b style="color: #38bdf8;">${exp}</b></div>
-                        <div class="popup-row"><span>Gold:</span> <b style="color: #38bdf8;">${gold}</b></div>
-                        <div class="popup-row"><span>Mid:</span> <b style="color: #38bdf8;">${mid}</b></div>
-                        <div class="popup-row" style="border-bottom: none;"><span>Jungle:</span> <b style="color: #38bdf8;">${jungle}</b></div>
+                    <div style="display: flex; flex-direction: column; width: 100%; gap: 10px; max-height: 60vh; overflow-y: auto;">
                         
-                        <div class="popup-row" style="border-bottom: none; border-top: 1px solid rgba(56, 189, 248, 0.4); margin-top: 8px; padding-top: 12px;">
-                            <span>Contact:</span> <b style="color: #38bdf8;">${contact}</b>
+                        <!-- Host Squad -->
+                        <div style="background: rgba(56, 189, 248, 0.1); padding: 8px; border-radius: 6px;">
+                            <div style="font-weight: 700; color: #38bdf8; margin-bottom: 4px;">Host SQ: ${hostSqName}</div>
+                            <div class="popup-row"><span>Roamer:</span> <b>${formatPlayerName(room.roamer)}</b></div>
+                            <div class="popup-row"><span>EXP:</span> <b>${formatPlayerName(room.exp)}</b></div>
+                            <div class="popup-row"><span>Gold:</span> <b>${formatPlayerName(room.gold)}</b></div>
+                            <div class="popup-row"><span>Mid:</span> <b>${formatPlayerName(room.mid)}</b></div>
+                            <div class="popup-row"><span>Jungle:</span> <b>${formatPlayerName(room.jungle)}</b></div>
+                            <div class="popup-row" style="border-bottom: none; border-top: 1px solid rgba(56, 189, 248, 0.3); margin-top: 4px; padding-top: 6px;"><span>Contact:</span> <b>${hostContact}</b></div>
                         </div>
+
+                        <!-- Joiner Squad (If matched) -->
+                        ${hasMatched ? `
+                        <div style="background: rgba(16, 185, 129, 0.1); padding: 8px; border-radius: 6px;">
+                            <div style="font-weight: 700; color: #10b981; margin-bottom: 4px;">Joiner SQ: ${joinerSqName}</div>
+                            <div class="popup-row"><span>Roamer:</span> <b>${formatPlayerName(room.joinerRoamer)}</b></div>
+                            <div class="popup-row"><span>EXP:</span> <b>${formatPlayerName(room.joinerExp)}</b></div>
+                            <div class="popup-row"><span>Gold:</span> <b>${formatPlayerName(room.joinerGold)}</b></div>
+                            <div class="popup-row"><span>Mid:</span> <b>${formatPlayerName(room.joinerMid)}</b></div>
+                            <div class="popup-row"><span>Jungle:</span> <b>${formatPlayerName(room.joinerJungle)}</b></div>
+                            <div class="popup-row" style="border-bottom: none; border-top: 1px solid rgba(16, 185, 129, 0.3); margin-top: 4px; padding-top: 6px;"><span>Contact:</span> <b>${joinerContact}</b></div>
+                        </div>
+                        ` : '<div style="text-align: center; color: #64748b; font-size: 11px;">Waiting for joiner squad...</div>'}
+
                     </div>
 
                     <button class="popup-close-btn" id="closePopupBtn">Close</button>
@@ -510,7 +542,6 @@ export function renderRoomScreen(container, roomTitleText, userDocData = {}) {
             }
         });
     }
-
     async function joinRoomAPI(roomId) {
         try {
             const response = await fetch('/api/create-room', {
