@@ -379,9 +379,16 @@ function showSpinWheelPopup(room, mode, userId, callbacks) {
         }
     }, 200);
 
-    function executeSpin(winner) {
+function executeSpin(winner) {
         const baseRotations = 360 * 10;
-        const targetDegree = winner === team1Name ? baseRotations : baseRotations + 180;
+        
+        // အပြာရောင်က ညာဘက်ခြမ်း (0deg ကနေ 180deg)၊ အစိမ်းက ဘယ်ဘက်ခြမ်း (180deg ကနေ 360deg) ဖြစ်တဲ့အတွက်
+        // အပ်က အပေါ်တည့်တည့် (0deg / 360deg) မှာ ရှိနေပါတယ်။
+        // အစိမ်း (Team 1) Winner ဖြစ်ရင် အောက်ဘက်ခြမ်း (ဥပမာ 180deg) ကို ရောက်အောင် လှည့်ရပါမယ်။
+        // အပြာ (Team 2) Winner ဖြစ်ရင် အပေါ်ဘက်ခြမ်း (ဥပမာ 360deg) မှာ ရပ်ရပါမယ်။
+        const targetDegree = winner === team1Name 
+            ? baseRotations + 180  // အစိမ်းအတွက် အောက်ဘက်ကို ရောက်စေရန်
+            : baseRotations + 360; // အပြာအတွက် အပေါ်ဘက်ကို ရောက်စေရန်
 
         if (wheelEl) {
             wheelEl.style.transform = `rotate(${targetDegree}deg)`;
