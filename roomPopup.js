@@ -2,7 +2,6 @@ export function showRoomDetailsPopup(room, mode, userId, callbacks = {}) {
     const is1v1 = mode.toLowerCase().includes('1v1');
     const hasMatched = !!room.joinedUserId;
 
-    // Ready & Cancel States tracking
     let hostReadyState = room.hostReady || false;
     let joinerReadyState = room.joinerReady || false;
     let firstPickResult = room.firstPick || null;
@@ -36,18 +35,27 @@ export function showRoomDetailsPopup(room, mode, userId, callbacks = {}) {
 
                 const updatedRoom = data.room;
                 
-                if (updatedRoom.hostReady !== hostReadyState || updatedRoom.joinerReady !== joinerReadyState || updatedRoom.firstPick !== firstPickResult) {
+                if (updatedRoom.hostReady !== hostReadyState || 
+                    updatedRoom.joinerReady !== joinerReadyState || 
+                    updatedRoom.firstPick !== firstPickResult ||
+                    updatedRoom.spinStartTime !== room.spinStartTime) {
+                    
                     hostReadyState = !!updatedRoom.hostReady;
                     joinerReadyState = !!updatedRoom.joinerReady;
                     if (updatedRoom.firstPick) firstPickResult = updatedRoom.firstPick;
+                    if (updatedRoom.spinStartTime) room.spinStartTime = updatedRoom.spinStartTime;
+                    if (updatedRoom.selectedWinner) room.selectedWinner = updatedRoom.selectedWinner;
+                    
                     updatePopupContent();
                 }
 
-                // First pick ရပြီးရင် callback ခေါ်ပြီး မျက်နှာပြင်တူညီစွာ ဆက်သွားနိုင်အောင် ထိန်းထားခြင်း
                 if (updatedRoom.hostReady && updatedRoom.joinerReady) {
                     if (updatedRoom.firstPick && callbacks.onBothReady) {
-                        clearInterval(pollInterval);
-                        callbacks.onBothReady(updatedRoom);
+                        // ခဏစောင့်ပြီးမှ draft ဘက်ကို သွားခွင့်ပြုရန်
+                        setTimeout(() => {
+                            clearInterval(pollInterval);
+                            callbacks.onBothReady(updatedRoom);
+                        }, 6000);
                     }
                 }
             } catch (error) {
@@ -87,7 +95,7 @@ export function showRoomDetailsPopup(room, mode, userId, callbacks = {}) {
         const team1Name = is1v1 ? (room.inGameName || room.teamName || room.userName || 'Host') : (room.sqName || room.teamName || 'Host SQ');
         const team2Name = is1v1 ? (room.joinerTeamName || room.joinerUserName || 'Joiner') : (room.joinerSqName || room.joinerTeamName || 'Joiner SQ');
 
-        // Smooth 5-sec Spin Wheel & 3-2-1-Go Countdown integrated UI
+        // Spin Wheel UI (အရောင်ခြမ်းများ နှင့် စာသားနေရာများကို တိကျစွာ ချိန်ညှိထားခြင်း)
         const spinWheelHTML = bothReady ? `
             <div style="position: absolute; inset: 0; background: rgba(20, 20, 25, 0.95); backdrop-filter: blur(20px); z-index: 50; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 24px; border-radius: 24px; animation: fadeInScale 0.3s cubic-bezier(0.16, 1, 0.3, 1);">
                 <div style="width: 100%; text-align: center; margin-bottom: 20px;">
@@ -97,12 +105,15 @@ export function showRoomDetailsPopup(room, mode, userId, callbacks = {}) {
                     </div>
                 </div>
 
-                <!-- Smooth Wheel Container with Team Names Display -->
+                <!-- Wheel Container: Right half = Blue (#007aff), Left half = Green (#34c759) -->
                 <div style="position: relative; width: 200px; height: 200px; margin: 10px auto; border-radius: 50%; background: conic-gradient(#007aff 0deg 180deg, #34c759 180deg 360deg); box-shadow: 0 0 40px rgba(0,122,255,0.3), inset 0 0 20px rgba(255,255,255,0.2); border: 4px solid rgba(255,255,255,0.8); display: flex; align-items: center; justify-content: center;">
-                    <div id="wheelElement" style="position: absolute; inset: 0; border-radius: 50%; display: flex; align-items: center; justify-content: center; transition: transform 5s cubic-bezier(0.15, 0.85, 0.15, 1);">
-                        <div style="position: absolute; top: 15px; font-size: 11px; font-weight: 800; color: #fff; text-shadow: 0 1px 3px rgba(0,0,0,0.8);">${team1Name}</div>
-                        <div style="position: absolute; bottom: 15px; font-size: 11px; font-weight: 800; color: #fff; text-shadow: 0 1px 3px rgba(0,0,0,0.8);">${team2Name}</div>
+                    <div id="wheelElement" style="position: absolute; inset: 0; border-radius: 50%; display: flex; align-items: center; justify-content: center;">
+                        <!-- Team 1 (အစိမ်းရောင်ဘက်ခြမ်း - ဘယ်ဘက်) -->
+                        <div style="position: absolute; left: 25px; top: 50%; transform: translateY(-50%) rotate(-90deg); font-size: 11px; font-weight: 800; color: #fff; text-shadow: 0 1px 3px rgba(0,0,0,0.8); max-width: 65px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">${team1Name}</div>
+                        <!-- Team 2 (အပြာရောင်ဘက်ခြမ်း - ညာဘက်) -->
+                        <div style="position: absolute; right: 25px; top: 50%; transform: translateY(-50%) rotate(90deg); font-size: 11px; font-weight: 800; color: #fff; text-shadow: 0 1px 3px rgba(0,0,0,0.8); max-width: 65px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">${team2Name}</div>
                     </div>
+                    <!-- အပေါ်တည့်တည့်က ညွှန်တံ (Pointer Arrow) -->
                     <div style="position: absolute; top: -12px; width: 0; height: 0; border-left: 8px solid transparent; border-right: 8px solid transparent; border-bottom: 16px solid #ff3b30; filter: drop-shadow(0 2px 4px rgba(0,0,0,0.3)); z-index: 10;"></div>
                     <div style="width: 44px; height: 44px; background: rgba(255,255,255,0.9); backdrop-filter: blur(10px); border-radius: 50%; box-shadow: 0 4px 10px rgba(0,0,0,0.3); display: flex; align-items: center; justify-content: center; z-index: 5;">
                         <div style="width: 14px; height: 14px; background: #1c1c1e; border-radius: 50%;"></div>
@@ -211,90 +222,72 @@ export function showRoomDetailsPopup(room, mode, userId, callbacks = {}) {
             `;
         }
 
-        // 3 2 1 Go countdown ပြီးမှ 5 စက္ကန့်ကြာ Latch/Spin smooth လုပ်ဆောင်ချက်
-        if (bothReady && userId === room.hostId && !room.isSpinningStarted) {
-            room.isSpinningStarted = true; // တစ်ခါပဲစ ်trigger ဖြစ်အောင် ထိန်းရန်
+        // နှစ်ဖက်စလုံး Ready ဖြစ်လျှင် Host က အနိုင်ရမယ့်အသင်းနဲ့ စတင်မည့်အချိန်ကို DB သို့ တစ်ကြိမ်တည်း တင်ပေးခြင်း
+        if (bothReady && userId === room.hostId && !room.isSpinningTriggered) {
+            room.isSpinningTriggered = true;
             
-            let count = 3;
-            const countInterval = setInterval(() => {
-                count--;
-                const numEl = overlay.querySelector('#countdownNum');
-                if (numEl) {
-                    if (count > 0) {
-                        numEl.textContent = count;
-                    } else if (count === 0) {
-                        numEl.textContent = "GO!";
-                        numEl.style.color = "#34c759";
-                    } else {
-                        clearInterval(countInterval);
-                        
-                        // Countdown ပြီးတဲ့အခါ ရလဒ်ထွက်ဖို့ ရွေးချယ်ခြင်း
-                        const teams = [team1Name, team2Name];
-                        const selectedFirstPick = teams[Math.floor(Math.random() * teams.length)];
-                        
-                        // ဘယ်အသင်းပေါ် ကျမလဲပေါ်မူတည်ပြီး Degree တွက်ချက်ခြင်း (Smooth 5s animation)
-                        const targetDegree = selectedFirstPick === team1Name ? 360 * 5 : 360 * 5 + 180;
-                        const wheelEl = overlay.querySelector('#wheelElement');
-                        const statusText = overlay.querySelector('#spinStatusText');
-                        const subText = overlay.querySelector('#spinSubText');
+            const teams = [team1Name, team2Name];
+            const chosenWinner = teams[Math.floor(Math.random() * teams.length)];
+            const spinStartTime = Date.now() + 3000; // 3 စက္ကန့် Countdown အတွက်
 
-                        if (wheelEl) {
-                            wheelEl.style.transform = `rotate(${targetDegree}deg)`;
-                        }
-
-                        if (statusText) {
-                            statusText.innerHTML = `🎲 Spinning...`;
-                        }
-
-                        // ၅ စက္ကန့်ပြည့်မှ First Pick ရလဒ်ပြပြီး Database ထဲ သိမ်းမည်
-                        setTimeout(async () => {
-                            firstPickResult = selectedFirstPick;
-                            if (statusText) {
-                                statusText.innerHTML = `🎉 First Pick: <span style="color: #34c759; text-shadow: 0 0 20px rgba(52,199,89,0.4);">${selectedFirstPick}</span>`;
-                            }
-                            if (subText) {
-                                subText.textContent = 'Redirecting to draft phase...';
-                            }
-
-                            try {
-                                await fetch('/api/create-room', { 
-                                    method: 'PATCH',
-                                    headers: { 'Content-Type': 'application/json' },
-                                    body: JSON.stringify({
-                                        roomId: room.id,
-                                        userId: userId,
-                                        firstPick: selectedFirstPick
-                                    })
-                                });
-                            } catch (err) {
-                                console.error("Failed to save first pick to backend", err);
-                            }
-                        }, 5000); // 5 seconds smooth spin duration
-                    }
-                }
-            }, 1000);
+            fetch('/api/create-room', { 
+                method: 'PATCH',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    roomId: room.id,
+                    userId: userId,
+                    firstPick: chosenWinner,
+                    spinStartTime: spinStartTime
+                })
+            }).catch(err => console.error("Failed to set spin data", err));
         }
 
-        // Host ကမဟုတ်ဘဲ Joiner ဘက်မှာလည်း First Pick ရလဒ် backend ကနေ ဝင်လာရင် Wheel ကို Smooth လည်ပေးဖို့
-        if (bothReady && firstPickResult) {
+        // Host ရော Joiner ရော နှစ်ဖက်စလုံးအတွက် 3-2-1 Countdown နှင့် Wheel Animation ကို တစ်ပြိုင်နက် လုပ်ဆောင်ပေးခြင်း
+        if (bothReady && (room.spinStartTime || firstPickResult)) {
             const wheelEl = overlay.querySelector('#wheelElement');
             const statusText = overlay.querySelector('#spinStatusText');
             const subText = overlay.querySelector('#spinSubText');
+            const numEl = overlay.querySelector('#countdownNum');
 
-            if (wheelEl && !wheelEl.classList.contains('spun')) {
-                wheelEl.classList.add('spun');
-                const targetDegree = firstPickResult === team1Name ? 360 * 5 : 360 * 5 + 180;
-                wheelEl.style.transform = `rotate(${targetDegree}deg)`;
+            const targetWinner = firstPickResult || room.selectedWinner;
+            // Team 1 က ဘယ်ဘက် (အစိမ်း - 0 deg), Team 2 က ညာဘက် (အပြာ - 180 deg) တွင်ရှိသဖြင့် ချိန်ညှိခြင်း
+            const targetDegree = targetWinner === team1Name ? 360 * 5 : 360 * 5 + 180;
 
-                setTimeout(() => {
-                    if (statusText) {
-                        statusText.innerHTML = `🎉 First Pick: <span style="color: #34c759; text-shadow: 0 0 20px rgba(52,199,89,0.4);">${firstPickResult}</span>`;
+            const startTime = room.spinStartTime || (Date.now() + 3000);
+            
+            function runAnimationSequence() {
+                const now = Date.now();
+                const timeLeft = startTime - now;
+
+                if (timeLeft > 0) {
+                    const secs = Math.ceil(timeLeft / 1000);
+                    if (numEl) numEl.textContent = secs;
+                    setTimeout(runAnimationSequence, 200);
+                } else {
+                    if (numEl) {
+                        numEl.textContent = "GO!";
+                        numEl.style.color = "#34c759";
                     }
-                    if (subText) {
-                        subText.textContent = 'Redirecting to draft phase...';
+
+                    if (statusText) statusText.innerHTML = `🎲 Spinning...`;
+
+                    if (wheelEl) {
+                        wheelEl.style.transition = 'transform 5s cubic-bezier(0.15, 0.85, 0.15, 1)';
+                        wheelEl.style.transform = `rotate(${targetDegree}deg)`;
                     }
-                }, 5000);
+
+                    setTimeout(() => {
+                        if (statusText) {
+                            statusText.innerHTML = `🎉 First Pick: <span style="color: #34c759; text-shadow: 0 0 20px rgba(52,199,89,0.4);">${targetWinner}</span>`;
+                        }
+                        if (subText) {
+                            subText.textContent = 'Redirecting to draft phase...';
+                        }
+                    }, 5000);
+                }
             }
+
+            runAnimationSequence();
         }
 
         const closeBtn = overlay.querySelector('#closePopupBtn');
