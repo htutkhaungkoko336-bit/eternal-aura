@@ -43,10 +43,12 @@ export function showRoomDetailsPopup(room, mode, userId, callbacks = {}) {
                     updatePopupContent();
                 }
 
+                // First pick ရပြီးရင် callback ခေါ်ပြီး မျက်နှာပြင်တူညီစွာ ဆက်သွားနိုင်အောင် ထိန်းထားခြင်း
                 if (updatedRoom.hostReady && updatedRoom.joinerReady) {
-                    clearInterval(pollInterval);
-                    updatePopupContent();
-                    if (callbacks.onBothReady) callbacks.onBothReady(updatedRoom);
+                    if (updatedRoom.firstPick && callbacks.onBothReady) {
+                        clearInterval(pollInterval);
+                        callbacks.onBothReady(updatedRoom);
+                    }
                 }
             } catch (error) {
                 console.error("Polling check error:", error);
@@ -85,33 +87,33 @@ export function showRoomDetailsPopup(room, mode, userId, callbacks = {}) {
         const team1Name = is1v1 ? (room.inGameName || room.teamName || room.userName || 'Host') : (room.sqName || room.teamName || 'Host SQ');
         const team2Name = is1v1 ? (room.joinerTeamName || room.joinerUserName || 'Joiner') : (room.joinerSqName || room.joinerTeamName || 'Joiner SQ');
 
-        // iOS Style Sleek Modern Wheel replacing the whole content area or overlaying smoothly
+        // Smooth 5-sec Spin Wheel & 3-2-1-Go Countdown integrated UI
         const spinWheelHTML = bothReady ? `
             <div style="position: absolute; inset: 0; background: rgba(20, 20, 25, 0.95); backdrop-filter: blur(20px); z-index: 50; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 24px; border-radius: 24px; animation: fadeInScale 0.3s cubic-bezier(0.16, 1, 0.3, 1);">
-                <div style="width: 100%; text-align: center; margin-bottom: 24px;">
+                <div style="width: 100%; text-align: center; margin-bottom: 20px;">
                     <div style="font-size: 12px; text-transform: uppercase; letter-spacing: 2px; color: #8e8e93; margin-bottom: 6px;">Selection Draw</div>
-                    <div style="font-size: 22px; font-weight: 800; color: #fff;">
-                        ${firstPickResult ? `🎉 First Pick: <span style="color: #34c759; text-shadow: 0 0 20px rgba(52,199,89,0.4);">${firstPickResult}</span>` : '🎲 Spinning Wheel...'}
+                    <div style="font-size: 20px; font-weight: 800; color: #fff;" id="spinStatusText">
+                        ${firstPickResult ? `🎉 First Pick: <span style="color: #34c759; text-shadow: 0 0 20px rgba(52,199,89,0.4);">${firstPickResult}</span>` : '⏳ Get Ready... <span id="countdownNum" style="color: #ff3b30;">3</span>'}
                     </div>
                 </div>
 
-                <!-- iOS Glassmorphism Wheel Container -->
-                <div style="position: relative; width: 180px; height: 180px; margin: 10px auto; border-radius: 50%; background: conic-gradient(#007aff 0deg 180deg, #34c759 180deg 360deg); box-shadow: 0 0 40px rgba(0,122,255,0.3), inset 0 0 20px rgba(255,255,255,0.2); border: 4px solid rgba(255,255,255,0.8); display: flex; align-items: center; justify-content: center; animation: ${firstPickResult ? 'none' : 'iosWheelSpin 1.2s cubic-bezier(0.25, 1, 0.5, 1) infinite'};">
-                    <div style="position: absolute; top: -10px; width: 0; height: 0; border-left: 8px solid transparent; border-right: 8px solid transparent; border-bottom: 14px solid #ff3b30; filter: drop-shadow(0 2px 4px rgba(0,0,0,0.3)); z-index: 10;"></div>
-                    <div style="width: 44px; height: 44px; background: rgba(255,255,255,0.9); backdrop-filter: blur(10px); border-radius: 50%; box-shadow: 0 4px 10px rgba(0,0,0,0.3); display: flex; align-items: center; justify-content: center;">
+                <!-- Smooth Wheel Container with Team Names Display -->
+                <div style="position: relative; width: 200px; height: 200px; margin: 10px auto; border-radius: 50%; background: conic-gradient(#007aff 0deg 180deg, #34c759 180deg 360deg); box-shadow: 0 0 40px rgba(0,122,255,0.3), inset 0 0 20px rgba(255,255,255,0.2); border: 4px solid rgba(255,255,255,0.8); display: flex; align-items: center; justify-content: center;">
+                    <div id="wheelElement" style="position: absolute; inset: 0; border-radius: 50%; display: flex; align-items: center; justify-content: center; transition: transform 5s cubic-bezier(0.15, 0.85, 0.15, 1);">
+                        <div style="position: absolute; top: 15px; font-size: 11px; font-weight: 800; color: #fff; text-shadow: 0 1px 3px rgba(0,0,0,0.8);">${team1Name}</div>
+                        <div style="position: absolute; bottom: 15px; font-size: 11px; font-weight: 800; color: #fff; text-shadow: 0 1px 3px rgba(0,0,0,0.8);">${team2Name}</div>
+                    </div>
+                    <div style="position: absolute; top: -12px; width: 0; height: 0; border-left: 8px solid transparent; border-right: 8px solid transparent; border-bottom: 16px solid #ff3b30; filter: drop-shadow(0 2px 4px rgba(0,0,0,0.3)); z-index: 10;"></div>
+                    <div style="width: 44px; height: 44px; background: rgba(255,255,255,0.9); backdrop-filter: blur(10px); border-radius: 50%; box-shadow: 0 4px 10px rgba(0,0,0,0.3); display: flex; align-items: center; justify-content: center; z-index: 5;">
                         <div style="width: 14px; height: 14px; background: #1c1c1e; border-radius: 50%;"></div>
                     </div>
                 </div>
 
-                <div style="font-size: 13px; color: #aeaeb2; margin-top: 24px; text-align: center;">
-                    ${firstPickResult ? 'Redirecting to draft phase...' : 'Randomizing first pick for both teams...'}
+                <div style="font-size: 13px; color: #aeaeb2; margin-top: 20px; text-align: center;" id="spinSubText">
+                    ${firstPickResult ? 'Redirecting to draft phase...' : 'Preparing wheel spin...'}
                 </div>
             </div>
             <style>
-                @keyframes iosWheelSpin {
-                    0% { transform: rotate(0deg); }
-                    100% { transform: rotate(360deg); }
-                }
                 @keyframes fadeInScale {
                     from { opacity: 0; transform: scale(0.95); }
                     to { opacity: 1; transform: scale(1); }
@@ -132,8 +134,6 @@ export function showRoomDetailsPopup(room, mode, userId, callbacks = {}) {
                 <div class="popup-box" style="max-width: 420px; width: 95%; position: relative; overflow: hidden; background: #1c1c1e; border: 1px solid rgba(255,255,255,0.1); border-radius: 24px; box-shadow: 0 20px 40px rgba(0,0,0,0.6); color: #fff; padding: 20px;">
                     <div class="popup-title" style="font-size: 17px; font-weight: 700; text-align: center; margin-bottom: 16px; letter-spacing: -0.5px;">1VS1 Room Details</div>
                     <div style="display: flex; gap: 10px; width: 100%;">
-                        
-                        <!-- Host Info -->
                         <div style="flex: 1; background: rgba(0, 122, 255, 0.08); padding: 12px; border-radius: 14px; border: 1px solid rgba(0, 122, 255, 0.2);">
                             <div style="font-weight: 700; color: #0a84ff; margin-bottom: 8px; font-size: 13px; text-align: center;">
                                 Host ${hostReadyState ? ' ✅' : ''}
@@ -143,7 +143,6 @@ export function showRoomDetailsPopup(room, mode, userId, callbacks = {}) {
                             <div class="popup-row" style="font-size: 12px; border-bottom: none;"><span>Contact:</span> <b>${hostContact}</b></div>
                         </div>
 
-                        <!-- Joiner Info -->
                         ${hasMatched ? `
                         <div style="flex: 1; background: rgba(52, 199, 89, 0.08); padding: 12px; border-radius: 14px; border: 1px solid rgba(52, 199, 89, 0.2);">
                             <div style="font-weight: 700; color: #34c759; margin-bottom: 8px; font-size: 13px; text-align: center;">
@@ -154,7 +153,6 @@ export function showRoomDetailsPopup(room, mode, userId, callbacks = {}) {
                             <div class="popup-row" style="font-size: 12px; border-bottom: none;"><span>Contact:</span> <b>${joinerContact}</b></div>
                         </div>
                         ` : '<div style="flex: 1; display: flex; align-items: center; justify-content: center; color: #8e8e93; font-size: 12px; background: rgba(255,255,255,0.03); border-radius: 14px;">Waiting...</div>'}
-
                     </div>
                     ${actionButtonsHTML}
                     <button class="popup-close-btn" id="closePopupBtn" style="margin-top: 12px; width: 100%; padding: 12px; border-radius: 12px; background: rgba(255,255,255,0.08); border: none; color: #fff; font-weight: 600; cursor: pointer;">Close</button>
@@ -164,7 +162,6 @@ export function showRoomDetailsPopup(room, mode, userId, callbacks = {}) {
         } else {
             const hostSqName = room.sqName || room.teamName || 'Host SQ';
             const hostContact = room.contactPhNo || room.kpayPhNo || 'N/A';
-
             const joinerSqName = room.joinerSqName || room.joinerTeamName || 'Joiner SQ';
             const joinerContact = room.joinerContactPhNo || room.joinerKpayPhNo || 'N/A';
 
@@ -180,8 +177,6 @@ export function showRoomDetailsPopup(room, mode, userId, callbacks = {}) {
                     <div style="font-size: 11px; color: #8e8e93; margin-bottom: 14px; text-align: center;">5VS5 Players Comparison</div>
                     
                     <div style="display: flex; gap: 10px; width: 100%; max-height: 50vh; overflow-y: auto;">
-                        
-                        <!-- Host Squad -->
                         <div style="flex: 1; background: rgba(0, 122, 255, 0.08); padding: 10px; border-radius: 14px; border: 1px solid rgba(0, 122, 255, 0.2);">
                             <div style="font-weight: 700; color: #0a84ff; margin-bottom: 8px; font-size: 12px; text-align: center; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">
                                 ${hostSqName} ${hostReadyState ? ' ✅' : ''}
@@ -194,7 +189,6 @@ export function showRoomDetailsPopup(room, mode, userId, callbacks = {}) {
                             <div class="popup-row" style="font-size: 11px; border-bottom: none; border-top: 1px solid rgba(0, 122, 255, 0.3); margin-top: 6px; padding-top: 6px;"><span>Contact:</span> <b style="font-size: 10px;">${hostContact}</b></div>
                         </div>
 
-                        <!-- Joiner Squad -->
                         ${hasMatched ? `
                         <div style="flex: 1; background: rgba(52, 199, 89, 0.08); padding: 10px; border-radius: 14px; border: 1px solid rgba(52, 199, 89, 0.2);">
                             <div style="font-weight: 700; color: #34c759; margin-bottom: 8px; font-size: 12px; text-align: center; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">
@@ -208,7 +202,6 @@ export function showRoomDetailsPopup(room, mode, userId, callbacks = {}) {
                             <div class="popup-row" style="font-size: 11px; border-bottom: none; border-top: 1px solid rgba(52, 199, 89, 0.3); margin-top: 6px; padding-top: 6px;"><span>Contact:</span> <b style="font-size: 10px;">${joinerContact}</b></div>
                         </div>
                         ` : `<div style="flex: 1; display: flex; align-items: center; justify-content: center; color: #8e8e93; font-size: 12px; background: rgba(255,255,255,0.03); border-radius: 14px; text-align: center; padding: 10px;">Waiting for joiner squad...</div>`}
-
                     </div>
 
                     ${actionButtonsHTML}
@@ -218,28 +211,90 @@ export function showRoomDetailsPopup(room, mode, userId, callbacks = {}) {
             `;
         }
 
-        if (bothReady && !firstPickResult && userId === room.hostId) {
-            setTimeout(async () => {
-                const teams = [team1Name, team2Name];
-                const selectedFirstPick = teams[Math.floor(Math.random() * teams.length)];
-                firstPickResult = selectedFirstPick;
-                
-                updatePopupContent();
+        // 3 2 1 Go countdown ပြီးမှ 5 စက္ကန့်ကြာ Latch/Spin smooth လုပ်ဆောင်ချက်
+        if (bothReady && userId === room.hostId && !room.isSpinningStarted) {
+            room.isSpinningStarted = true; // တစ်ခါပဲစ ်trigger ဖြစ်အောင် ထိန်းရန်
+            
+            let count = 3;
+            const countInterval = setInterval(() => {
+                count--;
+                const numEl = overlay.querySelector('#countdownNum');
+                if (numEl) {
+                    if (count > 0) {
+                        numEl.textContent = count;
+                    } else if (count === 0) {
+                        numEl.textContent = "GO!";
+                        numEl.style.color = "#34c759";
+                    } else {
+                        clearInterval(countInterval);
+                        
+                        // Countdown ပြီးတဲ့အခါ ရလဒ်ထွက်ဖို့ ရွေးချယ်ခြင်း
+                        const teams = [team1Name, team2Name];
+                        const selectedFirstPick = teams[Math.floor(Math.random() * teams.length)];
+                        
+                        // ဘယ်အသင်းပေါ် ကျမလဲပေါ်မူတည်ပြီး Degree တွက်ချက်ခြင်း (Smooth 5s animation)
+                        const targetDegree = selectedFirstPick === team1Name ? 360 * 5 : 360 * 5 + 180;
+                        const wheelEl = overlay.querySelector('#wheelElement');
+                        const statusText = overlay.querySelector('#spinStatusText');
+                        const subText = overlay.querySelector('#spinSubText');
 
-                try {
-                    await fetch('/api/create-room', { 
-                        method: 'PATCH',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({
-                            roomId: room.id,
-                            userId: userId,
-                            firstPick: selectedFirstPick
-                        })
-                    });
-                } catch (err) {
-                    console.error("Failed to save first pick to backend", err);
+                        if (wheelEl) {
+                            wheelEl.style.transform = `rotate(${targetDegree}deg)`;
+                        }
+
+                        if (statusText) {
+                            statusText.innerHTML = `🎲 Spinning...`;
+                        }
+
+                        // ၅ စက္ကန့်ပြည့်မှ First Pick ရလဒ်ပြပြီး Database ထဲ သိမ်းမည်
+                        setTimeout(async () => {
+                            firstPickResult = selectedFirstPick;
+                            if (statusText) {
+                                statusText.innerHTML = `🎉 First Pick: <span style="color: #34c759; text-shadow: 0 0 20px rgba(52,199,89,0.4);">${selectedFirstPick}</span>`;
+                            }
+                            if (subText) {
+                                subText.textContent = 'Redirecting to draft phase...';
+                            }
+
+                            try {
+                                await fetch('/api/create-room', { 
+                                    method: 'PATCH',
+                                    headers: { 'Content-Type': 'application/json' },
+                                    body: JSON.stringify({
+                                        roomId: room.id,
+                                        userId: userId,
+                                        firstPick: selectedFirstPick
+                                    })
+                                });
+                            } catch (err) {
+                                console.error("Failed to save first pick to backend", err);
+                            }
+                        }, 5000); // 5 seconds smooth spin duration
+                    }
                 }
-            }, 1800); 
+            }, 1000);
+        }
+
+        // Host ကမဟုတ်ဘဲ Joiner ဘက်မှာလည်း First Pick ရလဒ် backend ကနေ ဝင်လာရင် Wheel ကို Smooth လည်ပေးဖို့
+        if (bothReady && firstPickResult) {
+            const wheelEl = overlay.querySelector('#wheelElement');
+            const statusText = overlay.querySelector('#spinStatusText');
+            const subText = overlay.querySelector('#spinSubText');
+
+            if (wheelEl && !wheelEl.classList.contains('spun')) {
+                wheelEl.classList.add('spun');
+                const targetDegree = firstPickResult === team1Name ? 360 * 5 : 360 * 5 + 180;
+                wheelEl.style.transform = `rotate(${targetDegree}deg)`;
+
+                setTimeout(() => {
+                    if (statusText) {
+                        statusText.innerHTML = `🎉 First Pick: <span style="color: #34c759; text-shadow: 0 0 20px rgba(52,199,89,0.4);">${firstPickResult}</span>`;
+                    }
+                    if (subText) {
+                        subText.textContent = 'Redirecting to draft phase...';
+                    }
+                }, 5000);
+            }
         }
 
         const closeBtn = overlay.querySelector('#closePopupBtn');
