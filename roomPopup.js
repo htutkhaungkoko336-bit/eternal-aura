@@ -267,7 +267,9 @@ function showSpinWheelPopup(room, mode, userId, callbacks) {
 
             <div style="position: relative; width: 210px; height: 210px; margin: 10px auto; border-radius: 50%; box-shadow: 0 0 40px rgba(0,122,255,0.3), inset 0 0 20px rgba(255,255,255,0.2); border: 4px solid rgba(255,255,255,0.8); display: flex; align-items: center; justify-content: center;">
                 <div id="wheelElement" style="position: absolute; inset: 0; border-radius: 50%; background: conic-gradient(from 90deg, #34c759 0deg 180deg, #007aff 180deg 360deg); display: flex; align-items: center; justify-content: center; transition: transform 10s cubic-bezier(0.05, 0.9, 0.1, 1);">
-                    <div style="position: absolute; top: 35px; font-size: 12px; font-weight: 800; color: #fff; text-shadow: 0 1px 3px rgba(0,0,0,0.8); max-width: 120px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">${team1Name}</div>
+                    <!-- Team 1 စာသားကို အတည့်ဖြစ်နေစေရန် 180 ဒီဂရီ ပြန်လှန်ထားသည် -->
+                    <div style="position: absolute; top: 35px; font-size: 12px; font-weight: 800; color: #fff; text-shadow: 0 1px 3px rgba(0,0,0,0.8); max-width: 120px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; transform: rotate(180deg);">${team1Name}</div>
+                    <!-- Team 2 စာသား -->
                     <div style="position: absolute; bottom: 35px; font-size: 12px; font-weight: 800; color: #fff; text-shadow: 0 1px 3px rgba(0,0,0,0.8); max-width: 120px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">${team2Name}</div>
                 </div>
                 <div style="position: absolute; top: -12px; left: 50%; transform: translateX(-50%); width: 0; height: 0; border-left: 8px solid transparent; border-right: 8px solid transparent; border-bottom: 16px solid #ff3b30; filter: drop-shadow(0 2px 4px rgba(0,0,0,0.3)); z-index: 10;"></div>
@@ -291,7 +293,6 @@ function showSpinWheelPopup(room, mode, userId, callbacks) {
 
     const startTime = room.spinStartTime || (Date.now() + 3000);
 
-    // Countdown and Wheel Spin Logic
     const countdownInterval = setInterval(() => {
         const now = Date.now();
         const timeLeft = startTime - now;
@@ -308,14 +309,12 @@ function showSpinWheelPopup(room, mode, userId, callbacks) {
 
             if (statusText) statusText.innerHTML = `🎲 Spinning leisurely (10s)...`;
 
-            // Host ဖြစ်မှသာ Winner ကို Random တွက်ပြီး Database ထဲ အရင်ပို့ပါမည်
             let chosenWinner = room.firstPick;
 
             if (userId === room.hostId && !chosenWinner) {
                 const teams = [team1Name, team2Name];
                 chosenWinner = teams[Math.floor(Math.random() * teams.length)];
                 
-                // Database ထဲသို့ Winner ကို သိမ်းရန် API ခေါ်မည်
                 fetch('/api/create-room', { 
                     method: 'PATCH',
                     headers: { 'Content-Type': 'application/json' },
@@ -327,9 +326,7 @@ function showSpinWheelPopup(room, mode, userId, callbacks) {
                 }).catch(err => console.error("Failed to save final winner", err));
             }
 
-            // Joiner ဖြစ်ပါက Database ထဲမှာ Host random တွက်ထားပေးတဲ့ firstPick တန်ဖိုးကို ခဏစောင့်ပြီး ယူပါမည်
             if (userId === room.joinedUserId && !chosenWinner) {
-                // တစ်ခါတလေ Database ထဲ တန်ဖိုးရောက်ဖို့ စက္ကန့်ပိုင်းလေး နောက်ကျတတ်လို့ polling ခဏလုပ်ပေးပါမည်
                 const checkWinnerInterval = setInterval(async () => {
                     try {
                         const res = await fetch(`/api/create-room?roomId=${room.id}`);
@@ -342,10 +339,9 @@ function showSpinWheelPopup(room, mode, userId, callbacks) {
                         console.error("Error fetching winner:", e);
                     }
                 }, 500);
-                return; // Host မဟုတ်သူအတွက် winner ရလာမှ အောက်ဆက်လုပ်ရန် ဤနေရာတွင် ရပ်ထားမည်
+                return;
             }
 
-            // Winner သေချာပြီဆိုရင် Wheel ကို လည်စေမည့် function ခေါ်မည်
             if (chosenWinner) {
                 executeSpin(chosenWinner);
             }
@@ -353,6 +349,10 @@ function showSpinWheelPopup(room, mode, userId, callbacks) {
     }, 200);
 
     function executeSpin(winner) {
+        // Conic-gradient မှာ Team 1 က အပေါ်ပိုင်း (0-180deg)၊ Team 2 က အောက်ပိုင်း (180-360deg) ရှိပါတယ်။
+        // အပေါ်တည့်တည့်က Red Arrow ဆီသို့ ကျရောက်ရန် တွက်ချက်ပုံ:
+        // Team 1 ကျရင် အပေါ်မှာ မူလအတိုင်းရှိနေဖို့ 360 ဒီဂရီ အကြိမ်ကြိမ် လည်ပါမယ်။
+        // Team 2 ကျရင် အောက်ဘက်ကဟာ အပေါ်ကိုရောက်လာဖို့ 180 ဒီဂရီ ထပ်ပေါင်းလှည့်ပေးပါမယ်။
         const targetDegree = winner === team1Name ? 360 * 10 : 360 * 10 + 180;
 
         if (wheelEl) {
