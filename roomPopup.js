@@ -285,8 +285,8 @@ function showSpinWheelPopup(room, mode, userId, callbacks) {
 
             <div style="position: relative; width: 190px; height: 190px; margin: 10px auto; border-radius: 50%; box-shadow: 0 0 40px rgba(0,122,255,0.3), inset 0 0 20px rgba(255,255,255,0.2); border: 4px solid rgba(255,255,255,0.8); display: flex; align-items: center; justify-content: center;">
                 
-                <!-- ယာဘက်ခြမ်း အစိမ်း (#34c759)၊ ဘယ်ဘက်ခြမ်း အပြာ (#007aff) အဖြစ် သတ်မှတ်သည် -->
-                <div id="wheelElement" style="position: absolute; inset: 0; border-radius: 50%; background: conic-gradient(from 0deg, #34c759 0deg 180deg, #007aff 180deg 360deg); transition: transform 10s cubic-bezier(0.05, 0.9, 0.1, 1);"></div>
+                <!-- အပေါ်အောက် (Top-Bottom) အနေအထားဖြစ်စေရန် from 180deg သုံးထားသည် -->
+                <div id="wheelElement" style="position: absolute; inset: 0; border-radius: 50%; background: conic-gradient(from 180deg, #34c759 0deg 180deg, #007aff 180deg 360deg); transition: transform 10s cubic-bezier(0.05, 0.9, 0.1, 1);"></div>
 
                 <div style="position: absolute; top: -12px; left: 50%; transform: translateX(-50%); width: 0; height: 0; border-left: 8px solid transparent; border-right: 8px solid transparent; border-bottom: 16px solid #ff3b30; filter: drop-shadow(0 2px 4px rgba(0,0,0,0.3)); z-index: 10;"></div>
                 
@@ -380,8 +380,7 @@ function showSpinWheelPopup(room, mode, userId, callbacks) {
     }, 200);
 
     function executeSpin(winner) {
-        // Winner က Team 1 (အစိမ်း) ဆိုရင် အပေါ်တည့်တည့် (0deg) သို့ ရောက်အောင်၊
-        // Winner က Team 2 (အပြာ) ဆိုရင် အပေါ်တည့်တည့်သို့ (180deg) ရောက်အောင် တိကျစွာ တွက်ချက်သည်
+        // အပေါ်အောက် အနေအထားအရ Winner တကယ်ကျမည့် Degree ကို ချိန်ညှိသည်
         const baseRotations = 360 * 10;
         const targetDegree = winner === team1Name ? baseRotations : baseRotations + 180;
 
