@@ -45,6 +45,8 @@ export function showRoomDetailsPopup(room, mode, userId, callbacks = {}) {
                 // ၂ ယောက်လုံး Ready ဖြစ်သွားခြင်း စစ်ဆေးရန်
                 if (updatedRoom.hostReady && updatedRoom.joinerReady) {
                     clearInterval(pollInterval);
+                    // ၂ ယောက်လုံး ready ဖြစ်ပြီမို့ UI ကို lock ချဖို့ တစ်ချက်ထပ် update ခေါ်ပေးမယ်
+                    updatePopupContent();
                     if (callbacks.onBothReady) callbacks.onBothReady(updatedRoom);
                 }
             } catch (error) {
@@ -54,11 +56,12 @@ export function showRoomDetailsPopup(room, mode, userId, callbacks = {}) {
     }
 
     function updatePopupContent() {
+        const bothReady = hostReadyState && joinerReadyState;
         let actionButtonsHTML = '';
 
         if (hasMatched) {
             actionButtonsHTML = `
-                <div style="display: flex; gap: 10px; margin-top: 14px;">
+                <div style="display: flex; gap: 10px; margin-top: 14px; pointer-events: ${bothReady ? 'none' : 'auto'}; opacity: ${bothReady ? '0.6' : '1'};">
                     <!-- Host Actions -->
                     ${userId === room.hostId ? `
                         <button id="popupReadyBtn" style="flex: 1; padding: 10px; border-radius: 8px; font-weight: 700; border: none; cursor: pointer; background: ${hostReadyState ? '#10b981' : 'linear-gradient(135deg, #0284c7, #9333ea)'}; color: #fff;">
@@ -81,6 +84,17 @@ export function showRoomDetailsPopup(room, mode, userId, callbacks = {}) {
                 </div>
             `;
         }
+
+        // Spin Wheel HTML (၂ ယောက်လုံး Ready ဖြစ်မှ ပေါ်လာမည်)
+        const spinWheelHTML = bothReady ? `
+            <div style="margin-top: 15px; padding: 12px; background: rgba(147, 51, 234, 0.1); border: 1px solid rgba(147, 51, 234, 0.3); border-radius: 10px; text-align: center; animation: fadeIn 0.4s ease-in-out;">
+                <div style="font-weight: 700; color: #c084fc; margin-bottom: 8px; font-size: 13px;">🎉 Both Players Ready! Spin Wheel</div>
+                <div style="position: relative; width: 100px; height: 100px; margin: 0 auto; background: conic-gradient(#0284c7 0deg 120deg, #10b981 120deg 240deg, #f43f5e 240deg 360deg); border-radius: 50%; border: 3px solid #fff; display: flex; align-items: center; justify-content: center; box-shadow: 0 0 15px rgba(147,51,234,0.5);">
+                    <div style="width: 12px; height: 12px; background: #fff; border-radius: 50%; position: absolute; z-index: 2;"></div>
+                    <button id="spinBtn" style="position: absolute; bottom: -22px; padding: 4px 10px; background: #9333ea; color: #fff; border: none; border-radius: 4px; font-size: 10px; font-weight: 750; cursor: pointer;">SPIN</button>
+                </div>
+            </div>
+        ` : '';
 
         if (is1v1) {
             const hostName = room.inGameName || room.teamName || room.userName || 'Unknown Player';
@@ -120,6 +134,7 @@ export function showRoomDetailsPopup(room, mode, userId, callbacks = {}) {
 
                     </div>
                     ${actionButtonsHTML}
+                    ${spinWheelHTML}
                     <button class="popup-close-btn" id="closePopupBtn" style="margin-top: 12px;">Close</button>
                 </div>
             `;
@@ -141,7 +156,7 @@ export function showRoomDetailsPopup(room, mode, userId, callbacks = {}) {
                     <div class="popup-title" style="margin-bottom: 4px;">SQ MATCH DETAILS</div>
                     <div style="font-size: 10px; color: #94a3b8; margin-bottom: 8px; text-align: center;">5VS5 Players Comparison</div>
                     
-                    <div style="display: flex; gap: 8px; width: 100%; max-height: 65vh; overflow-y: auto;">
+                    <div style="display: flex; gap: 8px; width: 100%; max-height: 50vh; overflow-y: auto;">
                         
                         <!-- Host Squad -->
                         <div style="flex: 1; background: rgba(56, 189, 248, 0.08); padding: 6px; border-radius: 6px; border: 1px solid rgba(56, 189, 248, 0.2);">
@@ -174,6 +189,7 @@ export function showRoomDetailsPopup(room, mode, userId, callbacks = {}) {
                     </div>
 
                     ${actionButtonsHTML}
+                    ${spinWheelHTML}
                     <button class="popup-close-btn" id="closePopupBtn" style="margin-top: 10px;">Close</button>
                 </div>
             `;
@@ -190,7 +206,8 @@ export function showRoomDetailsPopup(room, mode, userId, callbacks = {}) {
         const readyBtn = overlay.querySelector('#popupReadyBtn');
         if (readyBtn) {
             readyBtn.addEventListener('click', async () => {
-                // ကိုယ်နှိပ်လိုက်တဲ့ Button အပေါ်မူတည်ပြီး State ကို ချက်ချင်းပြောင်းမယ် (true ဆို false, false ဆို true)
+                if (bothReady) return; // နှစ်ယောက်လုံး ready ပြီးသားဆိုရင် ထပ်နှိပ်လို့မရအောင် တားထားမည်
+
                 if (userId === room.hostId) {
                     hostReadyState = !hostReadyState;
                 } else if (userId === room.joinedUserId) {
@@ -199,7 +216,6 @@ export function showRoomDetailsPopup(room, mode, userId, callbacks = {}) {
                 
                 updatePopupContent();
 
-                // Backend သို့ ပို့တဲ့အခါ `false` တန်ဖိုးပါ မှန်ကန်စွာ ပါသွားအောင် explicitly ထည့်ပေးထားသည်
                 try {
                     await fetch('/api/create-room', { 
                         method: 'PATCH',
@@ -220,6 +236,7 @@ export function showRoomDetailsPopup(room, mode, userId, callbacks = {}) {
         const cancelBtn = overlay.querySelector('#popupCancelBtn');
         if (cancelBtn) {
             cancelBtn.addEventListener('click', () => {
+                if (bothReady) return;
                 if (pollInterval) clearInterval(pollInterval);
                 if (userId === room.joinedUserId) {
                     if (callbacks.onCancelJoiner) callbacks.onCancelJoiner(room.id);
@@ -227,6 +244,13 @@ export function showRoomDetailsPopup(room, mode, userId, callbacks = {}) {
                     if (callbacks.onTransferHost) callbacks.onTransferHost(room.id);
                 }
                 overlay.remove();
+            });
+        }
+
+        const spinBtn = overlay.querySelector('#spinBtn');
+        if (spinBtn) {
+            spinBtn.addEventListener('click', () => {
+                alert("Spinning the wheel! (Add your spin logic here)");
             });
         }
     }
