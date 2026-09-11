@@ -258,28 +258,51 @@ function showSpinWheelPopup(room, mode, userId, callbacks) {
     const overlay = document.createElement('div');
     overlay.className = 'popup-overlay';
 
+    // တုန်ခါနေသည့် Animation CSS ကို ထည့်သွင်းခြင်း
+    const styleTag = document.createElement('style');
+    styleTag.innerHTML = `
+        @keyframes pulseShake {
+            0% { transform: scale(1); }
+            25% { transform: scale(1.1) rotate(-3deg); }
+            50% { transform: scale(1.15) rotate(3deg); }
+            75% { transform: scale(1.1) rotate(-2deg); }
+            100% { transform: scale(1); }
+        }
+        .shake-num {
+            display: inline-block;
+            animation: pulseShake 0.6s infinite ease-in-out;
+            color: #ff3b30;
+            text-shadow: 0 0 15px rgba(255,59,48,0.6);
+        }
+    `;
+    document.head.appendChild(styleTag);
+
     overlay.innerHTML = `
         <div class="popup-box" style="max-width: 420px; width: 95%; background: rgba(20, 20, 25, 0.98); backdrop-filter: blur(20px); border: 1px solid rgba(255,255,255,0.1); border-radius: 24px; box-shadow: 0 20px 40px rgba(0,0,0,0.8); color: #fff; padding: 24px; text-align: center; position: relative;">
-            <div style="font-size: 12px; text-transform: uppercase; letter-spacing: 2px; color: #8e8e93; margin-bottom: 6px;">Selection Draw (Top-Bottom)</div>
+            <div style="font-size: 12px; text-transform: uppercase; letter-spacing: 2px; color: #8e8e93; margin-bottom: 6px;">⚡ Destiny Battle Draw ⚡</div>
             <div style="font-size: 20px; font-weight: 800; color: #fff; margin-bottom: 20px;" id="spinStatusText">
-                ⏳ Get Ready... <span id="countdownNum" style="color: #ff3b30;">3</span>
+                🔥 Fate is choosing... <span id="countdownNum" class="shake-num">3</span>
             </div>
 
             <div style="position: relative; width: 210px; height: 210px; margin: 10px auto; border-radius: 50%; box-shadow: 0 0 40px rgba(0,122,255,0.3), inset 0 0 20px rgba(255,255,255,0.2); border: 4px solid rgba(255,255,255,0.8); display: flex; align-items: center; justify-content: center;">
-                <div id="wheelElement" style="position: absolute; inset: 0; border-radius: 50%; background: conic-gradient(from 90deg, #34c759 0deg 180deg, #007aff 180deg 360deg); display: flex; align-items: center; justify-content: center; transition: transform 10s cubic-bezier(0.05, 0.9, 0.1, 1);">
-                    <!-- Team 1 စာသားကို အတည့်ဖြစ်နေစေရန် 180 ဒီဂရီ ပြန်လှန်ထားသည် -->
-                    <div style="position: absolute; top: 35px; font-size: 12px; font-weight: 800; color: #fff; text-shadow: 0 1px 3px rgba(0,0,0,0.8); max-width: 120px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; transform: rotate(180deg);">${team1Name}</div>
-                    <!-- Team 2 စာသား -->
-                    <div style="position: absolute; bottom: 35px; font-size: 12px; font-weight: 800; color: #fff; text-shadow: 0 1px 3px rgba(0,0,0,0.8); max-width: 120px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">${team2Name}</div>
+                
+                <!-- Conic Gradient Wheel Background -->
+                <div id="wheelElement" style="position: absolute; inset: 0; border-radius: 50%; background: conic-gradient(from 90deg, #34c759 0deg 180deg, #007aff 180deg 360deg); display: flex; align-items: center; justify-content: center; transition: transform 10s cubic-bezier(0.05, 0.9, 0.1, 1);"></div>
+                
+                <!-- စာသားများကို ဘီးလည်သည့်အခါ ဇောက်ထိုးမဖြစ်စေရန် သီးသန့် အလွှာခွဲထုတ်ထားပါသည် -->
+                <div style="position: absolute; inset: 0; pointer-events: none; display: flex; flex-direction: column; align-items: center; justify-content: space-between; padding: 22px 0; z-index: 2;">
+                    <div style="font-size: 13px; font-weight: 800; color: #fff; text-shadow: 0 2px 4px rgba(0,0,0,0.9); max-width: 130px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">👑 ${team1Name}</div>
+                    <div style="font-size: 13px; font-weight: 800; color: #fff; text-shadow: 0 2px 4px rgba(0,0,0,0.9); max-width: 130px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">⚔️ ${team2Name}</div>
                 </div>
-                <div style="position: absolute; top: -12px; left: 50%; transform: translateX(-50%); width: 0; height: 0; border-left: 8px solid transparent; border-right: 8px solid transparent; border-bottom: 16px solid #ff3b30; filter: drop-shadow(0 2px 4px rgba(0,0,0,0.3)); z-index: 10;"></div>
+
+                <div style="position: absolute; top: -12px; left: 50%; transform: translateX(-50%); width: 0; height: 0; border-left: 8px solid transparent; border-right: 8px solid transparent; border-bottom: 16px solid #ff3b30; filter: drop-shadow(0 2px 4px rgba(0,0,0,0.3); z-index: 10;"></div>
                 <div style="width: 44px; height: 44px; background: rgba(255,255,255,0.9); backdrop-filter: blur(10px); border-radius: 50%; box-shadow: 0 4px 10px rgba(0,0,0,0.3); display: flex; align-items: center; justify-content: center; z-index: 5;">
                     <div style="width: 14px; height: 14px; background: #1c1c1e; border-radius: 50%;"></div>
                 </div>
             </div>
 
             <div style="font-size: 13px; color: #aeaeb2; margin-top: 20px;" id="spinSubText">
-                Relax & enjoy the 10s spin experience...
+                May the best legend claim the first strike! ⚡
             </div>
         </div>
     `;
@@ -304,10 +327,12 @@ function showSpinWheelPopup(room, mode, userId, callbacks) {
             clearInterval(countdownInterval);
             if (numEl) {
                 numEl.textContent = "GO!";
+                numEl.className = ""; // တုန်ခါမှုကို ရပ်ပြီး ပုံမှန်ပြောင်းမည်
                 numEl.style.color = "#34c759";
+                numEl.style.textShadow = "0 0 20px rgba(52,199,89,0.8)";
             }
 
-            if (statusText) statusText.innerHTML = `🎲 Spinning leisurely (10s)...`;
+            if (statusText) statusText.innerHTML = `⚡ Spinning the wheel of destiny...`;
 
             let chosenWinner = room.firstPick;
 
@@ -349,10 +374,6 @@ function showSpinWheelPopup(room, mode, userId, callbacks) {
     }, 200);
 
     function executeSpin(winner) {
-        // Conic-gradient မှာ Team 1 က အပေါ်ပိုင်း (0-180deg)၊ Team 2 က အောက်ပိုင်း (180-360deg) ရှိပါတယ်။
-        // အပေါ်တည့်တည့်က Red Arrow ဆီသို့ ကျရောက်ရန် တွက်ချက်ပုံ:
-        // Team 1 ကျရင် အပေါ်မှာ မူလအတိုင်းရှိနေဖို့ 360 ဒီဂရီ အကြိမ်ကြိမ် လည်ပါမယ်။
-        // Team 2 ကျရင် အောက်ဘက်ကဟာ အပေါ်ကိုရောက်လာဖို့ 180 ဒီဂရီ ထပ်ပေါင်းလှည့်ပေးပါမယ်။
         const targetDegree = winner === team1Name ? 360 * 10 : 360 * 10 + 180;
 
         if (wheelEl) {
@@ -361,13 +382,14 @@ function showSpinWheelPopup(room, mode, userId, callbacks) {
 
         setTimeout(() => {
             if (statusText) {
-                statusText.innerHTML = `🎉 First Pick: <span style="color: #34c759; text-shadow: 0 0 20px rgba(52,199,89,0.4);">${winner}</span>`;
+                statusText.innerHTML = `🏆 First Pick Winner: <span style="color: #34c759; text-shadow: 0 0 20px rgba(52,199,89,0.4);">${winner}</span>`;
             }
             if (subText) {
-                subText.textContent = 'Redirecting to draft phase...';
+                subText.textContent = 'Entering the battlefield arena... 🚀';
             }
 
             setTimeout(() => {
+                styleTag.remove(); // ထည့်ထားသော style tag ကိုပါ ပြန်ဖယ်ရှားပေးမည်
                 overlay.remove();
                 if (callbacks.onBothReady) {
                     callbacks.onBothReady({ ...room, firstPick: winner });
