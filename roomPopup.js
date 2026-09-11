@@ -9,7 +9,6 @@ export function showRoomDetailsPopup(room, mode, userId, callbacks = {}) {
     const overlay = document.createElement('div');
     overlay.className = 'popup-overlay';
 
-    // Real-time နီးပါးဖြစ်အောင် 0.5 စက္ကန့် (500ms) တစ်ကြိမ်ဖြင့် Polling ပြုလုပ်ခြင်း
     let pollInterval = null;
 
     function startPollingForReady() {
@@ -36,10 +35,10 @@ export function showRoomDetailsPopup(room, mode, userId, callbacks = {}) {
 
                 const updatedRoom = data.room;
                 
-                // State ပြောင်းလဲမှုရှိမရှိ စစ်ဆေးပြီး UI ကို အလိုအလျောက် Update လုပ်ရန်
+                // Server ဘက်က ပြောင်းလဲလာတဲ့ hostReady နဲ့ joinerReady ကို (true / false အမှန်အတိုင်း) တိုက်ရိုက်စစ်ဆေးခြင်း
                 if (updatedRoom.hostReady !== hostReadyState || updatedRoom.joinerReady !== joinerReadyState) {
-                    hostReadyState = updatedRoom.hostReady;
-                    joinerReadyState = updatedRoom.joinerReady;
+                    hostReadyState = !!updatedRoom.hostReady;
+                    joinerReadyState = !!updatedRoom.joinerReady;
                     updatePopupContent();
                 }
 
@@ -51,7 +50,7 @@ export function showRoomDetailsPopup(room, mode, userId, callbacks = {}) {
             } catch (error) {
                 console.error("Polling check error:", error);
             }
-        }, 500); // 0.5 စက္ကန့်ဖြင့် ပိုမိုမြန်ဆန်စေခြင်း
+        }, 500); 
     }
 
     function updatePopupContent() {
@@ -180,7 +179,6 @@ export function showRoomDetailsPopup(room, mode, userId, callbacks = {}) {
             `;
         }
 
-        // Re-bind events after innerHTML update
         const closeBtn = overlay.querySelector('#closePopupBtn');
         if (closeBtn) {
             closeBtn.addEventListener('click', () => {
@@ -192,6 +190,7 @@ export function showRoomDetailsPopup(room, mode, userId, callbacks = {}) {
         const readyBtn = overlay.querySelector('#popupReadyBtn');
         if (readyBtn) {
             readyBtn.addEventListener('click', async () => {
+                // ကိုယ်နှိပ်လိုက်တဲ့ Button အပေါ်မူတည်ပြီး State ကို ချက်ချင်းပြောင်းမယ် (true ဆို false, false ဆို true)
                 if (userId === room.hostId) {
                     hostReadyState = !hostReadyState;
                 } else if (userId === room.joinedUserId) {
@@ -200,7 +199,7 @@ export function showRoomDetailsPopup(room, mode, userId, callbacks = {}) {
                 
                 updatePopupContent();
 
-                // Backend သို့ ချက်ချင်း PATCH ပို့ရန်
+                // Backend သို့ ပို့တဲ့အခါ `false` တန်ဖိုးပါ မှန်ကန်စွာ ပါသွားအောင် explicitly ထည့်ပေးထားသည်
                 try {
                     await fetch('/api/create-room', { 
                         method: 'PATCH',
