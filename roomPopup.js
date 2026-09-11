@@ -258,7 +258,6 @@ function showSpinWheelPopup(room, mode, userId, callbacks) {
     const overlay = document.createElement('div');
     overlay.className = 'popup-overlay';
 
-    // ကိန်းဂဏန်းများ တုန်ခါနေစေမည့် Animation CSS
     const styleTag = document.createElement('style');
     styleTag.innerHTML = `
         @keyframes pulseShake {
@@ -284,10 +283,10 @@ function showSpinWheelPopup(room, mode, userId, callbacks) {
                 🔥 Fate is choosing... <span id="countdownNum" class="shake-num">3</span>
             </div>
 
-            <!-- Spin Wheel (စာသားမပါဘဲ သန့်သန့်လေး ထားရှိသည်) -->
             <div style="position: relative; width: 190px; height: 190px; margin: 10px auto; border-radius: 50%; box-shadow: 0 0 40px rgba(0,122,255,0.3), inset 0 0 20px rgba(255,255,255,0.2); border: 4px solid rgba(255,255,255,0.8); display: flex; align-items: center; justify-content: center;">
                 
-                <div id="wheelElement" style="position: absolute; inset: 0; border-radius: 50%; background: conic-gradient(from 90deg, #34c759 0deg 180deg, #007aff 180deg 360deg); transition: transform 10s cubic-bezier(0.05, 0.9, 0.1, 1);"></div>
+                <!-- ယာဘက်ခြမ်း အစိမ်း (#34c759)၊ ဘယ်ဘက်ခြမ်း အပြာ (#007aff) အဖြစ် သတ်မှတ်သည် -->
+                <div id="wheelElement" style="position: absolute; inset: 0; border-radius: 50%; background: conic-gradient(from 0deg, #34c759 0deg 180deg, #007aff 180deg 360deg); transition: transform 10s cubic-bezier(0.05, 0.9, 0.1, 1);"></div>
 
                 <div style="position: absolute; top: -12px; left: 50%; transform: translateX(-50%); width: 0; height: 0; border-left: 8px solid transparent; border-right: 8px solid transparent; border-bottom: 16px solid #ff3b30; filter: drop-shadow(0 2px 4px rgba(0,0,0,0.3)); z-index: 10;"></div>
                 
@@ -296,7 +295,7 @@ function showSpinWheelPopup(room, mode, userId, callbacks) {
                 </div>
             </div>
 
-            <!-- အသင်းများကို ကိုယ်စားပြုသည့် အရောင် အကွက်လေးများ (Color Legends) -->
+            <!-- အရောင်အကွက်များ -->
             <div style="display: flex; justify-content: space-around; margin-top: 18px; padding: 10px; background: rgba(255,255,255,0.05); border-radius: 12px; border: 1px solid rgba(255,255,255,0.08);">
                 <div style="display: flex; align-items: center; gap: 8px;">
                     <div style="width: 16px; height: 16px; background: #34c759; border-radius: 4px; box-shadow: 0 0 8px rgba(52,199,89,0.5);"></div>
@@ -381,8 +380,10 @@ function showSpinWheelPopup(room, mode, userId, callbacks) {
     }, 200);
 
     function executeSpin(winner) {
-        // Team 1 (အစိမ်း - 0 မှ 180 ဒီဂရီ) | Team 2 (အပြာ - 180 မှ 360 ဒီဂရီ)
-        const targetDegree = winner === team1Name ? 360 * 10 : 360 * 10 + 180;
+        // Winner က Team 1 (အစိမ်း) ဆိုရင် အပေါ်တည့်တည့် (0deg) သို့ ရောက်အောင်၊
+        // Winner က Team 2 (အပြာ) ဆိုရင် အပေါ်တည့်တည့်သို့ (180deg) ရောက်အောင် တိကျစွာ တွက်ချက်သည်
+        const baseRotations = 360 * 10;
+        const targetDegree = winner === team1Name ? baseRotations : baseRotations + 180;
 
         if (wheelEl) {
             wheelEl.style.transform = `rotate(${targetDegree}deg)`;
