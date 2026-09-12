@@ -162,6 +162,67 @@ export function renderRoomScreen(container, roomTitleText, userDocData = {}) {
                 .card-join-btn:hover {
                     opacity: 0.9;
                 }
+                
+                .popup-overlay {
+                    position: fixed;
+                    top: 0;
+                    left: 0;
+                    width: 100%;
+                    height: 100%;
+                    background: rgba(4, 4, 8, 0.85);
+                    display: flex;
+                    justify-content: center;
+                    align-items: center;
+                    z-index: 1000;
+                    padding: 16px;
+                    box-sizing: border-box;
+                }
+                .popup-box {
+                    background: linear-gradient(135deg, rgba(15, 23, 42, 0.95), rgba(30, 41, 59, 0.95));
+                    border: 2px solid #38bdf8;
+                    border-radius: 14px;
+                    width: 100%;
+                    max-width: 310px;
+                    padding: 20px 18px;
+                    box-shadow: 0 0 25px rgba(56, 189, 248, 0.3);
+                    color: #fff;
+                    font-size: 12px;
+                    box-sizing: border-box;
+                    position: relative;
+                    max-height: 85vh;
+                    overflow-y: auto;
+                }
+                .popup-title {
+                    font-size: 14px;
+                    font-weight: 800;
+                    color: #38bdf8;
+                    text-align: center;
+                    margin-bottom: 12px;
+                    text-transform: uppercase;
+                    border-bottom: 1px solid rgba(56, 189, 248, 0.3);
+                    padding-bottom: 8px;
+                }
+                .popup-row {
+                    display: flex;
+                    justify-content: space-between;
+                    align-items: center;
+                    padding: 10px 4px;
+                    border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+                    font-size: 12px;
+                }
+                .popup-close-btn {
+                    width: 100%;
+                    margin-top: 16px;
+                    background: linear-gradient(135deg, #0284c7, #9333ea);
+                    color: #fff;
+                    border: none;
+                    padding: 10px;
+                    border-radius: 8px;
+                    font-weight: 700;
+                    cursor: pointer;
+                    text-align: center;
+                }
+
                 .room-bottom-actions {
                     display: flex;
                     gap: 12px;
@@ -188,6 +249,10 @@ export function renderRoomScreen(container, roomTitleText, userDocData = {}) {
                     background: linear-gradient(135deg, rgba(30, 41, 59, 0.9), rgba(15, 23, 42, 0.9));
                     color: #38bdf8;
                     border: 1px solid rgba(56, 189, 248, 0.4);
+                }
+                .btn-cancel:hover {
+                    background: rgba(2, 132, 199, 0.15);
+                    border-color: rgba(56, 189, 248, 0.7);
                 }
             </style>
 
@@ -235,8 +300,12 @@ export function renderRoomScreen(container, roomTitleText, userDocData = {}) {
                     const isMyRoom = (room.hostId === userId);
                     const isJoinedByMe = (room.joinedUserId === userId);
 
-                    if (isMyRoom) hasMyRoom = true;
-                    if (isJoinedByMe) hasJoinedAnyRoom = true;
+                    if (isMyRoom) {
+                        hasMyRoom = true;
+                    }
+                    if (isJoinedByMe) {
+                        hasJoinedAnyRoom = true;
+                    }
 
                     const isLocked = room.joinedUserId && room.joinedUserId !== userId;
                     const hasMatched = !!room.joinedUserId;
@@ -251,7 +320,15 @@ export function renderRoomScreen(container, roomTitleText, userDocData = {}) {
                     if (isMyRoom) {
                         if (!hasMatched) {
                             rightActionHTML = `<button class="card-join-btn" style="background: linear-gradient(135deg, #f43f5e, #e11d48); box-shadow: 0 0 10px rgba(244, 63, 94, 0.4);" data-action="cancelRoom" data-roomid="${room.id}">Cancel</button>`;
+                        } else {
+                            rightActionHTML = ``; 
                         }
+                    } else if (isJoinedByMe) {
+                        rightActionHTML = ``; 
+                    } else if (isLocked) {
+                        rightActionHTML = ``;
+                    } else {
+                        rightActionHTML = `<button class="card-join-btn" data-roomid="${room.id}" data-hostid="${room.hostId}">Join</button>`;
                     }
 
                     return `
@@ -279,34 +356,33 @@ export function renderRoomScreen(container, roomTitleText, userDocData = {}) {
                 }).join('');
 
                 roomsContainer.querySelectorAll('.ios-room-card').forEach((card, idx) => {
-                    card.addEventListener('click', (e) => {
-                        if (e.target.tagName === 'BUTTON') return;
-                        const room = data.rooms[idx];
-                        const hasMatched = !!room.joinedUserId;
-
-                        // Match ဖြစ်ပြီးသား (Matched) ဖြစ်နေရင် Match Code Popup (showRewardCodePopup) ကို တန်းပြမယ်
-                        if (hasMatched) {
-                            showRewardCodePopup(room, targetMode, userId, {
+                card.addEventListener('click', (e) => {
+                if (e.target.tagName === 'BUTTON') return;
+                const room = data.rooms[idx];
+                
+                // လူပြည့်ပြီးသား (Matched ဖြစ်ပြီးသား) ဆိုရင် Reward Code Popup ကို တန်းပြမယ်
+                if (room.joinedUserId) {
+                    showRewardCodePopup(room, targetMode, userId, {
+                        onComplete: (finalRoom) => {
+                            fetchAndRenderGlobalRooms();
+                        }
+                    });
+                } else {
+                    // ပုံမှန် Room တွေအတွက်ကျမှ Details Popup ပြမယ်
+                    showRoomDetailsPopup(room, targetMode, userId, {
+                        onCancelJoiner: (roomId) => cancelJoinerAPI(roomId),
+                        onTransferHost: (roomId) => transferHostAPI(roomId),
+                        onBothReady: (updatedRoom) => {
+                            showRewardCodePopup(updatedRoom, targetMode, userId, {
                                 onComplete: (finalRoom) => {
                                     fetchAndRenderGlobalRooms();
                                 }
                             });
-                        } else {
-                            // မဖြစ်သေးရင် ပုံမှန် Room Details Popup ပြမယ်
-                            showRoomDetailsPopup(room, targetMode, userId, {
-                                onCancelJoiner: (roomId) => cancelJoinerAPI(roomId),
-                                onTransferHost: (roomId) => transferHostAPI(roomId),
-                                onBothReady: (updatedRoom) => {
-                                    showRewardCodePopup(updatedRoom, targetMode, userId, {
-                                        onComplete: (finalRoom) => {
-                                            fetchAndRenderGlobalRooms();
-                                        }
-                                    });
-                                }
-                            });
                         }
                     });
-                });
+                }
+            });   
+             });
 
             } else {
                 roomsContainer.innerHTML = `<span style="color: #64748b; font-size: 11px; padding: 10px 0;">Active room မရှိသေးပါ။ Room အသစ်ထောင်နိုင်ပါသည်။</span>`;
