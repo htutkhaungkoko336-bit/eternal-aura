@@ -2,7 +2,6 @@ export function showRoomDetailsPopup(room, mode, userId, callbacks = {}) {
     const is1v1 = mode.toLowerCase().includes('1v1');
     const hasMatched = !!room.joinedUserId;
 
-    // server မှ ပါလာသော ရလဒ်များဖြင့် အစောပိုင်း အခြေအနေကို အမြဲတမ်း တိုက်ဆိုင်ယူပါ
     let hostReadyState = !!room.hostReady;
     let joinerReadyState = !!room.joinerReady;
     let firstPickResult = room.firstPick || null;
@@ -39,7 +38,6 @@ export function showRoomDetailsPopup(room, mode, userId, callbacks = {}) {
 
                 const updatedRoom = data.room;
                 
-                // Server မှ ရလာသော room အချက်အလက်အသစ်များကို room object ထဲသို့ အမြဲတမ်း ထည့်သွင်းပေးပါ
                 room.hostReady = !!updatedRoom.hostReady;
                 room.joinerReady = !!updatedRoom.joinerReady;
                 room.joinedUserId = updatedRoom.joinedUserId;
@@ -128,11 +126,13 @@ export function showRoomDetailsPopup(room, mode, userId, callbacks = {}) {
         if (is1v1) {
             const hostName = room.inGameName || room.teamName || room.userName || 'Unknown Player';
             const hostHero = room.heroName || room.hero || 'Not Specified';
-            const hostContact = currentHasMatched ? (room.contactPhNo || room.kpayPhNo || 'N/A') : 'Hidden';
+            
+            // Joiner ရှိမှသာ Host ရဲ့ Contact ကို ဖော်ပြမည်၊ မရှိရင် လုံးဝမပါစေရ
+            const hostContactHTML = currentHasMatched ? `<div class="popup-row" style="font-size: 12px; border-bottom: none;"><span>Contact:</span> <b>${room.contactPhNo || room.kpayPhNo || 'N/A'}</b></div>` : '';
             
             const joinerName = room.joinerTeamName || room.joinerUserName || 'Joined Player';
             const joinerHero = room.joinerHeroName || room.joinerHero || 'Not Specified';
-            const joinerContact = currentHasMatched ? (room.joinerContactPhNo || room.joinerKpayPhNo || 'N/A') : '';
+            const joinerContactHTML = currentHasMatched ? `<div class="popup-row" style="font-size: 12px; border-bottom: none;"><span>Contact:</span> <b>${room.joinerContactPhNo || room.joinerKpayPhNo || 'N/A'}</b></div>` : '';
 
             overlay.innerHTML = `
                 <div class="popup-box" style="max-width: 420px; width: 95%; position: relative; overflow: hidden; background: #1c1c1e; border: 1px solid rgba(255,255,255,0.1); border-radius: 24px; box-shadow: 0 20px 40px rgba(0,0,0,0.6); color: #fff; padding: 20px;">
@@ -142,7 +142,7 @@ export function showRoomDetailsPopup(room, mode, userId, callbacks = {}) {
                             <div style="font-weight: 700; color: #0a84ff; margin-bottom: 8px; font-size: 13px; text-align: center;">Host ${hostReadyState ? ' ✅' : ''}</div>
                             <div class="popup-row" style="font-size: 12px; margin-bottom: 6px;"><span>Name:</span> <b>${hostName}</b></div>
                             <div class="popup-row" style="font-size: 12px; margin-bottom: 6px;"><span>Hero:</span> <b style="color: #34c759;">${hostHero}</b></div>
-                            <div class="popup-row" style="font-size: 12px; border-bottom: none;"><span>Contact:</span> <b>${hostContact}</b></div>
+                            ${hostContactHTML}
                         </div>
 
                         ${currentHasMatched ? `
@@ -150,7 +150,7 @@ export function showRoomDetailsPopup(room, mode, userId, callbacks = {}) {
                             <div style="font-weight: 700; color: #34c759; margin-bottom: 8px; font-size: 13px; text-align: center;">Joiner ${joinerReadyState ? ' ✅' : ''}</div>
                             <div class="popup-row" style="font-size: 12px; margin-bottom: 6px;"><span>Name:</span> <b>${joinerName}</b></div>
                             <div class="popup-row" style="font-size: 12px; margin-bottom: 6px;"><span>Hero:</span> <b style="color: #34c759;">${joinerHero}</b></div>
-                            <div class="popup-row" style="font-size: 12px; border-bottom: none;"><span>Contact:</span> <b>${joinerContact}</b></div>
+                            ${joinerContactHTML}
                         </div>
                         ` : '<div style="flex: 1; display: flex; align-items: center; justify-content: center; color: #8e8e93; font-size: 12px; background: rgba(255,255,255,0.03); border-radius: 14px;">Waiting...</div>'}
                     </div>
@@ -160,9 +160,12 @@ export function showRoomDetailsPopup(room, mode, userId, callbacks = {}) {
             `;
         } else {
             const hostSqName = room.sqName || room.teamName || 'Host SQ';
-            const hostContact = currentHasMatched ? (room.contactPhNo || room.kpayPhNo || 'N/A') : 'Hidden';
+            
+            // Joiner ရှိမှသာ Contact ပါလာစေရန်
+            const hostContactHTML = currentHasMatched ? `<div class="popup-row" style="font-size: 11px; border-bottom: none; border-top: 1px solid rgba(0, 122, 255, 0.3); margin-top: 6px; padding-top: 6px;"><span>Contact:</span> <b style="font-size: 10px;">${room.contactPhNo || room.kpayPhNo || 'N/A'}</b></div>` : '';
+            
             const joinerSqName = room.joinerSqName || room.joinerTeamName || 'Joiner SQ';
-            const joinerContact = currentHasMatched ? (room.joinerContactPhNo || room.joinerKpayPhNo || 'N/A') : '';
+            const joinerContactHTML = currentHasMatched ? `<div class="popup-row" style="font-size: 11px; border-bottom: none; border-top: 1px solid rgba(52, 199, 89, 0.3); margin-top: 6px; padding-top: 6px;"><span>Contact:</span> <b style="font-size: 10px;">${room.joinerContactPhNo || room.joinerKpayPhNo || 'N/A'}</b></div>` : '';
 
             const formatPlayerName = (p) => {
                 if (!p) return '-';
@@ -183,7 +186,7 @@ export function showRoomDetailsPopup(room, mode, userId, callbacks = {}) {
                             <div class="popup-row" style="font-size: 11px; padding: 5px 0;"><span>Gold:</span> <b>${formatPlayerName(room.gold)}</b></div>
                             <div class="popup-row" style="font-size: 11px; padding: 5px 0;"><span>Mid:</span> <b>${formatPlayerName(room.mid)}</b></div>
                             <div class="popup-row" style="font-size: 11px; padding: 5px 0;"><span>Jungle:</span> <b>${formatPlayerName(room.jungle)}</b></div>
-                            <div class="popup-row" style="font-size: 11px; border-bottom: none; border-top: 1px solid rgba(0, 122, 255, 0.3); margin-top: 6px; padding-top: 6px;"><span>Contact:</span> <b style="font-size: 10px;">${hostContact}</b></div>
+                            ${hostContactHTML}
                         </div>
 
                         ${currentHasMatched ? `
@@ -194,7 +197,7 @@ export function showRoomDetailsPopup(room, mode, userId, callbacks = {}) {
                             <div class="popup-row" style="font-size: 11px; padding: 5px 0;"><span>Gold:</span> <b>${formatPlayerName(room.joinerGold)}</b></div>
                             <div class="popup-row" style="font-size: 11px; padding: 5px 0;"><span>Mid:</span> <b>${formatPlayerName(room.joinerMid)}</b></div>
                             <div class="popup-row" style="font-size: 11px; padding: 5px 0;"><span>Jungle:</span> <b>${formatPlayerName(room.joinerJungle)}</b></div>
-                            <div class="popup-row" style="font-size: 11px; border-bottom: none; border-top: 1px solid rgba(52, 199, 89, 0.3); margin-top: 6px; padding-top: 6px;"><span>Contact:</span> <b style="font-size: 10px;">${joinerContact}</b></div>
+                            ${joinerContactHTML}
                         </div>
                         ` : `<div style="flex: 1; display: flex; align-items: center; justify-content: center; color: #8e8e93; font-size: 12px; background: rgba(255,255,255,0.03); border-radius: 14px; text-align: center; padding: 10px;">Waiting for joiner squad...</div>`}
                     </div>
