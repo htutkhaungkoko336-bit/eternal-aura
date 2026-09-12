@@ -470,18 +470,8 @@ export function showRewardCodePopup(room, mode, userId, callbacks = {}) {
 
     const playersListHTML = getPlayerNames(room, !isHost);
 
-    let matchCode = room.matchCode;
-    // 🛡️ ပြင်ဆင်ထားသည့်အပိုင်း: Host ဖြစ်ပြီး matchCode လုံးဝ မရှိမှသာ အသစ်တခါ ဖန်တီးမည်
-    if (isHost && (!matchCode || matchCode.trim() === '')) {
-        matchCode = 'REV-' + Math.floor(100000 + Math.random() * 900000);
-        room.matchCode = matchCode;
-        
-        fetch('/api/create-room', {
-            method: 'PATCH',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ roomId: room.id, userId: userId, matchCode: matchCode })
-        }).catch(err => console.error("Failed to save match code", err));
-    }
+    // 🛡️ ပြင်ဆင်ထားသည့်အပိုင်း: အသစ်ထပ်မဖန်တီးတော့ဘဲ Room ID (သို့) ရှိပြီးသား matchCode ကို နှစ်ဖက်လုံးအတွက် အတူတူ သုံးမည်
+    let matchCode = room.matchCode || room.id;
 
     const overlay = document.createElement('div');
     overlay.className = 'popup-overlay';
@@ -502,7 +492,7 @@ export function showRewardCodePopup(room, mode, userId, callbacks = {}) {
 
             <div style="background: linear-gradient(135deg, rgba(0,122,255,0.15), rgba(88,86,214,0.15)); border: 1px solid rgba(0,122,255,0.3); border-radius: 14px; padding: 14px; margin-bottom: 16px;">
                 <div style="font-size: 11px; text-transform: uppercase; letter-spacing: 1px; color: #8e8e93; margin-bottom: 4px;">Your Reward Code</div>
-                <div id="displayMatchCode" style="font-size: 22px; font-weight: 800; color: #fff; letter-spacing: 2px;">${matchCode || 'Loading...'}</div>
+                <div id="displayMatchCode" style="font-size: 22px; font-weight: 800; color: #fff; letter-spacing: 2px;">${matchCode}</div>
             </div>
 
             <button id="closeRewardPopup" style="width: 100%; padding: 12px; border-radius: 12px; background: #007aff; border: none; color: #fff; font-weight: 600; cursor: pointer; font-size: 14px;">Done / Close</button>
@@ -510,23 +500,6 @@ export function showRewardCodePopup(room, mode, userId, callbacks = {}) {
     `;
 
     document.body.appendChild(overlay);
-
-    if (!isHost && !room.matchCode) {
-        const codeInterval = setInterval(async () => {
-            try {
-                const res = await fetch(`/api/create-room?roomId=${room.id}`);
-                const data = await res.json();
-                if (data.success && data.room && data.room.matchCode) {
-                    clearInterval(codeInterval);
-                    room.matchCode = data.room.matchCode;
-                    const codeEl = overlay.querySelector('#displayMatchCode');
-                    if (codeEl) codeEl.textContent = room.matchCode;
-                }
-            } catch (e) {
-                console.error("Error fetching match code:", e);
-            }
-        }, 1000);
-    }
 
     const closeBtn = overlay.querySelector('#closeRewardPopup');
     if (closeBtn) {
