@@ -470,9 +470,6 @@ export function showRewardCodePopup(room, mode, userId, callbacks = {}) {
 
     const playersListHTML = getPlayerNames(room, !isHost);
 
-    // 🔥 Room ID ကို လုံးဝမသုံးဘဲ Backend က generate လုပ်ပေးတဲ့ matchCode ကို တိုက်ရိုက်ယူမည် (မရှိသေးရင် 'Pending...' ပြမည်)
-    let matchCode = room.matchCode || 'Pending...';
-
     const overlay = document.createElement('div');
     overlay.className = 'popup-overlay';
 
@@ -492,7 +489,7 @@ export function showRewardCodePopup(room, mode, userId, callbacks = {}) {
 
             <div style="background: linear-gradient(135deg, rgba(0,122,255,0.15), rgba(88,86,214,0.15)); border: 1px solid rgba(0,122,255,0.3); border-radius: 14px; padding: 14px; margin-bottom: 16px;">
                 <div style="font-size: 11px; text-transform: uppercase; letter-spacing: 1px; color: #8e8e93; margin-bottom: 4px;">Your Reward Code</div>
-                <div id="displayMatchCode" style="font-size: 22px; font-weight: 800; color: #fff; letter-spacing: 2px;">${matchCode}</div>
+                <div id="displayMatchCode" style="font-size: 22px; font-weight: 800; color: #fff; letter-spacing: 2px;">${room.matchCode || 'Pending...'}</div>
             </div>
 
             <button id="closeRewardPopup" style="width: 100%; padding: 12px; border-radius: 12px; background: #007aff; border: none; color: #fff; font-weight: 600; cursor: pointer; font-size: 14px;">Done / Close</button>
@@ -501,9 +498,33 @@ export function showRewardCodePopup(room, mode, userId, callbacks = {}) {
 
     document.body.appendChild(overlay);
 
+    // 🔥 အဓိက ပြင်ဆင်ချက်: Popup ပွင့်နေစဉ်အတွင်း Code မထွက်သေးရင် Backend ကို API လှမ်းခေါ်ပြီး အလိုအလျောက် Update လုပ်ပေးမည့် Interval
+    const currentRoomId = room.id || room.hostId;
+    const intervalId = setInterval(async () => {
+        if (!document.body.contains(overlay)) {
+            clearInterval(intervalId);
+            return;
+        }
+
+        try {
+            const res = await fetch(`/api/rooms?roomId=${currentRoomId}`);
+            const data = await res.json();
+            if (data.success && data.room && data.room.matchCode) {
+                const codeElement = overlay.querySelector('#displayMatchCode');
+                if (codeElement && codeElement.textContent !== data.room.matchCode) {
+                    codeElement.textContent = data.room.matchCode;
+                    clearInterval(intervalId); // ကုဒ်ပေါ်လာပြီဆိုရင် ဆက်စစ်စရာမလိုတော့လို့ ရပ်လိုက်မည်
+                }
+            }
+        } catch (err) {
+            console.error("Auto fetch matchCode error:", err);
+        }
+    }, 2000); // ၂ စက္ကန့်တစ်ကြိမ် Backend ကို တိုက်စစ်မည်
+
     const closeBtn = overlay.querySelector('#closeRewardPopup');
     if (closeBtn) {
         closeBtn.addEventListener('click', () => {
+            clearInterval(intervalId);
             overlay.remove();
             if (callbacks.onComplete) callbacks.onComplete(room);
         });
