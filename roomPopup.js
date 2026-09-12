@@ -471,14 +471,16 @@ export function showRewardCodePopup(room, mode, userId, callbacks = {}) {
     const playersListHTML = getPlayerNames(room, !isHost);
 
     let matchCode = room.matchCode;
-    if (isHost && !matchCode) {
+    // 🛡️ ပြင်ဆင်ထားသည့်အပိုင်း: Host ဖြစ်ပြီး matchCode လုံးဝ မရှိမှသာ အသစ်တခါ ဖန်တီးမည်
+    if (isHost && (!matchCode || matchCode.trim() === '')) {
         matchCode = 'REV-' + Math.floor(100000 + Math.random() * 900000);
+        room.matchCode = matchCode;
+        
         fetch('/api/create-room', {
             method: 'PATCH',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ roomId: room.id, userId: userId, matchCode: matchCode })
         }).catch(err => console.error("Failed to save match code", err));
-        room.matchCode = matchCode;
     }
 
     const overlay = document.createElement('div');
