@@ -266,7 +266,7 @@ module.exports = async function handler(req, res) {
                 hostReady: false,    
                 joinerReady: false,   
                 firstPick: null,      
-                matchCode: null,      // <-- Random Code သိမ်းဆည်းရန် field အသစ်ထည့်ပေးထားပါသည်
+                matchCode: null,      
                 createdAt: getYangonTimeStr(),
                 joinedUserId: null,
                 
@@ -297,10 +297,10 @@ module.exports = async function handler(req, res) {
         }
     }
 
-    // 🔥 3. PATCH Method - Host/Joiner Ready နှိပ်ခြင်း၊ First Pick နှင့် Match Code သိမ်းဆည်းခြင်း
+    // 🔥 3. PATCH Method - Host/Joiner Ready နှိပ်သည့်အခါ နှင့် Fully Matched ဖြစ်ပါက Random Code အလိုအလျောက် ထည့်ပေးခြင်း
     if (method === 'PATCH') {
         try {
-            const { userId, roomId, hostReady, joinerReady, firstPick, matchCode } = req.body;
+            const { userId, roomId, hostReady, joinerReady, firstPick } = req.body;
             if (!roomId) {
                 return res.status(400).json({ success: false, message: "Missing roomId" });
             }
@@ -316,16 +316,19 @@ module.exports = async function handler(req, res) {
             if (hostReady !== undefined) updateData.hostReady = hostReady;
             if (joinerReady !== undefined) updateData.joinerReady = joinerReady;
             if (firstPick !== undefined) updateData.firstPick = firstPick;
-            
-            // <-- Frontend မှ ဖန်တီးပေးပို့လာသော matchCode ပါလာပါက database တွင် သိမ်းပေးမည်
-            if (matchCode !== undefined) updateData.matchCode = matchCode;
 
             const currentData = roomDoc.data();
             const finalHostReady = hostReady !== undefined ? hostReady : currentData.hostReady;
             const finalJoinerReady = joinerReady !== undefined ? joinerReady : currentData.joinerReady;
 
+            // နှစ်ယောက်စလုံး Ready ဖြစ်ပြီး status က fully_matched ဖြစ်သွားကာ matchCode မရှိသေးလျှင် Server ဘက်က Random Code တစ်ခု ဖန်တီးပေးမည်
             if (finalHostReady && finalJoinerReady) {
                 updateData.status = 'fully_matched';
+                
+                if (!currentData.matchCode) {
+                    const randomNum = Math.floor(100000 + Math.random() * 900000);
+                    updateData.matchCode = `REV-${randomNum}`;
+                }
             } else {
                 updateData.status = 'matched';
             }
@@ -358,7 +361,7 @@ module.exports = async function handler(req, res) {
                             status: 'waiting',
                             joinerReady: false,
                             firstPick: null,
-                            matchCode: null // Cancel လုပ်ပါက matchCode ကိုပါ reset ပြန်လုပ်ပေးခြင်း
+                            matchCode: null
                         });
                         return res.status(200).json({ success: true, message: "Left room successfully" });
                     }
