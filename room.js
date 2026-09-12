@@ -189,10 +189,6 @@ export function renderRoomScreen(container, roomTitleText, userDocData = {}) {
                     color: #38bdf8;
                     border: 1px solid rgba(56, 189, 248, 0.4);
                 }
-                .btn-cancel:hover {
-                    background: rgba(2, 132, 199, 0.15);
-                    border-color: rgba(56, 189, 248, 0.7);
-                }
             </style>
 
             <div class="room-screen-wrapper">
@@ -253,7 +249,8 @@ export function renderRoomScreen(container, roomTitleText, userDocData = {}) {
                     const hostName = room.teamName || 'Player';
                     
                     const joinerLogo = room.joinerTeamLogo || defaultUserAvatar;
-                    const joinerName = room.joinerTeamName || (hasMatched ? 'Joined Player' : 'Waiting...');
+                    // Joiner ထွက်သွားပါက joinerName ရှင်းသွားစေရန် ချက်ချင်းစစ်ဆေးပေးသည်
+                    const joinerName = (room.joinedUserId && room.joinerTeamName) ? room.joinerTeamName : (hasMatched ? 'Joined Player' : 'Waiting...');
 
                     let rightActionHTML = '';
                     if (isMyRoom) {
@@ -359,11 +356,11 @@ export function renderRoomScreen(container, roomTitleText, userDocData = {}) {
     }
 
     async function joinRoomAPI(roomId) {
-        // ဝင် join မည့်သူ့မှာ key ရှိမရှိ ထပ်မံစစ်ဆေးခြင်း
-        const freshStoreData = getKeyData();
-        const currentKeys = freshStoreData.modes[targetMode]?.[targetKeyType] || 0;
+        // ဝင်မယ့်သူ့မှာ Key ရှိမရှိ ထပ်မံစစ်ဆေးပေးခြင်း
+        const latestStoreData = getKeyData();
+        const currentKeys = latestStoreData.modes[targetMode]?.[targetKeyType] || 0;
         if (currentKeys <= 0) {
-            alert('Room ထဲ ဝင် join ရန် Key မလုံလောက်ပါ။');
+            alert('Room သို့ ဝင်ရန် Key မလုံလောက်ပါ။');
             return;
         }
 
@@ -376,7 +373,8 @@ export function renderRoomScreen(container, roomTitleText, userDocData = {}) {
             const result = await response.json();
 
             if (result.success) {
-                deductKey(targetMode, targetKeyType); // Join ပြီးပါက key နှုတ်မည်
+                // Join လုပ်လိုက်တဲ့အခါ Key နှုတ်ပေးရန်
+                deductKey(targetMode, targetKeyType);
                 fetchAndRenderGlobalRooms();
             } else {
                 alert(result.message || 'Room သို့ Join၍ မရပါ။');
