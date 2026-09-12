@@ -470,8 +470,8 @@ export function showRewardCodePopup(room, mode, userId, callbacks = {}) {
 
     const playersListHTML = getPlayerNames(room, !isHost);
 
-    // 🛡️ ပြင်ဆင်ထားသည့်အပိုင်း: အသစ်ထပ်မဖန်တီးတော့ဘဲ Room ID (သို့) ရှိပြီးသား matchCode ကို နှစ်ဖက်လုံးအတွက် အတူတူ သုံးမည်
-    let matchCode = room.matchCode || room.id;
+    // 🔥 Backend က ထွက်လာတဲ့ matchCode (သို့မဟုတ်) ရပြီးသားကုဒ်ကို တိုက်ရိုက်ဆွဲထုတ်သုံးမည်
+    let matchCode = room.matchCode || room.id || 'N/A';
 
     const overlay = document.createElement('div');
     overlay.className = 'popup-overlay';
