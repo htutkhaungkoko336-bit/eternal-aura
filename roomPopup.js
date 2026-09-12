@@ -512,18 +512,26 @@ export function showRewardCodePopup(room, mode, userId, callbacks = {}) {
         }
 
         try {
-            // /api/rooms အစား အလုပ်လုပ်ပြီးသားဖြစ်တဲ့ /api/create-room ကို ပြန်သုံးပေးပါ
             const res = await fetch(`/api/create-room?roomId=${targetRoomId}`);
             if (res.ok) {
                 const data = await res.json();
-                // ေနာက်ထပ် data ပုံစံက data.room ဖြစ်နေရင် အဲ့ဒီအတိုင်း ညှိပေးရပါမယ်
                 const roomData = data.room || data; 
                 
+                // Match Code ထွက်လာပြီဆိုတာနဲ့
                 if (data.success && roomData && roomData.matchCode) {
+                    // ၁။ Polling ကို ချက်ချင်း ရပ်လိုက်ပါ
+                    clearInterval(intervalId);
+
+                    // ၂။ Spinner ကို ရပ်ပြီး Match Code Popup ကို တန်းပြပါ
+                    const spinnerContainer = overlay.querySelector('#spinnerContainer');
+                    const matchCodeContainer = overlay.querySelector('#matchCodeContainer');
                     const codeElement = overlay.querySelector('#displayMatchCode');
-                    if (codeElement && codeElement.textContent !== roomData.matchCode) {
+
+                    if (spinnerContainer) spinnerContainer.style.display = 'none';
+                    if (matchCodeContainer) matchCodeContainer.style.display = 'block';
+                    
+                    if (codeElement) {
                         codeElement.textContent = roomData.matchCode;
-                        clearInterval(intervalId);
                     }
                 }
             }
@@ -531,7 +539,7 @@ export function showRewardCodePopup(room, mode, userId, callbacks = {}) {
             // Network error များကို Silent လုပ်ထားပါမည်
         }
     }, 2000);
-    const closeBtn = overlay.querySelector('#closeRewardPopup');
+        const closeBtn = overlay.querySelector('#closeRewardPopup');
     if (closeBtn) {
         closeBtn.addEventListener('click', () => {
             clearInterval(intervalId);
