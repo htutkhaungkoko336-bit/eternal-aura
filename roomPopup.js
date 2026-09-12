@@ -2,6 +2,16 @@ export function showRoomDetailsPopup(room, mode, userId, callbacks = {}) {
     const is1v1 = mode.toLowerCase().includes('1v1');
     const hasMatched = !!room.joinedUserId;
 
+    // Host သို့မဟုတ် Joiner ဟုတ်မဟုတ် စစ်ဆေးရန် (တခြားသူများ ကြည့်မရစေရန်အတွက်)
+    const isParticipant = (userId === room.hostId) || (userId === room.joinedUserId);
+
+    // လူပြည့်ပြီးသွားပြီ (match ဖြစ်သွားပြီ) ဆိုလျှင် Participant မဟုတ်သူများအတွက် ဘာမှကြည့်မရအောင် တားဆီးမည်
+    if (hasMatched && !isParticipant) {
+        // လိုအပ်ပါက သတိပေးချက် သို့မဟုတ် ဘာမှမပေါ်လာအောင် တားမြစ်ခြင်း
+        console.warn("Access denied: Only the host and joiner can view this matched room details.");
+        return; 
+    }
+
     let hostReadyState = !!room.hostReady;
     let joinerReadyState = !!room.joinerReady;
     let firstPickResult = room.firstPick || null;
@@ -42,6 +52,14 @@ export function showRoomDetailsPopup(room, mode, userId, callbacks = {}) {
                 room.joinerReady = !!updatedRoom.joinerReady;
                 room.joinedUserId = updatedRoom.joinedUserId;
                 room.firstPick = updatedRoom.firstPick;
+
+                // Match ဖြစ်သွားပြီးနောက် User ကိုယ်တိုင်က Participant မဟုတ်တော့ရင် Popup ကို ပိတ်ပစ်မည်
+                const currentIsParticipant = (userId === room.hostId) || (userId === room.joinedUserId);
+                if (!!room.joinedUserId && !currentIsParticipant) {
+                    clearInterval(pollInterval);
+                    overlay.remove();
+                    return;
+                }
 
                 if (updatedRoom.hostReady !== hostReadyState || 
                     updatedRoom.joinerReady !== joinerReadyState || 
@@ -127,7 +145,6 @@ export function showRoomDetailsPopup(room, mode, userId, callbacks = {}) {
             const hostName = room.inGameName || room.teamName || room.userName || 'Unknown Player';
             const hostHero = room.heroName || room.hero || 'Not Specified';
             
-            // Joiner ရှိမှသာ Host ရဲ့ Contact ကို ဖော်ပြမည်၊ မရှိရင် လုံးဝမပါစေရ
             const hostContactHTML = currentHasMatched ? `<div class="popup-row" style="font-size: 12px; border-bottom: none;"><span>Contact:</span> <b>${room.contactPhNo || room.kpayPhNo || 'N/A'}</b></div>` : '';
             
             const joinerName = room.joinerTeamName || room.joinerUserName || 'Joined Player';
@@ -161,7 +178,6 @@ export function showRoomDetailsPopup(room, mode, userId, callbacks = {}) {
         } else {
             const hostSqName = room.sqName || room.teamName || 'Host SQ';
             
-            // Joiner ရှိမှသာ Contact ပါလာစေရန်
             const hostContactHTML = currentHasMatched ? `<div class="popup-row" style="font-size: 11px; border-bottom: none; border-top: 1px solid rgba(0, 122, 255, 0.3); margin-top: 6px; padding-top: 6px;"><span>Contact:</span> <b style="font-size: 10px;">${room.contactPhNo || room.kpayPhNo || 'N/A'}</b></div>` : '';
             
             const joinerSqName = room.joinerSqName || room.joinerTeamName || 'Joiner SQ';
