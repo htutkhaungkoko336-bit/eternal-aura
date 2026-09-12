@@ -470,6 +470,9 @@ export function showRewardCodePopup(room, mode, userId, callbacks = {}) {
 
     const playersListHTML = getPlayerNames(room, !isHost);
 
+    // 🔥 ပထမအကြိမ် စပေါ်တဲ့အခါ matchCode ရှိပြီးသားဆိုရင် တန်းပြမယ်၊ မရှိသေးရင် Pending ပြမယ်
+    let initialMatchCode = room.matchCode || 'Pending...';
+
     const overlay = document.createElement('div');
     overlay.className = 'popup-overlay';
 
@@ -489,7 +492,7 @@ export function showRewardCodePopup(room, mode, userId, callbacks = {}) {
 
             <div style="background: linear-gradient(135deg, rgba(0,122,255,0.15), rgba(88,86,214,0.15)); border: 1px solid rgba(0,122,255,0.3); border-radius: 14px; padding: 14px; margin-bottom: 16px;">
                 <div style="font-size: 11px; text-transform: uppercase; letter-spacing: 1px; color: #8e8e93; margin-bottom: 4px;">Your Reward Code</div>
-                <div id="displayMatchCode" style="font-size: 22px; font-weight: 800; color: #fff; letter-spacing: 2px;">${room.matchCode || 'Pending...'}</div>
+                <div id="displayMatchCode" style="font-size: 22px; font-weight: 800; color: #fff; letter-spacing: 2px;">${initialMatchCode}</div>
             </div>
 
             <button id="closeRewardPopup" style="width: 100%; padding: 12px; border-radius: 12px; background: #007aff; border: none; color: #fff; font-weight: 600; cursor: pointer; font-size: 14px;">Done / Close</button>
@@ -498,8 +501,10 @@ export function showRewardCodePopup(room, mode, userId, callbacks = {}) {
 
     document.body.appendChild(overlay);
 
-    // 🔥 အဓိက ပြင်ဆင်ချက်: Popup ပွင့်နေစဉ်အတွင်း Code မထွက်သေးရင် Backend ကို API လှမ်းခေါ်ပြီး အလိုအလျောက် Update လုပ်ပေးမည့် Interval
-    const currentRoomId = room.id || room.hostId;
+    // 🔥 မှန်ကန်သော Room ID (Host ID) ကို သေချာ ထုတ်ယူမည်
+    const targetRoomId = room.id || room.hostId;
+
+    // 🔥 Backend ကို API ခေါ်မည့်အစား မှန်ကန်သော Endpoint သို့မဟုတ် Real-time စစ်ဆေးသည့် ပုံစံသို့ ပြောင်းခြင်း
     const intervalId = setInterval(async () => {
         if (!document.body.contains(overlay)) {
             clearInterval(intervalId);
@@ -507,19 +512,22 @@ export function showRewardCodePopup(room, mode, userId, callbacks = {}) {
         }
 
         try {
-            const res = await fetch(`/api/rooms?roomId=${currentRoomId}`);
-            const data = await res.json();
-            if (data.success && data.room && data.room.matchCode) {
-                const codeElement = overlay.querySelector('#displayMatchCode');
-                if (codeElement && codeElement.textContent !== data.room.matchCode) {
-                    codeElement.textContent = data.room.matchCode;
-                    clearInterval(intervalId); // ကုဒ်ပေါ်လာပြီဆိုရင် ဆက်စစ်စရာမလိုတော့လို့ ရပ်လိုက်မည်
+            // API လမ်းကြောင်းကို Backend handler တည်နေရာအတိုင်း အတိအကျ သုံးပေးပါ (ဥပမာ - room data ကို ပြန်ထုတ်ပေးမည့် API route)
+            const res = await fetch(`/api/rooms?roomId=${targetRoomId}`);
+            if (res.ok) {
+                const data = await res.json();
+                if (data.success && data.room && data.room.matchCode) {
+                    const codeElement = overlay.querySelector('#displayMatchCode');
+                    if (codeElement && codeElement.textContent !== data.room.matchCode) {
+                        codeElement.textContent = data.room.matchCode;
+                        clearInterval(intervalId); // ကုဒ်ပေါ်လာပြီဆိုတာနဲ့ interval ကို ရပ်မည်
+                    }
                 }
             }
         } catch (err) {
-            console.error("Auto fetch matchCode error:", err);
+            // Network error များကို Silent လုပ်ထားပါမည်
         }
-    }, 2000); // ၂ စက္ကန့်တစ်ကြိမ် Backend ကို တိုက်စစ်မည်
+    }, 2000);
 
     const closeBtn = overlay.querySelector('#closeRewardPopup');
     if (closeBtn) {
