@@ -453,7 +453,7 @@ export function showRewardCodePopup(room, mode, userId, callbacks = {}) {
     const getPlayerNames = (r, forHostData) => {
         if (is1v1) {
             const name = forHostData ? (r.inGameName || r.userName || '-') : (r.joinerUserName || '-');
-            const id = forHostData ? (r.id || '-') : (r.joinerId || '-'); // 1v1 အတွက် ID ထည့်သွင်းခြင်း
+            const id = forHostData ? (r.id || '-') : (r.joinerId || '-');
             return `<li>${name} <span style="color: #8e8e93; font-size: 10px;">(ID: ${id})</span></li>`;
         }
         
@@ -473,8 +473,12 @@ export function showRewardCodePopup(room, mode, userId, callbacks = {}) {
                 }
             }
 
-            // Roamer သို့မဟုတ် အခြား player တွေရဲ့ Name နဲ့ ID ကို တွဲပြပေးပါမည်
-            listHTML += `<div style="font-size: 11px; padding: 3px 0; color: #ccc;">• <span style="text-transform: capitalize; color: #8e8e93;">${role}:</span> <b>${pName}</b> <span style="color: #0a84ff; font-size: 10px;">(ID: ${pId})</span></div>`;
+            // 🔥 Roamer ဖြစ်မှသာ ID ကို ပြသမည်၊ ကျန်တဲ့ role တွေက နာမည်သက်သက်ပဲ ပြပါမည်
+            if (role === 'roamer') {
+                listHTML += `<div style="font-size: 11px; padding: 3px 0; color: #ccc;">• <span style="text-transform: capitalize; color: #8e8e93;">${role}:</span> <b>${pName}</b> <span style="color: #0a84ff; font-size: 10px;">(ID: ${pId})</span></div>`;
+            } else {
+                listHTML += `<div style="font-size: 11px; padding: 3px 0; color: #ccc;">• <span style="text-transform: capitalize; color: #8e8e93;">${role}:</span> <b>${pName}</b></div>`;
+            }
         });
         return listHTML;
     };
@@ -495,7 +499,7 @@ export function showRewardCodePopup(room, mode, userId, callbacks = {}) {
                 <div style="font-size: 12px; margin-bottom: 6px;">Contact Ph: <b style="color: #ff3b30;">${targetContact}</b></div>
                 <div style="font-size: 12px; margin-bottom: 8px; color: #ff9f0a;">First Pick Team: <b>${firstPickTeam}</b></div>
                 
-                <div style="font-size: 12px; font-weight: 600; color: #fff; margin-bottom: 4px; border-top: 1px solid rgba(255,255,255,0.1); padding-top: 6px;">Players & IDs:</div>
+                <div style="font-size: 12px; font-weight: 600; color: #fff; margin-bottom: 4px; border-top: 1px solid rgba(255,255,255,0.1); padding-top: 6px;">Players Names:</div>
                 <div style="max-height: 140px; overflow-y: auto;">
                     ${playersListHTML}
                 </div>
