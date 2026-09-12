@@ -2,12 +2,9 @@ export function showRoomDetailsPopup(room, mode, userId, callbacks = {}) {
     const is1v1 = mode.toLowerCase().includes('1v1');
     const hasMatched = !!room.joinedUserId;
 
-    // Host သို့မဟုတ် Joiner ဟုတ်မဟုတ် စစ်ဆေးရန် (တခြားသူများ ကြည့်မရစေရန်အတွက်)
     const isParticipant = (userId === room.hostId) || (userId === room.joinedUserId);
 
-    // လူပြည့်ပြီးသွားပြီ (match ဖြစ်သွားပြီ) ဆိုလျှင် Participant မဟုတ်သူများအတွက် ဘာမှကြည့်မရအောင် တားဆီးမည်
     if (hasMatched && !isParticipant) {
-        // လိုအပ်ပါက သတိပေးချက် သို့မဟုတ် ဘာမှမပေါ်လာအောင် တားမြစ်ခြင်း
         console.warn("Access denied: Only the host and joiner can view this matched room details.");
         return; 
     }
@@ -53,7 +50,6 @@ export function showRoomDetailsPopup(room, mode, userId, callbacks = {}) {
                 room.joinedUserId = updatedRoom.joinedUserId;
                 room.firstPick = updatedRoom.firstPick;
 
-                // Match ဖြစ်သွားပြီးနောက် User ကိုယ်တိုင်က Participant မဟုတ်တော့ရင် Popup ကို ပိတ်ပစ်မည်
                 const currentIsParticipant = (userId === room.hostId) || (userId === room.joinedUserId);
                 if (!!room.joinedUserId && !currentIsParticipant) {
                     clearInterval(pollInterval);
@@ -290,7 +286,7 @@ export function showRoomDetailsPopup(room, mode, userId, callbacks = {}) {
         }
     });
 }
-// သီးသန့်ခွဲထုတ်ထားသော Spin Wheel Pop-up ဖန်တီးသည့် Function
+
 function showSpinWheelPopup(room, mode, userId, callbacks) {
     const is1v1 = mode.toLowerCase().includes('1v1');
     const team1Name = is1v1 ? (room.inGameName || room.teamName || room.userName || 'Host') : (room.sqName || room.teamName || 'Host SQ');
@@ -436,6 +432,8 @@ function showSpinWheelPopup(room, mode, userId, callbacks) {
             setTimeout(() => {
                 styleTag.remove();
                 overlay.remove();
+                
+                // Spin Wheel ပြီးသွားတဲ့အခါ callbacks.onBothReady ကို ခေါ်ပြီး Reward Code Popup ပေါ်လာစေရန် ချိတ်ဆက်ပေးလိုက်ပါပြီ
                 if (callbacks.onBothReady) {
                     callbacks.onBothReady({ ...room, firstPick: winner });
                 }
@@ -444,15 +442,14 @@ function showSpinWheelPopup(room, mode, userId, callbacks) {
         }, 10000);
     }
 }
+
 export function showRewardCodePopup(room, mode, userId, callbacks = {}) {
     const is1v1 = mode.toLowerCase().includes('1v1');
     const isHost = userId === room.hostId;
 
-    // Host ဖြစ်ရင် Joiner ရဲ့ ဒေတာတွေကို ယူမယ်၊ Joiner ဖြစ်ရင် Host ရဲ့ ဒေတာတွေကို ယူမယ်
     const targetTeamName = isHost ? (room.joinerSqName || room.joinerTeamName || room.joinerUserName || 'Joiner Team') : (room.sqName || room.teamName || room.inGameName || room.userName || 'Host Team');
     const targetContact = isHost ? (room.joinerContactPhNo || room.joinerKpayPhNo || 'N/A') : (room.contactPhNo || room.kpayPhNo || 'N/A');
 
-    // Player ၅ ယောက်လုံးရဲ့ Name များကို ဆွဲထုတ်ရန် Helper Function (5v5 သို့မဟုတ် 1v1 အတွက်)
     const getPlayerNames = (r, forHostData) => {
         if (is1v1) {
             const name = forHostData ? (r.inGameName || r.userName || '-') : (r.joinerUserName || '-');
@@ -474,10 +471,9 @@ export function showRewardCodePopup(room, mode, userId, callbacks = {}) {
 
     const playersListHTML = getPlayerNames(room, !isHost);
 
-    // Random Code ကို Backend မှာ သိမ်းဆည်းခြင်း (Host က ပထမဆုံး ဝင်လာချိန်မှာ Code မရှိသေးရင် အသစ်ထုတ်ပေးမည်)
     let matchCode = room.matchCode;
     if (isHost && !matchCode) {
-        matchCode = 'REV-' + Math.floor(100000 + Math.random() * 900000); // 6 digits random code
+        matchCode = 'REV-' + Math.floor(100000 + Math.random() * 900000);
         fetch('/api/create-room', {
             method: 'PATCH',
             headers: { 'Content-Type': 'application/json' },
@@ -494,17 +490,15 @@ export function showRewardCodePopup(room, mode, userId, callbacks = {}) {
             <div style="font-size: 16px; font-weight: 700; margin-bottom: 4px; color: #34c759;">🎉 Match Successful!</div>
             <div style="font-size: 12px; color: #8e8e93; margin-bottom: 16px;">အချင်းချင်း ဆက်သွယ်ရန်နှင့် ဆုလက်ဆောင်ထုတ်ယူရန်</div>
 
-            <!-- Team & Contact Details Box -->
             <div style="background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.08); border-radius: 14px; padding: 12px; text-align: left; margin-bottom: 14px;">
                 <div style="font-size: 13px; font-weight: 700; color: #0a84ff; margin-bottom: 6px;">Team: ${targetTeamName}</div>
                 <div style="font-size: 12px; margin-bottom: 8px;">Contact Ph: <b style="color: #ff3b30;">${targetContact}</b></div>
-                <div style="font-size: 12px; font-weight: 600; color: #fff; margin-bottom: 4px; border-top: 1px solid rgba(255,255,255,0.1); padding-top: 6px;">Players (5 ယောက်စာ Names):</div>
+                <div style="font-size: 12px; font-weight: 600; color: #fff; margin-bottom: 4px; border-top: 1px solid rgba(255,255,255,0.1); padding-top: 6px;">Players Names:</div>
                 <div style="max-height: 120px; overflow-y: auto;">
                     ${playersListHTML}
                 </div>
             </div>
 
-            <!-- Reward Code Box -->
             <div style="background: linear-gradient(135deg, rgba(0,122,255,0.15), rgba(88,86,214,0.15)); border: 1px solid rgba(0,122,255,0.3); border-radius: 14px; padding: 14px; margin-bottom: 16px;">
                 <div style="font-size: 11px; text-transform: uppercase; letter-spacing: 1px; color: #8e8e93; margin-bottom: 4px;">Your Reward Code</div>
                 <div id="displayMatchCode" style="font-size: 22px; font-weight: 800; color: #fff; letter-spacing: 2px;">${matchCode || 'Loading...'}</div>
@@ -516,7 +510,6 @@ export function showRewardCodePopup(room, mode, userId, callbacks = {}) {
 
     document.body.appendChild(overlay);
 
-    // Joiner ဖြစ်ပြီး Code က မထွက်လာသေးရင် ခဏစောင့်ပြီး Fetch လုပ်ပေးရန် (Polling or Interval)
     if (!isHost && !room.matchCode) {
         const codeInterval = setInterval(async () => {
             try {

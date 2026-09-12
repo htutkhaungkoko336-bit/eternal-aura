@@ -1,6 +1,6 @@
 import { renderMatchScreen } from './match.js';
 import { getKeyData, deductKey } from './keysStore.js';
-import { showRoomDetailsPopup } from './roomPopup.js';
+import { showRoomDetailsPopup, showRewardCodePopup } from './roomPopup.js';
 
 export function renderRoomScreen(container, roomTitleText, userDocData = {}) {
     const upperTitle = roomTitleText.toUpperCase();
@@ -308,13 +308,11 @@ export function renderRoomScreen(container, roomTitleText, userDocData = {}) {
                     }
 
                     const isLocked = room.joinedUserId && room.joinedUserId !== userId;
-                    // joiner ရှိမရှိ (joinedUserId တကယ်ရှိမှသာ Matched အဖြစ်သတ်မှတ်မည်)
                     const hasMatched = !!room.joinedUserId;
 
                     const hostLogo = room.teamLogo || defaultUserAvatar;
                     const hostName = room.teamName || 'Player';
                     
-                    // Joiner မရှိသေးပါက (or null/empty) Avatar နဲ့ Name ကို လုံးဝမပြဘဲ ရှင်းထားမည်
                     const joinerLogo = hasMatched ? (room.joinerTeamLogo || defaultUserAvatar) : '';
                     const joinerName = hasMatched ? (room.joinerTeamName || 'Joined Player') : '';
 
@@ -361,9 +359,18 @@ export function renderRoomScreen(container, roomTitleText, userDocData = {}) {
                     card.addEventListener('click', (e) => {
                         if (e.target.tagName === 'BUTTON') return;
                         const room = data.rooms[idx];
+                        
+                        // ဒီနေရာမှာ Popup ပြီးဆုံးသွားရင် Reward Code Popup ဆက်ပေါ်လာအောင် callbacks ထည့်ပေးထားပါတယ်[cite: 1, 2]
                         showRoomDetailsPopup(room, targetMode, userId, {
                             onCancelJoiner: (roomId) => cancelJoinerAPI(roomId),
-                            onTransferHost: (roomId) => transferHostAPI(roomId)
+                            onTransferHost: (roomId) => transferHostAPI(roomId),
+                            onBothReady: (updatedRoom) => {
+                                showRewardCodePopup(updatedRoom, targetMode, userId, {
+                                    onComplete: (finalRoom) => {
+                                        fetchAndRenderGlobalRooms();
+                                    }
+                                });
+                            }
                         });
                     });
                 });
