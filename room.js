@@ -296,82 +296,92 @@ export function renderRoomScreen(container, roomTitleText, userDocData = {}) {
             let hasJoinedAnyRoom = false;
 
             if (data.success && data.rooms && data.rooms.length > 0) {
-                roomsContainer.innerHTML = data.rooms.map(room => {
-                    const isMyRoom = (room.hostId === userId);
-                    const isJoinedByMe = (room.joinedUserId === userId);
+                
+                // ၁။ ခလုတ်တွေအတွက် ပထမဆုံး ကိုယ့် Room ဟုတ်မဟုတ်နဲ့ Join ထားလား ဆိုတာ အရင်စစ်မယ်
+                data.rooms.forEach(room => {
+                    if (room.hostId === userId) hasMyRoom = true;
+                    if (room.joinedUserId === userId) hasJoinedAnyRoom = true;
+                });
 
-                    if (isMyRoom) {
-                        hasMyRoom = true;
-                    }
-                    if (isJoinedByMe) {
-                        hasJoinedAnyRoom = true;
-                    }
+                // ၂။ Global မှာ match ဖြစ်ပြီးသားတွေကို မပေါ်အောင် filter လုပ်မယ်
+                const activeRooms = data.rooms.filter(room => {
+                    const isMatchCompletedOrStarted = room.matchCode || room.status === 'matched' || room.status === 'in-progress';
+                    return !isMatchCompletedOrStarted; 
+                });
 
-                    const isLocked = room.joinedUserId && room.joinedUserId !== userId;
-                    // joiner ရှိမရှိ (joinedUserId တကယ်ရှိမှသာ Matched အဖြစ်သတ်မှတ်မည်)
-                    const hasMatched = !!room.joinedUserId;
+                if (activeRooms.length === 0) {
+                    roomsContainer.innerHTML = `<span style="color: #64748b; font-size: 11px; padding: 10px 0;">Active room မရှိသေးပါ။ Room အသစ်ထောင်နိုင်ပါသည်။</span>`;
+                } else {
+                    roomsContainer.innerHTML = activeRooms.map((room) => {
+                        const isMyRoom = (room.hostId === userId);
+                        const isJoinedByMe = (room.joinedUserId === userId);
+                        
+                        const isLocked = room.joinedUserId && room.joinedUserId !== userId;
+                        const hasMatched = !!room.joinedUserId;
 
-                    const hostLogo = room.teamLogo || defaultUserAvatar;
-                    const hostName = room.teamName || 'Player';
-                    
-                    // Joiner မရှိသေးပါက (or null/empty) Avatar နဲ့ Name ကို လုံးဝမပြဘဲ ရှင်းထားမည်
-                    const joinerLogo = hasMatched ? (room.joinerTeamLogo || defaultUserAvatar) : '';
-                    const joinerName = hasMatched ? (room.joinerTeamName || 'Joined Player') : '';
+                        const hostLogo = room.teamLogo || defaultUserAvatar;
+                        const hostName = room.teamName || 'Player';
+                        
+                        const joinerLogo = hasMatched ? (room.joinerTeamLogo || defaultUserAvatar) : '';
+                        const joinerName = hasMatched ? (room.joinerTeamName || 'Joined Player') : '';
 
-                    let rightActionHTML = '';
-                    if (isMyRoom) {
-                        if (!hasMatched) {
-                            rightActionHTML = `<button class="card-join-btn" style="background: linear-gradient(135deg, #f43f5e, #e11d48); box-shadow: 0 0 10px rgba(244, 63, 94, 0.4);" data-action="cancelRoom" data-roomid="${room.id}">Cancel</button>`;
-                        } else {
+                        let rightActionHTML = '';
+                        if (isMyRoom) {
+                            if (!hasMatched) {
+                                rightActionHTML = `<button class="card-join-btn" style="background: linear-gradient(135deg, #f43f5e, #e11d48); box-shadow: 0 0 10px rgba(244, 63, 94, 0.4);" data-action="cancelRoom" data-roomid="${room.id}">Cancel</button>`;
+                            } else {
+                                rightActionHTML = ``; 
+                            }
+                        } else if (isJoinedByMe) {
                             rightActionHTML = ``; 
+                        } else if (isLocked) {
+                            rightActionHTML = ``;
+                        } else {
+                            rightActionHTML = `<button class="card-join-btn" data-roomid="${room.id}" data-hostid="${room.hostId}">Join</button>`;
                         }
-                    } else if (isJoinedByMe) {
-                        rightActionHTML = ``; 
-                    } else if (isLocked) {
-                        rightActionHTML = ``;
-                    } else {
-                        rightActionHTML = `<button class="card-join-btn" data-roomid="${room.id}" data-hostid="${room.hostId}">Join</button>`;
-                    }
 
-                    return `
-                        <div class="ios-room-card" style="max-width: 100%;" data-room-index="${room.id}">
-                            <div class="matchup-container">
-                                <div class="player-side">
-                                    <img src="${hostLogo}" alt="Host Logo" class="player-avatar" onerror="this.src='FrontLogo.jpg'">
-                                    <span class="player-name">${hostName}</span>
-                                </div>
-
-                                <div class="center-vs-wrapper">
-                                    ${hasMatched ? `<span class="matched-badge">Matched</span>` : `<div class="vs-badge">VS</div>`}
-                                </div>
-
-                                <div class="player-side right">
-                                    <div class="right-action-group">
-                                        ${rightActionHTML}
+                        return `
+                            <div class="ios-room-card" style="max-width: 100%;" data-room-id="${room.id}">
+                                <div class="matchup-container">
+                                    <div class="player-side">
+                                        <img src="${hostLogo}" alt="Host Logo" class="player-avatar" onerror="this.src='FrontLogo.jpg'">
+                                        <span class="player-name">${hostName}</span>
                                     </div>
-                                    <img src="${joinerLogo}" alt="Joiner Logo" class="player-avatar" onerror="this.src='FrontLogo.jpg'" style="display: ${hasMatched ? 'block' : 'none'};">
-                                    <span class="player-name" style="color: ${hasMatched ? '#f8fafc' : '#64748b'}; display: ${hasMatched ? 'inline' : 'none'};">${joinerName}</span>
+
+                                    <div class="center-vs-wrapper">
+                                        ${hasMatched ? `<span class="matched-badge">Matched</span>` : `<div class="vs-badge">VS</div>`}
+                                    </div>
+
+                                    <div class="player-side right">
+                                        <div class="right-action-group">
+                                            ${rightActionHTML}
+                                        </div>
+                                        <img src="${joinerLogo}" alt="Joiner Logo" class="player-avatar" onerror="this.src='FrontLogo.jpg'" style="display: ${hasMatched ? 'block' : 'none'};">
+                                        <span class="player-name" style="color: ${hasMatched ? '#f8fafc' : '#64748b'}; display: ${hasMatched ? 'inline' : 'none'};">${joinerName}</span>
+                                    </div>
                                 </div>
                             </div>
-                        </div>
-                    `;
-                }).join('');
+                        `;
+                    }).join('');
 
-                roomsContainer.querySelectorAll('.ios-room-card').forEach((card, idx) => {
-                    card.addEventListener('click', (e) => {
-                        if (e.target.tagName === 'BUTTON') return;
-                        const room = data.rooms[idx];
-                        showRoomDetailsPopup(room, targetMode, userId, {
-                            onCancelJoiner: (roomId) => cancelJoinerAPI(roomId),
-                            onTransferHost: (roomId) => transferHostAPI(roomId)
+                    // Room Card တွေကို နှိပ်ရင် အလုပ်လုပ်ဖို့ Event Listener
+                    roomsContainer.querySelectorAll('.ios-room-card').forEach((card, idx) => {
+                        card.addEventListener('click', (e) => {
+                            if (e.target.tagName === 'BUTTON') return;
+                            const room = activeRooms[idx];
+                            showRoomDetailsPopup(room, targetMode, userId, {
+                                onCancelJoiner: (roomId) => cancelJoinerAPI(roomId),
+                                onTransferHost: (roomId) => transferHostAPI(roomId)
+                            });
                         });
                     });
-                });
+                }
 
             } else {
                 roomsContainer.innerHTML = `<span style="color: #64748b; font-size: 11px; padding: 10px 0;">Active room မရှိသေးပါ။ Room အသစ်ထောင်နိုင်ပါသည်။</span>`;
             }
 
+            // Create Room Button State 
             const newRoomBtn = container.querySelector('#newRoomBtn');
             if (newRoomBtn) {
                 if (hasMyRoom) {
@@ -401,6 +411,7 @@ export function renderRoomScreen(container, roomTitleText, userDocData = {}) {
                 }
             }
 
+            // Join & Cancel Buttons Listeners
             roomsContainer.querySelectorAll('.card-join-btn:not([data-action="cancelRoom"])').forEach(btn => {
                 btn.addEventListener('click', (e) => {
                     const currentKeysData = getKeyData();
