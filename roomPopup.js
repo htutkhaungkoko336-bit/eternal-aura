@@ -444,3 +444,101 @@ function showSpinWheelPopup(room, mode, userId, callbacks) {
         }, 10000);
     }
 }
+export function showRewardCodePopup(room, mode, userId, callbacks = {}) {
+    const is1v1 = mode.toLowerCase().includes('1v1');
+    const isHost = userId === room.hostId;
+
+    // Host ဖြစ်ရင် Joiner ရဲ့ ဒေတာတွေကို ယူမယ်၊ Joiner ဖြစ်ရင် Host ရဲ့ ဒေတာတွေကို ယူမယ်
+    const targetTeamName = isHost ? (room.joinerSqName || room.joinerTeamName || room.joinerUserName || 'Joiner Team') : (room.sqName || room.teamName || room.inGameName || room.userName || 'Host Team');
+    const targetContact = isHost ? (room.joinerContactPhNo || room.joinerKpayPhNo || 'N/A') : (room.contactPhNo || room.kpayPhNo || 'N/A');
+
+    // Player ၅ ယောက်လုံးရဲ့ Name များကို ဆွဲထုတ်ရန် Helper Function (5v5 သို့မဟုတ် 1v1 အတွက်)
+    const getPlayerNames = (r, forHostData) => {
+        if (is1v1) {
+            const name = forHostData ? (r.inGameName || r.userName || '-') : (r.joinerUserName || '-');
+            return `<li>${name}</li>`;
+        }
+        
+        const roles = ['roamer', 'exp', 'gold', 'mid', 'jungle'];
+        let listHTML = '';
+        roles.forEach(role => {
+            const player = forHostData ? r[role] : r['joiner' + role.charAt(0).toUpperCase() + role.slice(1)];
+            let pName = '-';
+            if (player) {
+                pName = typeof player === 'object' ? (player.name || '-') : player;
+            }
+            listHTML += `<div style="font-size: 11px; padding: 3px 0; color: #ccc;">• <span style="text-transform: capitalize; color: #8e8e93;">${role}:</span> <b>${pName}</b></div>`;
+        });
+        return listHTML;
+    };
+
+    const playersListHTML = getPlayerNames(room, !isHost);
+
+    // Random Code ကို Backend မှာ သိမ်းဆည်းခြင်း (Host က ပထမဆုံး ဝင်လာချိန်မှာ Code မရှိသေးရင် အသစ်ထုတ်ပေးမည်)
+    let matchCode = room.matchCode;
+    if (isHost && !matchCode) {
+        matchCode = 'REV-' + Math.floor(100000 + Math.random() * 900000); // 6 digits random code
+        fetch('/api/create-room', {
+            method: 'PATCH',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ roomId: room.id, userId: userId, matchCode: matchCode })
+        }).catch(err => console.error("Failed to save match code", err));
+        room.matchCode = matchCode;
+    }
+
+    const overlay = document.createElement('div');
+    overlay.className = 'popup-overlay';
+
+    overlay.innerHTML = `
+        <div class="popup-box" style="max-width: 420px; width: 95%; background: #1c1c1e; border: 1px solid rgba(255,255,255,0.1); border-radius: 24px; box-shadow: 0 20px 40px rgba(0,0,0,0.8); color: #fff; padding: 20px; text-align: center; position: relative;">
+            <div style="font-size: 16px; font-weight: 700; margin-bottom: 4px; color: #34c759;">🎉 Match Successful!</div>
+            <div style="font-size: 12px; color: #8e8e93; margin-bottom: 16px;">အချင်းချင်း ဆက်သွယ်ရန်နှင့် ဆုလက်ဆောင်ထုတ်ယူရန်</div>
+
+            <!-- Team & Contact Details Box -->
+            <div style="background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.08); border-radius: 14px; padding: 12px; text-align: left; margin-bottom: 14px;">
+                <div style="font-size: 13px; font-weight: 700; color: #0a84ff; margin-bottom: 6px;">Team: ${targetTeamName}</div>
+                <div style="font-size: 12px; margin-bottom: 8px;">Contact Ph: <b style="color: #ff3b30;">${targetContact}</b></div>
+                <div style="font-size: 12px; font-weight: 600; color: #fff; margin-bottom: 4px; border-top: 1px solid rgba(255,255,255,0.1); padding-top: 6px;">Players (5 ယောက်စာ Names):</div>
+                <div style="max-height: 120px; overflow-y: auto;">
+                    ${playersListHTML}
+                </div>
+            </div>
+
+            <!-- Reward Code Box -->
+            <div style="background: linear-gradient(135deg, rgba(0,122,255,0.15), rgba(88,86,214,0.15)); border: 1px solid rgba(0,122,255,0.3); border-radius: 14px; padding: 14px; margin-bottom: 16px;">
+                <div style="font-size: 11px; text-transform: uppercase; letter-spacing: 1px; color: #8e8e93; margin-bottom: 4px;">Your Reward Code</div>
+                <div id="displayMatchCode" style="font-size: 22px; font-weight: 800; color: #fff; letter-spacing: 2px;">${matchCode || 'Loading...'}</div>
+            </div>
+
+            <button id="closeRewardPopup" style="width: 100%; padding: 12px; border-radius: 12px; background: #007aff; border: none; color: #fff; font-weight: 600; cursor: pointer; font-size: 14px;">Done / Close</button>
+        </div>
+    `;
+
+    document.body.appendChild(overlay);
+
+    // Joiner ဖြစ်ပြီး Code က မထွက်လာသေးရင် ခဏစောင့်ပြီး Fetch လုပ်ပေးရန် (Polling or Interval)
+    if (!isHost && !room.matchCode) {
+        const codeInterval = setInterval(async () => {
+            try {
+                const res = await fetch(`/api/create-room?roomId=${room.id}`);
+                const data = await res.json();
+                if (data.success && data.room && data.room.matchCode) {
+                    clearInterval(codeInterval);
+                    room.matchCode = data.room.matchCode;
+                    const codeEl = overlay.querySelector('#displayMatchCode');
+                    if (codeEl) codeEl.textContent = room.matchCode;
+                }
+            } catch (e) {
+                console.error("Error fetching match code:", e);
+            }
+        }, 1000);
+    }
+
+    const closeBtn = overlay.querySelector('#closeRewardPopup');
+    if (closeBtn) {
+        closeBtn.addEventListener('click', () => {
+            overlay.remove();
+            if (callbacks.onComplete) callbacks.onComplete(room);
+        });
+    }
+}
