@@ -355,26 +355,35 @@ export function renderRoomScreen(container, roomTitleText, userDocData = {}) {
                     `;
                 }).join('');
 
-                roomsContainer.querySelectorAll('.ios-room-card').forEach((card, idx) => {
-                    card.addEventListener('click', (e) => {
-                        if (e.target.tagName === 'BUTTON') return;
-                        const room = data.rooms[idx];
-                        
-                        // ဒီနေရာမှာ Popup ပြီးဆုံးသွားရင် Reward Code Popup ဆက်ပေါ်လာအောင် callbacks ထည့်ပေးထားပါတယ်[cite: 1, 2]
-                        showRoomDetailsPopup(room, targetMode, userId, {
-                            onCancelJoiner: (roomId) => cancelJoinerAPI(roomId),
-                            onTransferHost: (roomId) => transferHostAPI(roomId),
-                            onBothReady: (updatedRoom) => {
-                                showRewardCodePopup(updatedRoom, targetMode, userId, {
+                    roomsContainer.querySelectorAll('.ios-room-card').forEach((card, idx) => {
+                        card.addEventListener('click', (e) => {
+                            if (e.target.tagName === 'BUTTON') return;
+                            const room = data.rooms[idx];
+                            
+                            // Firebase ထဲက status "fully_matched" နဲ့ တိုက်စစ်ပါမယ်
+                            const hasMatched = room.status === 'fully_matched';
+
+                            if (hasMatched) {
+                                showRewardCodePopup(room, targetMode, userId, {
                                     onComplete: (finalRoom) => {
                                         fetchAndRenderGlobalRooms();
+                                    }
+                                });
+                            } else {
+                                showRoomDetailsPopup(room, targetMode, userId, {
+                                    onCancelJoiner: (roomId) => cancelJoinerAPI(roomId),
+                                    onTransferHost: (roomId) => transferHostAPI(roomId),
+                                    onBothReady: (updatedRoom) => {
+                                        showRewardCodePopup(updatedRoom, targetMode, userId, {
+                                            onComplete: (finalRoom) => {
+                                                fetchAndRenderGlobalRooms();
+                                            }
+                                        });
                                     }
                                 });
                             }
                         });
                     });
-                });
-
             } else {
                 roomsContainer.innerHTML = `<span style="color: #64748b; font-size: 11px; padding: 10px 0;">Active room မရှိသေးပါ။ Room အသစ်ထောင်နိုင်ပါသည်။</span>`;
             }
