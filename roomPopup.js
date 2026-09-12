@@ -433,7 +433,7 @@ function showSpinWheelPopup(room, mode, userId, callbacks) {
                 styleTag.remove();
                 overlay.remove();
                 
-                // ဒီနေရာမှာ Polling ကို ရပ်ပြီးသားဖြစ်တဲ့အတွက် Reward Code Popup ကိုပဲ သီးသန့်ပြပါမယ်[cite: 1, 2]
+                // Spin Wheel ပြီးသွားတဲ့အခါ callbacks.onBothReady ကို ခေါ်ပြီး Reward Code Popup ပေါ်လာစေရန် ချိတ်ဆက်ပေးလိုက်ပါပြီ
                 if (callbacks.onBothReady) {
                     callbacks.onBothReady({ ...room, firstPick: winner });
                 }

@@ -163,6 +163,66 @@ export function renderRoomScreen(container, roomTitleText, userDocData = {}) {
                     opacity: 0.9;
                 }
                 
+                .popup-overlay {
+                    position: fixed;
+                    top: 0;
+                    left: 0;
+                    width: 100%;
+                    height: 100%;
+                    background: rgba(4, 4, 8, 0.85);
+                    display: flex;
+                    justify-content: center;
+                    align-items: center;
+                    z-index: 1000;
+                    padding: 16px;
+                    box-sizing: border-box;
+                }
+                .popup-box {
+                    background: linear-gradient(135deg, rgba(15, 23, 42, 0.95), rgba(30, 41, 59, 0.95));
+                    border: 2px solid #38bdf8;
+                    border-radius: 14px;
+                    width: 100%;
+                    max-width: 310px;
+                    padding: 20px 18px;
+                    box-shadow: 0 0 25px rgba(56, 189, 248, 0.3);
+                    color: #fff;
+                    font-size: 12px;
+                    box-sizing: border-box;
+                    position: relative;
+                    max-height: 85vh;
+                    overflow-y: auto;
+                }
+                .popup-title {
+                    font-size: 14px;
+                    font-weight: 800;
+                    color: #38bdf8;
+                    text-align: center;
+                    margin-bottom: 12px;
+                    text-transform: uppercase;
+                    border-bottom: 1px solid rgba(56, 189, 248, 0.3);
+                    padding-bottom: 8px;
+                }
+                .popup-row {
+                    display: flex;
+                    justify-content: space-between;
+                    align-items: center;
+                    padding: 10px 4px;
+                    border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+                    font-size: 12px;
+                }
+                .popup-close-btn {
+                    width: 100%;
+                    margin-top: 16px;
+                    background: linear-gradient(135deg, #0284c7, #9333ea);
+                    color: #fff;
+                    border: none;
+                    padding: 10px;
+                    border-radius: 8px;
+                    font-weight: 700;
+                    cursor: pointer;
+                    text-align: center;
+                }
+
                 .room-bottom-actions {
                     display: flex;
                     gap: 12px;
@@ -300,20 +360,7 @@ export function renderRoomScreen(container, roomTitleText, userDocData = {}) {
                         if (e.target.tagName === 'BUTTON') return;
                         const room = data.rooms[idx];
                         
-                        // Host သို့မဟုတ် Joiner ဖြစ်မဖြစ် စစ်ဆေးခြင်း
-                        const isParticipant = (userId === room.hostId) || (userId === room.joinedUserId);
-
-                        // Spin / FirstPick ပြီးသွားပြီဆိုရင် Reward Code Popup ကို တိုက်ရိုက်ပြမယ် (Polling လုံးဝမ run တော့ပါ)
-                        if (room.firstPick && isParticipant) {
-                            showRewardCodePopup(room, targetMode, userId, {
-                                onComplete: (finalRoom) => {
-                                    fetchAndRenderGlobalRooms();
-                                }
-                            });
-                            return;
-                        }
-                        
-                        // မပြီးသေးရင် ပုံမှန် Match Details / Ready Popup ကိုပြမယ်
+                        // ဒီနေရာမှာ Popup ပြီးဆုံးသွားရင် Reward Code Popup ဆက်ပေါ်လာအောင် callbacks ထည့်ပေးထားပါတယ်[cite: 1, 2]
                         showRoomDetailsPopup(room, targetMode, userId, {
                             onCancelJoiner: (roomId) => cancelJoinerAPI(roomId),
                             onTransferHost: (roomId) => transferHostAPI(roomId),
