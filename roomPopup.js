@@ -449,6 +449,9 @@ export function showRewardCodePopup(room, mode, userId, callbacks = {}) {
     const targetTeamName = isHost ? (room.joinerSqName || room.joinerTeamName || room.joinerUserName || 'Joiner Team') : (room.sqName || room.teamName || room.inGameName || room.userName || 'Host Team');
     const targetContact = isHost ? (room.joinerContactPhNo || room.joinerKpayPhNo || 'N/A') : (room.contactPhNo || room.kpayPhNo || 'N/A');
 
+    // 🔥 First Pick Team အချက်အလက်ကို ထည့်သွင်းခြင်း
+    const firstPickTeam = room.firstPickTeam || room.firstPick || 'Not Specified';
+
     const getPlayerNames = (r, forHostData) => {
         if (is1v1) {
             const name = forHostData ? (r.inGameName || r.userName || '-') : (r.joinerUserName || '-');
@@ -483,7 +486,10 @@ export function showRewardCodePopup(room, mode, userId, callbacks = {}) {
 
             <div style="background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.08); border-radius: 14px; padding: 12px; text-align: left; margin-bottom: 14px;">
                 <div style="font-size: 13px; font-weight: 700; color: #0a84ff; margin-bottom: 6px;">Team: ${targetTeamName}</div>
-                <div style="font-size: 12px; margin-bottom: 8px;">Contact Ph: <b style="color: #ff3b30;">${targetContact}</b></div>
+                <div style="font-size: 12px; margin-bottom: 6px;">Contact Ph: <b style="color: #ff3b30;">${targetContact}</b></div>
+                <!-- 🔥 First Pick Team ကို UI တွင် ထည့်ပြခြင်း -->
+                <div style="font-size: 12px; margin-bottom: 8px; color: #ff9f0a;">First Pick Team: <b>${firstPickTeam}</b></div>
+                
                 <div style="font-size: 12px; font-weight: 600; color: #fff; margin-bottom: 4px; border-top: 1px solid rgba(255,255,255,0.1); padding-top: 6px;">Players Names:</div>
                 <div style="max-height: 120px; overflow-y: auto;">
                     ${playersListHTML}
@@ -539,7 +545,8 @@ export function showRewardCodePopup(room, mode, userId, callbacks = {}) {
             // Network error များကို Silent လုပ်ထားပါမည်
         }
     }, 2000);
-        const closeBtn = overlay.querySelector('#closeRewardPopup');
+
+    const closeBtn = overlay.querySelector('#closeRewardPopup');
     if (closeBtn) {
         closeBtn.addEventListener('click', () => {
             clearInterval(intervalId);
