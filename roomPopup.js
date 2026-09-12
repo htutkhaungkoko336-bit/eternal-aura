@@ -448,14 +448,13 @@ export function showRewardCodePopup(room, mode, userId, callbacks = {}) {
 
     const targetTeamName = isHost ? (room.joinerSqName || room.joinerTeamName || room.joinerUserName || 'Joiner Team') : (room.sqName || room.teamName || room.inGameName || room.userName || 'Host Team');
     const targetContact = isHost ? (room.joinerContactPhNo || room.joinerKpayPhNo || 'N/A') : (room.contactPhNo || room.kpayPhNo || 'N/A');
-
-    // 🔥 First Pick Team အချက်အလက်ကို ထည့်သွင်းခြင်း
     const firstPickTeam = room.firstPickTeam || room.firstPick || 'Not Specified';
 
     const getPlayerNames = (r, forHostData) => {
         if (is1v1) {
             const name = forHostData ? (r.inGameName || r.userName || '-') : (r.joinerUserName || '-');
-            return `<li>${name}</li>`;
+            const id = forHostData ? (r.id || '-') : (r.joinerId || '-'); // 1v1 အတွက် ID ထည့်သွင်းခြင်း
+            return `<li>${name} <span style="color: #8e8e93; font-size: 10px;">(ID: ${id})</span></li>`;
         }
         
         const roles = ['roamer', 'exp', 'gold', 'mid', 'jungle'];
@@ -463,17 +462,24 @@ export function showRewardCodePopup(room, mode, userId, callbacks = {}) {
         roles.forEach(role => {
             const player = forHostData ? r[role] : r['joiner' + role.charAt(0).toUpperCase() + role.slice(1)];
             let pName = '-';
+            let pId = '-';
+
             if (player) {
-                pName = typeof player === 'object' ? (player.name || '-') : player;
+                if (typeof player === 'object') {
+                    pName = player.name || '-';
+                    pId = player.id || '-';
+                } else {
+                    pName = player;
+                }
             }
-            listHTML += `<div style="font-size: 11px; padding: 3px 0; color: #ccc;">• <span style="text-transform: capitalize; color: #8e8e93;">${role}:</span> <b>${pName}</b></div>`;
+
+            // Roamer သို့မဟုတ် အခြား player တွေရဲ့ Name နဲ့ ID ကို တွဲပြပေးပါမည်
+            listHTML += `<div style="font-size: 11px; padding: 3px 0; color: #ccc;">• <span style="text-transform: capitalize; color: #8e8e93;">${role}:</span> <b>${pName}</b> <span style="color: #0a84ff; font-size: 10px;">(ID: ${pId})</span></div>`;
         });
         return listHTML;
     };
 
     const playersListHTML = getPlayerNames(room, !isHost);
-
-    // 🔥 ပထမအကြိမ် စပေါ်တဲ့အခါ matchCode ရှိပြီးသားဆိုရင် တန်းပြမယ်၊ မရှိသေးရင် Pending ပြမယ်
     let initialMatchCode = room.matchCode || 'Pending...';
 
     const overlay = document.createElement('div');
@@ -487,11 +493,10 @@ export function showRewardCodePopup(room, mode, userId, callbacks = {}) {
             <div style="background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.08); border-radius: 14px; padding: 12px; text-align: left; margin-bottom: 14px;">
                 <div style="font-size: 13px; font-weight: 700; color: #0a84ff; margin-bottom: 6px;">Team: ${targetTeamName}</div>
                 <div style="font-size: 12px; margin-bottom: 6px;">Contact Ph: <b style="color: #ff3b30;">${targetContact}</b></div>
-                <!-- 🔥 First Pick Team ကို UI တွင် ထည့်ပြခြင်း -->
                 <div style="font-size: 12px; margin-bottom: 8px; color: #ff9f0a;">First Pick Team: <b>${firstPickTeam}</b></div>
                 
-                <div style="font-size: 12px; font-weight: 600; color: #fff; margin-bottom: 4px; border-top: 1px solid rgba(255,255,255,0.1); padding-top: 6px;">Players Names:</div>
-                <div style="max-height: 120px; overflow-y: auto;">
+                <div style="font-size: 12px; font-weight: 600; color: #fff; margin-bottom: 4px; border-top: 1px solid rgba(255,255,255,0.1); padding-top: 6px;">Players & IDs:</div>
+                <div style="max-height: 140px; overflow-y: auto;">
                     ${playersListHTML}
                 </div>
             </div>
@@ -507,10 +512,7 @@ export function showRewardCodePopup(room, mode, userId, callbacks = {}) {
 
     document.body.appendChild(overlay);
 
-    // 🔥 မှန်ကန်သော Room ID (Host ID) ကို သေချာ ထုတ်ယူမည်
     const targetRoomId = room.id || room.hostId;
-
-    // 🔥 Backend ကို API ခေါ်မည့်အစား မှန်ကန်သော Endpoint သို့မဟုတ် Real-time စစ်ဆေးသည့် ပုံစံသို့ ပြောင်းခြင်း
     const intervalId = setInterval(async () => {
         if (!document.body.contains(overlay)) {
             clearInterval(intervalId);
@@ -523,27 +525,15 @@ export function showRewardCodePopup(room, mode, userId, callbacks = {}) {
                 const data = await res.json();
                 const roomData = data.room || data; 
                 
-                // Match Code ထွက်လာပြီဆိုတာနဲ့
                 if (data.success && roomData && roomData.matchCode) {
-                    // ၁။ Polling ကို ချက်ချင်း ရပ်လိုက်ပါ
                     clearInterval(intervalId);
-
-                    // ၂။ Spinner ကို ရပ်ပြီး Match Code Popup ကို တန်းပြပါ
-                    const spinnerContainer = overlay.querySelector('#spinnerContainer');
-                    const matchCodeContainer = overlay.querySelector('#matchCodeContainer');
                     const codeElement = overlay.querySelector('#displayMatchCode');
-
-                    if (spinnerContainer) spinnerContainer.style.display = 'none';
-                    if (matchCodeContainer) matchCodeContainer.style.display = 'block';
-                    
                     if (codeElement) {
                         codeElement.textContent = roomData.matchCode;
                     }
                 }
             }
-        } catch (err) {
-            // Network error များကို Silent လုပ်ထားပါမည်
-        }
+        } catch (err) {}
     }, 2000);
 
     const closeBtn = overlay.querySelector('#closeRewardPopup');
