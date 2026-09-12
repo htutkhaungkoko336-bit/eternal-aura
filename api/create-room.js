@@ -326,13 +326,16 @@ module.exports = async function handler(req, res) {
                 updateData.status = 'fully_matched';
                 
                 if (!currentData.matchCode) {
-                    const randomNum = Math.floor(100000 + Math.random() * 900000);
-                    updateData.matchCode = `REV-${randomNum}`;
+                    const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
+                    let randomStr = '';
+                    for (let i = 0; i < 6; i++) {
+                        randomStr += chars.charAt(Math.floor(Math.random() * chars.length));
+                    }
+                    updateData.matchCode = `REV-${randomStr}`;
                 }
             } else {
                 updateData.status = 'matched';
             }
-
             await roomRef.update(updateData);
 
             return res.status(200).json({ success: true, message: "Status updated successfully" });
