@@ -41,13 +41,31 @@ export function showRoomDetailsPopup(room, mode, userId, callbacks = {}) {
                 if (updatedRoom.hostReady !== hostReadyState || 
                     updatedRoom.joinerReady !== joinerReadyState || 
                     updatedRoom.firstPick !== firstPickResult ||
-                    updatedRoom.spinStartTime !== room.spinStartTime) {
+                    updatedRoom.spinStartTime !== room.spinStartTime ||
+                    updatedRoom.joinedUserId !== room.joinedUserId) {
                     
                     hostReadyState = !!updatedRoom.hostReady;
                     joinerReadyState = !!updatedRoom.joinerReady;
                     if (updatedRoom.firstPick) firstPickResult = updatedRoom.firstPick;
                     if (updatedRoom.spinStartTime) room.spinStartTime = updatedRoom.spinStartTime;
                     
+                    // Joiner အခြေအနေ ပြောင်းလဲမှုကိုပါ room ထဲသို့ ထည့်သွင်းပေးခြင်း
+                    room.joinedUserId = updatedRoom.joinedUserId;
+                    // ဒေတာအသစ်များကိုပါ room အပေါ် မူတည်ပြီး update လုပ်ရန်
+                    room.joinerTeamName = updatedRoom.joinerTeamName;
+                    room.joinerUserName = updatedRoom.joinerUserName;
+                    room.joinerHeroName = updatedRoom.joinerHeroName;
+                    room.joinerHero = updatedRoom.joinerHero;
+                    room.joinerContactPhNo = updatedRoom.joinerContactPhNo;
+                    room.joinerKpayPhNo = updatedRoom.joinerKpayPhNo;
+                    room.joinerSqName = updatedRoom.joinerSqName;
+                    room.joinerRoamer = updatedRoom.joinerRoamer;
+                    room.joinerExp = updatedRoom.joinerExp;
+                    room.joinerGold = updatedRoom.joinerGold;
+                    room.joinerMid = updatedRoom.joinerMid;
+                    room.joinerJungle = updatedRoom.joinerJungle;
+                    room.joinerContactPhNo = updatedRoom.joinerContactPhNo;
+
                     updatePopupContent();
                 }
 
@@ -78,10 +96,12 @@ export function showRoomDetailsPopup(room, mode, userId, callbacks = {}) {
     }
 
     function updatePopupContent() {
+        // ဒေတာအပြောင်းအလဲရှိတိုင်း hasMatched ကို ပြန်လည် စစ်ဆေးပေးသည်
+        const currentHasMatched = !!room.joinedUserId;
         const bothReady = hostReadyState && joinerReadyState;
         let actionButtonsHTML = '';
 
-        if (hasMatched) {
+        if (currentHasMatched) {
             actionButtonsHTML = `
                 <div style="display: flex; gap: 10px; margin-top: 14px; pointer-events: ${bothReady ? 'none' : 'auto'}; opacity: ${bothReady ? '0.6' : '1'};">
                     ${userId === room.hostId ? `
@@ -108,10 +128,13 @@ export function showRoomDetailsPopup(room, mode, userId, callbacks = {}) {
         if (is1v1) {
             const hostName = room.inGameName || room.teamName || room.userName || 'Unknown Player';
             const hostHero = room.heroName || room.hero || 'Not Specified';
-            const hostContact = room.contactPhNo || room.kpayPhNo || 'N/A';
+            
+            // Joiner ရှိမှသာ Host ရော Joiner ရဲ့ Contact များကို ဖော်ပြမည် (ထွက်သွားပါက ပြန်ဖျောက်မည်)
+            const hostContact = currentHasMatched ? (room.contactPhNo || room.kpayPhNo || 'N/A') : 'Hidden';
+            
             const joinerName = room.joinerTeamName || room.joinerUserName || 'Joined Player';
             const joinerHero = room.joinerHeroName || room.joinerHero || 'Not Specified';
-            const joinerContact = room.joinerContactPhNo || room.joinerKpayPhNo || 'N/A';
+            const joinerContact = currentHasMatched ? (room.joinerContactPhNo || room.joinerKpayPhNo || 'N/A') : '';
 
             overlay.innerHTML = `
                 <div class="popup-box" style="max-width: 420px; width: 95%; position: relative; overflow: hidden; background: #1c1c1e; border: 1px solid rgba(255,255,255,0.1); border-radius: 24px; box-shadow: 0 20px 40px rgba(0,0,0,0.6); color: #fff; padding: 20px;">
@@ -124,7 +147,7 @@ export function showRoomDetailsPopup(room, mode, userId, callbacks = {}) {
                             <div class="popup-row" style="font-size: 12px; border-bottom: none;"><span>Contact:</span> <b>${hostContact}</b></div>
                         </div>
 
-                        ${hasMatched ? `
+                        ${currentHasMatched ? `
                         <div style="flex: 1; background: rgba(52, 199, 89, 0.08); padding: 12px; border-radius: 14px; border: 1px solid rgba(52, 199, 89, 0.2);">
                             <div style="font-weight: 700; color: #34c759; margin-bottom: 8px; font-size: 13px; text-align: center;">Joiner ${joinerReadyState ? ' ✅' : ''}</div>
                             <div class="popup-row" style="font-size: 12px; margin-bottom: 6px;"><span>Name:</span> <b>${joinerName}</b></div>
@@ -139,9 +162,11 @@ export function showRoomDetailsPopup(room, mode, userId, callbacks = {}) {
             `;
         } else {
             const hostSqName = room.sqName || room.teamName || 'Host SQ';
-            const hostContact = room.contactPhNo || room.kpayPhNo || 'N/A';
+            
+            // Joiner ရှိမှသာ Contact ပေါ်စေရန်
+            const hostContact = currentHasMatched ? (room.contactPhNo || room.kpayPhNo || 'N/A') : 'Hidden';
             const joinerSqName = room.joinerSqName || room.joinerTeamName || 'Joiner SQ';
-            const joinerContact = room.joinerContactPhNo || room.joinerKpayPhNo || 'N/A';
+            const joinerContact = currentHasMatched ? (room.joinerContactPhNo || room.joinerKpayPhNo || 'N/A') : '';
 
             const formatPlayerName = (p) => {
                 if (!p) return '-';
@@ -165,7 +190,7 @@ export function showRoomDetailsPopup(room, mode, userId, callbacks = {}) {
                             <div class="popup-row" style="font-size: 11px; border-bottom: none; border-top: 1px solid rgba(0, 122, 255, 0.3); margin-top: 6px; padding-top: 6px;"><span>Contact:</span> <b style="font-size: 10px;">${hostContact}</b></div>
                         </div>
 
-                        ${hasMatched ? `
+                        ${currentHasMatched ? `
                         <div style="flex: 1; background: rgba(52, 199, 89, 0.08); padding: 10px; border-radius: 14px; border: 1px solid rgba(52, 199, 89, 0.2);">
                             <div style="font-weight: 700; color: #34c759; margin-bottom: 8px; font-size: 12px; text-align: center; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">${joinerSqName} ${joinerReadyState ? ' ✅' : ''}</div>
                             <div class="popup-row" style="font-size: 11px; padding: 5px 0;"><span>Roamer:</span> <b>${formatPlayerName(room.joinerRoamer)}</b></div>
@@ -184,6 +209,7 @@ export function showRoomDetailsPopup(room, mode, userId, callbacks = {}) {
             `;
         }
 
+        // Event Listeners များ ချိတ်ဆက်ခြင်း
         const closeBtn = overlay.querySelector('#closePopupBtn');
         if (closeBtn) {
             closeBtn.addEventListener('click', () => {
@@ -249,7 +275,7 @@ export function showRoomDetailsPopup(room, mode, userId, callbacks = {}) {
     });
 }
 
-// သီးသန့်ခွဲထုတ်ထားသော Spin Wheel Pop-up ဖန်တီးသည့် Function (အပေါ်အောက် အတိအကျဖြစ်စေရန် ပြင်ဆင်ထားသည်)
+// သီးသန့်ခွဲထုတ်ထားသော Spin Wheel Pop-up ဖန်တီးသည့် Function
 function showSpinWheelPopup(room, mode, userId, callbacks) {
     const is1v1 = mode.toLowerCase().includes('1v1');
     const team1Name = is1v1 ? (room.inGameName || room.teamName || room.userName || 'Host') : (room.sqName || room.teamName || 'Host SQ');
@@ -284,18 +310,13 @@ function showSpinWheelPopup(room, mode, userId, callbacks) {
             </div>
 
             <div style="position: relative; width: 190px; height: 190px; margin: 10px auto; border-radius: 50%; box-shadow: 0 0 40px rgba(0,122,255,0.3), inset 0 0 20px rgba(255,255,255,0.2); border: 4px solid rgba(255,255,255,0.8); display: flex; align-items: center; justify-content: center;">
-                
-                <!-- 90deg မှစတင်၍ အပေါ်အောက် (Top-Bottom) အတိအကျဖြစ်စေရန် ပြင်ဆင်ထားသည် -->
                 <div id="wheelElement" style="position: absolute; inset: 0; border-radius: 50%; background: conic-gradient(from 90deg, #34c759 0deg 180deg, #007aff 180deg 360deg); transition: transform 10s cubic-bezier(0.05, 0.9, 0.1, 1);"></div>
-
                 <div style="position: absolute; top: -12px; left: 50%; transform: translateX(-50%); width: 0; height: 0; border-left: 8px solid transparent; border-right: 8px solid transparent; border-bottom: 16px solid #ff3b30; filter: drop-shadow(0 2px 4px rgba(0,0,0,0.3)); z-index: 10;"></div>
-                
                 <div style="width: 40px; height: 40px; background: rgba(255,255,255,0.9); backdrop-filter: blur(10px); border-radius: 50%; box-shadow: 0 4px 10px rgba(0,0,0,0.3); display: flex; align-items: center; justify-content: center; z-index: 5;">
                     <div style="width: 12px; height: 12px; background: #1c1c1e; border-radius: 50%;"></div>
                 </div>
             </div>
 
-            <!-- အရောင်အကွက်များ -->
             <div style="display: flex; justify-content: space-around; margin-top: 18px; padding: 10px; background: rgba(255,255,255,0.05); border-radius: 12px; border: 1px solid rgba(255,255,255,0.08);">
                 <div style="display: flex; align-items: center; gap: 8px;">
                     <div style="width: 16px; height: 16px; background: #34c759; border-radius: 4px; box-shadow: 0 0 8px rgba(52,199,89,0.5);"></div>
@@ -379,16 +400,11 @@ function showSpinWheelPopup(room, mode, userId, callbacks) {
         }
     }, 200);
 
-function executeSpin(winner) {
+    function executeSpin(winner) {
         const baseRotations = 360 * 10;
-        
-        // အပြာရောင်က ညာဘက်ခြမ်း (0deg ကနေ 180deg)၊ အစိမ်းက ဘယ်ဘက်ခြမ်း (180deg ကနေ 360deg) ဖြစ်တဲ့အတွက်
-        // အပ်က အပေါ်တည့်တည့် (0deg / 360deg) မှာ ရှိနေပါတယ်။
-        // အစိမ်း (Team 1) Winner ဖြစ်ရင် အောက်ဘက်ခြမ်း (ဥပမာ 180deg) ကို ရောက်အောင် လှည့်ရပါမယ်။
-        // အပြာ (Team 2) Winner ဖြစ်ရင် အပေါ်ဘက်ခြမ်း (ဥပမာ 360deg) မှာ ရပ်ရပါမယ်။
         const targetDegree = winner === team1Name 
-            ? baseRotations + 180  // အစိမ်းအတွက် အောက်ဘက်ကို ရောက်စေရန်
-            : baseRotations + 360; // အပြာအတွက် အပေါ်ဘက်ကို ရောက်စေရန်
+            ? baseRotations + 180  
+            : baseRotations + 360; 
 
         if (wheelEl) {
             wheelEl.style.transform = `rotate(${targetDegree}deg)`;
