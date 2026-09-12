@@ -1,5 +1,3 @@
-import { showRewardCodePopup } from './roomPopup.js'; // လိုအပ်ပါက သက်ဆိုင်ရာ import ကို ထည့်သွင်းနိုင်ပါတယ်
-
 export function showRoomDetailsPopup(room, mode, userId, callbacks = {}) {
     const is1v1 = mode.toLowerCase().includes('1v1');
     const hasMatched = !!room.joinedUserId;
