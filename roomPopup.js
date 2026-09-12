@@ -512,15 +512,18 @@ export function showRewardCodePopup(room, mode, userId, callbacks = {}) {
         }
 
         try {
-            // API လမ်းကြောင်းကို Backend handler တည်နေရာအတိုင်း အတိအကျ သုံးပေးပါ (ဥပမာ - room data ကို ပြန်ထုတ်ပေးမည့် API route)
-            const res = await fetch(`/api/rooms?roomId=${targetRoomId}`);
+            // /api/rooms အစား အလုပ်လုပ်ပြီးသားဖြစ်တဲ့ /api/create-room ကို ပြန်သုံးပေးပါ
+            const res = await fetch(`/api/create-room?roomId=${targetRoomId}`);
             if (res.ok) {
                 const data = await res.json();
-                if (data.success && data.room && data.room.matchCode) {
+                // ေနာက်ထပ် data ပုံစံက data.room ဖြစ်နေရင် အဲ့ဒီအတိုင်း ညှိပေးရပါမယ်
+                const roomData = data.room || data; 
+                
+                if (data.success && roomData && roomData.matchCode) {
                     const codeElement = overlay.querySelector('#displayMatchCode');
-                    if (codeElement && codeElement.textContent !== data.room.matchCode) {
-                        codeElement.textContent = data.room.matchCode;
-                        clearInterval(intervalId); // ကုဒ်ပေါ်လာပြီဆိုတာနဲ့ interval ကို ရပ်မည်
+                    if (codeElement && codeElement.textContent !== roomData.matchCode) {
+                        codeElement.textContent = roomData.matchCode;
+                        clearInterval(intervalId);
                     }
                 }
             }
@@ -528,7 +531,6 @@ export function showRewardCodePopup(room, mode, userId, callbacks = {}) {
             // Network error များကို Silent လုပ်ထားပါမည်
         }
     }, 2000);
-
     const closeBtn = overlay.querySelector('#closeRewardPopup');
     if (closeBtn) {
         closeBtn.addEventListener('click', () => {
