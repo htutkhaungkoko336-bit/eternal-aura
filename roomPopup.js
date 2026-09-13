@@ -452,16 +452,16 @@ export function showRewardCodePopup(room, mode, userId, callbacks = {}) {
 
     const getPlayerNames = (r, forHostData) => {
         if (is1v1) {
-            // 1VS1 အတွက် Host ဘက် သို့မဟုတ် Joiner ဘက်အလိုက် Name နှင့် ID ကို မှန်ကန်စွာ ဖမ်းယူခြင်း
+            // 1VS1 အတွက် Name နဲ့ User ID အစား gameId ကို တိုက်ရိုက်ဖမ်းယူခြင်း
             const name = forHostData 
-                ? (r.joinerInGameName || r.joinerTeamName || r.joinerUserName || r.joinerHeroName || 'Joiner Player') 
+                ? (r.joinerInGameName || r.joinerTeamName || r.joinerUserName || r.joinerHeroName || r.joinerName || 'Joiner Player') 
                 : (r.inGameName || r.teamName || r.userName || r.heroName || 'Host Player');
             
             const id = forHostData 
-                ? (r.joinerGameId || r.joinerId || r.joinedUserId || '-') 
-                : (r.gameId || r.hostId || '-');
+                ? (r.joinerGameId || r.gameId || '-') 
+                : (r.gameId || '-');
 
-            return `<div style="font-size: 11px; padding: 3px 0; color: #ccc;">• <span style="color: #8e8e93;">Player:</span> <b>${name}</b> <span style="color: #0a84ff; font-size: 10px;">(ID: ${id})</span></div>`;
+            return `<div style="font-size: 11px; padding: 3px 0; color: #ccc;">• <span style="color: #8e8e93;">Player:</span> <b>${name}</b> <span style="color: #0a84ff; font-size: 10px;">(Game ID: ${id})</span></div>`;
         }
         
         const roles = ['roamer', 'exp', 'gold', 'mid', 'jungle'];
