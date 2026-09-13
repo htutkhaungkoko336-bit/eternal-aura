@@ -355,45 +355,45 @@ export function renderRoomScreen(container, roomTitleText, userDocData = {}) {
                     `;
                 }).join('');
 
-                    roomsContainer.querySelectorAll('.ios-room-card').forEach((card, idx) => {
-                        card.addEventListener('click', (e) => {
-                            if (e.target.tagName === 'BUTTON') return;
-                            const room = data.rooms[idx];
-                            
-                            // Firebase ထဲက status "fully_matched" နဲ့ တိုက်စစ်ပါမယ်
-                            const hasMatched = room.status === 'fully_matched';
+                roomsContainer.querySelectorAll('.ios-room-card').forEach((card, idx) => {
+                    card.addEventListener('click', (e) => {
+                        if (e.target.tagName === 'BUTTON') return;
+                        const room = data.rooms[idx];
+                        
+                        // Firebase ထဲက status "fully_matched" နဲ့ တိုက်စစ်ပါမယ်
+                        const hasMatched = room.status === 'fully_matched';
 
-                            if (hasMatched) {
-                                // Host လား၊ Joiner လား စစ်ဆေးခြင်း (သင့် database field အမည်အတိုင်း ချိန်ညှိပါ)
-                                const isHost = room.hostId === userId;
-                                const isJoiner = room.joinerId === userId;
+                        if (hasMatched) {
+                            // Host လား၊ Joiner လား စစ်ဆေးခြင်း
+                            const isHost = room.hostId === userId;
+                            const isJoiner = (room.joinerId === userId) || (room.joinedUserId === userId);
 
-                                // Host သို့မဟုတ် Joiner ဖြစ်မှသာ ဆုလာဘ်ကုဒ် popup ပြမည်
-                                if (isHost || isJoiner) {
-                                    showRewardCodePopup(room, targetMode, userId, {
+                            // Host သို့မဟုတ် Joiner ဖြစ်မှသာ ဆုလာဘ်ကုဒ် popup ပြမည်
+                            if (isHost || isJoiner) {
+                                showRewardCodePopup(room, targetMode, userId, {
+                                    onComplete: (finalRoom) => {
+                                        fetchAndRenderGlobalRooms();
+                                    }
+                                });
+                            }
+                            // ကျန်တဲ့ user များအတွက် ဘာမှမဖြစ်စေရန် (နှိပ်မရအောင်) ရပ်တန့်မည်
+                            return;
+                        } else {
+                            showRoomDetailsPopup(room, targetMode, userId, {
+                                onCancelJoiner: (roomId) => cancelJoinerAPI(roomId),
+                                onTransferHost: (roomId) => transferHostAPI(roomId),
+                                onBothReady: (updatedRoom) => {
+                                    showRewardCodePopup(updatedRoom, targetMode, userId, {
                                         onComplete: (finalRoom) => {
                                             fetchAndRenderGlobalRooms();
                                         }
                                     });
                                 }
-                                // ကျန်တဲ့ user များအတွက် ဘာမှမဖြစ်စေရန် (နှိပ်မရအောင်) ရပ်တန့်မည်
-                                return;
-                            } else {
-                                showRoomDetailsPopup(room, targetMode, userId, {
-                                    onCancelJoiner: (roomId) => cancelJoinerAPI(roomId),
-                                    onTransferHost: (roomId) => transferHostAPI(roomId),
-                                    onBothReady: (updatedRoom) => {
-                                        showRewardCodePopup(updatedRoom, targetMode, userId, {
-                                            onComplete: (finalRoom) => {
-                                                fetchAndRenderGlobalRooms();
-                                            }
-                                        });
-                                    }
-                                });
-                            }
-                        });
+                            });
+                        }
                     });
-            } else {
+                }); 
+           } else {
                 roomsContainer.innerHTML = `<span style="color: #64748b; font-size: 11px; padding: 10px 0;">Active room မရှိသေးပါ။ Room အသစ်ထောင်နိုင်ပါသည်။</span>`;
             }
 
