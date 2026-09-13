@@ -115,21 +115,21 @@ export function showRoomDetailsPopup(room, mode, userId, callbacks = {}) {
 
         if (currentHasMatched) {
             actionButtonsHTML = `
-                <div style="display: flex; gap: 10px; margin-top: 14px; pointer-events: ${bothReady ? 'none' : 'auto'}; opacity: ${bothReady ? '0.6' : '1'};">
+                <div style="display: flex; gap: 8px; margin-top: 12px; pointer-events: ${bothReady ? 'none' : 'auto'}; opacity: ${bothReady ? '0.6' : '1'};">
                     ${userId === room.hostId ? `
-                        <button id="popupReadyBtn" style="flex: 1; padding: 12px; border-radius: 12px; font-weight: 700; border: none; cursor: pointer; background: ${hostReadyState ? '#34c759' : 'linear-gradient(135deg, #007aff, #5856d6)'}; color: #fff; font-size: 15px; box-shadow: 0 4px 12px rgba(0,122,255,0.3); transition: all 0.2s;">
+                        <button id="popupReadyBtn" style="flex: 1; padding: 10px; border-radius: 10px; font-weight: 700; border: none; cursor: pointer; background: ${hostReadyState ? '#34c759' : 'linear-gradient(135deg, #007aff, #5856d6)'}; color: #fff; font-size: 14px; box-shadow: 0 4px 12px rgba(0,122,255,0.3); transition: all 0.2s;">
                             ${hostReadyState ? 'Unready' : 'Ready'}
                         </button>
-                        <button id="popupCancelBtn" style="flex: 1; padding: 12px; border-radius: 12px; font-weight: 700; border: none; background: rgba(255, 59, 48, 0.15); color: #ff3b30; cursor: pointer; opacity: ${hostReadyState ? '0.4' : '1'}; pointer-events: ${hostReadyState ? 'none' : 'auto'}; font-size: 15px;">
+                        <button id="popupCancelBtn" style="flex: 1; padding: 10px; border-radius: 10px; font-weight: 700; border: none; background: rgba(255, 59, 48, 0.15); color: #ff3b30; cursor: pointer; opacity: ${hostReadyState ? '0.4' : '1'}; pointer-events: ${hostReadyState ? 'none' : 'auto'}; font-size: 14px;">
                             Cancel
                         </button>
                     ` : ''}
 
                     ${userId === room.joinedUserId ? `
-                        <button id="popupReadyBtn" style="flex: 1; padding: 12px; border-radius: 12px; font-weight: 700; border: none; cursor: pointer; background: ${joinerReadyState ? '#34c759' : 'linear-gradient(135deg, #007aff, #5856d6)'}; color: #fff; font-size: 15px; box-shadow: 0 4px 12px rgba(0,122,255,0.3); transition: all 0.2s;">
+                        <button id="popupReadyBtn" style="flex: 1; padding: 10px; border-radius: 10px; font-weight: 700; border: none; cursor: pointer; background: ${joinerReadyState ? '#34c759' : 'linear-gradient(135deg, #007aff, #5856d6)'}; color: #fff; font-size: 14px; box-shadow: 0 4px 12px rgba(0,122,255,0.3); transition: all 0.2s;">
                             ${joinerReadyState ? 'Unready' : 'Ready'}
                         </button>
-                        <button id="popupCancelBtn" style="flex: 1; padding: 12px; border-radius: 12px; font-weight: 700; border: none; background: rgba(255, 59, 48, 0.15); color: #ff3b30; cursor: pointer; opacity: ${joinerReadyState ? '0.4' : '1'}; pointer-events: ${joinerReadyState ? 'none' : 'auto'}; font-size: 15px;">
+                        <button id="popupCancelBtn" style="flex: 1; padding: 10px; border-radius: 10px; font-weight: 700; border: none; background: rgba(255, 59, 48, 0.15); color: #ff3b30; cursor: pointer; opacity: ${joinerReadyState ? '0.4' : '1'}; pointer-events: ${joinerReadyState ? 'none' : 'auto'}; font-size: 14px;">
                             Cancel
                         </button>
                     ` : ''}
@@ -140,40 +140,38 @@ export function showRoomDetailsPopup(room, mode, userId, callbacks = {}) {
         if (is1v1) {
             const hostName = room.inGameName || room.teamName || room.userName || 'Unknown Player';
             const hostHero = room.heroName || room.hero || 'Not Specified';
-            
-            const hostContactHTML = currentHasMatched ? `<div class="popup-row" style="font-size: 12px; border-bottom: none;"><span>Contact:</span> <b>${room.contactPhNo || room.kpayPhNo || 'N/A'}</b></div>` : '';
+            const hostContact = room.contactPhNo || room.kpayPhNo || 'N/A';
             
             const joinerName = room.joinerTeamName || room.joinerUserName || 'Joined Player';
             const joinerHero = room.joinerHeroName || room.joinerHero || 'Not Specified';
-            const joinerContactHTML = currentHasMatched ? `<div class="popup-row" style="font-size: 12px; border-bottom: none;"><span>Contact:</span> <b>${room.joinerContactPhNo || room.joinerKpayPhNo || 'N/A'}</b></div>` : '';
+            const joinerContact = room.joinerContactPhNo || room.joinerKpayPhNo || 'N/A';
 
             overlay.innerHTML = `
-                <div class="popup-box" style="max-width: 420px; width: 95%; position: relative; overflow: hidden; background: #1c1c1e; border: 1px solid rgba(255,255,255,0.1); border-radius: 24px; box-shadow: 0 20px 40px rgba(0,0,0,0.6); color: #fff; padding: 20px;">
-                    <div class="popup-title" style="font-size: 17px; font-weight: 700; text-align: center; margin-bottom: 16px; letter-spacing: -0.5px;">1VS1 Room Details</div>
-                    <div style="display: flex; gap: 10px; width: 100%;">
-                        <div style="flex: 1; background: rgba(0, 122, 255, 0.08); padding: 12px; border-radius: 14px; border: 1px solid rgba(0, 122, 255, 0.2);">
-                            <div style="font-weight: 700; color: #0a84ff; margin-bottom: 8px; font-size: 13px; text-align: center;">Host ${hostReadyState ? ' ✅' : ''}</div>
-                            <div class="popup-row" style="font-size: 12px; margin-bottom: 6px;"><span>Name:</span> <b>${hostName}</b></div>
-                            <div class="popup-row" style="font-size: 12px; margin-bottom: 6px;"><span>Hero:</span> <b style="color: #34c759;">${hostHero}</b></div>
-                            ${hostContactHTML}
+                <div class="popup-box" style="max-width: 400px; width: 92%; position: relative; overflow: hidden; background: #1c1c1e; border: 1px solid rgba(255,255,255,0.1); border-radius: 20px; box-shadow: 0 20px 40px rgba(0,0,0,0.6); color: #fff; padding: 16px;">
+                    <div class="popup-title" style="font-size: 16px; font-weight: 700; text-align: center; margin-bottom: 12px; letter-spacing: -0.5px;">1VS1 ROOM DETAILS</div>
+                    <div style="display: flex; gap: 8px; width: 100%;">
+                        <div style="flex: 1; background: rgba(0, 122, 255, 0.08); padding: 10px; border-radius: 12px; border: 1px solid rgba(0, 122, 255, 0.2); box-sizing: border-box; overflow: hidden;">
+                            <div style="font-weight: 700; color: #0a84ff; margin-bottom: 6px; font-size: 12px; text-align: center;">Host ${hostReadyState ? ' ✅' : ''}</div>
+                            <div style="font-size: 11px; margin-bottom: 4px; word-break: break-all;"><span>Name:</span><br><b>${hostName}</b></div>
+                            <div style="font-size: 11px; margin-bottom: 4px; word-break: break-all;"><span>Hero:</span><br><b style="color: #34c759;">${hostHero}</b></div>
+                            ${currentHasMatched ? `<div style="font-size: 11px; word-break: break-all;"><span>Contact:</span><br><b>${hostContact}</b></div>` : ''}
                         </div>
 
                         ${currentHasMatched ? `
-                        <div style="flex: 1; background: rgba(52, 199, 89, 0.08); padding: 12px; border-radius: 14px; border: 1px solid rgba(52, 199, 89, 0.2);">
-                            <div style="font-weight: 700; color: #34c759; margin-bottom: 8px; font-size: 13px; text-align: center;">Joiner ${joinerReadyState ? ' ✅' : ''}</div>
-                            <div class="popup-row" style="font-size: 12px; margin-bottom: 6px;"><span>Name:</span> <b>${joinerName}</b></div>
-                            <div class="popup-row" style="font-size: 12px; margin-bottom: 6px;"><span>Hero:</span> <b style="color: #34c759;">${joinerHero}</b></div>
-                            ${joinerContactHTML}
+                        <div style="flex: 1; background: rgba(52, 199, 89, 0.08); padding: 10px; border-radius: 12px; border: 1px solid rgba(52, 199, 89, 0.2); box-sizing: border-box; overflow: hidden;">
+                            <div style="font-weight: 700; color: #34c759; margin-bottom: 6px; font-size: 12px; text-align: center;">Joiner ${joinerReadyState ? ' ✅' : ''}</div>
+                            <div style="font-size: 11px; margin-bottom: 4px; word-break: break-all;"><span>Name:</span><br><b>${joinerName}</b></div>
+                            <div style="font-size: 11px; margin-bottom: 4px; word-break: break-all;"><span>Hero:</span><br><b style="color: #34c759;">${joinerHero}</b></div>
+                            <div style="font-size: 11px; word-break: break-all;"><span>Contact:</span><br><b>${joinerContact}</b></div>
                         </div>
-                        ` : '<div style="flex: 1; display: flex; align-items: center; justify-content: center; color: #8e8e93; font-size: 12px; background: rgba(255,255,255,0.03); border-radius: 14px;">Waiting...</div>'}
+                        ` : '<div style="flex: 1; display: flex; align-items: center; justify-content: center; color: #8e8e93; font-size: 11px; background: rgba(255,255,255,0.03); border-radius: 12px; text-align: center; padding: 10px;">Waiting...</div>'}
                     </div>
                     ${actionButtonsHTML}
-                    <button class="popup-close-btn" id="closePopupBtn" style="margin-top: 12px; width: 100%; padding: 12px; border-radius: 12px; background: rgba(255,255,255,0.08); border: none; color: #fff; font-weight: 600; cursor: pointer;">Close</button>
+                    <button class="popup-close-btn" id="closePopupBtn" style="margin-top: 10px; width: 100%; padding: 10px; border-radius: 10px; background: rgba(255,255,255,0.08); border: none; color: #fff; font-weight: 600; cursor: pointer; font-size: 13px;">Close</button>
                 </div>
             `;
         } else {
             const hostSqName = room.sqName || room.teamName || 'Host SQ';
-            
             const hostContactHTML = currentHasMatched ? `<div class="popup-row" style="font-size: 11px; border-bottom: none; border-top: 1px solid rgba(0, 122, 255, 0.3); margin-top: 6px; padding-top: 6px;"><span>Contact:</span> <b style="font-size: 10px;">${room.contactPhNo || room.kpayPhNo || 'N/A'}</b></div>` : '';
             
             const joinerSqName = room.joinerSqName || room.joinerTeamName || 'Joiner SQ';
@@ -286,7 +284,6 @@ export function showRoomDetailsPopup(room, mode, userId, callbacks = {}) {
         }
     });
 }
-
 function showSpinWheelPopup(room, mode, userId, callbacks) {
     const is1v1 = mode.toLowerCase().includes('1v1');
     const team1Name = is1v1 ? (room.inGameName || room.teamName || room.userName || 'Host') : (room.sqName || room.teamName || 'Host SQ');
