@@ -360,13 +360,13 @@ export function renderRoomScreen(container, roomTitleText, userDocData = {}) {
                             if (e.target.tagName === 'BUTTON') return;
                             const room = data.rooms[idx];
                             
-                            // ဤ room ရဲ့ Host သို့မဟုတ် Joiner ဟုတ်မဟုတ် စစ်ဆေးခြင်း
                             const isMyRoom = (room.hostId === userId);
                             const isJoinedByMe = (room.joinedUserId === userId);
-                            const hasMatched = room.status === 'fully_matched';
+                            const hasMatched = room.status === 'fully_matched' || !!room.joinedUserId;
 
-                            // Host သို့မဟုတ် Joiner မှလွဲ၍ အခြားသူများဆိုလျှင် နှိပ်၍မရအောင် တားမြစ်မည်
-                            if (!isMyRoom && !isJoinedByMe) {
+                            // အကယ်၍ Room ထဲမှာ Joiner ရှိပြီးသား (Locked ဖြစ်နေ) ဖြစ်ပြီး
+                            // ကိုယ်က အဲ့ဒီ Room ရဲ့ Host လည်း မဟုတ်၊ Joiner လည်း မဟုတ်ဘူးဆိုရင် ဝင်မကြည့်ခိုင်းဘဲ တားမြစ်မည်
+                            if (hasMatched && !isMyRoom && !isJoinedByMe) {
                                 return;
                             }
 
