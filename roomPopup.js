@@ -492,7 +492,7 @@ export function showRewardCodePopup(room, mode, userId, callbacks = {}) {
     overlay.innerHTML = `
         <div class="popup-box" style="max-width: 420px; width: 95%; background: #1c1c1e; border: 1px solid rgba(255,255,255,0.1); border-radius: 24px; box-shadow: 0 20px 40px rgba(0,0,0,0.8); color: #fff; padding: 20px; text-align: center; position: relative;">
             <div style="font-size: 16px; font-weight: 700; margin-bottom: 4px; color: #34c759;">🎉 Match Successful!</div>
-            <div style="font-size: 12px; color: #8e8e93; margin-bottom: 16px;">အချင်းချင်း ဆက်သွယ်ရန်နှင့် ဆုလက်ဆောင်ထုတ်ယူရန်</div>
+            <div style="font-size: 12px; color: #8e8e93; margin-bottom: 16px;">အချင်းချင်း ဆက်သွယ်ရန်contact ချိတ်ပါ။အနိုင်ရသည့် Team သည် code ဖြင့် Reward ထုတ်ယူပါ။</div>
 
             <div style="background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.08); border-radius: 14px; padding: 12px; text-align: left; margin-bottom: 14px;">
                 <div style="font-size: 13px; font-weight: 700; color: #0a84ff; margin-bottom: 6px;">Team: ${targetTeamName}</div>

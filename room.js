@@ -355,13 +355,20 @@ export function renderRoomScreen(container, roomTitleText, userDocData = {}) {
                     `;
                 }).join('');
 
-                    roomsContainer.querySelectorAll('.ios-room-card').forEach((card, idx) => {
+                roomsContainer.querySelectorAll('.ios-room-card').forEach((card, idx) => {
                         card.addEventListener('click', (e) => {
                             if (e.target.tagName === 'BUTTON') return;
                             const room = data.rooms[idx];
                             
-                            // Firebase ထဲက status "fully_matched" နဲ့ တိုက်စစ်ပါမယ်
+                            // ဤ room ရဲ့ Host သို့မဟုတ် Joiner ဟုတ်မဟုတ် စစ်ဆေးခြင်း
+                            const isMyRoom = (room.hostId === userId);
+                            const isJoinedByMe = (room.joinedUserId === userId);
                             const hasMatched = room.status === 'fully_matched';
+
+                            // Host သို့မဟုတ် Joiner မှလွဲ၍ အခြားသူများဆိုလျှင် နှိပ်၍မရအောင် တားမြစ်မည်
+                            if (!isMyRoom && !isJoinedByMe) {
+                                return;
+                            }
 
                             if (hasMatched) {
                                 showRewardCodePopup(room, targetMode, userId, {
@@ -384,7 +391,7 @@ export function renderRoomScreen(container, roomTitleText, userDocData = {}) {
                             }
                         });
                     });
-            } else {
+                } else {
                 roomsContainer.innerHTML = `<span style="color: #64748b; font-size: 11px; padding: 10px 0;">Active room မရှိသေးပါ။ Room အသစ်ထောင်နိုင်ပါသည်။</span>`;
             }
 
