@@ -355,20 +355,13 @@ export function renderRoomScreen(container, roomTitleText, userDocData = {}) {
                     `;
                 }).join('');
 
-                roomsContainer.querySelectorAll('.ios-room-card').forEach((card, idx) => {
+                    roomsContainer.querySelectorAll('.ios-room-card').forEach((card, idx) => {
                         card.addEventListener('click', (e) => {
                             if (e.target.tagName === 'BUTTON') return;
                             const room = data.rooms[idx];
                             
-                            const isMyRoom = (room.hostId === userId);
-                            const isJoinedByMe = (room.joinedUserId === userId);
-                            const hasMatched = room.status === 'fully_matched' || !!room.joinedUserId;
-
-                            // အကယ်၍ Room ထဲမှာ Joiner ရှိပြီးသား (Locked ဖြစ်နေ) ဖြစ်ပြီး
-                            // ကိုယ်က အဲ့ဒီ Room ရဲ့ Host လည်း မဟုတ်၊ Joiner လည်း မဟုတ်ဘူးဆိုရင် ဝင်မကြည့်ခိုင်းဘဲ တားမြစ်မည်
-                            if (hasMatched && !isMyRoom && !isJoinedByMe) {
-                                return;
-                            }
+                            // Firebase ထဲက status "fully_matched" နဲ့ တိုက်စစ်ပါမယ်
+                            const hasMatched = room.status === 'fully_matched';
 
                             if (hasMatched) {
                                 showRewardCodePopup(room, targetMode, userId, {
@@ -391,7 +384,7 @@ export function renderRoomScreen(container, roomTitleText, userDocData = {}) {
                             }
                         });
                     });
-                } else {
+            } else {
                 roomsContainer.innerHTML = `<span style="color: #64748b; font-size: 11px; padding: 10px 0;">Active room မရှိသေးပါ။ Room အသစ်ထောင်နိုင်ပါသည်။</span>`;
             }
 
