@@ -364,11 +364,20 @@ export function renderRoomScreen(container, roomTitleText, userDocData = {}) {
                             const hasMatched = room.status === 'fully_matched';
 
                             if (hasMatched) {
-                                showRewardCodePopup(room, targetMode, userId, {
-                                    onComplete: (finalRoom) => {
-                                        fetchAndRenderGlobalRooms();
-                                    }
-                                });
+                                // Host လား၊ Joiner လား စစ်ဆေးခြင်း (သင့် database field အမည်အတိုင်း ချိန်ညှိပါ)
+                                const isHost = room.hostId === userId;
+                                const isJoiner = room.joinerId === userId;
+
+                                // Host သို့မဟုတ် Joiner ဖြစ်မှသာ ဆုလာဘ်ကုဒ် popup ပြမည်
+                                if (isHost || isJoiner) {
+                                    showRewardCodePopup(room, targetMode, userId, {
+                                        onComplete: (finalRoom) => {
+                                            fetchAndRenderGlobalRooms();
+                                        }
+                                    });
+                                }
+                                // ကျန်တဲ့ user များအတွက် ဘာမှမဖြစ်စေရန် (နှိပ်မရအောင်) ရပ်တန့်မည်
+                                return;
                             } else {
                                 showRoomDetailsPopup(room, targetMode, userId, {
                                     onCancelJoiner: (roomId) => cancelJoinerAPI(roomId),
