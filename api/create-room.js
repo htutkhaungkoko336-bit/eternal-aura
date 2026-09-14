@@ -1,5 +1,5 @@
 const { initializeApp, cert, getApps } = require('firebase-admin/app');
-const { getFirestore } = require('firebase-admin/firestore');
+const { getFirestore, FieldValue } = require('firebase-admin/firestore');
 
 const app = getApps().length === 0 
     ? initializeApp({
@@ -146,14 +146,13 @@ module.exports = async function handler(req, res) {
                     }
                 }
 
-                // 🔥 Joiner ဘက်အတွက် gameId ကိုပါ ထည့်သွင်းပေးခြင်း (1v1 အတွက်ရော အခြားအတွက်ပါ)
                 await roomRef.update({
                     joinedUserId: userId,
                     status: 'matched',
                     joinerTeamName: joinerTeamName,
                     joinerTeamLogo: joinerTeamLogo,
                     joinerInGameName: matchedReg?.inGameName || joinerTeamName,
-                    joinerGameId: matchedReg?.gameId || matchedReg?.id || '-', // 🔥 gameId ထည့်ပေးလိုက်ပါပြီ
+                    joinerGameId: matchedReg?.gameId || matchedReg?.id || '-',
                     joinerHeroName: matchedReg?.heroName || '',
                     joinerSqName: matchedReg?.sqName || joinerTeamName,
                     joinerRoamer: formatPlayerField(matchedReg?.roamer),
@@ -248,7 +247,6 @@ module.exports = async function handler(req, res) {
                 }
             }
 
-            // 🔥 Host ဘက်အတွက် gameId ကိုပါ ထည့်သွင်းပေးခြင်း
             const roomData = {
                 hostId: userId,
                 teamName: teamName,
@@ -266,7 +264,7 @@ module.exports = async function handler(req, res) {
                 joinedUserId: null,
                 
                 inGameName: matchedReg?.inGameName || teamName,
-                gameId: matchedReg?.gameId || matchedReg?.id || '-', // 🔥 Host ရဲ့ gameId ပါဝင်လာပါပြီ
+                gameId: matchedReg?.gameId || matchedReg?.id || '-',
                 heroName: matchedReg?.heroName || '',
                 
                 sqName: matchedReg?.sqName || teamName,
@@ -316,6 +314,7 @@ module.exports = async function handler(req, res) {
             const finalHostReady = hostReady !== undefined ? hostReady : currentData.hostReady;
             const finalJoinerReady = joinerReady !== undefined ? joinerReady : currentData.joinerReady;
 
+            // 🔥 fully_matched ဖြစ်သွားသည့် အခြေအနေကို စစ်ဆေးခြင်း
             if (finalHostReady && finalJoinerReady) {
                 updateData.status = 'fully_matched';
                 if (!currentData.matchCode) {
@@ -326,9 +325,41 @@ module.exports = async function handler(req, res) {
                     }
                     updateData.matchCode = `REV-${randomStr}`;
                 }
+
+                // 🔥 သက်ဆိုင်ရာ Key field ရယူရန် (ဥပမာ: "1vs1-5k" သို့မဟုတ် "5vs5-5k" စသည်ဖြင့်)
+                // active_rooms ထဲရှိ mode နဲ့ keyType ကို ပေါင်းစပ်ပြီး user doc ထဲက keys map သော့ချက်နှင့် ညှိယူခြင်း
+                // ဥပမာ - mode: "1vs1", keyType: "5k" ဖြစ်လျှင် "1vs1-5k" ဖြစ်လာမည်။
+                let modePrefix = '';
+                const lowerMode = (currentData.mode || '').toLowerCase();
+                if (lowerMode.includes('1v1') || lowerMode.includes('1vs1')) {
+                    modePrefix = '1vs1';
+                } else if (lowerMode.includes('5v5') || lowerMode.includes('5vs5')) {
+                    modePrefix = '5vs5';
+                }
+
+                const keyFieldName = modePrefix ? `${modePrefix}-${(currentData.keyType || '').toLowerCase()}` : null;
+
+                // 🔥 Host နှင့် Joiner နှစ်ဦးစလုံး၏ keys ထဲမှ သက်ဆိုင်ရာ key ကို ၁ ခုစီ နှုတ်ပေးခြင်း
+                const batch = db.batch();
+                if (keyFieldName) {
+                    if (currentData.hostId) {
+                        const hostUserRef = db.collection('users').doc(currentData.hostId);
+                        batch.update(hostUserRef, {
+                            [`keys.${keyFieldName}`]: FieldValue.increment(-1)
+                        });
+                    }
+                    if (currentData.joinedUserId) {
+                        const joinerUserRef = db.collection('users').doc(currentData.joinedUserId);
+                        batch.update(joinerUserRef, {
+                            [`keys.${keyFieldName}`]: FieldValue.increment(-1)
+                        });
+                    }
+                    await batch.commit();
+                }
             } else {
                 updateData.status = 'matched';
             }
+
             await roomRef.update(updateData);
 
             return res.status(200).json({ success: true, message: "Status updated successfully" });
