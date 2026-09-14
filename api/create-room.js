@@ -291,85 +291,86 @@ module.exports = async function handler(req, res) {
         }
     }
 
-    if (method === 'PATCH') {
-        try {
-            const { userId, roomId, hostReady, joinerReady, firstPick } = req.body;
-            if (!roomId) {
-                return res.status(400).json({ success: false, message: "Missing roomId" });
-            }
-
-            const roomRef = db.collection('active_rooms').doc(roomId);
-            const roomDoc = await roomRef.get();
-
-            if (!roomDoc.exists) {
-                return res.status(404).json({ success: false, message: "Room not found" });
-            }
-
-            let updateData = {};
-            if (hostReady !== undefined) updateData.hostReady = hostReady;
-            if (joinerReady !== undefined) updateData.joinerReady = joinerReady;
-            if (firstPick !== undefined) updateData.firstPick = firstPick;
-
-            const currentData = roomDoc.data();
-            const finalHostReady = hostReady !== undefined ? hostReady : currentData.hostReady;
-            const finalJoinerReady = joinerReady !== undefined ? joinerReady : currentData.joinerReady;
-
-            // 🔥 fully_matched ဖြစ်သွားသည့် အခြေအနေကို စစ်ဆေးခြင်း
-            if (finalHostReady && finalJoinerReady) {
-                updateData.status = 'fully_matched';
-                if (!currentData.matchCode) {
-                    const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
-                    let randomStr = '';
-                    for (let i = 0; i < 6; i++) {
-                        randomStr += chars.charAt(Math.floor(Math.random() * chars.length));
+        if (method === 'PATCH') {
+                try {
+                    const { userId, roomId, hostReady, joinerReady, firstPick } = req.body;
+                    if (!roomId) {
+                        return res.status(400).json({ success: false, message: "Missing roomId" });
                     }
-                    updateData.matchCode = `REV-${randomStr}`;
-                }
 
-                // 🔥 သက်ဆိုင်ရာ Key field ရယူရန် (ဥပမာ: "1vs1-5k" သို့မဟုတ် "5vs5-5k" စသည်ဖြင့်)
-                // active_rooms ထဲရှိ mode နဲ့ keyType ကို ပေါင်းစပ်ပြီး user doc ထဲက keys map သော့ချက်နှင့် ညှိယူခြင်း
-                // ဥပမာ - mode: "1vs1", keyType: "5k" ဖြစ်လျှင် "1vs1-5k" ဖြစ်လာမည်။
-                let modePrefix = '';
-                const lowerMode = (currentData.mode || '').toLowerCase();
-                if (lowerMode.includes('1v1') || lowerMode.includes('1vs1')) {
-                    modePrefix = '1vs1';
-                } else if (lowerMode.includes('5v5') || lowerMode.includes('5vs5')) {
-                    modePrefix = '5vs5';
-                }
+                    const roomRef = db.collection('active_rooms').doc(roomId);
+                    const roomDoc = await roomRef.get();
 
-                const keyFieldName = modePrefix ? `${modePrefix}-${(currentData.keyType || '').toLowerCase()}` : null;
-
-                // 🔥 Host နှင့် Joiner နှစ်ဦးစလုံး၏ keys ထဲမှ သက်ဆိုင်ရာ key ကို ၁ ခုစီ နှုတ်ပေးခြင်း
-                const batch = db.batch();
-                if (keyFieldName) {
-                    if (currentData.hostId) {
-                        const hostUserRef = db.collection('users').doc(currentData.hostId);
-                        batch.update(hostUserRef, {
-                            [`keys.${keyFieldName}`]: FieldValue.increment(-1)
-                        });
+                    if (!roomDoc.exists) {
+                        return res.status(404).json({ success: false, message: "Room not found" });
                     }
-                    if (currentData.joinedUserId) {
-                        const joinerUserRef = db.collection('users').doc(currentData.joinedUserId);
-                        batch.update(joinerUserRef, {
-                            [`keys.${keyFieldName}`]: FieldValue.increment(-1)
-                        });
+
+                    let updateData = {};
+                    if (hostReady !== undefined) updateData.hostReady = hostReady;
+                    if (joinerReady !== undefined) updateData.joinerReady = joinerReady;
+                    if (firstPick !== undefined) updateData.firstPick = firstPick;
+
+                    const currentData = roomDoc.data();
+                    const finalHostReady = hostReady !== undefined ? hostReady : currentData.hostReady;
+                    const finalJoinerReady = joinerReady !== undefined ? joinerReady : currentData.joinerReady;
+
+                    // 🔥 fully_matched ဖြစ်သွားသည့် အခြေအနေကို စစ်ဆေးခြင်း
+                    if (finalHostReady && finalJoinerReady) {
+                        updateData.status = 'fully_matched';
+                        if (!currentData.matchCode) {
+                            const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
+                            let randomStr = '';
+                            for (let i = 0; i < 6; i++) {
+                                randomStr += chars.charAt(Math.floor(Math.random() * chars.length));
+                            }
+                            updateData.matchCode = `REV-${randomStr}`;
+                        }
+
+                        // 🔥 Key များကို တစ်ကြိမ်သာ နှုတ်ေပးရန် keysDeducted flag ကို စစ်ဆေးခြင်း
+                        if (!currentData.keysDeducted) {
+                            let modePrefix = '';
+                            const lowerMode = (currentData.mode || '').toLowerCase();
+                            if (lowerMode.includes('1v1') || lowerMode.includes('1vs1')) {
+                                modePrefix = '1vs1';
+                            } else if (lowerMode.includes('5v5') || lowerMode.includes('5vs5')) {
+                                modePrefix = '5vs5';
+                            }
+
+                            const keyFieldName = modePrefix ? `${modePrefix}-${(currentData.keyType || '').toLowerCase()}` : null;
+
+                            const batch = db.batch();
+                            if (keyFieldName) {
+                                if (currentData.hostId) {
+                                    const hostUserRef = db.collection('users').doc(currentData.hostId);
+                                    batch.update(hostUserRef, {
+                                        [`keys.${keyFieldName}`]: FieldValue.increment(-1)
+                                    });
+                                }
+                                if (currentData.joinedUserId) {
+                                    const joinerUserRef = db.collection('users').doc(currentData.joinedUserId);
+                                    batch.update(joinerUserRef, {
+                                        [`keys.${keyFieldName}`]: FieldValue.increment(-1)
+                                    });
+                                }
+                                await batch.commit();
+                            }
+
+                            // 🔥 Key နှုတ်ပြီးကြောင်း မှတ်သားထားရန်
+                            updateData.keysDeducted = true;
+                        }
+                    } else {
+                        updateData.status = 'matched';
                     }
-                    await batch.commit();
+
+                    await roomRef.update(updateData);
+
+                    return res.status(200).json({ success: true, message: "Status updated successfully" });
+                } catch (error) {
+                    console.error("Update Ready Error:", error);
+                    return res.status(500).json({ success: false, message: "Server Error", error: error.message });
                 }
-            } else {
-                updateData.status = 'matched';
             }
-
-            await roomRef.update(updateData);
-
-            return res.status(200).json({ success: true, message: "Status updated successfully" });
-        } catch (error) {
-            console.error("Update Ready Error:", error);
-            return res.status(500).json({ success: false, message: "Server Error", error: error.message });
-        }
-    }
-
-    if (method === 'DELETE') {
+        if (method === 'DELETE') {
         try {
             const { userId, roomId } = req.body; 
             if (!userId) {
