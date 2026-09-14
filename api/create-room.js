@@ -35,7 +35,6 @@ function formatPlayerField(player) {
 module.exports = async function handler(req, res) {
     const { method } = req;
 
-    // 🔥 1. GET Method - Room များကို Mode နဲ့ KeyType အလိုက် လှမ်းထုတ်ပေးခြင်း
     if (method === 'GET') {
         try {
             const { mode, keyType, roomId } = req.query;
@@ -49,21 +48,13 @@ module.exports = async function handler(req, res) {
             }
 
             let query = db.collection('active_rooms');
-
-            if (mode) {
-                query = query.where('mode', '==', mode);
-            }
-            if (keyType) {
-                query = query.where('keyType', '==', keyType);
-            }
+            if (mode) query = query.where('mode', '==', mode);
+            if (keyType) query = query.where('keyType', '==', keyType);
 
             const snapshot = await query.get();
             let rooms = [];
             snapshot.forEach(doc => {
-                rooms.push({
-                    id: doc.id,
-                    ...doc.data()
-                });
+                rooms.push({ id: doc.id, ...doc.data() });
             });
 
             return res.status(200).json({ success: true, rooms });
@@ -73,11 +64,11 @@ module.exports = async function handler(req, res) {
         }
     }
 
-    // 🔥 2. POST Method - Room အသစ်ဖန်တီးခြင်း (သို့မဟုတ်) Room ထဲသို့ Join ခြင်း
     if (method === 'POST') {
         try {
             const { userId, roomTitle, targetMode, targetKeyType, boType, roomId } = req.body;
 
+            // 🔥 JOIN ROOM CASE
             if (roomId) {
                 if (!userId) {
                     return res.status(400).json({ success: false, message: "Missing userId for joining room" });
@@ -155,12 +146,14 @@ module.exports = async function handler(req, res) {
                     }
                 }
 
+                // 🔥 Joiner ဘက်အတွက် gameId ကိုပါ ထည့်သွင်းပေးခြင်း (1v1 အတွက်ရော အခြားအတွက်ပါ)
                 await roomRef.update({
                     joinedUserId: userId,
                     status: 'matched',
                     joinerTeamName: joinerTeamName,
                     joinerTeamLogo: joinerTeamLogo,
                     joinerInGameName: matchedReg?.inGameName || joinerTeamName,
+                    joinerGameId: matchedReg?.gameId || matchedReg?.id || '-', // 🔥 gameId ထည့်ပေးလိုက်ပါပြီ
                     joinerHeroName: matchedReg?.heroName || '',
                     joinerSqName: matchedReg?.sqName || joinerTeamName,
                     joinerRoamer: formatPlayerField(matchedReg?.roamer),
@@ -174,6 +167,7 @@ module.exports = async function handler(req, res) {
                 return res.status(200).json({ success: true, message: "Successfully joined the room" });
             }
 
+            // 🔥 CREATE ROOM CASE
             if (!userId || !targetMode || !targetKeyType) {
                 return res.status(400).json({ success: false, message: "Missing required fields" });
             }
@@ -254,6 +248,7 @@ module.exports = async function handler(req, res) {
                 }
             }
 
+            // 🔥 Host ဘက်အတွက် gameId ကိုပါ ထည့်သွင်းပေးခြင်း
             const roomData = {
                 hostId: userId,
                 teamName: teamName,
@@ -271,6 +266,7 @@ module.exports = async function handler(req, res) {
                 joinedUserId: null,
                 
                 inGameName: matchedReg?.inGameName || teamName,
+                gameId: matchedReg?.gameId || matchedReg?.id || '-', // 🔥 Host ရဲ့ gameId ပါဝင်လာပါပြီ
                 heroName: matchedReg?.heroName || '',
                 
                 sqName: matchedReg?.sqName || teamName,
@@ -297,7 +293,6 @@ module.exports = async function handler(req, res) {
         }
     }
 
-    // 🔥 3. PATCH Method - Host/Joiner Ready နှိပ်သည့်အခါ နှင့် Fully Matched ဖြစ်ပါက Random Code အလိုအလျောက် ထည့်ပေးခြင်း
     if (method === 'PATCH') {
         try {
             const { userId, roomId, hostReady, joinerReady, firstPick } = req.body;
@@ -321,10 +316,8 @@ module.exports = async function handler(req, res) {
             const finalHostReady = hostReady !== undefined ? hostReady : currentData.hostReady;
             const finalJoinerReady = joinerReady !== undefined ? joinerReady : currentData.joinerReady;
 
-            // နှစ်ယောက်စလုံး Ready ဖြစ်ပြီး status က fully_matched ဖြစ်သွားကာ matchCode မရှိသေးလျှင် Server ဘက်က Random Code တစ်ခု ဖန်တီးပေးမည်
             if (finalHostReady && finalJoinerReady) {
                 updateData.status = 'fully_matched';
-                
                 if (!currentData.matchCode) {
                     const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
                     let randomStr = '';
@@ -345,7 +338,6 @@ module.exports = async function handler(req, res) {
         }
     }
 
-    // 🔥 4. DELETE Method - Room ဖျက်ခြင်း (သို့မဟုတ်) Join ထားတာကို Cancel လုပ်ခြင်း
     if (method === 'DELETE') {
         try {
             const { userId, roomId } = req.body; 
@@ -364,7 +356,10 @@ module.exports = async function handler(req, res) {
                             status: 'waiting',
                             joinerReady: false,
                             firstPick: null,
-                            matchCode: null
+                            matchCode: null,
+                            joinerGameId: null,
+                            joinerInGameName: null,
+                            joinerTeamName: null
                         });
                         return res.status(200).json({ success: true, message: "Left room successfully" });
                     }
@@ -376,14 +371,11 @@ module.exports = async function handler(req, res) {
             const joinedSnapshot = await db.collection('active_rooms').where('joinedUserId', '==', userId).get();
             const batch = db.batch();
             joinedSnapshot.forEach(doc => {
-                batch.update(doc.ref, { joinedUserId: null, status: 'waiting', joinerReady: false, firstPick: null, matchCode: null });
+                batch.update(doc.ref, { joinedUserId: null, status: 'waiting', joinerReady: false, firstPick: null, matchCode: null, joinerGameId: null });
             });
             await batch.commit();
 
-            return res.status(200).json({ 
-                success: true, 
-                message: "Room cancelled and deleted successfully" 
-            });
+            return res.status(200).json({ success: true, message: "Room cancelled and deleted successfully" });
         } catch (error) {
             console.error("Delete Room Error:", error);
             return res.status(500).json({ success: false, message: "Server Error", error: error.message });
