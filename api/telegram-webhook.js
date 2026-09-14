@@ -305,50 +305,74 @@ module.exports = async function handler(req, res) {
                         roomData = doc.data();
                     });
 
-                    const targetUserId = roomData.hostId || roomData.joinedUserId;
-                    let regDetailsText = "📌 သက်ဆိုင်ရာ Registration အချက်အလက် မတွေ့ရှိပါ။";
+                    const hostId = roomData.hostId;
+                    const joinedUserId = roomData.joinedUserId;
+                    
+                    const collectionsToSearch = ['1vs1_registrations', '5vs5_registrations', 'tournament_registrations'];
+                    let hostRegDetails = "📌 Host ၏ Registration အချက်အလက် မတွေ့ရှိပါ။";
+                    let joinerRegDetails = "📌 Joiner ၏ Registration အချက်အလက် မတွေ့ရှိပါ။";
 
-                    if (targetUserId) {
-                        const collectionsToSearch = ['1vs1_registrations', '5vs5_registrations', 'tournament_registrations'];
-                        let foundRegData = null;
-                        let foundCollection = "";
-
+                    // Host Data ရှာရန်
+                    if (hostId) {
+                        let foundHostReg = null;
+                        let foundHostCol = "";
                         for (const colName of collectionsToSearch) {
-                            const regSnap = await db.collection(colName).where('userId', '==', targetUserId).get();
+                            const regSnap = await db.collection(colName).where('userId', '==', hostId).get();
                             if (!regSnap.empty) {
-                                foundRegData = regSnap.docs[0].data();
-                                foundCollection = colName;
+                                foundHostReg = regSnap.docs[0].data();
+                                foundHostCol = colName;
                                 break;
                             }
                         }
+                        if (foundHostReg) {
+                            hostRegDetails = `
+👑 **Host Registration Details (${foundHostCol}):**
+- User ID: \`${foundHostReg.userId || '-'}\`
+- Name: ${foundHostReg.name || foundHostReg.teamName || '-'}
+- Game Name/ID: ${foundHostReg.gameId || foundHostReg.inGameName || '-'}
+- Fee / Type: ${foundHostReg.fee || foundHostReg.type || '-'}
+- Status: ${foundHostReg.status || '-'}
+- Date: ${foundHostReg.createdAt || foundHostReg.date || '-'}
+                            `;
+                        }
+                    }
 
-                        if (foundRegData) {
-                            regDetailsText = `
-📋 **Registration Details Found (${foundCollection}):**
-- User ID: \`${foundRegData.userId || '-'}\`
-- Name: ${foundRegData.name || foundRegData.teamName || '-'}
-- Game Name/ID: ${foundRegData.gameId || foundRegData.inGameName || '-'}
-- Fee / Type: ${foundRegData.fee || foundRegData.type || '-'}
-- Status: ${foundRegData.status || '-'}
-- Date: ${foundRegData.createdAt || foundRegData.date || '-'}
+                    // Joiner Data ရှာရန်
+                    if (joinedUserId) {
+                        let foundJoinerReg = null;
+                        let foundJoinerCol = "";
+                        for (const colName of collectionsToSearch) {
+                            const regSnap = await db.collection(colName).where('userId', '==', joinedUserId).get();
+                            if (!regSnap.empty) {
+                                foundJoinerReg = regSnap.docs[0].data();
+                                foundJoinerCol = colName;
+                                break;
+                            }
+                        }
+                        if (foundJoinerReg) {
+                            joinerRegDetails = `
+🎮 **Joiner Registration Details (${foundJoinerCol}):**
+- User ID: \`${foundJoinerReg.userId || '-'}\`
+- Name: ${foundJoinerReg.name || foundJoinerReg.teamName || '-'}
+- Game Name/ID: ${foundJoinerReg.gameId || foundJoinerReg.inGameName || '-'}
+- Fee / Type: ${foundJoinerReg.fee || foundJoinerReg.type || '-'}
+- Status: ${foundJoinerReg.status || '-'}
+- Date: ${foundJoinerReg.createdAt || foundJoinerReg.date || '-'}
                             `;
                         }
                     }
 
                     const replyMessage = `
-🎮 **Room & User Information** 🎮
+🎮 **Room & Both Users Information** 🎮
 📌 **Match Code:** \`${roomData.matchCode}\`
 🕹️ **Mode:** ${roomData.mode || '-'}
 🔑 **Key Type:** ${roomData.keyType || '-'}
 ⚡ **Status:** ${roomData.status || '-'}
 
-👑 **Room Host Info:**
-- Name: ${roomData.teamName || roomData.inGameName || '-'}
-- Game ID: ${roomData.gameId || '-'}
-- Host ID: \`${roomData.hostId || '-'}\`
-
 -----------------------------------
-${regDetailsText}
+${hostRegDetails}
+-----------------------------------
+${joinerRegDetails}
                     `;
 
                     await fetch(`https://api.telegram.org/bot${BOT_TOKEN}/sendMessage`, {
