@@ -285,6 +285,7 @@ if (update.message && update.message.text) {
         }
 
         try {
+            // ၁။ active_rooms ထဲမှာ matchCode ဖြင့် အရင်ရှာခြင်း
             const roomsRef = db.collection('active_rooms');
             const snapshot = await roomsRef.where('matchCode', '==', text).get();
 
@@ -308,8 +309,9 @@ if (update.message && update.message.text) {
             const hostId = roomData.hostId;
             const joinedUserId = roomData.joinedUserId;
             const roomMode = (roomData.mode || '').toString().toLowerCase();
+            const roomFee = roomData.keyType || roomData.fee || '';
 
-            // Room mode ပေါ်မူတည်၍ သက်ဆိုင်ရာ Firestore Collection ကို ရွေးချယ်ရန်
+            // ၂။ Mode ပေါ်မူတည်၍ သက်ဆိုင်ရာ Register Collection ကို ရွေးချယ်ခြင်း
             let targetCollection = '1vs1_registrations';
             if (roomMode.includes('5vs5') || roomMode.includes('5v5')) {
                 targetCollection = '5vs5_registrations';
@@ -320,43 +322,54 @@ if (update.message && update.message.text) {
             let hostRegDetails = "📌 Host ၏ Registration အချက်အလက် မတွေ့ရှိပါ။";
             let joinerRegDetails = "📌 Joiner ၏ Registration အချက်အလက် မတွေ့ရှိပါ။";
 
-            // 1. Host ၏ Data ကို ဆွဲထုတ်ခြင်း (userId နှင့် Room ထဲပါသော fee/type ကို အခြေခံ၍)
+            // ၃။ Host ၏ User ID နှင့် Room ထဲပါသော fee/mode တို့ကို တိုက်စစ်၍ Register Data အပြည့်အစုံရှာခြင်း
             if (hostId) {
-                const hostSnap = await db.collection(targetCollection).where('userId', '==', hostId).get();
-                if (!hostSnap.empty) {
-                    // အကယ်၍ တစ်ဦးတည်းမှာ register လုပ်ထားတာ များနေလျှင် matchCode သို့မဟုတ် အနောက်ဆုံး doc ကို ယူနိုင်ပါသည်
-                    const hostReg = hostSnap.docs[0].data();
-                    hostRegDetails = `
-👑 **Host Registration Details (${targetCollection}):**
-- User ID: \`${hostReg.userId || '-'}\`
-- Name/Team: ${hostReg.name || hostReg.sqName || hostReg.teamName || '-'}
-- Game ID: ${hostReg.gameId || hostReg.playerId || '-'}
-- Fee: ${hostReg.fee || '-'}
-- Status: ${hostReg.status || '-'}
-- Date: ${hostReg.time || '-'}
-                    `;
+                let hostQuery = db.collection(targetCollection).where('userId', '==', hostId);
+                const hostSnap = await hostQuery.get();
+                
+                let matchedHostDoc = null;
+                hostSnap.forEach(doc => {
+                    const d = doc.data();
+                    // fee သို့မဟုတ် matchCode ကိုက်ညီမှုကို စစ်ဆေးခြင်း
+                    if (d.matchCode === text || (roomFee && (d.fee === roomFee || d.keyType === roomFee))) {
+                        matchedHostDoc = d;
+                    }
+                });
+                // အကယ်၍ အတိအကျမတွေ့လျှင် ပထမဆုံးတွေ့သည့် doc ကို ယူမည်
+                if (!matchedHostDoc && !hostSnap.empty) {
+                    matchedHostDoc = hostSnap.docs[0].data();
+                }
+
+                if (matchedHostDoc) {
+                    hostRegDetails = `👑 **Host Full Register Data (${targetCollection}):**\n` + 
+                        Object.entries(matchedHostDoc).map(([k, v]) => `- ${k}: ${JSON.stringify(v)}`).join('\n');
                 }
             }
 
-            // 2. Joiner ၏ Data ကို ဆွဲထုတ်ခြင်း
+            // ၄။ Joiner ၏ User ID ဖြင့် Register Data အပြည့်အစုံရှာခြင်း
             if (joinedUserId) {
-                const joinerSnap = await db.collection(targetCollection).where('userId', '==', joinedUserId).get();
-                if (!joinerSnap.empty) {
-                    const joinerReg = joinerSnap.docs[0].data();
-                    joinerRegDetails = `
-🎮 **Joiner Registration Details (${targetCollection}):**
-- User ID: \`${joinerReg.userId || '-'}\`
-- Name/Team: ${joinerReg.name || joinerReg.sqName || joinerReg.teamName || '-'}
-- Game ID: ${joinerReg.gameId || joinerReg.playerId || '-'}
-- Fee: ${joinerReg.fee || '-'}
-- Status: ${joinerReg.status || '-'}
-- Date: ${joinerReg.time || '-'}
-                    `;
+                let joinerQuery = db.collection(targetCollection).where('userId', '==', joinedUserId);
+                const joinerSnap = await joinerQuery.get();
+
+                let matchedJoinerDoc = null;
+                joinerSnap.forEach(doc => {
+                    const d = doc.data();
+                    if (d.matchCode === text || (roomFee && (d.fee === roomFee || d.keyType === roomFee))) {
+                        matchedJoinerDoc = d;
+                    }
+                });
+                if (!matchedJoinerDoc && !joinerSnap.empty) {
+                    matchedJoinerDoc = joinerSnap.docs[0].data();
+                }
+
+                if (matchedJoinerDoc) {
+                    joinerRegDetails = `🎮 **Joiner Full Register Data (${targetCollection}):**\n` + 
+                        Object.entries(matchedJoinerDoc).map(([k, v]) => `- ${k}: ${JSON.stringify(v)}`).join('\n');
                 }
             }
 
             const replyMessage = `
-🎮 **Room & Both Users Full Information** 🎮
+🎮 **Room & Both Users Complete Data** 🎮
 📌 **Match Code:** \`${roomData.matchCode}\`
 🕹️ **Mode:** ${roomData.mode || '-'}
 🔑 **Key Type:** ${roomData.keyType || '-'}
