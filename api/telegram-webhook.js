@@ -305,11 +305,9 @@ module.exports = async function handler(req, res) {
                         roomData = doc.data();
                     });
 
-                    // Host နှင့် Joiner ၏ userId များကို ရယူမည်
                     const hostId = roomData.hostId;
                     const joinedUserId = roomData.joinedUserId;
 
-                    // Registration အချက်အလက်များကို ရှာဖွေပေးမည့် Helper Function
                     async function fetchRegistrationData(targetUserId) {
                         if (!targetUserId) return null;
                         const collectionsToSearch = ['1vs1_registrations', '5vs5_registrations', 'tournament_registrations'];
@@ -322,7 +320,6 @@ module.exports = async function handler(req, res) {
                         return null;
                     }
 
-                    // Host နှင့် Joiner ဒေတာများကို တစ်ခါတည်း ဆွဲထုတ်မည်
                     const hostReg = await fetchRegistrationData(hostId);
                     const joinerReg = await fetchRegistrationData(joinedUserId);
 
@@ -517,7 +514,7 @@ ${joinerRegText}
             role: userData.role || 'user'
         });
 
-    } catch (error) {
+    } catch (error)  {
         console.error("Auth/Webhook Error:", error);
         return res.status(500).json({ success: false, message: "Server Error" });
     }
