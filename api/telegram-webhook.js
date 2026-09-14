@@ -37,7 +37,7 @@ module.exports = async function handler(req, res) {
         const update = req.body;
 
         // -------------------------------------------------------------
-        // Telegram Callback Query (Admin Action) လုပ်ဆောင်ချက်များ
+        // 1. Telegram Callback Query (Admin Action) လုပ်ဆောင်ချက်များ
         // -------------------------------------------------------------
         if (update.callback_query) {
             const callbackQuery = update.callback_query;
@@ -55,7 +55,6 @@ module.exports = async function handler(req, res) {
             let docId = "";
             let reasonKey = "";
 
-            // 🟢 Callback Data ပုံစံများကို တိကျစွာ ခွဲထုတ်ခြင်း
             if (parts[1] === 'refund' && parts[2] === 'requests') {
                 collectionName = 'refund_requests';
                 docId = parts[3];
@@ -69,7 +68,6 @@ module.exports = async function handler(req, res) {
                     docId = parts[4];
                 }
             } else {
-                // ဥပမာ: confirm_1vs1_registrations_DOCID ဆိုပါက parts[1] က 1vs1၊ parts[2] က registrations ဖြစ်ပါမည်။
                 collectionName = `${parts[1]}_${parts[2]}`; 
                 docId = parts[3];
             }
@@ -137,11 +135,8 @@ module.exports = async function handler(req, res) {
                 ];
             }
 
-            // Database Confirm လုပ်ဆောင်ချက်များ (Registration နှင့် Refund များကို +1 / -1 လုပ်ပေးခြင်း)
             try {
                 if (collectionName && docId && action === 'confirm') {
-                    
-                    // 1. REFUND REQUESTS အတွက် Confirm လုပ်ခြင်း
                     if (collectionName === 'refund_requests') {
                         const refundDocRef = db.collection('refund_requests').doc(docId);
                         await refundDocRef.update({ status: 'CONFIRMED' });
@@ -186,14 +181,11 @@ module.exports = async function handler(req, res) {
                                         await userRef.update({
                                             [keyFieldToDecrement]: updatedQty
                                         });
-                                        console.log(`Refund: Updated ${keyFieldToDecrement} to ${updatedQty}`);
                                     }
                                 }
                             }
                         }
-                    } 
-                    // 2. REGISTRATIONS အတွက် Confirm လုပ်ခြင်း
-                    else {
+                    } else {
                         const regDocRef = db.collection(collectionName).doc(docId);
                         await regDocRef.update({ status: 'CONFIRMED' });
 
@@ -236,7 +228,6 @@ module.exports = async function handler(req, res) {
                                     await userRef.update({
                                         [keyFieldToIncrement]: FieldValue.increment(1)
                                     });
-                                    console.log(`Registration: Incremented ${keyFieldToIncrement} by 1`);
                                 }
                             }
                         }
@@ -278,7 +269,108 @@ module.exports = async function handler(req, res) {
         }
 
         // -------------------------------------------------------------
-        // User Authentication & Registration (Device / Phone Login)
+        // 2. Telegram Text Message (Match Code / REV- ဖြင့် ရှာဖွေခြင်း)
+        // -------------------------------------------------------------
+        if (update.message && update.message.text) {
+            const message = update.message;
+            const chatId = message.chat.id;
+            const text = message.text.trim();
+            const BOT_TOKEN = process.env.TELEGRAM_BOT_TOKEN;
+            const MATCHING_GROUP_ID = process.env.MATCHING_GROUP_ID;
+
+            if (text.startsWith('REV-')) {
+                if (!MATCHING_GROUP_ID || chatId.toString() !== MATCHING_GROUP_ID.toString()) {
+                    console.log("Ignored REV command from unauthorized chat/group.");
+                    return res.status(200).json({ status: 'ignored' });
+                }
+
+                try {
+                    const roomsRef = db.collection('active_rooms');
+                    const snapshot = await roomsRef.where('matchCode', '==', text).get();
+
+                    if (snapshot.empty) {
+                        await fetch(`https://api.telegram.org/bot${BOT_TOKEN}/sendMessage`, {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({
+                                chat_id: MATCHING_GROUP_ID,
+                                text: '❌ ဤ Match Code ဖြင့် Active ဖြစ်နေသော Room ကို မတွေ့ရှိရပါရှင်။'
+                            })
+                        });
+                        return res.status(200).json({ status: 'success' });
+                    }
+
+                    let roomData = null;
+                    snapshot.forEach(doc => {
+                        roomData = doc.data();
+                    });
+
+                    const targetUserId = roomData.hostId || roomData.joinedUserId;
+                    let regDetailsText = "📌 သက်ဆိုင်ရာ Registration အချက်အလက် မတွေ့ရှိပါ။";
+
+                    if (targetUserId) {
+                        const collectionsToSearch = ['1vs1_registrations', '5vs5_registrations', 'tournament_registrations'];
+                        let foundRegData = null;
+                        let foundCollection = "";
+
+                        for (const colName of collectionsToSearch) {
+                            const regSnap = await db.collection(colName).where('userId', '==', targetUserId).get();
+                            if (!regSnap.empty) {
+                                foundRegData = regSnap.docs[0].data();
+                                foundCollection = colName;
+                                break;
+                            }
+                        }
+
+                        if (foundRegData) {
+                            regDetailsText = `
+📋 **Registration Details Found (${foundCollection}):**
+- User ID: \`${foundRegData.userId || '-'}\`
+- Name: ${foundRegData.name || foundRegData.teamName || '-'}
+- Game Name/ID: ${foundRegData.gameId || foundRegData.inGameName || '-'}
+- Fee / Type: ${foundRegData.fee || foundRegData.type || '-'}
+- Status: ${foundRegData.status || '-'}
+- Date: ${foundRegData.createdAt || foundRegData.date || '-'}
+                            `;
+                        }
+                    }
+
+                    const replyMessage = `
+🎮 **Room & User Information** 🎮
+📌 **Match Code:** \`${roomData.matchCode}\`
+🕹️ **Mode:** ${roomData.mode || '-'}
+🔑 **Key Type:** ${roomData.keyType || '-'}
+⚡ **Status:** ${roomData.status || '-'}
+
+👑 **Room Host Info:**
+- Name: ${roomData.teamName || roomData.inGameName || '-'}
+- Game ID: ${roomData.gameId || '-'}
+- Host ID: \`${roomData.hostId || '-'}\`
+
+-----------------------------------
+${regDetailsText}
+                    `;
+
+                    await fetch(`https://api.telegram.org/bot${BOT_TOKEN}/sendMessage`, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({
+                            chat_id: MATCHING_GROUP_ID,
+                            text: replyMessage,
+                            parse_mode: 'Markdown'
+                        })
+                    });
+
+                } catch (err) {
+                    console.error("Telegram MatchCode Search Error:", err);
+                }
+
+                return res.status(200).json({ status: 'success' });
+            }
+        }
+
+        // -------------------------------------------------------------
+        // 3. User Authentication & Registration (Device / Phone Login)
         // -------------------------------------------------------------
         const { phone, deviceId, name, pin } = req.body;
 
