@@ -268,102 +268,95 @@ module.exports = async function handler(req, res) {
             return res.status(200).json({ status: 'success' });
         }
 
-        // -------------------------------------------------------------
-        // 2. Telegram Text Message (Match Code / REV- ဖြင့် ရှာဖွေခြင်း)
-        // -------------------------------------------------------------
-        if (update.message && update.message.text) {
-            const message = update.message;
-            const chatId = message.chat.id;
-            const text = message.text.trim();
-            const BOT_TOKEN = process.env.TELEGRAM_BOT_TOKEN;
-            const MATCHING_GROUP_ID = process.env.MATCHING_GROUP_ID;
+// -------------------------------------------------------------
+// 2. Telegram Text Message (Match Code / REV- ဖြင့် ရှာဖွေခြင်း)
+// -------------------------------------------------------------
+if (update.message && update.message.text) {
+    const message = update.message;
+    const chatId = message.chat.id;
+    const text = message.text.trim();
+    const BOT_TOKEN = process.env.TELEGRAM_BOT_TOKEN;
+    const MATCHING_GROUP_ID = process.env.MATCHING_GROUP_ID;
 
-            if (text.startsWith('REV-')) {
-                if (!MATCHING_GROUP_ID || chatId.toString() !== MATCHING_GROUP_ID.toString()) {
-                    console.log("Ignored REV command from unauthorized chat/group.");
-                    return res.status(200).json({ status: 'ignored' });
+    if (text.startsWith('REV-')) {
+        if (!MATCHING_GROUP_ID || chatId.toString() !== MATCHING_GROUP_ID.toString()) {
+            console.log("Ignored REV command from unauthorized chat/group.");
+            return res.status(200).json({ status: 'ignored' });
+        }
+
+        try {
+            const roomsRef = db.collection('active_rooms');
+            const snapshot = await roomsRef.where('matchCode', '==', text).get();
+
+            if (snapshot.empty) {
+                await fetch(`https://api.telegram.org/bot${BOT_TOKEN}/sendMessage`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        chat_id: MATCHING_GROUP_ID,
+                        text: '❌ ဤ Match Code ဖြင့် Active ဖြစ်နေသော Room ကို မတွေ့ရှိရပါရှင်။'
+                    })
+                });
+                return res.status(200).json({ status: 'success' });
+            }
+
+            let roomData = null;
+            snapshot.forEach(doc => {
+                roomData = doc.data();
+            });
+
+            const hostId = roomData.hostId;
+            const joinedUserId = roomData.joinedUserId;
+            const roomMode = (roomData.mode || '').toString().toLowerCase();
+
+            // Room mode ပေါ်မူတည်၍ သက်ဆိုင်ရာ Firestore Collection ကို ရွေးချယ်ရန်
+            let targetCollection = '1vs1_registrations';
+            if (roomMode.includes('5vs5') || roomMode.includes('5v5')) {
+                targetCollection = '5vs5_registrations';
+            } else if (roomMode.includes('tournament')) {
+                targetCollection = 'tournament_registrations';
+            }
+
+            let hostRegDetails = "📌 Host ၏ Registration အချက်အလက် မတွေ့ရှိပါ။";
+            let joinerRegDetails = "📌 Joiner ၏ Registration အချက်အလက် မတွေ့ရှိပါ။";
+
+            // 1. Host ၏ Data ကို ဆွဲထုတ်ခြင်း (userId နှင့် Room ထဲပါသော fee/type ကို အခြေခံ၍)
+            if (hostId) {
+                const hostSnap = await db.collection(targetCollection).where('userId', '==', hostId).get();
+                if (!hostSnap.empty) {
+                    // အကယ်၍ တစ်ဦးတည်းမှာ register လုပ်ထားတာ များနေလျှင် matchCode သို့မဟုတ် အနောက်ဆုံး doc ကို ယူနိုင်ပါသည်
+                    const hostReg = hostSnap.docs[0].data();
+                    hostRegDetails = `
+👑 **Host Registration Details (${targetCollection}):**
+- User ID: \`${hostReg.userId || '-'}\`
+- Name/Team: ${hostReg.name || hostReg.sqName || hostReg.teamName || '-'}
+- Game ID: ${hostReg.gameId || hostReg.playerId || '-'}
+- Fee: ${hostReg.fee || '-'}
+- Status: ${hostReg.status || '-'}
+- Date: ${hostReg.time || '-'}
+                    `;
                 }
+            }
 
-                try {
-                    const roomsRef = db.collection('active_rooms');
-                    const snapshot = await roomsRef.where('matchCode', '==', text).get();
+            // 2. Joiner ၏ Data ကို ဆွဲထုတ်ခြင်း
+            if (joinedUserId) {
+                const joinerSnap = await db.collection(targetCollection).where('userId', '==', joinedUserId).get();
+                if (!joinerSnap.empty) {
+                    const joinerReg = joinerSnap.docs[0].data();
+                    joinerRegDetails = `
+🎮 **Joiner Registration Details (${targetCollection}):**
+- User ID: \`${joinerReg.userId || '-'}\`
+- Name/Team: ${joinerReg.name || joinerReg.sqName || joinerReg.teamName || '-'}
+- Game ID: ${joinerReg.gameId || joinerReg.playerId || '-'}
+- Fee: ${joinerReg.fee || '-'}
+- Status: ${joinerReg.status || '-'}
+- Date: ${joinerReg.time || '-'}
+                    `;
+                }
+            }
 
-                    if (snapshot.empty) {
-                        await fetch(`https://api.telegram.org/bot${BOT_TOKEN}/sendMessage`, {
-                            method: 'POST',
-                            headers: { 'Content-Type': 'application/json' },
-                            body: JSON.stringify({
-                                chat_id: MATCHING_GROUP_ID,
-                                text: '❌ ဤ Match Code ဖြင့် Active ဖြစ်နေသော Room ကို မတွေ့ရှိရပါရှင်။'
-                            })
-                        });
-                        return res.status(200).json({ status: 'success' });
-                    }
-
-                    let roomData = null;
-                    snapshot.forEach(doc => {
-                        roomData = doc.data();
-                    });
-
-                    const hostId = roomData.hostId;
-                    const joinedUserId = roomData.joinedUserId;
-                    
-                    const collectionsToSearch = ['1vs1_registrations', '5vs5_registrations', 'tournament_registrations'];
-                    let hostRegDetails = "📌 Host ၏ Registration အချက်အလက် မတွေ့ရှိပါ။";
-                    let joinerRegDetails = "📌 Joiner ၏ Registration အချက်အလက် မတွေ့ရှိပါ။";
-
-                    // Host Data ရှာရန်
-                    if (hostId) {
-                        let foundHostReg = null;
-                        let foundHostCol = "";
-                        for (const colName of collectionsToSearch) {
-                            const regSnap = await db.collection(colName).where('userId', '==', hostId).get();
-                            if (!regSnap.empty) {
-                                foundHostReg = regSnap.docs[0].data();
-                                foundHostCol = colName;
-                                break;
-                            }
-                        }
-                        if (foundHostReg) {
-                            hostRegDetails = `
-👑 **Host Registration Details (${foundHostCol}):**
-- User ID: \`${foundHostReg.userId || '-'}\`
-- Name: ${foundHostReg.name || foundHostReg.teamName || '-'}
-- Game Name/ID: ${foundHostReg.gameId || foundHostReg.inGameName || '-'}
-- Fee / Type: ${foundHostReg.fee || foundHostReg.type || '-'}
-- Status: ${foundHostReg.status || '-'}
-- Date: ${foundHostReg.createdAt || foundHostReg.date || '-'}
-                            `;
-                        }
-                    }
-
-                    // Joiner Data ရှာရန်
-                    if (joinedUserId) {
-                        let foundJoinerReg = null;
-                        let foundJoinerCol = "";
-                        for (const colName of collectionsToSearch) {
-                            const regSnap = await db.collection(colName).where('userId', '==', joinedUserId).get();
-                            if (!regSnap.empty) {
-                                foundJoinerReg = regSnap.docs[0].data();
-                                foundJoinerCol = colName;
-                                break;
-                            }
-                        }
-                        if (foundJoinerReg) {
-                            joinerRegDetails = `
-🎮 **Joiner Registration Details (${foundJoinerCol}):**
-- User ID: \`${foundJoinerReg.userId || '-'}\`
-- Name: ${foundJoinerReg.name || foundJoinerReg.teamName || '-'}
-- Game Name/ID: ${foundJoinerReg.gameId || foundJoinerReg.inGameName || '-'}
-- Fee / Type: ${foundJoinerReg.fee || foundJoinerReg.type || '-'}
-- Status: ${foundJoinerReg.status || '-'}
-- Date: ${foundJoinerReg.createdAt || foundJoinerReg.date || '-'}
-                            `;
-                        }
-                    }
-
-                    const replyMessage = `
-🎮 **Room & Both Users Information** 🎮
+            const replyMessage = `
+🎮 **Room & Both Users Full Information** 🎮
 📌 **Match Code:** \`${roomData.matchCode}\`
 🕹️ **Mode:** ${roomData.mode || '-'}
 🔑 **Key Type:** ${roomData.keyType || '-'}
@@ -373,26 +366,25 @@ module.exports = async function handler(req, res) {
 ${hostRegDetails}
 -----------------------------------
 ${joinerRegDetails}
-                    `;
+            `;
 
-                    await fetch(`https://api.telegram.org/bot${BOT_TOKEN}/sendMessage`, {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({
-                            chat_id: MATCHING_GROUP_ID,
-                            text: replyMessage,
-                            parse_mode: 'Markdown'
-                        })
-                    });
+            await fetch(`https://api.telegram.org/bot${BOT_TOKEN}/sendMessage`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    chat_id: MATCHING_GROUP_ID,
+                    text: replyMessage,
+                    parse_mode: 'Markdown'
+                })
+            });
 
-                } catch (err) {
-                    console.error("Telegram MatchCode Search Error:", err);
-                }
-
-                return res.status(200).json({ status: 'success' });
-            }
+        } catch (err) {
+            console.error("Telegram MatchCode Search Error:", err);
         }
 
+        return res.status(200).json({ status: 'success' });
+    }
+}
         // -------------------------------------------------------------
         // 3. User Authentication & Registration (Device / Phone Login)
         // -------------------------------------------------------------
