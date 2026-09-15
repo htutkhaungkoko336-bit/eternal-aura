@@ -34,19 +34,7 @@ module.exports = async function handler(req, res) {
     }
 
     try {
-        // 🛠️ Request body ကို သေချာ Parse လုပ်ရန် (400 Error ကာကွယ်ရန်)
-        let update = req.body;
-        if (typeof update === 'string') {
-            try {
-                update = JSON.parse(update);
-            } catch (e) {
-                update = {};
-            }
-        }
-
-        if (!update) {
-            return res.status(200).json({ status: 'no_body' });
-        }
+        const update = req.body;
 
         // -------------------------------------------------------------
         // 1. Telegram Callback Query (Admin Action) လုပ်ဆောင်ချက်များ
@@ -306,7 +294,7 @@ module.exports = async function handler(req, res) {
                             headers: { 'Content-Type': 'application/json' },
                             body: JSON.stringify({
                                 chat_id: MATCHING_GROUP_ID,
-                                text: `❌ ဤ Match Code (${text}) ဖြင့် Active ဖြစ်နေသော Room ကို မတွေ့ရှိရပါ (သို့) ပြီးဆုံးသွားပါပြီရှင်။`
+                                text: '❌ ဤ Match Code ဖြင့် Active ဖြစ်နေသော Room ကို မတွေ့ရှိရပါရှင်။'
                             })
                         });
                         return res.status(200).json({ status: 'success' });
@@ -317,124 +305,50 @@ module.exports = async function handler(req, res) {
                         roomData = doc.data();
                     });
 
-                    const hostId = roomData.hostId;
-                    const joinedUserId = roomData.joinedUserId;
-                    
-                    const collectionsToSearch = ['1vs1_registrations', '5vs5_registrations', 'tournament_registrations'];
-                    
-                    let hostRegData = null;
-                    let hostCollection = "";
-                    let joinerRegData = null;
-                    let joinerCollection = "";
+                    const targetUserId = roomData.hostId || roomData.joinedUserId;
+                    let regDetailsText = "📌 သက်ဆိုင်ရာ Registration အချက်အလက် မတွေ့ရှိပါ။";
 
-                    if (hostId) {
+                    if (targetUserId) {
+                        const collectionsToSearch = ['1vs1_registrations', '5vs5_registrations', 'tournament_registrations'];
+                        let foundRegData = null;
+                        let foundCollection = "";
+
                         for (const colName of collectionsToSearch) {
-                            const regSnap = await db.collection(colName).where('userId', '==', hostId).get();
+                            const regSnap = await db.collection(colName).where('userId', '==', targetUserId).get();
                             if (!regSnap.empty) {
-                                let matched = regSnap.docs.find(d => {
-                                    const data = d.data();
-                                    const fee = (data.fee || data.type || '').toString();
-                                    return fee.toLowerCase().includes((roomData.keyType || '').toLowerCase());
-                                });
-                                
-                                hostRegData = matched ? matched.data() : regSnap.docs[0].data();
-                                hostCollection = colName;
+                                foundRegData = regSnap.docs[0].data();
+                                foundCollection = colName;
                                 break;
                             }
                         }
-                    }
 
-                    if (joinedUserId) {
-                        for (const colName of collectionsToSearch) {
-                            const regSnap = await db.collection(colName).where('userId', '==', joinedUserId).get();
-                            if (!regSnap.empty) {
-                                let matched = regSnap.docs.find(d => {
-                                    const data = d.data();
-                                    const fee = (data.fee || data.type || '').toString();
-                                    return fee.toLowerCase().includes((roomData.keyType || '').toLowerCase());
-                                });
-
-                                joinerRegData = matched ? matched.data() : regSnap.docs[0].data();
-                                joinerCollection = colName;
-                                break;
-                            }
+                        if (foundRegData) {
+                            regDetailsText = `
+📋 **Registration Details Found (${foundCollection}):**
+- User ID: \`${foundRegData.userId || '-'}\`
+- Name: ${foundRegData.name || foundRegData.teamName || '-'}
+- Game Name/ID: ${foundRegData.gameId || foundRegData.inGameName || '-'}
+- Fee / Type: ${foundRegData.fee || foundRegData.type || '-'}
+- Status: ${foundRegData.status || '-'}
+- Date: ${foundRegData.createdAt || foundRegData.date || '-'}
+                            `;
                         }
-                    }
-
-                    const getField = (reg, room, keys) => {
-                        if (!reg) {
-                            for (const k of keys) {
-                                if (room && room[k]) return room[k];
-                            }
-                            return '-';
-                        }
-                        for (const k of keys) {
-                            if (reg[k] !== undefined && reg[k] !== null && reg[k] !== '') {
-                                if (typeof reg[k] === 'object') {
-                                    if (reg[k].toDate) return reg[k].toDate().toLocaleString();
-                                    continue;
-                                }
-                                return reg[k];
-                            }
-                        }
-                        if (room) {
-                            for (const k of keys) {
-                                if (room[k]) return room[k];
-                            }
-                        }
-                        return '-';
-                    };
-
-                    const hostName = getField(hostRegData, roomData, ['name', 'teamName', 'inGameName', 'userName']);
-                    const hostInGame = getField(hostRegData, roomData, ['inGameName', 'gameId', 'gameName']);
-                    const hostHero = getField(hostRegData, roomData, ['heroName', 'hero', 'selectedHero']);
-                    const hostContact = getField(hostRegData, roomData, ['contactPhNo', 'kpayPhNo', 'phone', 'contact']);
-                    const hostFee = getField(hostRegData, roomData, ['fee', 'type']);
-                    const hostStatus = getField(hostRegData, roomData, ['status']);
-
-                    let hostDetailsText = `
-👑 **Room Host Info (${hostCollection || 'Room'}):**
-- User ID: \`${hostId || '-'}\`
-- Name: ${hostName}
-- In-Game Name: ${hostInGame}
-- Hero: ${hostHero}
-- Contact Phone: ${hostContact}
-- Fee / Type: ${hostFee}
-- Status: ${hostStatus}
-                    `;
-
-                    let joinerDetailsText = "⚔️ Joiner: လူပြည့်သေးခြင်း မရှိသေးပါ။";
-                    if (joinedUserId) {
-                        const joinerName = getField(joinerRegData, roomData, ['name', 'teamName', 'joinerTeamName', 'inGameName', 'userName']);
-                        const joinerInGame = getField(joinerRegData, roomData, ['inGameName', 'gameId', 'gameName']);
-                        const joinerHero = getField(joinerRegData, roomData, ['heroName', 'hero', 'selectedHero']);
-                        const joinerContact = getField(joinerRegData, roomData, ['contactPhNo', 'kpayPhNo', 'phone', 'contact']);
-                        const joinerFee = getField(joinerRegData, roomData, ['fee', 'type']);
-                        const joinerStatus = getField(joinerRegData, roomData, ['status']);
-
-                        joinerDetailsText = `
-⚔️ **Room Joiner Info (${joinerCollection || 'Room'}):**
-- User ID: \`${joinedUserId || '-'}\`
-- Name: ${joinerName}
-- In-Game Name: ${joinerInGame}
-- Hero: ${joinerHero}
-- Contact Phone: ${joinerContact}
-- Fee / Type: ${joinerFee}
-- Status: ${joinerStatus}
-                        `;
                     }
 
                     const replyMessage = `
-🎮 **Room & Match Information** 🎮
+🎮 **Room & User Information** 🎮
 📌 **Match Code:** \`${roomData.matchCode}\`
 🕹️ **Mode:** ${roomData.mode || '-'}
 🔑 **Key Type:** ${roomData.keyType || '-'}
 ⚡ **Status:** ${roomData.status || '-'}
 
+👑 **Room Host Info:**
+- Name: ${roomData.teamName || roomData.inGameName || '-'}
+- Game ID: ${roomData.gameId || '-'}
+- Host ID: \`${roomData.hostId || '-'}\`
+
 -----------------------------------
-${hostDetailsText}
------------------------------------
-${joinerDetailsText}
+${regDetailsText}
                     `;
 
                     await fetch(`https://api.telegram.org/bot${BOT_TOKEN}/sendMessage`, {
@@ -449,14 +363,6 @@ ${joinerDetailsText}
 
                 } catch (err) {
                     console.error("Telegram MatchCode Search Error:", err);
-                    await fetch(`https://api.telegram.org/bot${BOT_TOKEN}/sendMessage`, {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({
-                            chat_id: MATCHING_GROUP_ID,
-                            text: `⚠️ Error occurred while searching for Match Code: ${text}`
-                        })
-                    });
                 }
 
                 return res.status(200).json({ status: 'success' });
@@ -466,7 +372,7 @@ ${joinerDetailsText}
         // -------------------------------------------------------------
         // 3. User Authentication & Registration (Device / Phone Login)
         // -------------------------------------------------------------
-        const { phone, deviceId, name, pin } = update;
+        const { phone, deviceId, name, pin } = req.body;
 
         if (!phone || !deviceId) {
             return res.status(400).json({ success: false, message: "Phone and Device ID are required" });
