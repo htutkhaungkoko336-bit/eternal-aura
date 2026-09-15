@@ -37,6 +37,44 @@ module.exports = async function handler(req, res) {
         const update = req.body;
 
         // -------------------------------------------------------------
+        // 🔥 0. Match Code ဖြင့် Active Room ကို ရှာပြီး Data ပြန်ထုတ်ပေးသော Logic (အသစ်ထည့်သွင်းသည်)
+        // -------------------------------------------------------------
+        if (update.action === 'search_by_matchcode') {
+            const { matchCode } = update;
+            
+            if (!matchCode) {
+                return res.status(400).json({ success: false, message: "Missing matchCode" });
+            }
+
+            // active_rooms ကော်လီရှင်းထဲမှာ matchCode field နဲ့ တိုက်စစ်ခြင်း
+            const roomSnapshot = await db.collection('active_rooms')
+                .where('matchCode', '==', matchCode.trim())
+                .get();
+
+            if (roomSnapshot.empty) {
+                return res.status(404).json({ 
+                    success: false, 
+                    message: "ပေးထားသော Match Code နှင့် ကိုက်ညီသော Active Room ရှမတွေ့ပါ။" 
+                });
+            }
+
+            // တွေ့ရှိသော Room Data ကို ဆွဲထုတ်ခြင်း (Host နှင့် Joiner အချက်အလက်များ အကုန်ပါပြီးသားဖြစ်သည်)
+            let roomData = null;
+            roomSnapshot.forEach(doc => {
+                roomData = {
+                    roomId: doc.id,
+                    ...doc.data()
+                };
+            });
+
+            return res.status(200).json({
+                success: true,
+                message: "Match Code နှင့် ကိုက်ညီသော Room အချက်အလက်များ ရရှိပါပြီ။",
+                room: roomData
+            });
+        }
+
+        // -------------------------------------------------------------
         // 1. Telegram Callback Query (Admin Action) လုပ်ဆောင်ချက်များ
         // -------------------------------------------------------------
         if (update.callback_query) {
@@ -269,108 +307,7 @@ module.exports = async function handler(req, res) {
         }
 
         // -------------------------------------------------------------
-        // 2. Telegram Text Message (Match Code / REV- ဖြင့် ရှာဖွေခြင်း)
-        // -------------------------------------------------------------
-        if (update.message && update.message.text) {
-            const message = update.message;
-            const chatId = message.chat.id;
-            const text = message.text.trim();
-            const BOT_TOKEN = process.env.TELEGRAM_BOT_TOKEN;
-            const MATCHING_GROUP_ID = process.env.MATCHING_GROUP_ID;
-
-            if (text.startsWith('REV-')) {
-                if (!MATCHING_GROUP_ID || chatId.toString() !== MATCHING_GROUP_ID.toString()) {
-                    console.log("Ignored REV command from unauthorized chat/group.");
-                    return res.status(200).json({ status: 'ignored' });
-                }
-
-                try {
-                    const roomsRef = db.collection('active_rooms');
-                    const snapshot = await roomsRef.where('matchCode', '==', text).get();
-
-                    if (snapshot.empty) {
-                        await fetch(`https://api.telegram.org/bot${BOT_TOKEN}/sendMessage`, {
-                            method: 'POST',
-                            headers: { 'Content-Type': 'application/json' },
-                            body: JSON.stringify({
-                                chat_id: MATCHING_GROUP_ID,
-                                text: '❌ ဤ Match Code ဖြင့် Active ဖြစ်နေသော Room ကို မတွေ့ရှိရပါရှင်။'
-                            })
-                        });
-                        return res.status(200).json({ status: 'success' });
-                    }
-
-                    let roomData = null;
-                    snapshot.forEach(doc => {
-                        roomData = doc.data();
-                    });
-
-                    const targetUserId = roomData.hostId || roomData.joinedUserId;
-                    let regDetailsText = "📌 သက်ဆိုင်ရာ Registration အချက်အလက် မတွေ့ရှိပါ။";
-
-                    if (targetUserId) {
-                        const collectionsToSearch = ['1vs1_registrations', '5vs5_registrations', 'tournament_registrations'];
-                        let foundRegData = null;
-                        let foundCollection = "";
-
-                        for (const colName of collectionsToSearch) {
-                            const regSnap = await db.collection(colName).where('userId', '==', targetUserId).get();
-                            if (!regSnap.empty) {
-                                foundRegData = regSnap.docs[0].data();
-                                foundCollection = colName;
-                                break;
-                            }
-                        }
-
-                        if (foundRegData) {
-                            regDetailsText = `
-📋 **Registration Details Found (${foundCollection}):**
-- User ID: \`${foundRegData.userId || '-'}\`
-- Name: ${foundRegData.name || foundRegData.teamName || '-'}
-- Game Name/ID: ${foundRegData.gameId || foundRegData.inGameName || '-'}
-- Fee / Type: ${foundRegData.fee || foundRegData.type || '-'}
-- Status: ${foundRegData.status || '-'}
-- Date: ${foundRegData.createdAt || foundRegData.date || '-'}
-                            `;
-                        }
-                    }
-
-                    const replyMessage = `
-🎮 **Room & User Information** 🎮
-📌 **Match Code:** \`${roomData.matchCode}\`
-🕹️ **Mode:** ${roomData.mode || '-'}
-🔑 **Key Type:** ${roomData.keyType || '-'}
-⚡ **Status:** ${roomData.status || '-'}
-
-👑 **Room Host Info:**
-- Name: ${roomData.teamName || roomData.inGameName || '-'}
-- Game ID: ${roomData.gameId || '-'}
-- Host ID: \`${roomData.hostId || '-'}\`
-
------------------------------------
-${regDetailsText}
-                    `;
-
-                    await fetch(`https://api.telegram.org/bot${BOT_TOKEN}/sendMessage`, {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({
-                            chat_id: MATCHING_GROUP_ID,
-                            text: replyMessage,
-                            parse_mode: 'Markdown'
-                        })
-                    });
-
-                } catch (err) {
-                    console.error("Telegram MatchCode Search Error:", err);
-                }
-
-                return res.status(200).json({ status: 'success' });
-            }
-        }
-
-        // -------------------------------------------------------------
-        // 3. User Authentication & Registration (Device / Phone Login)
+        // 2. User Authentication & Registration (Device / Phone Login)
         // -------------------------------------------------------------
         const { phone, deviceId, name, pin } = req.body;
 
