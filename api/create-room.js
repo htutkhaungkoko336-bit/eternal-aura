@@ -138,7 +138,6 @@ module.exports = async function handler(req, res) {
                     let matchedRegs = [];
                     regSnapshot.forEach(doc => {
                         const regData = doc.data();
-                        // 1v1 နဲ့ 5v5 က 'fee' ကိုစစ်၊ tournament က '50K' (သို့) fee ကိုစစ်
                         const regFee = regData.fee || (lowerMode.includes('tournament') ? '50K' : '');
                         if (regFee && regFee.toString().toUpperCase() === (roomData.keyType || '').toUpperCase()) {
                             matchedRegs.push(regData);
@@ -146,7 +145,6 @@ module.exports = async function handler(req, res) {
                     });
 
                     if (matchedRegs.length > 0) {
-                        // 👈 နေ့စွဲအဟောင်းဆုံးကို ရှာဖို့ Sorting ထည့်ပေးလိုက်ပါပြီ ညီမ
                         sortRegistrationsByOldest(matchedRegs);
                         matchedReg = matchedRegs[0];
 
@@ -179,8 +177,9 @@ module.exports = async function handler(req, res) {
                     joinerGold: formatPlayerField(matchedReg?.gold || matchedReg?.playerGold),
                     joinerMid: formatPlayerField(matchedReg?.mid || matchedReg?.playerMid),
                     joinerJungle: formatPlayerField(matchedReg?.jungle || matchedReg?.playerJungle),
-                    // 🔥 Kpay Name နဲ့ Kpay Phone No များကိုပါ ထည့်ပေးလိုက်ပါပြီ ညီမ
                     joinerKpayName: matchedReg?.kpayName || matchedReg?.kpayAccountName || '',
+                    // 🔥 Joiner ဘက်က Kpay Phone No (kpayPhNo နဲ့ contactPhNo အကုန်စစ်ပြီး ထည့်ပေးသည်)
+                    joinerKpayPhNo: matchedReg?.kpayPhNo || matchedReg?.contactPhNo || matchedReg?.kpayPhoneNumber || matchedReg?.contactPhoneNumber || '',
                     joinerContactPhNo: matchedReg?.contactPhNo || matchedReg?.kpayPhNo || matchedReg?.kpayPhoneNumber || matchedReg?.contactPhoneNumber || ''
                 });
 
@@ -282,8 +281,9 @@ module.exports = async function handler(req, res) {
                 mid: formatPlayerField(matchedReg?.mid || matchedReg?.playerMid),
                 jungle: formatPlayerField(matchedReg?.jungle || matchedReg?.playerJungle),
 
-                // 🔥 Kpay Name နဲ့ Kpay Phone No များကိုပါ ထည့်ပေးလိုက်ပါပြီ ညီမ
                 kpayName: matchedReg?.kpayName || matchedReg?.kpayAccountName || '',
+                // 🔥 Host ဘက်က Kpay Phone No (kpayPhNo နဲ့ contactPhNo အကုန်စစ်ပြီး ထည့်ပေးသည်)
+                kpayPhNo: matchedReg?.kpayPhNo || matchedReg?.contactPhNo || matchedReg?.kpayPhoneNumber || matchedReg?.contactPhoneNumber || '',
                 contactPhNo: matchedReg?.contactPhNo || matchedReg?.kpayPhNo || matchedReg?.kpayPhoneNumber || matchedReg?.contactPhoneNumber || ''
             };
 
@@ -400,7 +400,9 @@ module.exports = async function handler(req, res) {
                             joinerGameId: null,
                             joinerInGameName: null,
                             joinerTeamName: null,
-                            joinerKpayName: null
+                            joinerKpayName: null,
+                            joinerKpayPhNo: null,
+                            joinerContactPhNo: null
                         });
                         return res.status(200).json({ success: true, message: "Left room successfully" });
                     }
