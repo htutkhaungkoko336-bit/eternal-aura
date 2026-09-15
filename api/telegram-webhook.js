@@ -279,6 +279,7 @@ if (update.message && update.message.text) {
     const MATCHING_GROUP_ID = process.env.MATCHING_GROUP_ID;
 
     if (text.startsWith('REV-')) {
+        // Group ID မှန်မမှန် စစ်ဆေးခြင်း
         if (!MATCHING_GROUP_ID || chatId.toString() !== MATCHING_GROUP_ID.toString()) {
             console.log("Ignored REV command from unauthorized chat/group.");
             return res.status(200).json({ status: 'ignored' });
@@ -286,15 +287,17 @@ if (update.message && update.message.text) {
 
         try {
             const roomsRef = db.collection('active_rooms');
+            // 🛠️ Match Code ဖြင့် တိုက်ဆိုင်သော Room ကို ရှာရန်
             const snapshot = await roomsRef.where('matchCode', '==', text).get();
 
+            // Room မရှိ (သို့) ရှာမတွေ့ပါက
             if (snapshot.empty) {
                 await fetch(`https://api.telegram.org/bot${BOT_TOKEN}/sendMessage`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({
                         chat_id: MATCHING_GROUP_ID,
-                        text: '❌ ဤ Match Code ဖြင့် Active ဖြစ်နေသော Room ကို မတွေ့ရှိရပါရှင်။'
+                        text: `❌ ဤ Match Code (${text}) ဖြင့် Active ဖြစ်နေသော Room ကို မတွေ့ရှိရပါ (သို့) ပြီးဆုံးသွားပါပြီရှင်။`
                     })
                 });
                 return res.status(200).json({ status: 'success' });
@@ -320,7 +323,6 @@ if (update.message && update.message.text) {
                 for (const colName of collectionsToSearch) {
                     const regSnap = await db.collection(colName).where('userId', '==', hostId).get();
                     if (!regSnap.empty) {
-                        // Room ထဲမှာပါတဲ့ keyType နဲ့ ကိုက်ညီတာကို ဦးစားပေးရှာမယ်
                         let matched = regSnap.docs.find(d => {
                             const data = d.data();
                             const fee = (data.fee || data.type || '').toString();
@@ -352,51 +354,70 @@ if (update.message && update.message.text) {
                 }
             }
 
-            // Host Detail Text ဖန်တီးခြင်း
-            let hostDetailsText = "📌 Host Registration အချက်အလက် မတွေ့ရှိပါ။";
-            if (hostRegData) {
-                hostDetailsText = `
-👑 **Room Host Info (${hostCollection}):**
-- User ID: \`${hostRegData.userId || hostId || '-'}\`
-- Name: ${hostRegData.name || hostRegData.teamName || roomData.teamName || '-'}
-- In-Game Name: ${hostRegData.inGameName || '-'}
-- Hero: ${hostRegData.heroName || hostRegData.hero || '-'}
-- Contact Phone: ${hostRegData.contactPhNo || hostRegData.kpayPhNo || '-'}
-- Game ID: ${hostRegData.gameId || '-'}
-- Fee / Type: ${hostRegData.fee || hostRegData.type || '-'}
-- Status: ${hostRegData.status || '-'}
-                `;
-            } else if (hostId) {
-                hostDetailsText = `
-👑 **Room Host Info:**
-- User ID: \`${hostId}\`
-- Name: ${roomData.teamName || '-'}
-- Game ID: ${roomData.gameId || '-'}
-                `;
-            }
+            // Helper function to extract fields safely
+            const getField = (reg, room, keys) => {
+                if (!reg) {
+                    for (const k of keys) {
+                        if (room && room[k]) return room[k];
+                    }
+                    return '-';
+                }
+                for (const k of keys) {
+                    if (reg[k] !== undefined && reg[k] !== null && reg[k] !== '') {
+                        if (typeof reg[k] === 'object') {
+                            if (reg[k].toDate) return reg[k].toDate().toLocaleString();
+                            continue;
+                        }
+                        return reg[k];
+                    }
+                }
+                if (room) {
+                    for (const k of keys) {
+                        if (room[k]) return room[k];
+                    }
+                }
+                return '-';
+            };
 
-            // Joiner Detail Text ဖန်တီးခြင်း
+            // Host Details
+            const hostName = getField(hostRegData, roomData, ['name', 'teamName', 'inGameName', 'userName']);
+            const hostInGame = getField(hostRegData, roomData, ['inGameName', 'gameId', 'gameName']);
+            const hostHero = getField(hostRegData, roomData, ['heroName', 'hero', 'selectedHero']);
+            const hostContact = getField(hostRegData, roomData, ['contactPhNo', 'kpayPhNo', 'phone', 'contact']);
+            const hostFee = getField(hostRegData, roomData, ['fee', 'type']);
+            const hostStatus = getField(hostRegData, roomData, ['status']);
+
+            let hostDetailsText = `
+👑 **Room Host Info (${hostCollection || 'Room'}):**
+- User ID: \`${hostId || '-'}\`
+- Name: ${hostName}
+- In-Game Name: ${hostInGame}
+- Hero: ${hostHero}
+- Contact Phone: ${hostContact}
+- Fee / Type: ${hostFee}
+- Status: ${hostStatus}
+            `;
+
+            // Joiner Details
             let joinerDetailsText = "⚔️ Joiner: လူပြည့်သေးခြင်း မရှိသေးပါ။";
             if (joinedUserId) {
-                if (joinerRegData) {
-                    joinerDetailsText = `
-⚔️ **Room Joiner Info (${joinerCollection}):**
-- User ID: \`${joinerRegData.userId || joinedUserId || '-'}\`
-- Name: ${joinerRegData.name || joinerRegData.teamName || roomData.joinerTeamName || '-'}
-- In-Game Name: ${joinerRegData.inGameName || '-'}
-- Hero: ${joinerRegData.heroName || joinerRegData.hero || '-'}
-- Contact Phone: ${joinerRegData.contactPhNo || joinerRegData.kpayPhNo || '-'}
-- Game ID: ${joinerRegData.gameId || '-'}
-- Fee / Type: ${joinerRegData.fee || joinerRegData.type || '-'}
-- Status: ${joinerRegData.status || '-'}
-                    `;
-                } else {
-                    joinerDetailsText = `
-⚔️ **Room Joiner Info:**
-- User ID: \`${joinedUserId}\`
-- Name: ${roomData.joinerTeamName || 'Joined Player'}
-                    `;
-                }
+                const joinerName = getField(joinerRegData, roomData, ['name', 'teamName', 'joinerTeamName', 'inGameName', 'userName']);
+                const joinerInGame = getField(joinerRegData, roomData, ['inGameName', 'gameId', 'gameName']);
+                const joinerHero = getField(joinerRegData, roomData, ['heroName', 'hero', 'selectedHero']);
+                const joinerContact = getField(joinerRegData, roomData, ['contactPhNo', 'kpayPhNo', 'phone', 'contact']);
+                const joinerFee = getField(joinerRegData, roomData, ['fee', 'type']);
+                const joinerStatus = getField(joinerRegData, roomData, ['status']);
+
+                joinerDetailsText = `
+⚔️ **Room Joiner Info (${joinerCollection || 'Room'}):**
+- User ID: \`${joinedUserId || '-'}\`
+- Name: ${joinerName}
+- In-Game Name: ${joinerInGame}
+- Hero: ${joinerHero}
+- Contact Phone: ${joinerContact}
+- Fee / Type: ${joinerFee}
+- Status: ${joinerStatus}
+                `;
             }
 
             const replyMessage = `
@@ -424,6 +445,15 @@ ${joinerDetailsText}
 
         } catch (err) {
             console.error("Telegram MatchCode Search Error:", err);
+            // Error ဖြစ်ရင်တောင် Group ထဲကို အသိပေးချက် ပို့ပေးရန်
+            await fetch(`https://api.telegram.org/bot${BOT_TOKEN}/sendMessage`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    chat_id: MATCHING_GROUP_ID,
+                    text: `⚠️ Error occurred while searching for Match Code: ${text}`
+                })
+            });
         }
 
         return res.status(200).json({ status: 'success' });
