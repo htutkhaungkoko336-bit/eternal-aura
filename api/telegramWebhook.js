@@ -40,7 +40,7 @@ module.exports = async function handler(req, res) {
         const isTelegramUpdate = update.callback_query || update.message || update.inline_query;
 
         // -------------------------------------------------------------
-        // 🔥 0. Match Code ဖြင့် Active Room ကို ရှာပြီး Data ပြန်ထုတ်ပေးသော Logic
+        // 🔥 0. Match Code ဖြင့် Active Room ကို ရှာပြီး Data ပြန်ထုတ်ပေးသော Logic (API / Frontend မှ လှမ်းခေါ်စဉ်)
         // -------------------------------------------------------------
         if (update.action === 'search_by_matchcode') {
             const { matchCode } = update;
@@ -73,6 +73,52 @@ module.exports = async function handler(req, res) {
                 message: "Match Code နှင့် ကိုက်ညီသော Room အချက်အလက်များ ရရှိပါပြီ။",
                 room: roomData
             });
+        }
+
+        // -------------------------------------------------------------
+        // 🔥 Telegram Group / Chat မှ Text Message (သို့) /search ဖြင့် Match Code ရှာခြင်း
+        // -------------------------------------------------------------
+        if (update.message && update.message.text) {
+            const messageText = update.message.text.trim();
+            const chatId = update.message.chat.id;
+            const BOT_TOKEN = process.env.TELEGRAM_BOT_TOKEN;
+
+            if (messageText.startsWith('/search') || messageText.length === 10) { 
+                const matchCode = messageText.startsWith('/search') 
+                    ? messageText.split(' ')[1] 
+                    : messageText;
+
+                if (matchCode) {
+                    const roomSnapshot = await db.collection('active_rooms')
+                        .where('matchCode', '==', matchCode.trim().toUpperCase())
+                        .get();
+
+                    let replyMessage = "";
+
+                    if (roomSnapshot.empty) {
+                        replyMessage = `❌ ပေးထားသော Match Code (${matchCode}) နှင့် ကိုက်ညီသော Active Room ရှမတွေ့ပါ။`;
+                    } else {
+                        let roomInfo = "";
+                        roomSnapshot.forEach(doc => {
+                            const d = doc.data();
+                            roomInfo = `✅ Room တွေ့ရှိပါပြီ!\n- Room ID: ${doc.id}\n- Match Code: ${d.matchCode}\n- Status: ${d.status || 'Active'}`;
+                        });
+                        replyMessage = roomInfo;
+                    }
+
+                    await fetch(`https://api.telegram.org/bot${BOT_TOKEN}/sendMessage`, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({
+                            chat_id: chatId,
+                            text: replyMessage,
+                            parse_mode: 'Markdown'
+                        })
+                    });
+
+                    return res.status(200).json({ status: 'success' });
+                }
+            }
         }
 
         // -------------------------------------------------------------
