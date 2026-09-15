@@ -76,33 +76,51 @@ module.exports = async function handler(req, res) {
         }
 
         // -------------------------------------------------------------
-        // 🔥 Telegram Group / Chat မှ Text Message (သို့) /search ဖြင့် Match Code ရှာခြင်း
+        // 🔥 Telegram Group / Chat မှ Text Message ဖြင့် Match Code ရှာခြင်း (အချက်အလက်အစုံအလင်ဖြင့်)
         // -------------------------------------------------------------
         if (update.message && update.message.text) {
             const messageText = update.message.text.trim();
             const chatId = update.message.chat.id;
             const BOT_TOKEN = process.env.TELEGRAM_BOT_TOKEN;
 
-            if (messageText.startsWith('/search') || messageText.length === 10) { 
+            if (messageText.startsWith('REV-') || messageText.startsWith('/search') || messageText.length === 10) {
                 const matchCode = messageText.startsWith('/search') 
                     ? messageText.split(' ')[1] 
                     : messageText;
 
                 if (matchCode) {
+                    const cleanMatchCode = matchCode.trim().toUpperCase();
+
                     const roomSnapshot = await db.collection('active_rooms')
-                        .where('matchCode', '==', matchCode.trim().toUpperCase())
+                        .where('matchCode', '==', cleanMatchCode)
                         .get();
 
                     let replyMessage = "";
 
                     if (roomSnapshot.empty) {
-                        replyMessage = `❌ ပေးထားသော Match Code (${matchCode}) နှင့် ကိုက်ညီသော Active Room ရှမတွေ့ပါ။`;
+                        replyMessage = `❌ ပေးထားသော Match Code (\`${cleanMatchCode}\`) နှင့် ကိုက်ညီသော Active Room ရှမတွေ့ပါ။`;
                     } else {
-                        let roomInfo = "";
+                        let roomInfo = `✅ **Match Code တွေ့ရှိပါပြီ!**\n\n`;
+                        
                         roomSnapshot.forEach(doc => {
                             const d = doc.data();
-                            roomInfo = `✅ Room တွေ့ရှိပါပြီ!\n- Room ID: ${doc.id}\n- Match Code: ${d.matchCode}\n- Status: ${d.status || 'Active'}`;
+                            roomInfo += `📌 **Room ID:** \`${doc.id}\`\n`;
+                            roomInfo += `🔑 **Match Code:** \`${d.matchCode}\`\n`;
+                            roomInfo += `🏷 **Room Title:** ${d.roomTitle || '-'}\n`;
+                            roomInfo += `🎮 **Mode:** ${d.mode || '-'}\n`;
+                            roomInfo += `💰 **Fee Type:** ${d.keyType || '-'}\n`;
+                            roomInfo += `👤 **Kpay Name:** ${d.kpayName || '-'}\n`;
+                            roomInfo += `📞 **Kpay Ph:** ${d.kpayPhNo || '-'}\n\n`;
+                            
+                            // Host / Mid / Roamer အချက်အလက်များ ထည့်သွင်းခြင်း
+                            if (d.mid) {
+                                roomInfo += `⚔️ **Host (mid):**\n- Name: ${d.mid.name || '-'}\n- ID: ${d.mid.id || '-'}\n\n`;
+                            }
+                            if (d.roamer) {
+                                roomInfo += `🛡 **Joiner (roamer):**\n- Name: ${d.roamer.name || '-'}\n- ID: ${d.roamer.id || '-'}\n`;
+                            }
                         });
+                        
                         replyMessage = roomInfo;
                     }
 
