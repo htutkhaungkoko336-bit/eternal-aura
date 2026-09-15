@@ -34,10 +34,13 @@ module.exports = async function handler(req, res) {
     }
 
     try {
-        const update = req.body;
+        const update = req.body || {};
+
+        // Telegram က ဘာပဲ ပို့ပို့ Server ဘက်က 400 မတက်စေရန် Telegram Request ဟုတ်မဟုတ် စစ်ဆေးခြင်း
+        const isTelegramUpdate = update.callback_query || update.message || update.inline_query;
 
         // -------------------------------------------------------------
-        // 🔥 0. Match Code ဖြင့် Active Room ကို ရှာပြီး Data ပြန်ထုတ်ပေးသော Logic (အသစ်ထည့်သွင်းသည်)
+        // 🔥 0. Match Code ဖြင့် Active Room ကို ရှာပြီး Data ပြန်ထုတ်ပေးသော Logic
         // -------------------------------------------------------------
         if (update.action === 'search_by_matchcode') {
             const { matchCode } = update;
@@ -46,7 +49,6 @@ module.exports = async function handler(req, res) {
                 return res.status(400).json({ success: false, message: "Missing matchCode" });
             }
 
-            // active_rooms ကော်လီရှင်းထဲမှာ matchCode field နဲ့ တိုက်စစ်ခြင်း
             const roomSnapshot = await db.collection('active_rooms')
                 .where('matchCode', '==', matchCode.trim())
                 .get();
@@ -58,7 +60,6 @@ module.exports = async function handler(req, res) {
                 });
             }
 
-            // တွေ့ရှိသော Room Data ကို ဆွဲထုတ်ခြင်း (Host နှင့် Joiner အချက်အလက်များ အကုန်ပါပြီးသားဖြစ်သည်)
             let roomData = null;
             roomSnapshot.forEach(doc => {
                 roomData = {
@@ -87,7 +88,7 @@ module.exports = async function handler(req, res) {
             console.log("Received callback data:", data);
 
             const parts = data.split('_');
-            const action = parts[0]; // confirm, reject, select, back
+            const action = parts[0]; 
             
             let collectionName = "";
             let docId = "";
@@ -97,7 +98,7 @@ module.exports = async function handler(req, res) {
                 collectionName = 'refund_requests';
                 docId = parts[3];
             } else if (action === 'select') {
-                reasonKey = parts[1]; // r1, r2, etc.
+                reasonKey = parts[1]; 
                 if (parts[2] === 'refund' && parts[3] === 'requests') {
                     collectionName = 'refund_requests';
                     docId = parts[4];
@@ -304,6 +305,11 @@ module.exports = async function handler(req, res) {
             });
 
             return res.status(200).json({ status: 'success' });
+        }
+
+        // အကယ်၍ Telegram က ပို့လာတာဖြစ်ပြီး အထက်ပါ condition တွေနဲ့ မကိုက်ရင်တောင် 400 မပေးဘဲ 200 ပြန်ရန်
+        if (isTelegramUpdate) {
+            return res.status(200).json({ status: 'ok' });
         }
 
         // -------------------------------------------------------------
