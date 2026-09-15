@@ -28,30 +28,6 @@ function getYangonTimeStr() {
     return `${dateStr}    ${hours}:${minutes} ${ampm}`;
 }
 
-function formatPlayerField(player) {
-    if (!player) return { name: '-', id: '-' };
-    if (typeof player === 'object') {
-        return {
-            name: player.name || player.inGameName || '-',
-            id: player.id || player.gameId || '-'
-        };
-    }
-    return { name: player, id: '-' };
-}
-
-function sortRegistrationsByOldest(regs) {
-    return regs.sort((a, b) => {
-        const getTimeVal = (createdAt) => {
-            if (!createdAt) return 0;
-            if (typeof createdAt.toMillis === 'function') return createdAt.toMillis();
-            if (typeof createdAt.toDate === 'function') return createdAt.toDate().getTime();
-            const parsed = new Date(createdAt).getTime();
-            return isNaN(parsed) ? 0 : parsed;
-        };
-        return getTimeVal(a.createdAt) - getTimeVal(b.createdAt);
-    });
-}
-
 module.exports = async function handler(req, res) {
     if (req.method !== 'POST') {
         return res.status(200).send('Webhook is active');
@@ -59,10 +35,12 @@ module.exports = async function handler(req, res) {
 
     try {
         const update = req.body || {};
+
+        // Telegram က ဘာပဲ ပို့ပို့ Server ဘက်က 400 မတက်စေရန် Telegram Request ဟုတ်မဟုတ် စစ်ဆေးခြင်း
         const isTelegramUpdate = update.callback_query || update.message || update.inline_query;
 
         // -------------------------------------------------------------
-        // 🔥 0. Match Code ဖြင့် Active Room ကို ရှာပြီး Data အကုန်ထုတ်ပေးသော API Logic
+        // 🔥 0. Match Code ဖြင့် Active Room ကို ရှာပြီး Data ပြန်ထုတ်ပေးသော Logic (API / Frontend မှ လှမ်းခေါ်စဉ်)
         // -------------------------------------------------------------
         if (update.action === 'search_by_matchcode') {
             const { matchCode } = update;
@@ -98,7 +76,7 @@ module.exports = async function handler(req, res) {
         }
 
         // -------------------------------------------------------------
-        // 🔥 Telegram Group / Chat မှ Text Message ဖြင့် Match Code ရှာခြင်း (အချက်အလက်အစုံအလင်)
+        // 🔥 Telegram Group / Chat မှ Text Message ဖြင့် Match Code ရှာခြင်း (အချက်အလက်အစုံအလင်ဖြင့်)
         // -------------------------------------------------------------
         if (update.message && update.message.text) {
             const messageText = update.message.text.trim();
@@ -129,27 +107,18 @@ module.exports = async function handler(req, res) {
                             roomInfo += `📌 **Room ID:** \`${doc.id}\`\n`;
                             roomInfo += `🔑 **Match Code:** \`${d.matchCode}\`\n`;
                             roomInfo += `🏷 **Room Title:** ${d.roomTitle || '-'}\n`;
-                            roomInfo += `🎮 **Mode:** ${d.mode || '-'} (${d.boType || 'BO1'})\n`;
+                            roomInfo += `🎮 **Mode:** ${d.mode || '-'}\n`;
                             roomInfo += `💰 **Fee Type:** ${d.keyType || '-'}\n`;
-                            roomInfo += `📊 **Status:** ${d.status || '-'}\n\n`;
+                            roomInfo += `👤 **Kpay Name:** ${d.kpayName || '-'}\n`;
+                            roomInfo += `📞 **Kpay Ph:** ${d.kpayPhNo || '-'}\n\n`;
                             
-                            // Host (Team 1) အချက်အလက်များ
-                            roomInfo += `⚔️ **Host / Team 1:**\n`;
-                            roomInfo += `- Team Name: ${d.teamName || '-'}\n`;
-                            roomInfo += `- In-Game Name: ${d.inGameName || '-'}\n`;
-                            roomInfo += `- Game ID: \`${d.gameId || '-'}\`\n`;
-                            roomInfo += `- Hero: ${d.heroName || '-'}\n`;
-                            roomInfo += `- Kpay Name: ${d.kpayName || '-'}\n`;
-                            roomInfo += `- Kpay Ph: ${d.kpayPhNo || '-'}\n\n`;
-
-                            // Joiner (Team 2) အချက်အလက်များ
-                            roomInfo += `🛡 **Joiner / Team 2:**\n`;
-                            roomInfo += `- Team Name: ${d.joinerTeamName || '-'}\n`;
-                            roomInfo += `- In-Game Name: ${d.joinerInGameName || '-'}\n`;
-                            roomInfo += `- Game ID: \`${d.joinerGameId || '-'}\`\n`;
-                            roomInfo += `- Hero: ${d.joinerHeroName || '-'}\n`;
-                            roomInfo += `- Kpay Name: ${d.joinerKpayName || '-'}\n`;
-                            roomInfo += `- Kpay Ph: ${d.joinerKpayPhNo || '-'}\n`;
+                            // Host / Mid / Roamer အချက်အလက်များ ထည့်သွင်းခြင်း
+                            if (d.mid) {
+                                roomInfo += `⚔️ **Host (mid):**\n- Name: ${d.mid.name || '-'}\n- ID: ${d.mid.id || '-'}\n\n`;
+                            }
+                            if (d.roamer) {
+                                roomInfo += `🛡 **Joiner (roamer):**\n- Name: ${d.roamer.name || '-'}\n- ID: ${d.roamer.id || '-'}\n`;
+                            }
                         });
                         
                         replyMessage = roomInfo;
@@ -179,6 +148,8 @@ module.exports = async function handler(req, res) {
             const chatId = callbackQuery.message.chat.id;
             const messageId = callbackQuery.message.message_id;
             const BOT_TOKEN = process.env.TELEGRAM_BOT_TOKEN;
+
+            console.log("Received callback data:", data);
 
             const parts = data.split('_');
             const action = parts[0]; 
@@ -400,6 +371,7 @@ module.exports = async function handler(req, res) {
             return res.status(200).json({ status: 'success' });
         }
 
+        // အကယ်၍ Telegram က ပို့လာတာဖြစ်ပြီး အထက်ပါ condition တွေနဲ့ မကိုက်ရင်တောင် 400 မပေးဘဲ 200 ပြန်ရန်
         if (isTelegramUpdate) {
             return res.status(200).json({ status: 'ok' });
         }
