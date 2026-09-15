@@ -32,7 +32,6 @@ function formatPlayerField(player) {
     return { name: player, id: '-' };
 }
 
-// နေ့စွဲအဟောင်းဆုံးကို အရင်ရှာပေးမည့် Helper Function
 function sortRegistrationsByOldest(regs) {
     return regs.sort((a, b) => {
         const getTimeVal = (createdAt) => {
@@ -168,6 +167,9 @@ module.exports = async function handler(req, res) {
                     status: 'matched',
                     joinerTeamName: joinerTeamName,
                     joinerTeamLogo: joinerTeamLogo,
+                    // 🔥 Joiner ဘက်ဆိုင်ရာ Fee အပါအဝင် အချက်အလက်များ
+                    fee: matchedReg?.fee || roomData.keyType || '',
+                    joinerFee: matchedReg?.fee || roomData.keyType || '',
                     joinerInGameName: matchedReg?.inGameName || joinerTeamName,
                     joinerGameId: matchedReg?.gameId || matchedReg?.id || '-',
                     joinerHeroName: matchedReg?.heroName || '',
@@ -178,7 +180,6 @@ module.exports = async function handler(req, res) {
                     joinerMid: formatPlayerField(matchedReg?.mid || matchedReg?.playerMid),
                     joinerJungle: formatPlayerField(matchedReg?.jungle || matchedReg?.playerJungle),
                     joinerKpayName: matchedReg?.kpayName || matchedReg?.kpayAccountName || '',
-                    // 🔥 Joiner ဘက်က Kpay Phone No (kpayPhNo နဲ့ contactPhNo အကုန်စစ်ပြီး ထည့်ပေးသည်)
                     joinerKpayPhNo: matchedReg?.kpayPhNo || matchedReg?.contactPhNo || matchedReg?.kpayPhoneNumber || matchedReg?.contactPhoneNumber || '',
                     joinerContactPhNo: matchedReg?.contactPhNo || matchedReg?.kpayPhNo || matchedReg?.kpayPhoneNumber || matchedReg?.contactPhoneNumber || ''
                 });
@@ -270,21 +271,21 @@ module.exports = async function handler(req, res) {
                 createdAt: getYangonTimeStr(),
                 joinedUserId: null,
                 
-                inGameName: matchedReg?.inGameName || teamName,
-                gameId: matchedReg?.gameId || matchedReg?.id || '-',
-                heroName: matchedReg?.heroName || '',
-                
-                sqName: matchedReg?.sqName || teamName,
-                roamer: formatPlayerField(matchedReg?.roamer || matchedReg?.playerRoamer),
-                exp: formatPlayerField(matchedReg?.exp || matchedReg?.playerExp),
-                gold: formatPlayerField(matchedReg?.gold || matchedReg?.playerGold),
-                mid: formatPlayerField(matchedReg?.mid || matchedReg?.playerMid),
-                jungle: formatPlayerField(matchedReg?.jungle || matchedReg?.playerJungle),
-
-                kpayName: matchedReg?.kpayName || matchedReg?.kpayAccountName || '',
-                // 🔥 Host ဘက်က Kpay Phone No (kpayPhNo နဲ့ contactPhNo အကုန်စစ်ပြီး ထည့်ပေးသည်)
-                kpayPhNo: matchedReg?.kpayPhNo || matchedReg?.contactPhNo || matchedReg?.kpayPhoneNumber || matchedReg?.contactPhoneNumber || '',
-                contactPhNo: matchedReg?.contactPhNo || matchedReg?.kpayPhNo || matchedReg?.kpayPhoneNumber || matchedReg?.contactPhoneNumber || ''
+                // 🔥 Host ဘက်ဆိုင်ရာ Fee အပါအဝင် အချက်အလက်များ
+                fee: matchedReg?.fee || targetKeyType,
+                hostFee: matchedReg?.fee || targetKeyType,
+                hostInGameName: matchedReg?.inGameName || teamName,
+                hostGameId: matchedReg?.gameId || matchedReg?.id || '-',
+                hostHeroName: matchedReg?.heroName || '',
+                hostSqName: matchedReg?.sqName || teamName,
+                hostRoamer: formatPlayerField(matchedReg?.roamer || matchedReg?.playerRoamer),
+                hostExp: formatPlayerField(matchedReg?.exp || matchedReg?.playerExp),
+                hostGold: formatPlayerField(matchedReg?.gold || matchedReg?.playerGold),
+                hostMid: formatPlayerField(matchedReg?.mid || matchedReg?.playerMid),
+                hostJungle: formatPlayerField(matchedReg?.jungle || matchedReg?.playerJungle),
+                hostKpayName: matchedReg?.kpayName || matchedReg?.kpayAccountName || '',
+                hostKpayPhNo: matchedReg?.kpayPhNo || matchedReg?.contactPhNo || matchedReg?.kpayPhoneNumber || matchedReg?.contactPhoneNumber || '',
+                hostContactPhNo: matchedReg?.contactPhNo || matchedReg?.kpayPhNo || matchedReg?.kpayPhoneNumber || matchedReg?.contactPhoneNumber || ''
             };
 
             await db.collection('active_rooms').doc(userId).set(roomData);
@@ -297,7 +298,7 @@ module.exports = async function handler(req, res) {
 
         } catch (error) {
             console.error("Create/Join Room Error:", error);
-            return res.status(550).json({ success: false, message: "Server Error", error: error.message });
+            return res.status(500).json({ success: false, message: "Server Error", error: error.message });
         }
     }
 
@@ -397,12 +398,21 @@ module.exports = async function handler(req, res) {
                             joinerReady: false,
                             firstPick: null,
                             matchCode: null,
+                            joinerFee: null,
                             joinerGameId: null,
                             joinerInGameName: null,
                             joinerTeamName: null,
                             joinerKpayName: null,
                             joinerKpayPhNo: null,
-                            joinerContactPhNo: null
+                            joinerContactPhNo: null,
+                            joinerHeroName: null,
+                            joinerSqName: null,
+                            joinerRoamer: null,
+                            joinerExp: null,
+                            joinerGold: null,
+                            joinerMid: null,
+                            joinerJungle: null,
+                            joinerTeamLogo: null
                         });
                         return res.status(200).json({ success: true, message: "Left room successfully" });
                     }
@@ -414,7 +424,28 @@ module.exports = async function handler(req, res) {
             const joinedSnapshot = await db.collection('active_rooms').where('joinedUserId', '==', userId).get();
             const batch = db.batch();
             joinedSnapshot.forEach(doc => {
-                batch.update(doc.ref, { joinedUserId: null, status: 'waiting', joinerReady: false, firstPick: null, matchCode: null, joinerGameId: null });
+                batch.update(doc.ref, { 
+                    joinedUserId: null, 
+                    status: 'waiting', 
+                    joinerReady: false, 
+                    firstPick: null, 
+                    matchCode: null, 
+                    joinerFee: null,
+                    joinerGameId: null,
+                    joinerInGameName: null,
+                    joinerTeamName: null,
+                    joinerKpayName: null,
+                    joinerKpayPhNo: null,
+                    joinerContactPhNo: null,
+                    joinerHeroName: null,
+                    joinerSqName: null,
+                    joinerRoamer: null,
+                    joinerExp: null,
+                    joinerGold: null,
+                    joinerMid: null,
+                    joinerJungle: null,
+                    joinerTeamLogo: null
+                });
             });
             await batch.commit();
 
