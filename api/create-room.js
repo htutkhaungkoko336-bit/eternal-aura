@@ -140,27 +140,31 @@ module.exports = async function handler(req, res) {
                             joinerTeamName = matchedReg.inGameName || joinerTeamName;
                         }
                         
-                        if (matchedReg.logo || matchedReg.paymentSlip) {
-                            joinerTeamLogo = matchedReg.logo || matchedReg.paymentSlip;
+                        if (matchedReg.logo || matchedReg.paymentSlip || matchedReg.paymentSlipUrl) {
+                            joinerTeamLogo = matchedReg.logo || matchedReg.paymentSlip || matchedReg.paymentSlipUrl;
                         }
                     }
                 }
 
+                // Joiner Data များ (KPay အချက်အလက်များအပါအဝင် အစုံအလင်ထည့်ထားသည်)
                 await roomRef.update({
                     joinedUserId: userId,
                     status: 'matched',
                     joinerTeamName: joinerTeamName,
                     joinerTeamLogo: joinerTeamLogo,
-                    joinerInGameName: matchedReg?.inGameName || joinerTeamName,
-                    joinerGameId: matchedReg?.gameId || matchedReg?.id || '-',
+                    joinerInGameName: matchedReg?.inGameName || matchedReg?.playerRoamer?.name || joinerTeamName,
+                    joinerGameId: matchedReg?.gameId || matchedReg?.id || matchedReg?.playerRoamer?.gameId || '-',
                     joinerHeroName: matchedReg?.heroName || '',
                     joinerSqName: matchedReg?.sqName || joinerTeamName,
-                    joinerRoamer: formatPlayerField(matchedReg?.roamer),
-                    joinerExp: formatPlayerField(matchedReg?.exp),
-                    joinerGold: formatPlayerField(matchedReg?.gold),
-                    joinerMid: formatPlayerField(matchedReg?.mid),
-                    joinerJungle: formatPlayerField(matchedReg?.jungle),
-                    joinerContactPhNo: matchedReg?.contactPhNo || matchedReg?.kpayPhNo || ''
+                    joinerRoamer: formatPlayerField(matchedReg?.roamer || matchedReg?.playerRoamer),
+                    joinerExp: formatPlayerField(matchedReg?.exp || matchedReg?.playerExp),
+                    joinerGold: formatPlayerField(matchedReg?.gold || matchedReg?.playerGold),
+                    joinerMid: formatPlayerField(matchedReg?.mid || matchedReg?.playerMid),
+                    joinerJungle: formatPlayerField(matchedReg?.jungle || matchedReg?.playerJungle),
+                    // KPay Name နှင့် Ph No များ အပြည့်အစုံ ဆွဲထုတ်ခြင်း
+                    joinerKpayName: matchedReg?.kpayName || matchedReg?.kpayAccountName || '',
+                    joinerKpayPhNo: matchedReg?.kpayPhNo || matchedReg?.kpayPhoneNumber || '',
+                    joinerContactPhNo: matchedReg?.contactPhNo || matchedReg?.contactPhoneNumber || ''
                 });
 
                 return res.status(200).json({ success: true, message: "Successfully joined the room" });
@@ -241,16 +245,15 @@ module.exports = async function handler(req, res) {
                         teamName = matchedReg.inGameName || teamName;
                     }
                     
-                    if (matchedReg.logo || matchedReg.paymentSlip) {
-                        teamLogo = matchedReg.logo || matchedReg.paymentSlip;
+                    if (matchedReg.logo || matchedReg.paymentSlip || matchedReg.paymentSlipUrl) {
+                        teamLogo = matchedReg.logo || matchedReg.paymentSlip || matchedReg.paymentSlipUrl;
                     }
                 }
             }
 
+            // Host Data များ (KPay အချက်အလက်များအပါအဝင် အစုံအလင်ထည့်ထားသည်)
             const roomData = {
                 hostId: userId,
-                teamName: teamName,
-                teamLogo: teamLogo,
                 roomTitle: roomTitle || `${targetMode} Room`,
                 mode: targetMode,
                 keyType: targetKeyType,
@@ -263,18 +266,38 @@ module.exports = async function handler(req, res) {
                 createdAt: getYangonTimeStr(),
                 joinedUserId: null,
                 
-                inGameName: matchedReg?.inGameName || teamName,
-                gameId: matchedReg?.gameId || matchedReg?.id || '-',
-                heroName: matchedReg?.heroName || '',
-                
-                sqName: matchedReg?.sqName || teamName,
-                roamer: formatPlayerField(matchedReg?.roamer),
-                exp: formatPlayerField(matchedReg?.exp),
-                gold: formatPlayerField(matchedReg?.gold),
-                mid: formatPlayerField(matchedReg?.mid),
-                jungle: formatPlayerField(matchedReg?.jungle),
+                // Host Information Fields
+                hostTeamName: teamName,
+                hostTeamLogo: teamLogo,
+                hostInGameName: matchedReg?.inGameName || matchedReg?.playerRoamer?.name || teamName,
+                hostGameId: matchedReg?.gameId || matchedReg?.id || matchedReg?.playerRoamer?.gameId || '-',
+                hostHeroName: matchedReg?.heroName || '',
+                hostSqName: matchedReg?.sqName || teamName,
+                hostRoamer: formatPlayerField(matchedReg?.roamer || matchedReg?.playerRoamer),
+                hostExp: formatPlayerField(matchedReg?.exp || matchedReg?.playerExp),
+                hostGold: formatPlayerField(matchedReg?.gold || matchedReg?.playerGold),
+                hostMid: formatPlayerField(matchedReg?.mid || matchedReg?.playerMid),
+                hostJungle: formatPlayerField(matchedReg?.jungle || matchedReg?.playerJungle),
+                // KPay Name နှင့် Ph No များ အပြည့်အစုံ ဆွဲထုတ်ခြင်း (tournament အတွက် kpayAccountName/kpayPhoneNumber ကိုပါ ထည့်ပေးထားသည်)
+                hostKpayName: matchedReg?.kpayName || matchedReg?.kpayAccountName || '',
+                hostKpayPhNo: matchedReg?.kpayPhNo || matchedReg?.kpayPhoneNumber || '',
+                hostContactPhNo: matchedReg?.contactPhNo || matchedReg?.contactPhoneNumber || '',
 
-                contactPhNo: matchedReg?.contactPhNo || matchedReg?.kpayPhNo || ''
+                // Joiner Fields (Placeholder when waiting)
+                joinerTeamName: null,
+                joinerTeamLogo: null,
+                joinerInGameName: null,
+                joinerGameId: null,
+                joinerHeroName: null,
+                joinerSqName: null,
+                joinerRoamer: null,
+                joinerExp: null,
+                joinerGold: null,
+                joinerMid: null,
+                joinerJungle: null,
+                joinerKpayName: null,
+                joinerKpayPhNo: null,
+                joinerContactPhNo: null
             };
 
             await db.collection('active_rooms').doc(userId).set(roomData);
@@ -291,86 +314,84 @@ module.exports = async function handler(req, res) {
         }
     }
 
-        if (method === 'PATCH') {
-                try {
-                    const { userId, roomId, hostReady, joinerReady, firstPick } = req.body;
-                    if (!roomId) {
-                        return res.status(400).json({ success: false, message: "Missing roomId" });
-                    }
-
-                    const roomRef = db.collection('active_rooms').doc(roomId);
-                    const roomDoc = await roomRef.get();
-
-                    if (!roomDoc.exists) {
-                        return res.status(404).json({ success: false, message: "Room not found" });
-                    }
-
-                    let updateData = {};
-                    if (hostReady !== undefined) updateData.hostReady = hostReady;
-                    if (joinerReady !== undefined) updateData.joinerReady = joinerReady;
-                    if (firstPick !== undefined) updateData.firstPick = firstPick;
-
-                    const currentData = roomDoc.data();
-                    const finalHostReady = hostReady !== undefined ? hostReady : currentData.hostReady;
-                    const finalJoinerReady = joinerReady !== undefined ? joinerReady : currentData.joinerReady;
-
-                    // 🔥 fully_matched ဖြစ်သွားသည့် အခြေအနေကို စစ်ဆေးခြင်း
-                    if (finalHostReady && finalJoinerReady) {
-                        updateData.status = 'fully_matched';
-                        if (!currentData.matchCode) {
-                            const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
-                            let randomStr = '';
-                            for (let i = 0; i < 6; i++) {
-                                randomStr += chars.charAt(Math.floor(Math.random() * chars.length));
-                            }
-                            updateData.matchCode = `REV-${randomStr}`;
-                        }
-
-                        // 🔥 Key များကို တစ်ကြိမ်သာ နှုတ်ေပးရန် keysDeducted flag ကို စစ်ဆေးခြင်း
-                        if (!currentData.keysDeducted) {
-                            let modePrefix = '';
-                            const lowerMode = (currentData.mode || '').toLowerCase();
-                            if (lowerMode.includes('1v1') || lowerMode.includes('1vs1')) {
-                                modePrefix = '1vs1';
-                            } else if (lowerMode.includes('5v5') || lowerMode.includes('5vs5')) {
-                                modePrefix = '5vs5';
-                            }
-
-                            const keyFieldName = modePrefix ? `${modePrefix}-${(currentData.keyType || '').toLowerCase()}` : null;
-
-                            const batch = db.batch();
-                            if (keyFieldName) {
-                                if (currentData.hostId) {
-                                    const hostUserRef = db.collection('users').doc(currentData.hostId);
-                                    batch.update(hostUserRef, {
-                                        [`keys.${keyFieldName}`]: FieldValue.increment(-1)
-                                    });
-                                }
-                                if (currentData.joinedUserId) {
-                                    const joinerUserRef = db.collection('users').doc(currentData.joinedUserId);
-                                    batch.update(joinerUserRef, {
-                                        [`keys.${keyFieldName}`]: FieldValue.increment(-1)
-                                    });
-                                }
-                                await batch.commit();
-                            }
-
-                            // 🔥 Key နှုတ်ပြီးကြောင်း မှတ်သားထားရန်
-                            updateData.keysDeducted = true;
-                        }
-                    } else {
-                        updateData.status = 'matched';
-                    }
-
-                    await roomRef.update(updateData);
-
-                    return res.status(200).json({ success: true, message: "Status updated successfully" });
-                } catch (error) {
-                    console.error("Update Ready Error:", error);
-                    return res.status(500).json({ success: false, message: "Server Error", error: error.message });
-                }
+    if (method === 'PATCH') {
+        try {
+            const { userId, roomId, hostReady, joinerReady, firstPick } = req.body;
+            if (!roomId) {
+                return res.status(400).json({ success: false, message: "Missing roomId" });
             }
-        if (method === 'DELETE') {
+
+            const roomRef = db.collection('active_rooms').doc(roomId);
+            const roomDoc = await roomRef.get();
+
+            if (!roomDoc.exists) {
+                return res.status(404).json({ success: false, message: "Room not found" });
+            }
+
+            let updateData = {};
+            if (hostReady !== undefined) updateData.hostReady = hostReady;
+            if (joinerReady !== undefined) updateData.joinerReady = joinerReady;
+            if (firstPick !== undefined) updateData.firstPick = firstPick;
+
+            const currentData = roomDoc.data();
+            const finalHostReady = hostReady !== undefined ? hostReady : currentData.hostReady;
+            const finalJoinerReady = joinerReady !== undefined ? joinerReady : currentData.joinerReady;
+
+            if (finalHostReady && finalJoinerReady) {
+                updateData.status = 'fully_matched';
+                if (!currentData.matchCode) {
+                    const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
+                    let randomStr = '';
+                    for (let i = 0; i < 6; i++) {
+                        randomStr += chars.charAt(Math.floor(Math.random() * chars.length));
+                    }
+                    updateData.matchCode = `REV-${randomStr}`;
+                }
+
+                if (!currentData.keysDeducted) {
+                    let modePrefix = '';
+                    const lowerMode = (currentData.mode || '').toLowerCase();
+                    if (lowerMode.includes('1v1') || lowerMode.includes('1vs1')) {
+                        modePrefix = '1vs1';
+                    } else if (lowerMode.includes('5v5') || lowerMode.includes('5vs5')) {
+                        modePrefix = '5vs5';
+                    }
+
+                    const keyFieldName = modePrefix ? `${modePrefix}-${(currentData.keyType || '').toLowerCase()}` : null;
+
+                    const batch = db.batch();
+                    if (keyFieldName) {
+                        if (currentData.hostId) {
+                            const hostUserRef = db.collection('users').doc(currentData.hostId);
+                            batch.update(hostUserRef, {
+                                [`keys.${keyFieldName}`]: FieldValue.increment(-1)
+                            });
+                        }
+                        if (currentData.joinedUserId) {
+                            const joinerUserRef = db.collection('users').doc(currentData.joinedUserId);
+                            batch.update(joinerUserRef, {
+                                [`keys.${keyFieldName}`]: FieldValue.increment(-1)
+                            });
+                        }
+                        await batch.commit();
+                    }
+
+                    updateData.keysDeducted = true;
+                }
+            } else {
+                updateData.status = 'matched';
+            }
+
+            await roomRef.update(updateData);
+
+            return res.status(200).json({ success: true, message: "Status updated successfully" });
+        } catch (error) {
+            console.error("Update Ready Error:", error);
+            return res.status(500).json({ success: false, message: "Server Error", error: error.message });
+        }
+    }
+
+    if (method === 'DELETE') {
         try {
             const { userId, roomId } = req.body; 
             if (!userId) {
@@ -391,7 +412,18 @@ module.exports = async function handler(req, res) {
                             matchCode: null,
                             joinerGameId: null,
                             joinerInGameName: null,
-                            joinerTeamName: null
+                            joinerTeamName: null,
+                            joinerTeamLogo: null,
+                            joinerHeroName: null,
+                            joinerSqName: null,
+                            joinerRoamer: null,
+                            joinerExp: null,
+                            joinerGold: null,
+                            joinerMid: null,
+                            joinerJungle: null,
+                            joinerKpayName: null,
+                            joinerKpayPhNo: null,
+                            joinerContactPhNo: null
                         });
                         return res.status(200).json({ success: true, message: "Left room successfully" });
                     }
@@ -403,7 +435,27 @@ module.exports = async function handler(req, res) {
             const joinedSnapshot = await db.collection('active_rooms').where('joinedUserId', '==', userId).get();
             const batch = db.batch();
             joinedSnapshot.forEach(doc => {
-                batch.update(doc.ref, { joinedUserId: null, status: 'waiting', joinerReady: false, firstPick: null, matchCode: null, joinerGameId: null });
+                batch.update(doc.ref, { 
+                    joinedUserId: null, 
+                    status: 'waiting', 
+                    joinerReady: false, 
+                    firstPick: null, 
+                    matchCode: null, 
+                    joinerGameId: null,
+                    joinerInGameName: null,
+                    joinerTeamName: null,
+                    joinerTeamLogo: null,
+                    joinerHeroName: null,
+                    joinerSqName: null,
+                    joinerRoamer: null,
+                    joinerExp: null,
+                    joinerGold: null,
+                    joinerMid: null,
+                    joinerJungle: null,
+                    joinerKpayName: null,
+                    joinerKpayPhNo: null,
+                    joinerContactPhNo: null
+                });
             });
             await batch.commit();
 
