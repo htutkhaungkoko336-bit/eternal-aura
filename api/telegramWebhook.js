@@ -76,7 +76,7 @@ module.exports = async function handler(req, res) {
         }
 
 // -------------------------------------------------------------
-// 🔥 1. Telegram Bot Match Search Code (Checkbox နှင့် Winner ခလုတ်များ အပါအဝင်)
+// 🔥 1. Match Code ဖြင့် ရှာသောအခါ Checkbox နှင့် Winner ခလုတ်များ ပေါ်လာစေရန်
 // -------------------------------------------------------------
 if (update.message && update.message.text) {
     const messageText = update.message.text.trim();
@@ -101,13 +101,13 @@ if (update.message && update.message.text) {
             let docId = "";
 
             if (roomSnapshot.empty) {
-                replyMessage = `❌ ပေးထားသော Match Code (${cleanMatchCode}) နှင့် ကိုက်ညီသော Active Room ရှာမတွေ့ပါ။`;
+                replyMessage = `❌ ပေးထားသော Match Code (${cleanMatchCode}) နှင့် ကိုက်ညီသော Active Room ရှမတွေ့ပါ။`;
             } else {
                 let roomInfo = `✅ Match Code တွေ့ရှိပါပြီ!\n\n`;
                 
                 roomSnapshot.forEach(doc => {
                     const d = doc.data();
-                    docId = doc.id; // Callback query အတွက် ID ယူခြင်း
+                    docId = doc.id; 
                     hostTeamName = d.teamName || 'Host';
                     joinerTeamName = d.joinerTeamName || 'Joiner';
 
@@ -119,51 +119,20 @@ if (update.message && update.message.text) {
                     roomInfo += `🏆 BO Type: ${d.boType || '-'}\n`;
                     roomInfo += `📊 Status: ${d.status || '-'}\n\n`;
                     
-                    // 🔥 HOST အချက်အလက်များ
                     roomInfo += `👑 HOST (Room Owner):\n`;
-                    roomInfo += `- User ID: ${d.hostId || '-'}\n`;
-                    roomInfo += `- Contact Ph: ${d.contactPhNo || '-'}\n`;
                     roomInfo += `- Team Name: ${hostTeamName}\n`;
                     roomInfo += `- In-Game Name: ${d.inGameName || '-'}\n`;
-                    roomInfo += `- Game ID: ${d.gameId || '-'}\n`;
-                    roomInfo += `- Squad: ${d.sqName || '-'}\n`;
-                    roomInfo += `- Kpay Name: ${d.kpayName || '-'}\n`;
-                    roomInfo += `- Kpay Ph: ${d.kpayPhNo || '-'}\n`;
+                    roomInfo += `- Game ID: ${d.gameId || '-'}\n\n`;
 
-                    if (d.mode === '5v5') {
-                        roomInfo += `   ⚔️ Mid: ${d.mid?.name || '-'} (ID: ${d.mid?.id || '-'})\n`;
-                        roomInfo += `   🛡 Roamer: ${d.roamer?.name || '-'} (ID: ${d.roamer?.id || '-'})\n`;
-                        roomInfo += `   🗡 Exp: ${d.exp?.name || '-'} (ID: ${d.exp?.id || '-'})\n`;
-                        roomInfo += `   🪙 Gold: ${d.gold?.name || '-'} (ID: ${d.gold?.id || '-'})\n`;
-                        roomInfo += `   🌿 Jungle: ${d.jungle?.name || '-'} (ID: ${d.jungle?.id || '-'})\n\n`;
-                    } else {
-                        roomInfo += `\n`;
-                    }
-
-                    // 🔥 JOINER အချက်အလက်များ
                     roomInfo += `⚔️ JOINER:\n`;
-                    roomInfo += `- User ID: ${d.joinedUserId || '-'}\n`;
-                    roomInfo += `- Contact Ph: ${d.joinerContactPhNo || '-'}\n`;
                     roomInfo += `- Team Name: ${joinerTeamName}\n`;
                     roomInfo += `- In-Game Name: ${d.joinerInGameName || '-'}\n`;
                     roomInfo += `- Game ID: ${d.joinerGameId || '-'}\n`;
-                    roomInfo += `- Squad: ${d.joinerSqName || '-'}\n`;
-                    roomInfo += `- Kpay Name: ${d.joinerKpayName || '-'}\n`;
-                    roomInfo += `- Kpay Ph: ${d.joinerKpayPhNo || '-'}\n`;
-
-                    if (d.mode === '5v5') {
-                        roomInfo += `   ⚔️ Mid: ${d.joinerMid?.name || '-'} (ID: ${d.joinerMid?.id || '-'})\n`;
-                        roomInfo += `   🛡 Roamer: ${d.joinerRoamer?.name || '-'} (ID: ${d.joinerRoamer?.id || '-'})\n`;
-                        roomInfo += `   🗡 Exp: ${d.joinerExp?.name || '-'} (ID: ${d.joinerExp?.id || '-'})\n`;
-                        roomInfo += `   🪙 Gold: ${d.joinerGold?.name || '-'} (ID: ${d.joinerGold?.id || '-'})\n`;
-                        roomInfo += `   🌿 Jungle: ${d.joinerJungle?.name || '-'} (ID: ${d.joinerJungle?.id || '-'})\n`;
-                    }
                 });
                 
                 replyMessage = roomInfo;
             }
 
-            // Button များနှင့် စာသားများ ထည့်သွင်းခြင်း
             const requestBody = {
                 chat_id: chatId,
                 text: replyMessage
@@ -174,11 +143,11 @@ if (update.message && update.message.text) {
                 requestBody.text = replyMessage;
                 requestBody.reply_markup = {
                     inline_keyboard: [
-                        // 🔥 ဤနေရာတွင် Checkbox ခလုတ်ကို အပေါ်ဆုံး၌ ထည့်ပေးထားပါသည်
+                        // 🔥 1. အပေါ်ဆုံးတွင် Checkbox ခလုတ် ထည့်သွင်းခြင်း
                         [
                             { text: `🔲 အမှန်ခြစ်ရန် (Unchecked)`, callback_data: `toggle_check_${docId}` }
                         ],
-                        // မူလ Winner ခလုတ်များ
+                        // 🔥 2. အောက်ဘက်တွင် Team ၂ ခု၏ Winner ခလုတ်များ ထည့်သွင်းခြင်း
                         [
                             { text: `🏆 ${hostTeamName} (Win)`, callback_data: `win_${docId}_host` },
                             { text: `🏆 ${joinerTeamName} (Win)`, callback_data: `win_${docId}_joiner` }
@@ -199,7 +168,7 @@ if (update.message && update.message.text) {
 }
 
 // -------------------------------------------------------------
-// 🔥 2. Checkbox ဖြင့် အတည်ပြုပြီးမှ Winner သတ်မှတ်သည့် Callback Query Handler
+// 🔥 2. Checkbox နှင့် Winner ရွေးချယ်မှုကို စစ်ဆေးပေးသော Callback Query Handler
 // -------------------------------------------------------------
 if (update.callback_query) {
     const callbackQuery = update.callback_query;
@@ -209,7 +178,7 @@ if (update.callback_query) {
     const messageId = callbackQuery.message.message_id;
     const BOT_TOKEN = process.env.TELEGRAM_BOT_TOKEN;
 
-    // ၁။ အမှန်ခြစ် (Checkbox) ခလုတ်ကို နှိပ်လိုက်သောအခါ
+    // က။ Checkbox ခလုတ်ကို နှိပ်လိုက်သောအခါ (အမှန်ခြစ် အခြေအနေပြောင်းရန်)
     if (callbackData && callbackData.startsWith('toggle_check_')) {
         const roomId = callbackData.split('_')[2];
 
@@ -234,19 +203,18 @@ if (update.callback_query) {
             const hostName = roomData.teamName || 'Host';
             const joinerName = roomData.joinerTeamName || 'Joiner';
 
-            // လက်ရှိ အမှန်ခြစ် အခြေအနေကို ပြောင်းပြန်လှန်မည်
             const currentChecked = roomData.isChecked || false;
             const newCheckedState = !currentChecked;
 
-            // Firestore ထဲတွင် isChecked အခြေအနေကို Update လုပ်ခြင်း
+            // Firestore တွင် Checkbox အခြေအနေ သိမ်းဆည်းမည်
             await roomRef.update({
                 isChecked: newCheckedState
             });
 
-            // ခလုတ်ပုံစံကို အမှန်ခြစ်ပါသည်/မပါသည် ပြောင်းလဲပြသရန် Message ကို Edit လုပ်ခြင်း
-            const originalText = callbackQuery.message.text.split('\n\n🎯 **Winner Team ရွေးချယ်ပါ**')[0];
+            const originalText = callbackQuery.message.text.split('\n\n🎯')[0];
             const checkTextLabel = newCheckedState ? "☑️ အမှန်ခြစ်ပြီးပါပြီ (Checked)" : "🔲 အမှန်ခြစ်ရန် (Unchecked)";
 
+            // ခလုတ်ပုံစံကို အမှန်ခြစ်ပါ/မပါ ပြောင်းလဲပေးမည်
             await fetch(`https://api.telegram.org/bot${BOT_TOKEN}/editMessageText`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
@@ -286,10 +254,10 @@ if (update.callback_query) {
         return res.status(200).json({ status: 'success' });
     }
 
-    // ၂။ Winner ခလုတ်ကို နှိပ်လိုက်သောအခါ (အမှန်ခြစ်ထားမှသာ Winner သတ်မှတ်မည်)
+    // ခ။ Winner ခလုတ်ကို နှိပ်လိုက်သောအခါ (အမှန်ခြစ်ထားမှသာ Confirm ဖြစ်မည်)
     if (callbackData && callbackData.startsWith('win_')) {
         const parts = callbackData.split('_');
-        const winningSide = parts[2]; // 'host' သို့မဟုတ် 'joiner'
+        const winningSide = parts[2]; 
         const roomId = parts[1];
 
         try {
@@ -311,7 +279,7 @@ if (update.callback_query) {
 
             const roomData = roomDoc.data();
 
-            // 🔥 အမှန်ခြစ် (Checkbox) ခြစ်ထားခြင်း ရှိမရှိ စစ်ဆေးခြင်း
+            // 🔥 Checkbox အမှန်ခြစ် မထားသေးလျှင် Pop-up Alert ဖြင့် တားဆီးမည်
             if (!roomData.isChecked) {
                 await fetch(`https://api.telegram.org/bot${BOT_TOKEN}/answerCallbackQuery`, {
                     method: 'POST',
@@ -328,7 +296,7 @@ if (update.callback_query) {
             const winnerTeamName = winningSide === 'host' ? (roomData.teamName || 'Host') : (roomData.joinerTeamName || 'Joiner');
             const winnerUserId = winningSide === 'host' ? roomData.hostId : roomData.joinedUserId;
 
-            // 🔥 Firestore ထဲတွင် winnerTeam, winnerId နှင့် status ကို update လုပ်ခြင်း
+            // Firestore တွင် Winner အချက်အလက်များ Update လုပ်မည်
             await roomRef.update({
                 winnerTeam: winnerTeamName,
                 winnerId: winnerUserId,
@@ -336,7 +304,7 @@ if (update.callback_query) {
                 status: 'completed'
             });
 
-            // Screen အလယ်တွင် Pop-up Alert ပေါ်လာစေရန်
+            // Confirm ဖြစ်သွားကြောင်း Screen ပေါ်တွင် Pop-up Alert ပြသမည်
             const alertText = `⚠️ သေချာပါပြီလား? ${winnerTeamName} အား Winner အဖြစ် အတည်ပြုပြီးပါပြီ။`;
 
             await fetch(`https://api.telegram.org/bot${BOT_TOKEN}/answerCallbackQuery`, {
@@ -349,7 +317,7 @@ if (update.callback_query) {
                 })
             });
 
-            // Chat ထဲတွင် Winner အတည်ပြုပြီးကြောင်း စာသားပို့ပေးခြင်း
+            // Chat ထဲတွင် Winner အတည်ပြုပြီးကြောင်း စာပို့မည်
             await fetch(`https://api.telegram.org/bot${BOT_TOKEN}/sendMessage`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
