@@ -270,6 +270,11 @@ module.exports = async function handler(req, res) {
                 createdAt: getYangonTimeStr(),
                 joinedUserId: null,
                 
+                // 🔥 Winner Team Field အသစ် ထည့်သွင်းခြင်း
+                winnerTeam: null,
+                winnerId: null,
+                winningSide: null,
+
                 inGameName: matchedReg?.inGameName || teamName,
                 gameId: matchedReg?.gameId || matchedReg?.id || '-',
                 heroName: matchedReg?.heroName || '',
@@ -282,7 +287,6 @@ module.exports = async function handler(req, res) {
                 jungle: formatPlayerField(matchedReg?.jungle || matchedReg?.playerJungle),
 
                 kpayName: matchedReg?.kpayName || matchedReg?.kpayAccountName || '',
-                // 🔥 Host ဘက်က Kpay Phone No (kpayPhNo နဲ့ contactPhNo အကုန်စစ်ပြီး ထည့်ပေးသည်)
                 kpayPhNo: matchedReg?.kpayPhNo || matchedReg?.contactPhNo || matchedReg?.kpayPhoneNumber || matchedReg?.contactPhoneNumber || '',
                 contactPhNo: matchedReg?.contactPhNo || matchedReg?.kpayPhNo || matchedReg?.kpayPhoneNumber || matchedReg?.contactPhoneNumber || ''
             };
