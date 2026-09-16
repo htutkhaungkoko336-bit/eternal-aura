@@ -76,7 +76,7 @@ module.exports = async function handler(req, res) {
         }
 
 // -------------------------------------------------------------
-// 🔥 Telegram Group / Chat မှ Text Message ဖြင့် Match Code ရှာခြင်း (Host နှင့် Joiner အချက်အလက်အစုံအလင်ဖြင့်)
+// 🔥 Telegram Group / Chat မှ Text Message ဖြင့် Match Code ရှာခြင်း (အချက်အလက်အစုံအလင်ဖြင့်)
 // -------------------------------------------------------------
 if (update.message && update.message.text) {
     const messageText = update.message.text.trim();
@@ -169,6 +169,7 @@ if (update.message && update.message.text) {
                 replyMessage = roomInfo;
             }
 
+            // ဒီနေရာမှာ fetch လုပ်ပြီး Telegram ဆီ အသေအချာ ပို့ပေးပါတယ်။
             await fetch(`https://api.telegram.org/bot${BOT_TOKEN}/sendMessage`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
