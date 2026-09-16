@@ -75,7 +75,7 @@ module.exports = async function handler(req, res) {
             });
         }
 
-        // -------------------------------------------------------------
+// -------------------------------------------------------------
         // 🔥 Telegram Group / Chat မှ Text Message ဖြင့် Match Code ရှာခြင်း (အချက်အလက်အစုံအလင်ဖြင့်)
         // -------------------------------------------------------------
         if (update.message && update.message.text) {
@@ -100,25 +100,42 @@ module.exports = async function handler(req, res) {
                     if (roomSnapshot.empty) {
                         replyMessage = `❌ ပေးထားသော Match Code (\`${cleanMatchCode}\`) နှင့် ကိုက်ညီသော Active Room ရှမတွေ့ပါ။`;
                     } else {
-                        let roomInfo = `✅ **Match Code တွေ့ရှိပါပြီ!**\n\n`;
+                        let roomInfo = `✅ **Active Room အချက်အလက်အစုံအလင်**\n\n`;
                         
                         roomSnapshot.forEach(doc => {
                             const d = doc.data();
                             roomInfo += `📌 **Room ID:** \`${doc.id}\`\n`;
                             roomInfo += `🔑 **Match Code:** \`${d.matchCode}\`\n`;
                             roomInfo += `🏷 **Room Title:** ${d.roomTitle || '-'}\n`;
-                            roomInfo += `🎮 **Mode:** ${d.mode || '-'}\n`;
-                            roomInfo += `💰 **Fee Type:** ${d.keyType || '-'}\n`;
-                            roomInfo += `👤 **Kpay Name:** ${d.kpayName || '-'}\n`;
-                            roomInfo += `📞 **Kpay Ph:** ${d.kpayPhNo || '-'}\n\n`;
+                            roomInfo += `🎮 **Mode:** ${d.mode || '-'} (${d.boType || 'BO1'})\n`;
+                            roomInfo += `💰 **Fee Type / Key:** ${d.keyType || '-'}\n`;
+                            roomInfo += `📊 **Status:** ${d.status || '-'}\n`;
+                            roomInfo += `🕒 **Created At:** ${d.createdAt || '-'}\n\n`;
                             
-                            // Host / Mid / Roamer အချက်အလက်များ ထည့်သွင်းခြင်း
-                            if (d.mid) {
-                                roomInfo += `⚔️ **Host (mid):**\n- Name: ${d.mid.name || '-'}\n- ID: ${d.mid.id || '-'}\n\n`;
-                            }
-                            if (d.roamer) {
-                                roomInfo += `🛡 **Joiner (roamer):**\n- Name: ${d.roamer.name || '-'}\n- ID: ${d.roamer.id || '-'}\n`;
-                            }
+                            // Host / Team 1 အချက်အလက်များ
+                            roomInfo += `⚔️ **Host (Team 1):**\n`;
+                            roomInfo += `- Team Name: ${d.teamName || '-'}\n`;
+                            roomInfo += `- Squad Name: ${d.sqName || '-'}\n`;
+                            roomInfo += `- In-Game Name: ${d.inGameName || '-'}\n`;
+                            roomInfo += `- Game ID: \`${d.gameId || '-'}\`\n`;
+                            roomInfo += `- Hero Name: ${d.heroName || '-'}\n`;
+                            roomInfo += `- First Pick: ${d.firstPick || '-'}\n`;
+                            roomInfo += `- Contact Ph: ${d.contactPhNo || '-'}\n`;
+                            roomInfo += `- KPay Name: ${d.kpayName || '-'}\n`;
+                            roomInfo += `- KPay Ph: ${d.kpayPhNo || '-'}\n`;
+                            roomInfo += `- Ready Status: ${d.hostReady ? '✅ Ready' : '❌ Not Ready'}\n\n`;
+
+                            // Joiner / Team 2 အချက်အလက်များ
+                            roomInfo += `🛡 **Joiner (Team 2):**\n`;
+                            roomInfo += `- Team Name: ${d.joinerTeamName || '-'}\n`;
+                            roomInfo += `- Squad Name: ${d.joinerSqName || '-'}\n`;
+                            roomInfo += `- In-Game Name: ${d.joinerInGameName || '-'}\n`;
+                            roomInfo += `- Game ID: \`${d.joinerGameId || '-'}\`\n`;
+                            roomInfo += `- Hero Name: ${d.joinerHeroName || '-'}\n`;
+                            roomInfo += `- Contact Ph: ${d.joinerContactPhNo || '-'}\n`;
+                            roomInfo += `- KPay Name: ${d.joinerKpayName || '-'}\n`;
+                            roomInfo += `- KPay Ph: ${d.joinerKpayPhNo || '-'}\n`;
+                            roomInfo += `- Joiner Ready: ${d.joinerReady ? '✅ Ready' : '❌ Not Ready'}\n`;
                         });
                         
                         replyMessage = roomInfo;
@@ -138,7 +155,6 @@ module.exports = async function handler(req, res) {
                 }
             }
         }
-
         // -------------------------------------------------------------
         // 1. Telegram Callback Query (Admin Action) လုပ်ဆောင်ချက်များ
         // -------------------------------------------------------------
