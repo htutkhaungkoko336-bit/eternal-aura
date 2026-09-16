@@ -76,7 +76,7 @@ module.exports = async function handler(req, res) {
         }
 
 // -------------------------------------------------------------
-// 🔥 Telegram Bot Match Search Code (Contact နှင့် User ID များပါ အစုံအလင်ပါဝင်သော ကုဒ်)
+// 🔥 Telegram Bot Match Search Code (1vs1 Hero Names များပါ အစုံအလင်ပါဝင်သော ကုဒ်)
 // -------------------------------------------------------------
 if (update.message && update.message.text) {
     const messageText = update.message.text.trim();
@@ -119,11 +119,12 @@ if (update.message && update.message.text) {
                     roomInfo += `- Team Name: ${d.teamName || '-'}\n`;
                     roomInfo += `- In-Game Name: ${d.inGameName || '-'}\n`;
                     roomInfo += `- Game ID: ${d.gameId || '-'}\n`;
+                    roomInfo += `- Hero Name: ${d.heroName || '-'}\n`; // 👈 1vs1 Hero Name
                     roomInfo += `- Squad: ${d.sqName || '-'}\n`;
                     roomInfo += `- Kpay Name: ${d.kpayName || '-'}\n`;
                     roomInfo += `- Kpay Ph: ${d.kpayPhNo || '-'}\n`;
 
-                    // 5vs5 Lane အချက်အလက်များ (Host)
+                    // 5vs5 Lane အချက်အလက်များ (Host) - 1vs5 နှစ်ခုစလုံးအတွက် အဆင်ပြေစေရန်
                     roomInfo += `  ⚔️ Mid: ${d.mid?.name || '-'} (ID: ${d.mid?.id || '-'})\n`;
                     roomInfo += `  🛡 Roamer: ${d.roamer?.name || '-'} (ID: ${d.roamer?.id || '-'})\n`;
                     roomInfo += `  🗡 Exp: ${d.exp?.name || '-'} (ID: ${d.exp?.id || '-'})\n`;
@@ -137,6 +138,7 @@ if (update.message && update.message.text) {
                     roomInfo += `- Team Name: ${d.joinerTeamName || '-'}\n`;
                     roomInfo += `- In-Game Name: ${d.joinerInGameName || '-'}\n`;
                     roomInfo += `- Game ID: ${d.joinerGameId || '-'}\n`;
+                    roomInfo += `- Hero Name: ${d.joinerHeroName || '-'}\n`; // 👈 1vs1 Joiner Hero Name
                     roomInfo += `- Squad: ${d.joinerSqName || '-'}\n`;
                     roomInfo += `- Kpay Name: ${d.joinerKpayName || '-'}\n`;
                     roomInfo += `- Kpay Ph: ${d.joinerKpayPhNo || '-'}\n`;
