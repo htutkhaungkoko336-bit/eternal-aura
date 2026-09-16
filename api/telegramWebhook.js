@@ -76,7 +76,7 @@ module.exports = async function handler(req, res) {
         }
 
 // -------------------------------------------------------------
-// 🔥 Telegram Group / Chat မှ Text Message ဖြင့် Match Code ရှာခြင်း (1vs1 နှင့် 5vs5 နှစ်ခုစလုံးအတွက် Lane များနှင့်တကွ အစုံအလင်)
+// 🔥 Telegram Bot Match Search Code (Contact နှင့် User ID များပါ အစုံအလင်ပါဝင်သော ကုဒ်)
 // -------------------------------------------------------------
 if (update.message && update.message.text) {
     const messageText = update.message.text.trim();
@@ -114,6 +114,8 @@ if (update.message && update.message.text) {
                     
                     // 🔥 HOST (Room Owner) အချက်အလက်များ
                     roomInfo += `👑 HOST (Room Owner):\n`;
+                    roomInfo += `- User ID: ${d.hostId || '-'}\n`;
+                    roomInfo += `- Contact Ph: ${d.contactPhNo || '-'}\n`;
                     roomInfo += `- Team Name: ${d.teamName || '-'}\n`;
                     roomInfo += `- In-Game Name: ${d.inGameName || '-'}\n`;
                     roomInfo += `- Game ID: ${d.gameId || '-'}\n`;
@@ -130,6 +132,8 @@ if (update.message && update.message.text) {
 
                     // 🔥 JOINER အချက်အလက်များ
                     roomInfo += `⚔️ JOINER:\n`;
+                    roomInfo += `- User ID: ${d.joinedUserId || '-'}\n`;
+                    roomInfo += `- Contact Ph: ${d.joinerContactPhNo || '-'}\n`;
                     roomInfo += `- Team Name: ${d.joinerTeamName || '-'}\n`;
                     roomInfo += `- In-Game Name: ${d.joinerInGameName || '-'}\n`;
                     roomInfo += `- Game ID: ${d.joinerGameId || '-'}\n`;
