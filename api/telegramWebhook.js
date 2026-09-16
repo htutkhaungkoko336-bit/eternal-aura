@@ -76,7 +76,7 @@ module.exports = async function handler(req, res) {
         }
 
 // -------------------------------------------------------------
-// 🔥 Telegram Group / Chat မှ Text Message ဖြင့် Match Code ရှာခြင်း (Data အစုံအလင်ဖြင့်)
+// 🔥 Telegram Group / Chat မှ Text Message ဖြင့် Match Code ရှာခြင်း (1vs1 နှင့် 5vs5 နှစ်ခုစလုံးအတွက် Lane များနှင့်တကွ အစုံအလင်)
 // -------------------------------------------------------------
 if (update.message && update.message.text) {
     const messageText = update.message.text.trim();
@@ -117,20 +117,32 @@ if (update.message && update.message.text) {
                     roomInfo += `- Team Name: ${d.teamName || '-'}\n`;
                     roomInfo += `- In-Game Name: ${d.inGameName || '-'}\n`;
                     roomInfo += `- Game ID: ${d.gameId || '-'}\n`;
-                    roomInfo += `- Hero: ${d.heroName || '-'}\n`;
                     roomInfo += `- Squad: ${d.sqName || '-'}\n`;
                     roomInfo += `- Kpay Name: ${d.kpayName || '-'}\n`;
-                    roomInfo += `- Kpay Ph: ${d.kpayPhNo || '-'}\n\n`;
+                    roomInfo += `- Kpay Ph: ${d.kpayPhNo || '-'}\n`;
+
+                    // 5vs5 Lane အချက်အလက်များ (Host)
+                    roomInfo += `  ⚔️ Mid: ${d.mid?.name || '-'} (ID: ${d.mid?.id || '-'})\n`;
+                    roomInfo += `  🛡 Roamer: ${d.roamer?.name || '-'} (ID: ${d.roamer?.id || '-'})\n`;
+                    roomInfo += `  🗡 Exp: ${d.exp?.name || '-'} (ID: ${d.exp?.id || '-'})\n`;
+                    roomInfo += `  🪙 Gold: ${d.gold?.name || '-'} (ID: ${d.gold?.id || '-'})\n`;
+                    roomInfo += `  🌿 Jungle: ${d.jungle?.name || '-'} (ID: ${d.jungle?.id || '-'})\n\n`;
 
                     // 🔥 JOINER အချက်အလက်များ
                     roomInfo += `⚔️ JOINER:\n`;
                     roomInfo += `- Team Name: ${d.joinerTeamName || '-'}\n`;
                     roomInfo += `- In-Game Name: ${d.joinerInGameName || '-'}\n`;
                     roomInfo += `- Game ID: ${d.joinerGameId || '-'}\n`;
-                    roomInfo += `- Hero: ${d.joinerHeroName || '-'}\n`;
                     roomInfo += `- Squad: ${d.joinerSqName || '-'}\n`;
                     roomInfo += `- Kpay Name: ${d.joinerKpayName || '-'}\n`;
                     roomInfo += `- Kpay Ph: ${d.joinerKpayPhNo || '-'}\n`;
+
+                    // 5vs5 Lane အချက်အလက်များ (Joiner)
+                    roomInfo += `  ⚔️ Mid: ${d.joinerMid?.name || '-'} (ID: ${d.joinerMid?.id || '-'})\n`;
+                    roomInfo += `  🛡 Roamer: ${d.joinerRoamer?.name || '-'} (ID: ${d.joinerRoamer?.id || '-'})\n`;
+                    roomInfo += `  🗡 Exp: ${d.joinerExp?.name || '-'} (ID: ${d.joinerExp?.id || '-'})\n`;
+                    roomInfo += `  🪙 Gold: ${d.joinerGold?.name || '-'} (ID: ${d.joinerGold?.id || '-'})\n`;
+                    roomInfo += `  🌿 Jungle: ${d.joinerJungle?.name || '-'} (ID: ${d.joinerJungle?.id || '-'})\n`;
                 });
                 
                 replyMessage = roomInfo;
