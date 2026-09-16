@@ -76,7 +76,7 @@ module.exports = async function handler(req, res) {
         }
 
 // -------------------------------------------------------------
-// 🔥 Telegram Group / Chat မှ Text Message ဖြင့် Match Code ရှာခြင်း (Error ကင်းရှင်းသော ပုံစံ)
+// 🔥 Telegram Group / Chat မှ Text Message ဖြင့် Match Code ရှာခြင်း (Data အစုံအလင်ဖြင့်)
 // -------------------------------------------------------------
 if (update.message && update.message.text) {
     const messageText = update.message.text.trim();
@@ -109,22 +109,33 @@ if (update.message && update.message.text) {
                     roomInfo += `🏷 Room Title: ${d.roomTitle || '-'}\n`;
                     roomInfo += `🎮 Mode: ${d.mode || '-'}\n`;
                     roomInfo += `💰 Fee Type: ${d.keyType || '-'}\n`;
-                    roomInfo += `👤 Kpay Name: ${d.kpayName || '-'}\n`;
-                    roomInfo += `📞 Kpay Ph: ${d.kpayPhNo || '-'}\n\n`;
+                    roomInfo += `🏆 BO Type: ${d.boType || '-'}\n`;
+                    roomInfo += `📊 Status: ${d.status || '-'}\n\n`;
                     
-                    // Host / Mid / Roamer အချက်အလက်များ
-                    if (d.mid) {
-                        roomInfo += `⚔️ Host (mid):\n- Name: ${d.mid.name || '-'}\n- ID: ${d.mid.id || '-'}\n\n`;
-                    }
-                    if (d.roamer) {
-                        roomInfo += `🛡 Joiner (roamer):\n- Name: ${d.roamer.name || '-'}\n- ID: ${d.roamer.id || '-'}\n`;
-                    }
+                    // 🔥 HOST (Room Owner) အချက်အလက်များ
+                    roomInfo += `👑 HOST (Room Owner):\n`;
+                    roomInfo += `- Team Name: ${d.teamName || '-'}\n`;
+                    roomInfo += `- In-Game Name: ${d.inGameName || '-'}\n`;
+                    roomInfo += `- Game ID: ${d.gameId || '-'}\n`;
+                    roomInfo += `- Hero: ${d.heroName || '-'}\n`;
+                    roomInfo += `- Squad: ${d.sqName || '-'}\n`;
+                    roomInfo += `- Kpay Name: ${d.kpayName || '-'}\n`;
+                    roomInfo += `- Kpay Ph: ${d.kpayPhNo || '-'}\n\n`;
+
+                    // 🔥 JOINER အချက်အလက်များ
+                    roomInfo += `⚔️ JOINER:\n`;
+                    roomInfo += `- Team Name: ${d.joinerTeamName || '-'}\n`;
+                    roomInfo += `- In-Game Name: ${d.joinerInGameName || '-'}\n`;
+                    roomInfo += `- Game ID: ${d.joinerGameId || '-'}\n`;
+                    roomInfo += `- Hero: ${d.joinerHeroName || '-'}\n`;
+                    roomInfo += `- Squad: ${d.joinerSqName || '-'}\n`;
+                    roomInfo += `- Kpay Name: ${d.joinerKpayName || '-'}\n`;
+                    roomInfo += `- Kpay Ph: ${d.joinerKpayPhNo || '-'}\n`;
                 });
                 
                 replyMessage = roomInfo;
             }
 
-            // Markdown ကို ဖြုတ်လိုက်ပြီး ပို့ခြင်းဖြင့် Telegram Error တက်ခြင်းကို ကာကွယ်줍니다
             await fetch(`https://api.telegram.org/bot${BOT_TOKEN}/sendMessage`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
