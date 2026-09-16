@@ -76,7 +76,7 @@ module.exports = async function handler(req, res) {
         }
 
 // -------------------------------------------------------------
-// 🔥 Telegram Bot Match Search Code (1vs1 Hero Names များပါ အစုံအလင်ပါဝင်သော ကုဒ်)
+// 🔥 Telegram Bot Match Search Code (Inline Buttons များနှင့် Winner ရွေးချယ်ရန် Confirm တောင်းသော ပုံစံ)
 // -------------------------------------------------------------
 if (update.message && update.message.text) {
     const messageText = update.message.text.trim();
@@ -96,6 +96,9 @@ if (update.message && update.message.text) {
                 .get();
 
             let replyMessage = "";
+            let hostTeamName = "Host";
+            let joinerTeamName = "Joiner";
+            let docId = "";
 
             if (roomSnapshot.empty) {
                 replyMessage = `❌ ပေးထားသော Match Code (${cleanMatchCode}) နှင့် ကိုက်ညီသော Active Room ရှမတွေ့ပါ။`;
@@ -104,6 +107,10 @@ if (update.message && update.message.text) {
                 
                 roomSnapshot.forEach(doc => {
                     const d = doc.data();
+                    docId = doc.id; // Callback query အတွက် ID ယူခြင်း
+                    hostTeamName = d.teamName || 'Host';
+                    joinerTeamName = d.joinerTeamName || 'Joiner';
+
                     roomInfo += `📌 Room ID: ${doc.id}\n`;
                     roomInfo += `🔑 Match Code: ${d.matchCode || '-'}\n`;
                     roomInfo += `🏷 Room Title: ${d.roomTitle || '-'}\n`;
@@ -112,59 +119,108 @@ if (update.message && update.message.text) {
                     roomInfo += `🏆 BO Type: ${d.boType || '-'}\n`;
                     roomInfo += `📊 Status: ${d.status || '-'}\n\n`;
                     
-                    // 🔥 HOST (Room Owner) အချက်အလက်များ
+                    // 🔥 HOST အချက်အလက်များ
                     roomInfo += `👑 HOST (Room Owner):\n`;
                     roomInfo += `- User ID: ${d.hostId || '-'}\n`;
                     roomInfo += `- Contact Ph: ${d.contactPhNo || '-'}\n`;
-                    roomInfo += `- Team Name: ${d.teamName || '-'}\n`;
+                    roomInfo += `- Team Name: ${hostTeamName}\n`;
                     roomInfo += `- In-Game Name: ${d.inGameName || '-'}\n`;
                     roomInfo += `- Game ID: ${d.gameId || '-'}\n`;
-                    roomInfo += `- Hero Name: ${d.heroName || '-'}\n`; // 👈 1vs1 Hero Name
                     roomInfo += `- Squad: ${d.sqName || '-'}\n`;
                     roomInfo += `- Kpay Name: ${d.kpayName || '-'}\n`;
                     roomInfo += `- Kpay Ph: ${d.kpayPhNo || '-'}\n`;
 
-                    // 5vs5 Lane အချက်အလက်များ (Host) - 1vs5 နှစ်ခုစလုံးအတွက် အဆင်ပြေစေရန်
-                    roomInfo += `  ⚔️ Mid: ${d.mid?.name || '-'} (ID: ${d.mid?.id || '-'})\n`;
-                    roomInfo += `  🛡 Roamer: ${d.roamer?.name || '-'} (ID: ${d.roamer?.id || '-'})\n`;
-                    roomInfo += `  🗡 Exp: ${d.exp?.name || '-'} (ID: ${d.exp?.id || '-'})\n`;
-                    roomInfo += `  🪙 Gold: ${d.gold?.name || '-'} (ID: ${d.gold?.id || '-'})\n`;
-                    roomInfo += `  🌿 Jungle: ${d.jungle?.name || '-'} (ID: ${d.jungle?.id || '-'})\n\n`;
+                    if (d.mode === '5v5') {
+                        roomInfo += `  ⚔️ Mid: ${d.mid?.name || '-'} (ID: ${d.mid?.id || '-'})\n`;
+                        roomInfo += `  🛡 Roamer: ${d.roamer?.name || '-'} (ID: ${d.roamer?.id || '-'})\n`;
+                        roomInfo += `  🗡 Exp: ${d.exp?.name || '-'} (ID: ${d.exp?.id || '-'})\n`;
+                        roomInfo += `  🪙 Gold: ${d.gold?.name || '-'} (ID: ${d.gold?.id || '-'})\n`;
+                        roomInfo += `  🌿 Jungle: ${d.jungle?.name || '-'} (ID: ${d.jungle?.id || '-'})\n\n`;
+                    } else {
+                        roomInfo += `\n`;
+                    }
 
                     // 🔥 JOINER အချက်အလက်များ
                     roomInfo += `⚔️ JOINER:\n`;
                     roomInfo += `- User ID: ${d.joinedUserId || '-'}\n`;
                     roomInfo += `- Contact Ph: ${d.joinerContactPhNo || '-'}\n`;
-                    roomInfo += `- Team Name: ${d.joinerTeamName || '-'}\n`;
+                    roomInfo += `- Team Name: ${joinerTeamName}\n`;
                     roomInfo += `- In-Game Name: ${d.joinerInGameName || '-'}\n`;
                     roomInfo += `- Game ID: ${d.joinerGameId || '-'}\n`;
-                    roomInfo += `- Hero Name: ${d.joinerHeroName || '-'}\n`; // 👈 1vs1 Joiner Hero Name
                     roomInfo += `- Squad: ${d.joinerSqName || '-'}\n`;
                     roomInfo += `- Kpay Name: ${d.joinerKpayName || '-'}\n`;
                     roomInfo += `- Kpay Ph: ${d.joinerKpayPhNo || '-'}\n`;
 
-                    // 5vs5 Lane အချက်အလက်များ (Joiner)
-                    roomInfo += `  ⚔️ Mid: ${d.joinerMid?.name || '-'} (ID: ${d.joinerMid?.id || '-'})\n`;
-                    roomInfo += `  🛡 Roamer: ${d.joinerRoamer?.name || '-'} (ID: ${d.joinerRoamer?.id || '-'})\n`;
-                    roomInfo += `  🗡 Exp: ${d.joinerExp?.name || '-'} (ID: ${d.joinerExp?.id || '-'})\n`;
-                    roomInfo += `  🪙 Gold: ${d.joinerGold?.name || '-'} (ID: ${d.joinerGold?.id || '-'})\n`;
-                    roomInfo += `  🌿 Jungle: ${d.joinerJungle?.name || '-'} (ID: ${d.joinerJungle?.id || '-'})\n`;
+                    if (d.mode === '5v5') {
+                        roomInfo += `  ⚔️ Mid: ${d.joinerMid?.name || '-'} (ID: ${d.joinerMid?.id || '-'})\n`;
+                        roomInfo += `  🛡 Roamer: ${d.joinerRoamer?.name || '-'} (ID: ${d.joinerRoamer?.id || '-'})\n`;
+                        roomInfo += `  🗡 Exp: ${d.joinerExp?.name || '-'} (ID: ${d.joinerExp?.id || '-'})\n`;
+                        roomInfo += `  🪙 Gold: ${d.joinerGold?.name || '-'} (ID: ${d.joinerGold?.id || '-'})\n`;
+                        roomInfo += `  🌿 Jungle: ${d.joinerJungle?.name || '-'} (ID: ${d.joinerJungle?.id || '-'})\n`;
+                    }
                 });
                 
                 replyMessage = roomInfo;
             }
 
+            // Button များနှင့် စာသားများ ထည့်သွင်းခြင်း
+            const requestBody = {
+                chat_id: chatId,
+                text: replyMessage
+            };
+
+            if (!roomSnapshot.empty) {
+                replyMessage += `\n🎯 **Winner Team ရွေးချယ်ပါ**`; // ပုံမှန်စာသားအောက်တွင် ထပ်ထည့်ပေးခြင်း
+                requestBody.text = replyMessage;
+                requestBody.reply_markup = {
+                    inline_keyboard: [
+                        [
+                            { text: `🏆 ${hostTeamName} (Win)`, callback_data: `win_${docId}_host` },
+                            { text: `🏆 ${joinerTeamName} (Win)`, callback_data: `win_${docId}_joiner` }
+                        ]
+                    ]
+                };
+            }
+
             await fetch(`https://api.telegram.org/bot${BOT_TOKEN}/sendMessage`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                    chat_id: chatId,
-                    text: replyMessage
-                })
+                body: JSON.stringify(requestBody)
             });
 
             return res.status(200).json({ status: 'success' });
         }
+    }
+}
+
+// -------------------------------------------------------------
+// 🔥 ေခါင်းစဉ် (သို့) Button နှိပ်လိုက်သောအခါ Confirm (Alert) တောင်းရန်အတွက် Callback Query Handler
+// -------------------------------------------------------------
+if (update.callback_query) {
+    const callbackQuery = update.callback_query;
+    const callbackData = callbackQuery.data;
+    const queryId = callbackQuery.id;
+    const BOT_TOKEN = process.env.TELEGRAM_BOT_TOKEN;
+
+    if (callbackData && callbackData.startsWith('win_')) {
+        const parts = callbackData.split('_');
+        const winningSide = parts[2]; // host သို့မဟုတ် joiner
+        const roomId = parts[1];
+
+        // နှိပ်လိုက်သူကို Confirm တစ်ခါထပ်တောင်းသော Alert ပြသရန်
+        const alertText = `⚠️ သေချာပါပြီလား? ${winningSide.toUpperCase()} အား Winner အဖြစ် အတည်ပြုမည်။`;
+
+        await fetch(`https://api.telegram.org/bot${BOT_TOKEN}/answerCallbackQuery`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                callback_query_id: queryId,
+                text: alertText,
+                show_alert: true // True လုပ်ထားမှသာ Screen အလယ်တွင် Pop-up Alert ပေါ်လာပါမည်
+            })
+        });
+
+        return res.status(200).json({ status: 'success' });
     }
 }
         // -------------------------------------------------------------
