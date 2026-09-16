@@ -362,6 +362,35 @@ if (update.callback_query) {
         return res.status(200).json({ status: 'success' });
     }
 }
+
+// -------------------------------------------------------------
+// 🔥 3။ Telegram ထဲသို့ Room စတင်ပို့ဆောင်သော Code အပိုင်း (Checkbox ပါဝင်သည်)
+// -------------------------------------------------------------
+// (အောက်ပါ ကုဒ်ကို Room ဖန်တီးသည့်နေရာ သို့မဟုတ် sendMessage လုပ်သည့်နေရာတွင် ထည့်သုံးပါ)
+
+await fetch(`https://api.telegram.org/bot${BOT_TOKEN}/sendMessage`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+        chat_id: chatId,
+        text: roomMessageText,
+        parse_mode: 'Markdown',
+        reply_markup: {
+            inline_keyboard: [
+                // 🔥 ဤနေရာတွင် Checkbox ခလုတ်ကို အပေါ်ဆုံး၌ ထည့်ပေးထားပါသည်
+                [
+                    { text: `🔲 အမှန်ခြစ်ရန် (Unchecked)`, callback_data: `toggle_check_${roomId}` }
+                ],
+                // မူလ Winner ခလုတ်များ
+                [
+                    { text: `🏆 ${hostName} (Win)`, callback_data: `win_${roomId}_host` },
+                    { text: `🏆 ${joinerName} (Win)`, callback_data: `win_${roomId}_joiner` }
+                ]
+            ]
+        }
+    })
+});
+
         // 1. Telegram Callback Query (Admin Action) လုပ်ဆောင်ချက်များ
         // -------------------------------------------------------------
         if (update.callback_query) {
