@@ -76,7 +76,7 @@ module.exports = async function handler(req, res) {
         }
 
 // -------------------------------------------------------------
-// 🔥 Telegram Group / Chat မှ Text Message ဖြင့် Match Code ရှာခြင်း (အချက်အလက်အစုံအလင်ဖြင့်)
+// 🔥 Telegram Group / Chat မှ Text Message ဖြင့် Match Code ရှာခြင်း (Error ကင်းရှင်းသော ပုံစံ)
 // -------------------------------------------------------------
 if (update.message && update.message.text) {
     const messageText = update.message.text.trim();
@@ -98,85 +98,39 @@ if (update.message && update.message.text) {
             let replyMessage = "";
 
             if (roomSnapshot.empty) {
-                replyMessage = `❌ ပေးထားသော Match Code (\`${cleanMatchCode}\`) နှင့် ကိုက်ညီသော Active Room ရှမတွေ့ပါ။`;
+                replyMessage = `❌ ပေးထားသော Match Code (${cleanMatchCode}) နှင့် ကိုက်ညီသော Active Room ရှမတွေ့ပါ။`;
             } else {
-                let roomInfo = `✅ **Match Code တွေ့ရှိပါပြီ!**\n\n`;
+                let roomInfo = `✅ Match Code တွေ့ရှိပါပြီ!\n\n`;
                 
                 roomSnapshot.forEach(doc => {
                     const d = doc.data();
-                    roomInfo += `📌 **Room ID:** \`${doc.id}\`\n`;
-                    roomInfo += `🔑 **Match Code:** \`${d.matchCode}\`\n`;
-                    roomInfo += `🏷 **Room Title:** ${d.roomTitle || '-'}\n`;
-                    roomInfo += `🎮 **Mode:** ${d.mode || '-'}\n`;
-                    roomInfo += `💰 **Fee Type:** ${d.keyType || '-'}\n`;
-                    roomInfo += `🏆 **BO Type:** ${d.boType || '-'}\n`;
-                    roomInfo += `📊 **Status:** ${d.status || '-'}\n\n`;
+                    roomInfo += `📌 Room ID: ${doc.id}\n`;
+                    roomInfo += `🔑 Match Code: ${d.matchCode || '-'}\n`;
+                    roomInfo += `🏷 Room Title: ${d.roomTitle || '-'}\n`;
+                    roomInfo += `🎮 Mode: ${d.mode || '-'}\n`;
+                    roomInfo += `💰 Fee Type: ${d.keyType || '-'}\n`;
+                    roomInfo += `👤 Kpay Name: ${d.kpayName || '-'}\n`;
+                    roomInfo += `📞 Kpay Ph: ${d.kpayPhNo || '-'}\n\n`;
                     
-                    // 🔥 HOST (Room Owner) အချက်အလက်များ
-                    roomInfo += `👑 **HOST (Room Owner):**\n`;
-                    roomInfo += `- Team / Name: ${d.teamName || d.inGameName || '-'}\n`;
-                    roomInfo += `- In-Game Name: ${d.inGameName || '-'}\n`;
-                    roomInfo += `- Game ID: \`${d.gameId || '-'}\`\n`;
-                    roomInfo += `- Hero: ${d.heroName || '-'}\n`;
-                    roomInfo += `- Squad: ${d.sqName || '-'}\n`;
-                    roomInfo += `- Kpay Name: ${d.kpayName || '-'}\n`;
-                    roomInfo += `- Kpay Ph: ${d.kpayPhNo || '-'}\n`;
-                    
-                    if (d.mid && (d.mid.name !== '-' || d.mid.id !== '-')) {
-                        roomInfo += `  ⚔️ Mid: ${d.mid.name} (ID: ${d.mid.id})\n`;
+                    // Host / Mid / Roamer အချက်အလက်များ
+                    if (d.mid) {
+                        roomInfo += `⚔️ Host (mid):\n- Name: ${d.mid.name || '-'}\n- ID: ${d.mid.id || '-'}\n\n`;
                     }
-                    if (d.roamer && (d.roamer.name !== '-' || d.roamer.id !== '-')) {
-                        roomInfo += `  🛡 Roamer: ${d.roamer.name} (ID: ${d.roamer.id})\n`;
-                    }
-                    if (d.exp && (d.exp.name !== '-' || d.exp.id !== '-')) {
-                        roomInfo += `  🗡 Exp: ${d.exp.name} (ID: ${d.exp.id})\n`;
-                    }
-                    if (d.gold && (d.gold.name !== '-' || d.gold.id !== '-')) {
-                        roomInfo += `  🪙 Gold: ${d.gold.name} (ID: ${d.gold.id})\n`;
-                    }
-                    if (d.jungle && (d.jungle.name !== '-' || d.jungle.id !== '-')) {
-                        roomInfo += `  🌿 Jungle: ${d.jungle.name} (ID: ${d.jungle.id})\n`;
-                    }
-                    roomInfo += `\n`;
-
-                    // 🔥 JOINER အချက်အလက်များ
-                    roomInfo += `⚔️ **JOINER:**\n`;
-                    roomInfo += `- Team / Name: ${d.joinerTeamName || d.joinerInGameName || '-'}\n`;
-                    roomInfo += `- In-Game Name: ${d.joinerInGameName || '-'}\n`;
-                    roomInfo += `- Game ID: \`${d.joinerGameId || '-'}\`\n`;
-                    roomInfo += `- Hero: ${d.joinerHeroName || '-'}\n`;
-                    roomInfo += `- Squad: ${d.joinerSqName || '-'}\n`;
-                    roomInfo += `- Kpay Name: ${d.joinerKpayName || '-'}\n`;
-                    roomInfo += `- Kpay Ph: ${d.joinerKpayPhNo || '-'}\n`;
-
-                    if (d.joinerMid && (d.joinerMid.name !== '-' || d.joinerMid.id !== '-')) {
-                        roomInfo += `  ⚔️ Mid: ${d.joinerMid.name} (ID: ${d.joinerMid.id})\n`;
-                    }
-                    if (d.joinerRoamer && (d.joinerRoamer.name !== '-' || d.joinerRoamer.id !== '-')) {
-                        roomInfo += `  🛡 Roamer: ${d.joinerRoamer.name} (ID: ${d.joinerRoamer.id})\n`;
-                    }
-                    if (d.joinerExp && (d.joinerExp.name !== '-' || d.joinerExp.id !== '-')) {
-                        roomInfo += `  🗡 Exp: ${d.joinerExp.name} (ID: ${d.joinerExp.id})\n`;
-                    }
-                    if (d.joinerGold && (d.joinerGold.name !== '-' || d.joinerGold.id !== '-')) {
-                        roomInfo += `  🪙 Gold: ${d.joinerGold.name} (ID: ${d.joinerGold.id})\n`;
-                    }
-                    if (d.joinerJungle && (d.joinerJungle.name !== '-' || d.joinerJungle.id !== '-')) {
-                        roomInfo += `  🌿 Jungle: ${d.joinerJungle.name} (ID: ${d.joinerJungle.id})\n`;
+                    if (d.roamer) {
+                        roomInfo += `🛡 Joiner (roamer):\n- Name: ${d.roamer.name || '-'}\n- ID: ${d.roamer.id || '-'}\n`;
                     }
                 });
                 
                 replyMessage = roomInfo;
             }
 
-            // ဒီနေရာမှာ fetch လုပ်ပြီး Telegram ဆီ အသေအချာ ပို့ပေးပါတယ်။
+            // Markdown ကို ဖြုတ်လိုက်ပြီး ပို့ခြင်းဖြင့် Telegram Error တက်ခြင်းကို ကာကွယ်줍니다
             await fetch(`https://api.telegram.org/bot${BOT_TOKEN}/sendMessage`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
                     chat_id: chatId,
-                    text: replyMessage,
-                    parse_mode: 'Markdown'
+                    text: replyMessage
                 })
             });
 
