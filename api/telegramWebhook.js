@@ -171,11 +171,12 @@ if (update.message && update.message.text) {
             if (!roomSnapshot.empty) {
                 const roomDocData = roomSnapshot.docs[0].data();
                 
-                // အကယ်၍ Winner ရွေးပြီးသားဖြစ်ပြီး Reset ပါ သုံးပြီးသားဆိုလျှင် ခလုတ်လုံးဝမပြပါ
+                // အကယ်၍ Winner ရွေးပြီးသားဖြစ်ပါက
                 if (roomDocData.status === 'completed' && roomDocData.winnerTeam) {
                     replyMessage += `\n🏆 **Winner Team:** ${roomDocData.winnerTeam} (အတည်ပြုပြီး ✅)`;
                     requestBody.text = replyMessage;
                     
+                    // Reset မသုံးရသေးပါက Search ပြန်လုပ်တဲ့အခါ 🔄 icon လေး ထည့်ပြပေးမည် (တခါသုံးရန်)
                     if (!roomDocData.isResetUsed) {
                         requestBody.reply_markup = {
                             inline_keyboard: [
@@ -257,7 +258,6 @@ if (update.callback_query) {
                 body: JSON.stringify({ callback_query_id: queryId, text: `⚠️ ${winnerTeamName} အား Winner အဖြစ် အတည်ပြုပြီးပါပြီ။`, show_alert: true })
             });
 
-            // မူလစာသားကို ယူမည် (Winner ရွေးချယ်ပါ ဆိုတာဖြစ်စေ၊ Reset ပြန်လုပ်နေသည် ဆိုတာဖြစ်စေ ဖယ်ရှားရန်)
             let originalText = callbackQuery.message.text;
             if (originalText.includes('\n\n🎯 **Winner Team ရွေးချယ်ပါ')) {
                 originalText = originalText.split('\n\n🎯 **Winner Team ရွေးချယ်ပါ')[0];
@@ -265,7 +265,7 @@ if (update.callback_query) {
                 originalText = originalText.split('\n\n🏆 **Winner Team:**')[0];
             }
 
-            // 🔥 Winner သတ်မှတ်ပြီးပါက (ပထမအကြိမ်ဖြစ်စေ၊ Reset ပြီးနောက် ဒုတိယအကြိမ်ဖြစ်စေ) ခလုတ်များကို လုံးဝဖျောက်ပေးမည်
+            // 🔥 Winner ရွေးပြီးတာနဲ့ ခလုတ်များ လုံးဝမပေါ်လာစေရန် (inline_keyboard: []) ဖြင့် ပိတ်လိုက်သည်
             await fetch(`https://api.telegram.org/bot${BOT_TOKEN}/editMessageText`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
@@ -275,7 +275,7 @@ if (update.callback_query) {
                     text: originalText + `\n\n🏆 **Winner Team:** ${winnerTeamName} (အတည်ပြုပြီး ✅)`,
                     parse_mode: 'Markdown',
                     reply_markup: {
-                        inline_keyboard: [] // ခလုတ်များကို လုံးဝဖျောက်လိုက်သည်
+                        inline_keyboard: [] // ခလုတ်များ လုံးဝ ပျောက်သွားပါမည်
                     }
                 })
             });
