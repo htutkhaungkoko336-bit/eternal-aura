@@ -204,30 +204,34 @@ if (update.callback_query) {
     const messageId = callbackQuery.message.message_id;
     const BOT_TOKEN = process.env.TELEGRAM_BOT_TOKEN;
 
-    // ၁။ Winner တွေထဲက တစ်ခုကို ပထမအကြိမ် နှိပ်လိုက်သောအခါ (အတည်ပြုရန် မေးမြန်းခြင်း)
-    if (callbackData && callbackData.startsWith('win_ask_')) {
+if (callbackData && callbackData.startsWith('win_ask_')) {
         const parts = callbackData.split('_');
         const winningSide = parts[2]; // 'host' သို့မဟုတ် 'joiner'
-        const roomId = parts[1];
+        const matchCode = parts[1];   // ဒီနေရာမှာ roomId အစား matchCode ကို လက်ခံသုံးပါမည်
 
         try {
-            const roomRef = db.collection('active_rooms').doc(roomId);
-            const roomDoc = await roomRef.get();
+            // active_rooms ကော်လီရှင်းထဲတွင် matchCode နဲ့ တူညီသော Room ကို Query ထုတ်ခြင်း
+            const roomsRef = db.collection('active_rooms');
+            const snapshot = await roomsRef.where('matchCode', '==', matchCode).get();
 
-            if (!roomDoc.exists) {
+            if (snapshot.empty) {
                 await fetch(`https://api.telegram.org/bot${BOT_TOKEN}/answerCallbackQuery`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({
                         callback_query_id: queryId,
-                        text: "❌ ဤ Room အား ရှာမတွေ့တော့ပါ။",
+                        text: "❌ ဤ Match Code ရှိသော Room အား ရှာမတွေ့တော့ပါ။",
                         show_alert: true
                     })
                 });
-                return res.status(200).json({ status: 'error', message: 'Room not found' });
+                return res.status(200).json({ status: 'error', message: 'Room not found by matchCode' });
             }
 
+            // matchCode တူညီသော Document ကို ယူမည် (ပထမဆုံးတွေ့သည့် doc ကို ယူသည်)
+            const roomDoc = snapshot.docs[0];
+            const roomId = roomDoc.id; // နောက်ပိုင်း step တွေအတွက် Document ID ကို ပြန်သုံးရန်
             const roomData = roomDoc.data();
+
             const winnerTeamName = winningSide === 'host' ? (roomData.teamName || 'Host') : (roomData.joinerTeamName || 'Joiner');
             const originalText = callbackQuery.message.text.split('\n\n🎯 **Winner Team ရွေးချယ်ပါ**')[0];
 
@@ -268,7 +272,6 @@ if (update.callback_query) {
 
         return res.status(200).json({ status: 'success' });
     }
-
     // ၂။ အတည်ပြုခလုတ် ("ဟုတ်ပါတယ်") ကို နှိပ်လိုက်သောအခါ (Firestore တွင် Winner သိမ်းဆည်းခြင်း)
     if (callbackData && callbackData.startsWith('win_confirm_')) {
         const parts = callbackData.split('_');
