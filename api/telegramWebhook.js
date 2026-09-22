@@ -222,7 +222,7 @@ if (update.callback_query) {
     const messageId = callbackQuery.message.message_id;
     const BOT_TOKEN = process.env.TELEGRAM_BOT_TOKEN;
 
-    // အပိုင်း (က) - Winner Team အသစ်သတ်မှတ်ခြင်း (သို့မဟုတ် Reset ပြီးနောက် Winner အသစ်ပြန်ရွေးခြင်း)
+// အပိုင်း (က) - Winner Team အသစ်သတ်မှတ်ခြင်း (သို့မဟုတ် Reset ပြီးနောက် Winner အသစ်ပြန်ရွေးခြင်း)
     if (callbackData && callbackData.startsWith('win_')) {
         const parts = callbackData.split('_');
         const winningSide = parts[2]; 
@@ -258,14 +258,17 @@ if (update.callback_query) {
                 body: JSON.stringify({ callback_query_id: queryId, text: `⚠️ ${winnerTeamName} အား Winner အဖြစ် အတည်ပြုပြီးပါပြီ။`, show_alert: true })
             });
 
+            // 🔥 စာသားအဟောင်းထဲက ရွေးချယ်ရန်ပြထားသော စာသားအမျိုးမျိုးကို ရှင်းလင်းထုတ်ယူခြင်း
             let originalText = callbackQuery.message.text;
             if (originalText.includes('\n\n🎯 **Winner Team ရွေးချယ်ပါ')) {
                 originalText = originalText.split('\n\n🎯 **Winner Team ရွေးချယ်ပါ')[0];
+            } else if (originalText.includes('\n\n🎯 **Winner Team ရွေးချယ်ပါ (ပြန်လည်ပြင်ဆင်နေသည်)**')) {
+                originalText = originalText.split('\n\n🎯 **Winner Team ရွေးချယ်ပါ (ပြန်လည်ပြင်ဆင်နေသည်)**')[0];
             } else if (originalText.includes('\n\n🏆 **Winner Team:**')) {
                 originalText = originalText.split('\n\n🏆 **Winner Team:**')[0];
             }
 
-            // 🔥 Winner ရွေးပြီးတာနဲ့ ခလုတ်များ လုံးဝမပေါ်လာစေရန် (inline_keyboard: []) ဖြင့် ပိတ်လိုက်သည်
+            // 🔥 Winner ရွေးပြီးတာနဲ့ ပထမအကြိမ်မှာရော၊ ဘယ်အကြိမ်မှာမဆို ခလုတ်များ လုံးဝပျောက်သွားစေရန်
             await fetch(`https://api.telegram.org/bot${BOT_TOKEN}/editMessageText`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
@@ -275,17 +278,18 @@ if (update.callback_query) {
                     text: originalText + `\n\n🏆 **Winner Team:** ${winnerTeamName} (အတည်ပြုပြီး ✅)`,
                     parse_mode: 'Markdown',
                     reply_markup: {
-                        inline_keyboard: [] // ခလုတ်အလွတ် (Empty array) ပို့ခြင်းဖြင့် ခလုတ်များကို ဖျောက်သည်
+                        inline_keyboard: [] // ခလုတ်များကို အကြွင်းမဲ့ ဖျောက်သည်
                     }
                 })
-            });        } catch (error) {
+            });
+
+        } catch (error) {
             console.error("Set Winner Error:", error);
         }
 
         return res.status(200).json({ status: 'success' });
     }
-
-    // အပိုင်း (ခ) - 🔄 icon ကိုနှိပ်၍ Winner ကို တစ်ကြိမ်သာ ပြန်လည်ပြင်ဆင်ခွင့်ပြုခြင်း
+        // အပိုင်း (ခ) - 🔄 icon ကိုနှိပ်၍ Winner ကို တစ်ကြိမ်သာ ပြန်လည်ပြင်ဆင်ခွင့်ပြုခြင်း
     if (callbackData && callbackData.startsWith('reset_win_')) {
         const roomId = callbackData.split('_')[2];
 
