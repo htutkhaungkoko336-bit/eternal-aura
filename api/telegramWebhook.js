@@ -174,20 +174,15 @@ if (update.message && update.message.text) {
                 requestBody.text = replyMessage;
                 requestBody.reply_markup = {
                     inline_keyboard: [
-                        // 🔥 ဤနေရာတွင် Checkbox ခလုတ်ကို အပေါ်ဆုံး၌ ထည့်ပေးထားပါသည်
                         [
-                            { text: `🔲 အမှန်ခြစ်ရန် (Unchecked)`, callback_data: `toggle_check_${docId}` }
-                        ],
-                        // မူလ Winner ခလုတ်များ
-                        [
-                            { text: `🏆 ${hostTeamName} (Win)`, callback_data: `win_${docId}_host` },
-                            { text: `🏆 ${joinerTeamName} (Win)`, callback_data: `win_${docId}_joiner` }
+                            // 🏆 Winner ခလုတ်များကို နှိပ်လျှင် win_ask_ သို့ သွားစေရန် ပြင်ဆင်ခြင်း
+                            { text: `🏆 ${hostTeamName} (Win)`, callback_data: `win_ask_${docId}_host` },
+                            { text: `🏆 ${joinerTeamName} (Win)`, callback_data: `win_ask_${docId}_joiner` }
                         ]
                     ]
                 };
             }
-
-            await fetch(`https://api.telegram.org/bot${BOT_TOKEN}/sendMessage`, {
+                        await fetch(`https://api.telegram.org/bot${BOT_TOKEN}/sendMessage`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(requestBody)
