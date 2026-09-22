@@ -76,7 +76,7 @@ module.exports = async function handler(req, res) {
         }
 
 // -------------------------------------------------------------
-// 🔥 1. Telegram Bot Match Search Code (Winner ခလုတ်များသာ ပါဝင်သည်)
+// 🔥 1. Telegram Bot Match Search Code (Winner ခလုတ်များ)
 // -------------------------------------------------------------
 if (update.message && update.message.text) {
     const messageText = update.message.text.trim();
@@ -107,7 +107,7 @@ if (update.message && update.message.text) {
                 
                 roomSnapshot.forEach(doc => {
                     const d = doc.data();
-                    docId = doc.id; // Callback query အတွက် ID ယူခြင်း
+                    docId = doc.id;
                     hostTeamName = d.teamName || 'Host';
                     joinerTeamName = d.joinerTeamName || 'Joiner';
 
@@ -119,7 +119,7 @@ if (update.message && update.message.text) {
                     roomInfo += `🏆 BO Type: ${d.boType || '-'}\n`;
                     roomInfo += `📊 Status: ${d.status || '-'}\n\n`;
                     
-                    // 🔥 HOST အချက်အလက်များ
+                    // HOST အချက်အလက်များ
                     roomInfo += `👑 HOST (Room Owner):\n`;
                     roomInfo += `- User ID: ${d.hostId || '-'}\n`;
                     roomInfo += `- Contact Ph: ${d.contactPhNo || '-'}\n`;
@@ -140,7 +140,7 @@ if (update.message && update.message.text) {
                         roomInfo += `\n`;
                     }
 
-                    // 🔥 JOINER အချက်အလက်များ
+                    // JOINER အချက်အလက်များ
                     roomInfo += `⚔️ JOINER:\n`;
                     roomInfo += `- User ID: ${d.joinedUserId || '-'}\n`;
                     roomInfo += `- Contact Ph: ${d.joinerContactPhNo || '-'}\n`;
@@ -163,24 +163,41 @@ if (update.message && update.message.text) {
                 replyMessage = roomInfo;
             }
 
-            // Button များနှင့် စာသားများ ထည့်သွင်းခြင်း
             const requestBody = {
                 chat_id: chatId,
                 text: replyMessage
             };
 
             if (!roomSnapshot.empty) {
-                replyMessage += `\n🎯 **Winner Team ရွေးချယ်ပါ**`; 
-                requestBody.text = replyMessage;
-                requestBody.reply_markup = {
-                    inline_keyboard: [
-                        // မူလ Winner ခလုတ်များသာ ထားရှိသည် (Checkbox ကို ဖြုတ်ပြီးပါပြီ)
-                        [
-                            { text: `🏆 ${hostTeamName} (Win)`, callback_data: `win_${docId}_host` },
-                            { text: `🏆 ${joinerTeamName} (Win)`, callback_data: `win_${docId}_joiner` }
+                const roomDocData = roomSnapshot.docs[0].data();
+                
+                // အကယ်၍ Winner ရွေးပြီးသားဆိုလျှင် 🔄 icon ခလုတ်ကိုသာ ပြမည် (တခါသုံးရန်)
+                if (roomDocData.status === 'completed' && roomDocData.winnerTeam) {
+                    replyMessage += `\n🏆 **Winner Team:** ${roomDocData.winnerTeam} (အတည်ပြုပြီး ✅)`;
+                    requestBody.text = replyMessage;
+                    
+                    // အကယ်၍ resetCount ထားရှိပြီးသားဖြစ်ပါက icon လုံးဝမပြတော့ပါ (တခါသုံးကန့်သတ်ချက်)
+                    if (!roomDocData.isResetUsed) {
+                        requestBody.reply_markup = {
+                            inline_keyboard: [
+                                [{ text: `🔄`, callback_data: `reset_win_${docId}` }]
+                            ]
+                        };
+                    } else {
+                        requestBody.reply_markup = { inline_keyboard: [] };
+                    }
+                } else {
+                    replyMessage += `\n🎯 **Winner Team ရွေးချယ်ပါ**`; 
+                    requestBody.text = replyMessage;
+                    requestBody.reply_markup = {
+                        inline_keyboard: [
+                            [
+                                { text: `🏆 ${hostTeamName} (Win)`, callback_data: `win_${docId}_host` },
+                                { text: `🏆 ${joinerTeamName} (Win)`, callback_data: `win_${docId}_joiner` }
+                            ]
                         ]
-                    ]
-                };
+                    };
+                }
             }
 
             await fetch(`https://api.telegram.org/bot${BOT_TOKEN}/sendMessage`, {
@@ -195,7 +212,7 @@ if (update.message && update.message.text) {
 }
 
 // -------------------------------------------------------------
-// 🔥 2. Winner ခလုတ်ကို နှိပ်လိုက်သောအခါ (ရွေးချယ်ပြီးပါက ခလုတ်များ ဖျောက်မည်)
+// 🔥 2. Callback Query Handler (Winner သတ်မှတ်ခြင်း နှင့် 🔄 တခါသုံး Reset ပြုလုပ်ခြင်း)
 // -------------------------------------------------------------
 if (update.callback_query) {
     const callbackQuery = update.callback_query;
@@ -205,10 +222,10 @@ if (update.callback_query) {
     const messageId = callbackQuery.message.message_id;
     const BOT_TOKEN = process.env.TELEGRAM_BOT_TOKEN;
 
-    // Winner ခလုတ်ကို နှိပ်လိုက်သောအခါ
+    // အပိုင်း (က) - Winner Team အသစ်သတ်မှတ်ခြင်း
     if (callbackData && callbackData.startsWith('win_')) {
         const parts = callbackData.split('_');
-        const winningSide = parts[2]; // 'host' သို့မဟုတ် 'joiner'
+        const winningSide = parts[2]; 
         const roomId = parts[1];
 
         try {
@@ -219,11 +236,7 @@ if (update.callback_query) {
                 await fetch(`https://api.telegram.org/bot${BOT_TOKEN}/answerCallbackQuery`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({
-                        callback_query_id: queryId,
-                        text: "❌ ဤ Room အား ရှာမတွေ့တော့ပါ။",
-                        show_alert: true
-                    })
+                    body: JSON.stringify({ callback_query_id: queryId, text: "❌ ဤ Room အား ရှာမတွေ့တော့ပါ။", show_alert: true })
                 });
                 return res.status(200).json({ status: 'error', message: 'Room not found' });
             }
@@ -232,7 +245,6 @@ if (update.callback_query) {
             const winnerTeamName = winningSide === 'host' ? (roomData.teamName || 'Host') : (roomData.joinerTeamName || 'Joiner');
             const winnerUserId = winningSide === 'host' ? roomData.hostId : roomData.joinedUserId;
 
-            // 🔥 Firestore ထဲတွင် winnerTeam, winnerId နှင့် status ကို update လုပ်ခြင်း
             await roomRef.update({
                 winnerTeam: winnerTeamName,
                 winnerId: winnerUserId,
@@ -240,22 +252,15 @@ if (update.callback_query) {
                 status: 'completed'
             });
 
-            // Screen အလယ်တွင် Pop-up Alert ပေါ်လာစေရန်
-            const alertText = `⚠️ သေချာပါပြီလား? ${winnerTeamName} အား Winner အဖြစ် အတည်ပြုပြီးပါပြီ။`;
-
             await fetch(`https://api.telegram.org/bot${BOT_TOKEN}/answerCallbackQuery`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                    callback_query_id: queryId,
-                    text: alertText,
-                    show_alert: true
-                })
+                body: JSON.stringify({ callback_query_id: queryId, text: `⚠️ ${winnerTeamName} အား Winner အဖြစ် အတည်ပြုပြီးပါပြီ။`, show_alert: true })
             });
 
-            // 🔥 Winner ရွေးပြီးပါက မူလစာသားကို ယူ၍ ခလုတ်များကို လုံးဝဖျောက်ပေးခြင်း (reply_markup: { inline_keyboard: [] })
             const originalText = callbackQuery.message.text.split('\n\n🎯 **Winner Team ရွေးချယ်ပါ**')[0];
 
+            // Winner ရွေးပြီးပါက 🔄 icon ခလုတ်ကို တခါသုံးအနေဖြင့် ထည့်ပေးမည်
             await fetch(`https://api.telegram.org/bot${BOT_TOKEN}/editMessageText`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
@@ -265,13 +270,91 @@ if (update.callback_query) {
                     text: originalText + `\n\n🏆 **Winner Team:** ${winnerTeamName} (အတည်ပြုပြီး ✅)`,
                     parse_mode: 'Markdown',
                     reply_markup: {
-                        inline_keyboard: [] // ခလုတ်များကို ဤနေရာတွင် ရှင်းထုတ်လိုက်သည်
+                        inline_keyboard: [
+                            [{ text: `🔄`, callback_data: `reset_win_${roomId}` }]
+                        ]
                     }
                 })
             });
 
         } catch (error) {
             console.error("Set Winner Error:", error);
+        }
+
+        return res.status(200).json({ status: 'success' });
+    }
+
+    // အပိုင်း (ခ) - 🔄 icon ကိုနှိပ်၍ Winner ကို တစ်ကြိမ်သာ (တခါသုံး) ပြန်လည်ပြင်ဆင်ခွင့်ပြုခြင်း
+    if (callbackData && callbackData.startsWith('reset_win_')) {
+        const roomId = callbackData.split('_')[2];
+
+        try {
+            const roomRef = db.collection('active_rooms').doc(roomId);
+            const roomDoc = await roomRef.get();
+
+            if (!roomDoc.exists) {
+                await fetch(`https://api.telegram.org/bot${BOT_TOKEN}/answerCallbackQuery`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ callback_query_id: queryId, text: "❌ ဤ Room အား ရှာမတွေ့တော့ပါ။", show_alert: true })
+                });
+                return res.status(200).json({ status: 'error', message: 'Room not found' });
+            }
+
+            const roomData = roomDoc.data();
+
+            // တခါသုံး (Single-use) ကန့်သတ်ချက် စစ်ဆေးခြင်း
+            if (roomData.isResetUsed) {
+                await fetch(`https://api.telegram.org/bot${BOT_TOKEN}/answerCallbackQuery`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ callback_query_id: queryId, text: "❌ ဤ Winner ကို တစ်ကြိမ်သာ ပြန်ပြင်ခွင့်ရှိပြီးဖြစ်ပါသည်။ ထပ်မံပြင်၍မရပါ။", show_alert: true })
+                });
+                return res.status(200).json({ status: 'error', message: 'Reset already used' });
+            }
+
+            const hostTeamName = roomData.teamName || 'Host';
+            const joinerTeamName = roomData.joinerTeamName || 'Joiner';
+
+            // Firestore တွင် ဤ Reset ကို အသုံးပြုပြီးကြောင်း (isResetUsed: true) မှတ်တမ်းတင်မည်
+            await roomRef.update({
+                status: 'active',
+                winnerTeam: null,
+                winnerId: null,
+                winningSide: null,
+                isResetUsed: true 
+            });
+
+            await fetch(`https://api.telegram.org/bot${BOT_TOKEN}/answerCallbackQuery`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ callback_query_id: queryId, text: "🔄 Winner ကို ပြန်လည်ရွေးချယ်ရန် ဖွင့်ပေးလိုက်ပါပြီ (တစ်ကြိမ်သာ ပြင်ခွင့်ရှိသည်)။", show_alert: false })
+            });
+
+            const originalText = callbackQuery.message.text.split('\n\n🏆 **Winner Team:**')[0];
+
+            // မူလ Winner ခလုတ်များကို ပြန်လည်ဖော်ပြပေးမည် (🔄 icon ခလုတ် လုံးဝ မပါတော့ပါ)
+            await fetch(`https://api.telegram.org/bot${BOT_TOKEN}/editMessageText`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    chat_id: chatId,
+                    message_id: messageId,
+                    text: originalText + `\n\n🎯 **Winner Team ရွေးချယ်ပါ (ပြန်လည်ပြင်ဆင်နေသည်)**`,
+                    parse_mode: 'Markdown',
+                    reply_markup: {
+                        inline_keyboard: [
+                            [
+                                { text: `🏆 ${hostTeamName} (Win)`, callback_data: `win_${roomId}_host` },
+                                { text: `🏆 ${joinerTeamName} (Win)`, callback_data: `win_${roomId}_joiner` }
+                            ]
+                        ]
+                    }
+                })
+            });
+
+        } catch (error) {
+            console.error("Reset Winner Error:", error);
         }
 
         return res.status(200).json({ status: 'success' });
