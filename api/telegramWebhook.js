@@ -275,12 +275,10 @@ if (update.callback_query) {
                     text: originalText + `\n\n🏆 **Winner Team:** ${winnerTeamName} (အတည်ပြုပြီး ✅)`,
                     parse_mode: 'Markdown',
                     reply_markup: {
-                        inline_keyboard: [] // ခလုတ်များ လုံးဝ ပျောက်သွားပါမည်
+                        inline_keyboard: [] // ခလုတ်အလွတ် (Empty array) ပို့ခြင်းဖြင့် ခလုတ်များကို ဖျောက်သည်
                     }
                 })
-            });
-
-        } catch (error) {
+            });        } catch (error) {
             console.error("Set Winner Error:", error);
         }
 
