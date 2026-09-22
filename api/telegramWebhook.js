@@ -222,7 +222,7 @@ if (update.callback_query) {
     const messageId = callbackQuery.message.message_id;
     const BOT_TOKEN = process.env.TELEGRAM_BOT_TOKEN;
 
-    // အပိုင်း (က) - Winner Team အသစ်သတ်မှတ်ခြင်း (သို့မဟုတ် Reset ပြီးနောက် Winner အသစ်ပြန်ရွေးခြင်း)
+// အပိုင်း (က) - Winner Team အသစ်သတ်မှတ်ခြင်း (သို့မဟုတ် Reset ပြီးနောက် Winner အသစ်ပြန်ရွေးခြင်း)
     if (callbackData && callbackData.startsWith('win_')) {
         const parts = callbackData.split('_');
         const winningSide = parts[2]; 
@@ -268,11 +268,12 @@ if (update.callback_query) {
                 originalText = originalText.split('\n\n🏆 **Winner Team:**')[0];
             }
 
-            // 🔥 Winner ရွေးပြီးတာနဲ့ Team ခလုတ်တွေပျောက်ပြီး 🔄 (Reset) ခလုတ်လေး တစ်ခုတည်း ကျန်နေစေရန်
-            let newReplyMarkup = { inline_keyboard: [] };
-
+            // 🔥 ခလုတ်အဟောင်းများ လုံးဝပျောက်ကွယ်ပြီး 🔄 ခလုတ် သို့မဟုတ် ခလုတ်အလွတ်ဖြစ်စေရန် အတိအကျသတ်မှတ်ခြင်း
+            let finalReplyMarkup = { inline_keyboard: [] };
+            
+            // isResetUsed က true မဖြစ်သေးရင် (သို့မဟုတ် undefined ဖြစ်နေရင်) 🔄 ခလုတ်ပြမည်
             if (!roomData.isResetUsed) {
-                newReplyMarkup = {
+                finalReplyMarkup = {
                     inline_keyboard: [
                         [{ text: `🔄`, callback_data: `reset_win_${roomId}` }]
                     ]
@@ -287,7 +288,7 @@ if (update.callback_query) {
                     message_id: messageId,
                     text: originalText + `\n\n🏆 **Winner Team:** ${winnerTeamName} (အတည်ပြုပြီး ✅)`,
                     parse_mode: 'Markdown',
-                    reply_markup: newReplyMarkup
+                    reply_markup: finalReplyMarkup
                 })
             });
 
@@ -296,8 +297,7 @@ if (update.callback_query) {
         }
 
         return res.status(200).json({ status: 'success' });
-    }
-        
+    }        
     // အပိုင်း (ခ) - 🔄 icon ကိုနှိပ်၍ Winner ကို တစ်ကြိမ်သာ ပြန်လည်ပြင်ဆင်ခွင့်ပြုခြင်း
     if (callbackData && callbackData.startsWith('reset_win_')) {
         const roomId = callbackData.split('_')[2];
