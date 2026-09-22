@@ -107,7 +107,7 @@ if (update.message && update.message.text) {
                 
                 roomSnapshot.forEach(doc => {
                     const d = doc.data();
-                    docId = doc.id;
+                    docId = doc.id; // Callback query အတွက် ID ယူခြင်း
                     hostTeamName = d.teamName || 'Host';
                     joinerTeamName = d.joinerTeamName || 'Joiner';
 
@@ -178,7 +178,7 @@ if (update.message && update.message.text) {
                     requestBody.text = replyMessage;
                     requestBody.reply_markup = { inline_keyboard: [] };
                 } else {
-                    // Winner မရွေးရသေးပါက Winner ရွေးရန် ခလုတ်များသာ ပြမည် (Checkbox လုံးဝမပါတော့ပါ)
+                    // Checkbox လုံးဝမပါတော့ဘဲ Winner ရွေးရန် ခလုတ်များသာ ထည့်သွင်းခြင်း
                     replyMessage += `\n\n🎯 **Winner Team ရွေးချယ်ပါ**`; 
                     requestBody.text = replyMessage;
                     requestBody.reply_markup = {
@@ -204,7 +204,7 @@ if (update.message && update.message.text) {
 }
 
 // -------------------------------------------------------------
-// 🔥 2. Callback Query Handler (Winner နှိပ်သည်နှင့် ခလုတ်များ ချက်ချင်းပျောက်စေရန်)
+// 🔥 2. Winner Callback Query Handler (Winner နှိပ်သည်နှင့် ခလုတ်များ ချက်ချင်းပျောက်စေရန်)
 // -------------------------------------------------------------
 if (update.callback_query) {
     const callbackQuery = update.callback_query;
@@ -214,6 +214,7 @@ if (update.callback_query) {
     const messageId = callbackQuery.message.message_id;
     const BOT_TOKEN = process.env.TELEGRAM_BOT_TOKEN;
 
+    // Winner ခလုတ်ကို နှိပ်လိုက်သောအခါ
     if (callbackData && callbackData.startsWith('win_')) {
         const parts = callbackData.split('_');
         const winningSide = parts[2]; // 'host' သို့မဟုတ် 'joiner'
