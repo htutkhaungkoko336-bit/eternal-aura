@@ -76,7 +76,7 @@ module.exports = async function handler(req, res) {
         }
 
 // -------------------------------------------------------------
-// 🔥 1. Telegram Bot Match Search Code (Winner ခလုတ်များသာ ပါဝင်သည်)
+// 🔥 1. Telegram Bot Match Search Code (Checkbox နှင့် Winner ခလုတ်များ အပါအဝင်)
 // -------------------------------------------------------------
 if (update.message && update.message.text) {
     const messageText = update.message.text.trim();
@@ -98,6 +98,7 @@ if (update.message && update.message.text) {
             let replyMessage = "";
             let hostTeamName = "Host";
             let joinerTeamName = "Joiner";
+            let docId = "";
 
             if (roomSnapshot.empty) {
                 replyMessage = `❌ ပေးထားသော Match Code (${cleanMatchCode}) နှင့် ကိုက်ညီသော Active Room ရှာမတွေ့ပါ။`;
@@ -106,6 +107,7 @@ if (update.message && update.message.text) {
                 
                 roomSnapshot.forEach(doc => {
                     const d = doc.data();
+                    docId = doc.id; // Callback query အတွက် ID ယူခြင်း
                     hostTeamName = d.teamName || 'Host';
                     joinerTeamName = d.joinerTeamName || 'Joiner';
 
@@ -161,6 +163,7 @@ if (update.message && update.message.text) {
                 replyMessage = roomInfo;
             }
 
+            // Button များနှင့် စာသားများ ထည့်သွင်းခြင်း
             const requestBody = {
                 chat_id: chatId,
                 text: replyMessage
@@ -171,9 +174,14 @@ if (update.message && update.message.text) {
                 requestBody.text = replyMessage;
                 requestBody.reply_markup = {
                     inline_keyboard: [
+                        // 🔥 ဤနေရာတွင် Checkbox ခလုတ်ကို အပေါ်ဆုံး၌ ထည့်ပေးထားပါသည်
                         [
-                            { text: `🏆 ${hostTeamName} (Win)`, callback_data: `win_ask_${cleanMatchCode}_host` },
-                            { text: `🏆 ${joinerTeamName} (Win)`, callback_data: `win_ask_${cleanMatchCode}_joiner` }
+                            { text: `🔲 အမှန်ခြစ်ရန် (Unchecked)`, callback_data: `toggle_check_${docId}` }
+                        ],
+                        // မူလ Winner ခလုတ်များ
+                        [
+                            { text: `🏆 ${hostTeamName} (Win)`, callback_data: `win_${docId}_host` },
+                            { text: `🏆 ${joinerTeamName} (Win)`, callback_data: `win_${docId}_joiner` }
                         ]
                     ]
                 };
@@ -191,7 +199,7 @@ if (update.message && update.message.text) {
 }
 
 // -------------------------------------------------------------
-// 🔥 2. Callback Query Handler (Confirmation နှင့် Winner သတ်မှတ်ခြင်း)
+// 🔥 2. Checkbox ဖြင့် အတည်ပြုပြီးမှ Winner သတ်မှတ်သည့် Callback Query Handler
 // -------------------------------------------------------------
 if (update.callback_query) {
     const callbackQuery = update.callback_query;
@@ -201,33 +209,43 @@ if (update.callback_query) {
     const messageId = callbackQuery.message.message_id;
     const BOT_TOKEN = process.env.TELEGRAM_BOT_TOKEN;
 
-    // ၁။ Winner ခလုတ်ကို ပထမအကြိမ် နှိပ်လိုက်သောအခါ (သေချာပါသလား? ဟု အတည်ပြုချက်တောင်းရန်)
-    if (callbackData && callbackData.startsWith('win_ask_')) {
-        const parts = callbackData.split('_');
-        const matchCode = parts[2];
-        const winningSide = parts[3]; // 'host' သို့မဟုတ် 'joiner'
+    // ၁။ အမှန်ခြစ် (Checkbox) ခလုတ်ကို နှိပ်လိုက်သောအခါ
+    if (callbackData && callbackData.startsWith('toggle_check_')) {
+        const roomId = callbackData.split('_')[2];
 
         try {
-            const roomsRef = db.collection('active_rooms');
-            const snapshot = await roomsRef.where('matchCode', '==', matchCode).get();
+            const roomRef = db.collection('active_rooms').doc(roomId);
+            const roomDoc = await roomRef.get();
 
-            if (snapshot.empty) {
+            if (!roomDoc.exists) {
                 await fetch(`https://api.telegram.org/bot${BOT_TOKEN}/answerCallbackQuery`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({
                         callback_query_id: queryId,
-                        text: "❌ ဤ Match Code ရှိသော Room အား ရှာမတွေ့တော့ပါ။",
+                        text: "❌ ဤ Room အား ရှာမတွေ့တော့ပါ။",
                         show_alert: true
                     })
                 });
                 return res.status(200).json({ status: 'error', message: 'Room not found' });
             }
 
-            const roomDoc = snapshot.docs[0];
             const roomData = roomDoc.data();
-            const winnerTeamName = winningSide === 'host' ? (roomData.teamName || 'Host') : (roomData.joinerTeamName || 'Joiner');
+            const hostName = roomData.teamName || 'Host';
+            const joinerName = roomData.joinerTeamName || 'Joiner';
+
+            // လက်ရှိ အမှန်ခြစ် အခြေအနေကို ပြောင်းပြန်လှန်မည်
+            const currentChecked = roomData.isChecked || false;
+            const newCheckedState = !currentChecked;
+
+            // Firestore ထဲတွင် isChecked အခြေအနေကို Update လုပ်ခြင်း
+            await roomRef.update({
+                isChecked: newCheckedState
+            });
+
+            // ခလုတ်ပုံစံကို အမှန်ခြစ်ပါသည်/မပါသည် ပြောင်းလဲပြသရန် Message ကို Edit လုပ်ခြင်း
             const originalText = callbackQuery.message.text.split('\n\n🎯 **Winner Team ရွေးချယ်ပါ**')[0];
+            const checkTextLabel = newCheckedState ? "☑️ အမှန်ခြစ်ပြီးပါပြီ (Checked)" : "🔲 အမှန်ခြစ်ရန် (Unchecked)";
 
             await fetch(`https://api.telegram.org/bot${BOT_TOKEN}/editMessageText`, {
                 method: 'POST',
@@ -235,13 +253,16 @@ if (update.callback_query) {
                 body: JSON.stringify({
                     chat_id: chatId,
                     message_id: messageId,
-                    text: originalText + `\n\n⚠️ **${winnerTeamName}** ကို Winner အဖြစ် သတ်မှတ်ရန် သေချာပါသလား?`,
+                    text: originalText + `\n\n🎯 **Winner Team ရွေးချယ်ပါ**`,
                     parse_mode: 'Markdown',
                     reply_markup: {
                         inline_keyboard: [
                             [
-                                { text: `✅ ဟုတ်ပါတယ် (အတည်ပြုမည်)`, callback_data: `win_confirm_${matchCode}_${winningSide}` },
-                                { text: `❌ မလုပ်တော့ပါ (နောက်သို့)`, callback_data: `win_cancel_${matchCode}` }
+                                { text: checkTextLabel, callback_data: `toggle_check_${roomId}` }
+                            ],
+                            [
+                                { text: `🏆 ${hostName} (Win)`, callback_data: `win_${roomId}_host` },
+                                { text: `🏆 ${joinerName} (Win)`, callback_data: `win_${roomId}_joiner` }
                             ]
                         ]
                     }
@@ -253,47 +274,61 @@ if (update.callback_query) {
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
                     callback_query_id: queryId,
-                    text: `⚠️ ကျေးဇူးပြု၍ ${winnerTeamName} အတွက် ထပ်မံအတည်ပြုပေးပါ။`,
+                    text: newCheckedState ? "✅ အမှန်ခြစ်ပြီးပါပြီ။ ယခု Winner ခလုတ်ကို နှိပ်နိုင်ပါပြီ။" : "☑️ အမှန်ခြစ်ကို ဖြုတ်လိုက်ပါပြီ။",
                     show_alert: false
                 })
             });
 
         } catch (error) {
-            console.error("Ask Winner Confirm Error:", error);
+            console.error("Toggle Check Error:", error);
         }
 
         return res.status(200).json({ status: 'success' });
     }
 
-    // ၂။ "✅ ဟုတ်ပါတယ် (အတည်ပြုမည်)" ကို နှိပ်လိုက်သောအခါ (Database တွင် Winner မှတ်တမ်းတင်မည်)
-    if (callbackData && callbackData.startsWith('win_confirm_')) {
+    // ၂။ Winner ခလုတ်ကို နှိပ်လိုက်သောအခါ (အမှန်ခြစ်ထားမှသာ Winner သတ်မှတ်မည်)
+    if (callbackData && callbackData.startsWith('win_')) {
         const parts = callbackData.split('_');
-        const matchCode = parts[2];
-        const winningSide = parts[3]; // 'host' သို့မဟုတ် 'joiner'
+        const winningSide = parts[2]; // 'host' သို့မဟုတ် 'joiner'
+        const roomId = parts[1];
 
         try {
-            const roomsRef = db.collection('active_rooms');
-            const snapshot = await roomsRef.where('matchCode', '==', matchCode).get();
+            const roomRef = db.collection('active_rooms').doc(roomId);
+            const roomDoc = await roomRef.get();
 
-            if (snapshot.empty) {
+            if (!roomDoc.exists) {
                 await fetch(`https://api.telegram.org/bot${BOT_TOKEN}/answerCallbackQuery`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({
                         callback_query_id: queryId,
-                        text: "❌ ဤ Match Code ရှိသော Room အား ရှာမတွေ့တော့ပါ။",
+                        text: "❌ ဤ Room အား ရှာမတွေ့တော့ပါ။",
                         show_alert: true
                     })
                 });
                 return res.status(200).json({ status: 'error', message: 'Room not found' });
             }
 
-            const roomDoc = snapshot.docs[0];
-            const roomRef = roomDoc.ref;
             const roomData = roomDoc.data();
+
+            // 🔥 အမှန်ခြစ် (Checkbox) ခြစ်ထားခြင်း ရှိမရှိ စစ်ဆေးခြင်း
+            if (!roomData.isChecked) {
+                await fetch(`https://api.telegram.org/bot${BOT_TOKEN}/answerCallbackQuery`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        callback_query_id: queryId,
+                        text: "❌ ကျေးဇူးပြု၍ ပထမဦးဆုံး အပေါ်က Checkbox လေးကို အရင်နှိပ်ပြီး အမှန်ခြစ်ပေးပါ။",
+                        show_alert: true
+                    })
+                });
+                return res.status(200).json({ status: 'error', message: 'Not checked yet' });
+            }
+
             const winnerTeamName = winningSide === 'host' ? (roomData.teamName || 'Host') : (roomData.joinerTeamName || 'Joiner');
             const winnerUserId = winningSide === 'host' ? roomData.hostId : roomData.joinedUserId;
 
+            // 🔥 Firestore ထဲတွင် winnerTeam, winnerId နှင့် status ကို update လုပ်ခြင်း
             await roomRef.update({
                 winnerTeam: winnerTeamName,
                 winnerId: winnerUserId,
@@ -301,95 +336,32 @@ if (update.callback_query) {
                 status: 'completed'
             });
 
+            // Screen အလယ်တွင် Pop-up Alert ပေါ်လာစေရန်
+            const alertText = `⚠️ သေချာပါပြီလား? ${winnerTeamName} အား Winner အဖြစ် အတည်ပြုပြီးပါပြီ။`;
+
             await fetch(`https://api.telegram.org/bot${BOT_TOKEN}/answerCallbackQuery`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
                     callback_query_id: queryId,
-                    text: `🏆 ${winnerTeamName} အား Winner အဖြစ် အောင်မြင်စွာ သတ်မှတ်ပြီးပါပြီ။`,
+                    text: alertText,
                     show_alert: true
                 })
             });
 
-            const originalText = callbackQuery.message.text.split('\n\n⚠️')[0];
-            await fetch(`https://api.telegram.org/bot${BOT_TOKEN}/editMessageText`, {
+            // Chat ထဲတွင် Winner အတည်ပြုပြီးကြောင်း စာသားပို့ပေးခြင်း
+            await fetch(`https://api.telegram.org/bot${BOT_TOKEN}/sendMessage`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
                     chat_id: chatId,
-                    message_id: messageId,
-                    text: originalText + `\n\n🏆 **Winner Team:** ${winnerTeamName} (အတည်ပြုပြီး ✅)`,
-                    parse_mode: 'Markdown',
-                    reply_markup: { inline_keyboard: [] }
+                    text: `🏆 ဤ Match အတွက် Winner Team မှာ **${winnerTeamName}** ဖြစ်ကြောင်း အတည်ပြုပြီးပါပြီ။`,
+                    parse_mode: 'Markdown'
                 })
             });
 
         } catch (error) {
-            console.error("Confirm Winner Error:", error);
-        }
-
-        return res.status(200).json({ status: 'success' });
-    }
-
-    // ၃။ "❌ မလုပ်တော့ပါ (နောက်သို့)" ကို နှိပ်လိုက်သောအခါ မူလ Winner ခလုတ်များဆီသို့ ပြန်သွားရန်
-    if (callbackData && callbackData.startsWith('win_cancel_')) {
-        const parts = callbackData.split('_');
-        const matchCode = parts[2];
-
-        try {
-            const roomsRef = db.collection('active_rooms');
-            const snapshot = await roomsRef.where('matchCode', '==', matchCode).get();
-
-            if (snapshot.empty) {
-                await fetch(`https://api.telegram.org/bot${BOT_TOKEN}/answerCallbackQuery`, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({
-                        callback_query_id: queryId,
-                        text: "❌ ဤ Match Code ရှိသော Room အား ရှာမတွေ့တော့ပါ။",
-                        show_alert: true
-                    })
-                });
-                return res.status(200).json({ status: 'error', message: 'Room not found' });
-            }
-
-            const roomDoc = snapshot.docs[0];
-            const roomData = roomDoc.data();
-            const hostTeamName = roomData.teamName || 'Host';
-            const joinerTeamName = roomData.joinerTeamName || 'Joiner';
-            const originalText = callbackQuery.message.text.split('\n\n⚠️')[0];
-
-            await fetch(`https://api.telegram.org/bot${BOT_TOKEN}/editMessageText`, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                    chat_id: chatId,
-                    message_id: messageId,
-                    text: originalText,
-                    parse_mode: 'Markdown',
-                    reply_markup: {
-                        inline_keyboard: [
-                            [
-                                { text: `🏆 ${hostTeamName} (Win)`, callback_data: `win_ask_${matchCode}_host` },
-                                { text: `🏆 ${joinerTeamName} (Win)`, callback_data: `win_ask_${matchCode}_joiner` }
-                            ]
-                        ]
-                    }
-                })
-            });
-
-            await fetch(`https://api.telegram.org/bot${BOT_TOKEN}/answerCallbackQuery`, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                    callback_query_id: queryId,
-                    text: "စဥ်းစားမှုကို ဖျက်သိမ်းလိုက်ပါပြီ။",
-                    show_alert: false
-                })
-            });
-
-        } catch (error) {
-            console.error("Cancel Winner Error:", error);
+            console.error("Set Winner Error:", error);
         }
 
         return res.status(200).json({ status: 'success' });
