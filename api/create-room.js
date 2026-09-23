@@ -299,10 +299,11 @@ module.exports = async function handler(req, res) {
 
         } catch (error) {
             console.error("Create/Join Room Error:", error);
-            return res.status(550).json({ success: false, message: "Server Error", error: error.message });
+            return res.status(500).json({ success: false, message: "Server Error", error: error.message });
         }
     }
-        if (method === 'PATCH') {
+
+    if (method === 'PATCH') {
         try {
             const { userId, roomId, hostReady, joinerReady, firstPick, status } = req.body;
             if (!roomId) {
@@ -326,13 +327,9 @@ module.exports = async function handler(req, res) {
                     completedAt: getYangonTimeStr()
                 };
 
-                // 💡 Room ID တူနေရင်တောင် Data မပျောက်အောင် Unique ဖြစ်တဲ့ History ID အသစ် ဖန်တီးခြင်း
                 const uniqueHistoryId = `${roomId}_${Date.now()}`;
 
-                // ၁။ history collection ထဲသို့ ID အသစ်ဖြင့် သွားသိမ်းမည် (အကုန်စုပြီးသားဖြစ်သွားပါမယ်)
                 await db.collection('history').doc(uniqueHistoryId).set(historyRoomData);
-
-                // ၂။ active_rooms ထဲမှ Room ကို ဖျက်ပစ်မည်
                 await roomRef.delete();
 
                 return res.status(200).json({ 
@@ -405,7 +402,10 @@ module.exports = async function handler(req, res) {
 
     if (method === 'DELETE') {
         try {
-            const { userId, roomId } = req.body; 
+            // Support both req.body and req.query for DELETE requests
+            const userId = req.body?.userId || req.query?.userId;
+            const roomId = req.body?.roomId || req.query?.roomId;
+
             if (!userId) {
                 return res.status(400).json({ success: false, message: "Missing userId for cancellation" });
             }
@@ -439,7 +439,19 @@ module.exports = async function handler(req, res) {
             const joinedSnapshot = await db.collection('active_rooms').where('joinedUserId', '==', userId).get();
             const batch = db.batch();
             joinedSnapshot.forEach(doc => {
-                batch.update(doc.ref, { joinedUserId: null, status: 'waiting', joinerReady: false, firstPick: null, matchCode: null, joinerGameId: null });
+                batch.update(doc.ref, { 
+                    joinedUserId: null, 
+                    status: 'waiting', 
+                    joinerReady: false, 
+                    firstPick: null, 
+                    matchCode: null, 
+                    joinerGameId: null,
+                    joinerInGameName: null,
+                    joinerTeamName: null,
+                    joinerKpayName: null,
+                    joinerKpayPhNo: null,
+                    joinerContactPhNo: null
+                });
             });
             await batch.commit();
 
