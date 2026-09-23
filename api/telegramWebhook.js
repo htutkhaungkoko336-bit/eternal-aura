@@ -76,7 +76,7 @@ module.exports = async function handler(req, res) {
         }
 
 // -------------------------------------------------------------
-// 🔥 1. Telegram Bot Match Search & Control Panel Code (Updated)
+// 🔥 1. Telegram Bot Match Search & Control Panel (Full Data)
 // -------------------------------------------------------------
 if (update.message && update.message.text) {
     const messageText = update.message.text.trim();
@@ -109,30 +109,59 @@ if (update.message && update.message.text) {
                     hostTeamName = d.teamName || 'Host';
                     joinerTeamName = d.joinerTeamName || 'Joiner';
 
-                    replyMessage = `🎮 **MATCH CONTROL PANEL**\n`;
+                    // 📌 အထွေထွေ အချက်အလက်များ
+                    replyMessage = `🎮 **MATCH CONTROL PANEL (FULL DATA)**\n`;
                     replyMessage += `━━━━━━━━━━━━━━━━━━━\n`;
                     replyMessage += `📌 **Room ID:** \`${doc.id}\`\n`;
                     replyMessage += `🔑 **Match Code:** \`${d.matchCode || '-'}\`\n`;
                     replyMessage += `🏷 **Room Title:** ${d.roomTitle || '-'}\n`;
                     replyMessage += `⚡️ **Mode:** ${d.mode || '-'} | **BO:** ${d.boType || '-'}\n`;
                     replyMessage += `💰 **Fee Type:** ${d.keyType || '-'}\n`;
-                    replyMessage += `📊 **Status:** \`${d.status || '-'}\`\n\n`;
+                    replyMessage += `📊 **Status:** \`${d.status || '-'}\`\n`;
+                    replyMessage += `🕒 **Created At:** ${d.createdAt || '-'}\n\n`;
                     
-                    replyMessage += `👑 **HOST:** ${hostTeamName}\n`;
+                    // 👑 HOST အချက်အလက်များ
+                    replyMessage += `👑 **HOST TEAM:** ${hostTeamName}\n`;
+                    replyMessage += `• Team Logo: ${d.teamLogo || '-'}\n`;
                     replyMessage += `• User ID: \`${d.hostId || '-'}\`\n`;
                     replyMessage += `• Contact Ph: ${d.contactPhNo || '-'}\n`;
                     replyMessage += `• In-Game Name: ${d.inGameName || '-'}\n`;
                     replyMessage += `• Game ID: ${d.gameId || '-'}\n`;
-                    replyMessage += `• Squad: ${d.sqName || '-'}\n`;
-                    replyMessage += `• Kpay: ${d.kpayName || '-'} (${d.kpayPhNo || '-'})\n\n`;
-                    
-                    replyMessage += `⚔️ **JOINER:** ${joinerTeamName}\n`;
+                    replyMessage += `• Squad Name: ${d.sqName || '-'}\n`;
+                    replyMessage += `• Kpay Name: ${d.kpayName || '-'}\n`;
+                    replyMessage += `• Kpay Ph: ${d.kpayPhNo || '-'}\n`;
+                    replyMessage += `• Host Ready: ${d.hostReady ? '✅ Yes' : '❌ No'}\n`;
+
+                    if (d.mode === '5v5') {
+                        replyMessage += `  -- **5v5 Lineup (Host)** --\n`;
+                        replyMessage += `  ⚔️ Mid: ${d.mid?.name || '-'} (ID: ${d.mid?.id || '-'})\n`;
+                        replyMessage += `  🛡 Roamer: ${d.roamer?.name || '-'} (ID: ${d.roamer?.id || '-'})\n`;
+                        replyMessage += `  🗡 Exp: ${d.exp?.name || '-'} (ID: ${d.exp?.id || '-'})\n`;
+                        replyMessage += `  🪙 Gold: ${d.gold?.name || '-'} (ID: ${d.gold?.id || '-'})\n`;
+                        replyMessage += `  🌿 Jungle: ${d.jungle?.name || '-'} (ID: ${d.jungle?.id || '-'})\n`;
+                    }
+                    replyMessage += `\n`;
+
+                    // ⚔️ JOINER အချက်အလက်များ
+                    replyMessage += `⚔️ **JOINER TEAM:** ${joinerTeamName}\n`;
+                    replyMessage += `• Team Logo: ${d.joinerTeamLogo || '-'}\n`;
                     replyMessage += `• User ID: \`${d.joinedUserId || '-'}\`\n`;
                     replyMessage += `• Contact Ph: ${d.joinerContactPhNo || '-'}\n`;
                     replyMessage += `• In-Game Name: ${d.joinerInGameName || '-'}\n`;
                     replyMessage += `• Game ID: ${d.joinerGameId || '-'}\n`;
-                    replyMessage += `• Squad: ${d.joinerSqName || '-'}\n`;
-                    replyMessage += `• Kpay: ${d.joinerKpayName || '-'} (${d.joinerKpayPhNo || '-'})\n`;
+                    replyMessage += `• Squad Name: ${d.joinerSqName || '-'}\n`;
+                    replyMessage += `• Kpay Name: ${d.joinerKpayName || '-'}\n`;
+                    replyMessage += `• Kpay Ph: ${d.joinerKpayPhNo || '-'}\n`;
+                    replyMessage += `• Joiner Ready: ${d.joinerReady ? '✅ Yes' : '❌ No'}\n`;
+
+                    if (d.mode === '5v5') {
+                        replyMessage += `  -- **5v5 Lineup (Joiner)** --\n`;
+                        replyMessage += `  ⚔️ Mid: ${d.joinerMid?.name || '-'} (ID: ${d.joinerMid?.id || '-'})\n`;
+                        replyMessage += `  🛡 Roamer: ${d.joinerRoamer?.name || '-'} (ID: ${d.joinerRoamer?.id || '-'})\n`;
+                        replyMessage += `  🗡 Exp: ${d.joinerExp?.name || '-'} (ID: ${d.joinerExp?.id || '-'})\n`;
+                        replyMessage += `  🪙 Gold: ${d.joinerGold?.name || '-'} (ID: ${d.joinerGold?.id || '-'})\n`;
+                        replyMessage += `  🌿 Jungle: ${d.joinerJungle?.name || '-'} (ID: ${d.joinerJungle?.id || '-'})\n`;
+                    }
                     replyMessage += `━━━━━━━━━━━━━━━━━━━`;
                 });
             }
@@ -143,7 +172,7 @@ if (update.message && update.message.text) {
                 parse_mode: 'Markdown'
             };
 
-            // မူလအစတွင် Choose Team ခလုတ်တစ်ခုတည်းသာ ပြသမည်
+            // Room တွေ့ရှိပါက Choose Team ခလုတ်ပြသမည်
             if (!roomSnapshot.empty) {
                 requestBody.reply_markup = {
                     inline_keyboard: [
@@ -195,7 +224,6 @@ if (update.callback_query) {
             const hostName = roomData.teamName || 'Host';
             const joinerName = roomData.joinerTeamName || 'Joiner';
 
-            // Winner ရွေးချယ်နိုင်သော ခလုတ်များကို ပြသမည် (Match ဖျက်ရန်နှင့် Reset ခလုတ်များ မပါဝင်တော့ပါ)
             let keyboardLayout = [
                 [
                     { text: `🏆 ${hostName} (Win)`, callback_data: `win_${roomId}_host` },
@@ -244,7 +272,6 @@ if (update.callback_query) {
                 status: 'completed'
             });
 
-            // လုပ်ဆောင်ချက်ပြီးဆုံးပါက ခလုတ်များအားလုံး ဖျောက်ခြင်း
             await fetch(`https://api.telegram.org/bot${BOT_TOKEN}/editMessageReplyMarkup`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
