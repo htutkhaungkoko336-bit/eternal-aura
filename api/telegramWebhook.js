@@ -273,7 +273,7 @@ if (update.callback_query) {
         return res.status(200).json({ status: 'success' });
     }
 
-    if (callbackData && callbackData.startsWith('win_')) {
+        if (callbackData && callbackData.startsWith('win_')) {
         const parts = callbackData.split('_');
         const winningSide = parts[2];
         const roomId = parts[1];
@@ -287,23 +287,25 @@ if (update.callback_query) {
             const winnerTeamName = winningSide === 'host' ? (roomData.teamName || 'Host') : (roomData.joinerTeamName || 'Joiner');
             const winnerUserId = winningSide === 'host' ? roomData.hostId : roomData.joinedUserId;
 
-            await roomRef.update({
-                winnerTeam: winnerTeamName,
-                winnerId: winnerUserId,
-                winningSide: winningSide,
-                status: 'completed'
-            });
-
+            // ၁။ အချက်အလက်များကို updated လုပ်မည်
             const updatedRoomData = {
                 ...roomData,
                 winnerTeam: winnerTeamName,
                 winnerId: winnerUserId,
                 winningSide: winningSide,
-                status: 'completed'
+                status: 'completed',
+                completedAt: getYangonTimeStr()
             };
+
+            // ၂။ history collection ထဲသို့ သွားသိမ်းမည် (Active Room API ရဲ့ PATCH logic အတိုင်း တိုက်ရိုက်လုပ်ဆောင်ခြင်း)
+            await db.collection('history').doc(roomId).set(updatedRoomData);
+
+            // ၃။ active_rooms ထဲမှ Room ကို ဖျက်ပစ်မည်
+            await roomRef.delete();
 
             const updatedMessageText = generateMatchPanelText(updatedRoomData, roomId);
 
+            // ၄။ Telegram မက်ဆေ့ချ်ကို ပုံစံပြောင်းမည် (Keyboard များကို ဖြုတ်မည်)
             await fetch(`https://api.telegram.org/bot${BOT_TOKEN}/editMessageText`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
@@ -321,7 +323,7 @@ if (update.callback_query) {
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
                     callback_query_id: queryId,
-                    text: `🎉 Winner အဖြစ် ${winnerTeamName} ကို အောင်မြင်စွာ သတ်မှတ်ပြီးပါပြီ။`,
+                    text: `🎉 Winner အဖြစ် ${winnerTeamName} ကို သတ်မှတ်ပြီး Room အား history သို့ ရွှေ့ပြောင်းပြီးပါပြီ။`,
                     show_alert: true
                 })
             });
