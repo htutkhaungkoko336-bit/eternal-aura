@@ -58,28 +58,17 @@ module.exports = async function handler(req, res) {
                 if (!roomDoc.exists) {
                     return res.status(404).json({ success: false, message: "Room not found" });
                 }
-                const roomData = roomDoc.data();
-                // 🛑 တကယ်လို့ ပြီးသွားတဲ့ Room ဖြစ်နေရင် မပြတော့ရန်
-                if (roomData.status === 'completed' || roomData.isArchived === true) {
-                    return res.status(404).json({ success: false, message: "Room is already completed" });
-                }
-                return res.status(200).json({ success: true, room: { id: roomDoc.id, ...roomData } });
+                return res.status(200).json({ success: true, room: { id: roomDoc.id, ...roomDoc.data() } });
             }
 
-            let query = db.collection('active_rooms')
-                          .where('status', '!=', 'completed'); // 🛑 Completed ဖြစ်ပြီးသားများကို ရှာမတွေ့စေရန် Filter ထည့်ခြင်း
-
+            let query = db.collection('active_rooms');
             if (mode) query = query.where('mode', '==', mode);
             if (keyType) query = query.where('keyType', '==', keyType);
 
             const snapshot = await query.get();
             let rooms = [];
             snapshot.forEach(doc => {
-                const data = doc.data();
-                // နှစ်ထပ်စစ်ဆေးခြင်း (isArchived ပါ ပါမပါ စစ်ရန်)
-                if (data.isArchived !== true) {
-                    rooms.push({ id: doc.id, ...data });
-                }
+                rooms.push({ id: doc.id, ...doc.data() });
             });
 
             return res.status(200).json({ success: true, rooms });
@@ -88,6 +77,7 @@ module.exports = async function handler(req, res) {
             return res.status(500).json({ success: false, message: "Server Error", error: error.message });
         }
     }
+
     if (method === 'POST') {
         try {
             const { userId, roomTitle, targetMode, targetKeyType, boType, roomId } = req.body;
