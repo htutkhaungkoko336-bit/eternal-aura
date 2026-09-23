@@ -76,7 +76,7 @@ module.exports = async function handler(req, res) {
         }
 
 // -------------------------------------------------------------
-// 💡 Helper Function: 1v1 နဲ့ 5v5 နှစ်မျိုးစလုံးအတွက် HTML Format ဖြင့် Message ဖန်தီးခြင်း
+// 💡 Helper Function: 1v1 နဲ့ 5v5 နှစ်မျိုးစလုံးအတွက် HTML Format ဖြင့် Message ဖန်တီးခြင်း
 // -------------------------------------------------------------
 function generateMatchPanelText(d, docId) {
     const hostTeamName = d.teamName || 'Host';
@@ -92,6 +92,7 @@ function generateMatchPanelText(d, docId) {
     text += `📊 <b>Status:</b> <code>${d.status || '-'}</code>\n`;
     text += `🕒 <b>Created At:</b> ${d.createdAt || '-'}\n\n`;
 
+    // 🔽 အောက်ပါ အပိုင်းသည် Telegram တွင် ခေါက်ထား/ဖြန့်ကြည့်လို့ရမည် (Expandable Blockquote)
     text += `<blockquote expandable>`;
     
     // 👑 HOST TEAM
@@ -143,6 +144,7 @@ function generateMatchPanelText(d, docId) {
     }
     text += `</blockquote>`;
 
+    // Winner ရှိပါက အောက်ဆုံးတွင် စာသားဖြင့် ဖော်ပြမည်
     if (d.winnerTeam) {
         text += `\n━━━━━━━━━━━━━━━━━━━\n`;
         text += `🏆 <b>Winner Team:</b> ${d.winnerTeam} အနိုင်ရသွားပါပြီ။ ✅`;
@@ -169,10 +171,8 @@ if (update.message && update.message.text) {
         if (matchCode) {
             const cleanMatchCode = matchCode.trim().toUpperCase();
 
-            // 🔍 Note: completed ဖြစ်ပြီးသား (သို့) archived ဖြစ်သွားတဲ့ Room များကို လုံးဝ ရှာမတွေ့အောင် query ပိတ်ထားပါသည်
             const roomSnapshot = await db.collection('active_rooms')
                 .where('matchCode', '==', cleanMatchCode)
-                .where('status', '!=', 'completed')
                 .get();
 
             let replyMessage = "";
@@ -180,12 +180,12 @@ if (update.message && update.message.text) {
             let isCompleted = false;
 
             if (roomSnapshot.empty) {
-                replyMessage = `❌ <b>Match ရှာမတွေ့ပါ။</b>\nပေးထားသော Code (${cleanMatchCode}) နှင့် ကိုက်ညီသော Active Room မရှိတော့ပါ။`;
+                replyMessage = `❌ <b>Match ရှာမတွေ့ပါ။</b>\nပေးထားသော Code (${cleanMatchCode}) နှင့် ကိုက်ညီသော Active Room မရှိပါ။`;
             } else {
                 roomSnapshot.forEach(doc => {
                     const d = doc.data();
                     docId = doc.id; 
-                    if (d.winnerTeam || d.status === 'completed') isCompleted = true;
+                    if (d.winnerTeam) isCompleted = true;
 
                     replyMessage = generateMatchPanelText(d, docId);
                 });
@@ -234,11 +234,11 @@ if (update.callback_query) {
         try {
             const roomRef = db.collection('active_rooms').doc(roomId);
             const roomDoc = await roomRef.get();
-            if (!roomDoc.exists || roomDoc.data().status === 'completed') {
+            if (!roomDoc.exists) {
                 await fetch(`https://api.telegram.org/bot${BOT_TOKEN}/answerCallbackQuery`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ callback_query_id: queryId, text: "❌ ဤ Room မှာ ပြီးဆုံးသွားပြီဖြစ်၍ အသုံးမပြုနိုင်တော့ပါ။", show_alert: true })
+                    body: JSON.stringify({ callback_query_id: queryId, text: "❌ ဤ Room အား ရှာမတွေ့တော့ပါ။", show_alert: true })
                 });
                 return res.status(200).json({ status: 'error' });
             }
@@ -270,7 +270,7 @@ if (update.callback_query) {
                 body: JSON.stringify({ callback_query_id: queryId, text: "🏆 Winner Team တစ်ခုကို ရွေးချယ်ပါ။" })
             });
         } catch (e) { console.error("Choose Team Error:", e); }
-        return res.status(200).json({ status: 'error' });
+        return res.status(200).json({ status: 'success' });
     }
 
     if (callbackData && callbackData.startsWith('win_')) {
@@ -287,15 +287,11 @@ if (update.callback_query) {
             const winnerTeamName = winningSide === 'host' ? (roomData.teamName || 'Host') : (roomData.joinerTeamName || 'Joiner');
             const winnerUserId = winningSide === 'host' ? roomData.hostId : roomData.joinedUserId;
 
-            // 🛑 Room နှင့် Host/Joiner Registration များကိုပါ လုံးဝမသုံးတော့ရန် (Inactive / Archived) အဖြစ် တစ်ခါတည်း update လုပ်ခြင်း
             await roomRef.update({
                 winnerTeam: winnerTeamName,
                 winnerId: winnerUserId,
                 winningSide: winningSide,
-                status: 'completed',
-                isArchived: true,                     // Room ကို မရှိသလိုဖြစ်စေရန် Flag
-                hostRegistrationStatus: 'inactive',   // Host Registration ကို ပိတ်ခြင်း
-                joinerRegistrationStatus: 'inactive'  // Joiner Registration ကို ပိတ်ခြင်း
+                status: 'completed'
             });
 
             const updatedRoomData = {
@@ -303,10 +299,7 @@ if (update.callback_query) {
                 winnerTeam: winnerTeamName,
                 winnerId: winnerUserId,
                 winningSide: winningSide,
-                status: 'completed',
-                isArchived: true,
-                hostRegistrationStatus: 'inactive',
-                joinerRegistrationStatus: 'inactive'
+                status: 'completed'
             };
 
             const updatedMessageText = generateMatchPanelText(updatedRoomData, roomId);
@@ -328,7 +321,7 @@ if (update.callback_query) {
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
                     callback_query_id: queryId,
-                    text: `🎉 Winner အဖြစ် ${winnerTeamName} ကို သတ်မှတ်ပြီး Room နှင့် Registration များကို ပိတ်လိုက်ပါပြီ။`,
+                    text: `🎉 Winner အဖြစ် ${winnerTeamName} ကို အောင်မြင်စွာ သတ်မှတ်ပြီးပါပြီ။`,
                     show_alert: true
                 })
             });
