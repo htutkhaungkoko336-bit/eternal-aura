@@ -82,11 +82,12 @@ module.exports = async function handler(req, res) {
                 kpayPhNo: data.kpayPhoneNumber || data.kpayPhNo || '',
                 contactPhNo: data.contactPhoneNumber || data.contactPhNo || '',
                 fee: data.fee || '',
-                logo: logoUrl,           
+                logo: logoUrl,          
                 paymentSlip: slipUrl,   
                 status: 'PENDING', 
                 time: getYangonTimeStr(),
-                createdAt: new Date()
+                createdAt: new Date(),
+                used: false // 🔥 1vs1 အတွက် used: false ထည့်သွင်းပြီးပါပြီ
             };
         }
         else if (mode === '5vs5') {
@@ -113,7 +114,8 @@ module.exports = async function handler(req, res) {
                 paymentSlip: slipUrl,
                 status: 'PENDING',
                 time: getYangonTimeStr(),
-                createdAt: new Date()
+                createdAt: new Date(),
+                used: false // 🔥 5vs5 အတွက် used: false ထည့်သွင်းပြီးပါပြီ
             };
         } 
         else if (mode === 'tournament') {
@@ -142,7 +144,8 @@ module.exports = async function handler(req, res) {
                 paymentSlipUrl: slipUrl,
                 status: 'PENDING',
                 time: getYangonTimeStr(),
-                createdAt: new Date()
+                createdAt: new Date(),
+                used: false // 🔥 tournament အတွက် used: false ထည့်သွင်းပြီးပါပြီ
             };
         } else {
             return res.status(400).json({ success: false, message: "Invalid registration mode" });
