@@ -76,7 +76,7 @@ module.exports = async function handler(req, res) {
         }
 
 // -------------------------------------------------------------
-// 🔥 1. Telegram Bot Match Search & Control Panel (Full Data)
+// 🔥 1. Telegram Bot Match Search & Control Panel (Updated)
 // -------------------------------------------------------------
 if (update.message && update.message.text) {
     const messageText = update.message.text.trim();
@@ -109,8 +109,8 @@ if (update.message && update.message.text) {
                     hostTeamName = d.teamName || 'Host';
                     joinerTeamName = d.joinerTeamName || 'Joiner';
 
-                    // 📌 အထွေထွေ အချက်အလက်များ
-                    replyMessage = `🎮 **MATCH CONTROL PANEL (FULL DATA)**\n`;
+                    // 📌 အထွေထွေ အချက်အလက်များ (Team Logo များကို ဖြုတ်ထားပါသည်)
+                    replyMessage = `🎮 **MATCH CONTROL PANEL**\n`;
                     replyMessage += `━━━━━━━━━━━━━━━━━━━\n`;
                     replyMessage += `📌 **Room ID:** \`${doc.id}\`\n`;
                     replyMessage += `🔑 **Match Code:** \`${d.matchCode || '-'}\`\n`;
@@ -122,7 +122,6 @@ if (update.message && update.message.text) {
                     
                     // 👑 HOST အချက်အလက်များ
                     replyMessage += `👑 **HOST TEAM:** ${hostTeamName}\n`;
-                    replyMessage += `• Team Logo: ${d.teamLogo || '-'}\n`;
                     replyMessage += `• User ID: \`${d.hostId || '-'}\`\n`;
                     replyMessage += `• Contact Ph: ${d.contactPhNo || '-'}\n`;
                     replyMessage += `• In-Game Name: ${d.inGameName || '-'}\n`;
@@ -144,7 +143,6 @@ if (update.message && update.message.text) {
 
                     // ⚔️ JOINER အချက်အလက်များ
                     replyMessage += `⚔️ **JOINER TEAM:** ${joinerTeamName}\n`;
-                    replyMessage += `• Team Logo: ${d.joinerTeamLogo || '-'}\n`;
                     replyMessage += `• User ID: \`${d.joinedUserId || '-'}\`\n`;
                     replyMessage += `• Contact Ph: ${d.joinerContactPhNo || '-'}\n`;
                     replyMessage += `• In-Game Name: ${d.joinerInGameName || '-'}\n`;
@@ -162,7 +160,14 @@ if (update.message && update.message.text) {
                         replyMessage += `  🪙 Gold: ${d.joinerGold?.name || '-'} (ID: ${d.joinerGold?.id || '-'})\n`;
                         replyMessage += `  🌿 Jungle: ${d.joinerJungle?.name || '-'} (ID: ${d.joinerJungle?.id || '-'})\n`;
                     }
-                    replyMessage += `━━━━━━━━━━━━━━━━━━━`;
+
+                    // အကယ်၍ Winner ထွက်ပြီးသားဖြစ်ပါက မူလစာသားထဲတွင်ပါ Winner အကြောင်း ဖော်ပြပေးမည်
+                    if (d.winnerTeam) {
+                        replyMessage += `\n━━━━━━━━━━━━━━━━━━━\n`;
+                        replyMessage += `🏆 **Winner Team:** ${d.winnerTeam} အနိုင်ရသွားပါပြီ။ ✅`;
+                    } else {
+                        replyMessage += `━━━━━━━━━━━━━━━━━━━`;
+                    }
                 });
             }
 
@@ -172,15 +177,22 @@ if (update.message && update.message.text) {
                 parse_mode: 'Markdown'
             };
 
-            // Room တွေ့ရှိပါက Choose Team ခလုတ်ပြသမည်
+            // Winner မထွက်သေးမှသာ Choose Team ခလုတ်ပြမည်
             if (!roomSnapshot.empty) {
-                requestBody.reply_markup = {
-                    inline_keyboard: [
-                        [
-                            { text: `👥 Choose Team`, callback_data: `choose_team_${docId}` }
+                let isAlreadyCompleted = false;
+                roomSnapshot.forEach(doc => {
+                    if (doc.data().winnerTeam) isAlreadyCompleted = true;
+                });
+
+                if (!isAlreadyCompleted) {
+                    requestBody.reply_markup = {
+                        inline_keyboard: [
+                            [
+                                { text: `👥 Choose Team`, callback_data: `choose_team_${docId}` }
+                            ]
                         ]
-                    ]
-                };
+                    };
+                }
             }
 
             await fetch(`https://api.telegram.org/bot${BOT_TOKEN}/sendMessage`, {
@@ -250,7 +262,7 @@ if (update.callback_query) {
         return res.status(200).json({ status: 'success' });
     }
 
-    // ၂။ Winner သတ်မှတ်ခြင်း (Win)
+    // ၂။ Winner သတ်မှတ်ခြင်း (Win) - မူလ message စာသားထဲတွင်သာ တိုက်ရိုက်ပြောင်းလဲမည်
     if (callbackData && callbackData.startsWith('win_')) {
         const parts = callbackData.split('_');
         const winningSide = parts[2];
@@ -265,6 +277,7 @@ if (update.callback_query) {
             const winnerTeamName = winningSide === 'host' ? (roomData.teamName || 'Host') : (roomData.joinerTeamName || 'Joiner');
             const winnerUserId = winningSide === 'host' ? roomData.hostId : roomData.joinedUserId;
 
+            // Firestore တွင် Data Update လုပ်ခြင်း
             await roomRef.update({
                 winnerTeam: winnerTeamName,
                 winnerId: winnerUserId,
@@ -272,27 +285,33 @@ if (update.callback_query) {
                 status: 'completed'
             });
 
-            await fetch(`https://api.telegram.org/bot${BOT_TOKEN}/editMessageReplyMarkup`, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ chat_id: chatId, message_id: messageId, reply_markup: { inline_keyboard: [] } })
-            });
+            // မူလ message စာသားကို ယူ၍ အောက်ဆုံးတွင် Winner အကြောင်း စာသားပေါင်းထည့်ကာ Edit လုပ်ခြင်း
+            const originalText = callbackQuery.message.text.split('\n━━━━━━━━━━━━━━━━━━━')[0];
+            const updatedText = originalText + `\n━━━━━━━━━━━━━━━━━━━\n🏆 **Winner Team:** ${winnerTeamName} အနိုင်ရသွားပါပြီ။ ✅`;
 
-            await fetch(`https://api.telegram.org/bot${BOT_TOKEN}/answerCallbackQuery`, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ callback_query_id: queryId, text: `🎉 Winner အဖြစ် ${winnerTeamName} ကို အောင်မြင်စွာ သတ်မှတ်ပြီးပါပြီ။`, show_alert: true })
-            });
-
-            await fetch(`https://api.telegram.org/bot${BOT_TOKEN}/sendMessage`, {
+            await fetch(`https://api.telegram.org/bot${BOT_TOKEN}/editMessageText`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
                     chat_id: chatId,
-                    text: `🏆 **MATCH COMPLETED**\nWinner Team: **${winnerTeamName}** ✅`,
-                    parse_mode: 'Markdown'
+                    message_id: messageId,
+                    text: updatedText,
+                    parse_mode: 'Markdown',
+                    reply_markup: { inline_keyboard: [] } // ခလုတ်များကို ဖျောက်လိုက်သည်
                 })
             });
+
+            // Pop-up Alert သက်သက်သာ ပြမည် (Message အသစ် မထပ်ပို့တော့ပါ)
+            await fetch(`https://api.telegram.org/bot${BOT_TOKEN}/answerCallbackQuery`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    callback_query_id: queryId,
+                    text: `🎉 Winner အဖြစ် ${winnerTeamName} ကို အောင်မြင်စွာ သတ်မှတ်ပြီးပါပြီ။`,
+                    show_alert: true
+                })
+            });
+
         } catch (e) { console.error("Win Error:", e); }
         return res.status(200).json({ status: 'success' });
     }
