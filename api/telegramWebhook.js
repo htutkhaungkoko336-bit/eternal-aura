@@ -297,15 +297,18 @@ if (update.callback_query) {
                 completedAt: getYangonTimeStr()
             };
 
-            // ၂။ history collection ထဲသို့ သွားသိမ်းမည် (Active Room API ရဲ့ PATCH logic အတိုင်း တိုက်ရိုက်လုပ်ဆောင်ခြင်း)
-            await db.collection('history').doc(roomId).set(updatedRoomData);
+            // 🔥 ၂။ Unique ဖြစ်မည့် History ID ဖန်တီးမည် (ဥပမာ - roomId_အချိန်) ထို့ကြောင့် အဟောင်းပေါ် အသစ်ထပ်အုပ်မည် မဟုတ်ပါ
+            const uniqueHistoryId = `${roomId}_${Date.now()}`;
 
-            // ၃။ active_rooms ထဲမှ Room ကို ဖျက်ပစ်မည်
+            // ၃။ history collection ထဲသို့ Unique ID ဖြင့် သွားသိမ်းမည်
+            await db.collection('history').doc(uniqueHistoryId).set(updatedRoomData);
+
+            // ၄။ active_rooms ထဲမှ Room ကို ဖျက်ပစ်မည်
             await roomRef.delete();
 
             const updatedMessageText = generateMatchPanelText(updatedRoomData, roomId);
 
-            // ၄။ Telegram မက်ဆေ့ချ်ကို ပုံစံပြောင်းမည် (Keyboard များကို ဖြုတ်မည်)
+            // ၅။ Telegram မက်ဆေ့ချ်ကို ပုံစံပြောင်းမည် (Keyboard များကို ဖြုတ်မည်)
             await fetch(`https://api.telegram.org/bot${BOT_TOKEN}/editMessageText`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
@@ -323,7 +326,7 @@ if (update.callback_query) {
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
                     callback_query_id: queryId,
-                    text: `🎉 Winner အဖြစ် ${winnerTeamName} ကို သတ်မှတ်ပြီး Room အား history သို့ ရွှေ့ပြောင်းပြီးပါပြီ။`,
+                    text: `🎉 Winner အဖြစ် ${winnerTeamName} ကို သတ်မှတ်ပြီး Room အား history သို့ အသစ်တစ်ခုအနေဖြင့် သိမ်းဆည်းပြီးပါပြီ။`,
                     show_alert: true
                 })
             });
@@ -332,7 +335,7 @@ if (update.callback_query) {
         return res.status(200).json({ status: 'success' });
     }
 }
-        // 1. Telegram Callback Query (Admin Action) လုပ်ဆောင်ချက်များ
+            // 1. Telegram Callback Query (Admin Action) လုပ်ဆောင်ချက်များ
         // -------------------------------------------------------------
         if (update.callback_query) {
             const callbackQuery = update.callback_query;
