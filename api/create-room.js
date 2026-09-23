@@ -178,7 +178,6 @@ module.exports = async function handler(req, res) {
                     joinerMid: formatPlayerField(matchedReg?.mid || matchedReg?.playerMid),
                     joinerJungle: formatPlayerField(matchedReg?.jungle || matchedReg?.playerJungle),
                     joinerKpayName: matchedReg?.kpayName || matchedReg?.kpayAccountName || '',
-                    // 🔥 Joiner ဘက်က Kpay Phone No (kpayPhNo နဲ့ contactPhNo အကုန်စစ်ပြီး ထည့်ပေးသည်)
                     joinerKpayPhNo: matchedReg?.kpayPhNo || matchedReg?.contactPhNo || matchedReg?.kpayPhoneNumber || matchedReg?.contactPhoneNumber || '',
                     joinerContactPhNo: matchedReg?.contactPhNo || matchedReg?.kpayPhNo || matchedReg?.kpayPhoneNumber || matchedReg?.contactPhoneNumber || ''
                 });
@@ -270,7 +269,6 @@ module.exports = async function handler(req, res) {
                 createdAt: getYangonTimeStr(),
                 joinedUserId: null,
                 
-                // 🔥 Winner Team Field အသစ် ထည့်သွင်းခြင်း
                 winnerTeam: null,
                 winnerId: null,
                 winningSide: null,
@@ -307,7 +305,7 @@ module.exports = async function handler(req, res) {
 
     if (method === 'PATCH') {
         try {
-            const { userId, roomId, hostReady, joinerReady, firstPick } = req.body;
+            const { userId, roomId, hostReady, joinerReady, firstPick, status } = req.body;
             if (!roomId) {
                 return res.status(400).json({ success: false, message: "Missing roomId" });
             }
@@ -319,12 +317,33 @@ module.exports = async function handler(req, res) {
                 return res.status(404).json({ success: false, message: "Room not found" });
             }
 
+            const currentData = roomDoc.data();
+
+            // 🔥 Status က 'completed' သို့မဟုတ် 'complete' ဖြစ်သွားရင် history collection ထဲသို့ ကူးမည်
+            if (status === 'completed' || status === 'complete') {
+                const historyRoomData = {
+                    ...currentData,
+                    status: 'completed',
+                    completedAt: getYangonTimeStr()
+                };
+
+                // ၁။ history collection ထဲသို့ သွားသိမ်းမည်
+                await db.collection('history').doc(roomId).set(historyRoomData);
+
+                // ၂။ active_rooms ထဲမှ Room ကို ဖျက်ပစ်မည်
+                await roomRef.delete();
+
+                return res.status(200).json({ 
+                    success: true, 
+                    message: "Match completed, room moved to history collection and deleted from active rooms." 
+                });
+            }
+
             let updateData = {};
             if (hostReady !== undefined) updateData.hostReady = hostReady;
             if (joinerReady !== undefined) updateData.joinerReady = joinerReady;
             if (firstPick !== undefined) updateData.firstPick = firstPick;
 
-            const currentData = roomDoc.data();
             const finalHostReady = hostReady !== undefined ? hostReady : currentData.hostReady;
             const finalJoinerReady = joinerReady !== undefined ? joinerReady : currentData.joinerReady;
 
