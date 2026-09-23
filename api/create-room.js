@@ -302,8 +302,7 @@ module.exports = async function handler(req, res) {
             return res.status(550).json({ success: false, message: "Server Error", error: error.message });
         }
     }
-
-    if (method === 'PATCH') {
+        if (method === 'PATCH') {
         try {
             const { userId, roomId, hostReady, joinerReady, firstPick, status } = req.body;
             if (!roomId) {
@@ -327,15 +326,18 @@ module.exports = async function handler(req, res) {
                     completedAt: getYangonTimeStr()
                 };
 
-                // ၁။ history collection ထဲသို့ သွားသိမ်းမည်
-                await db.collection('history').doc(roomId).set(historyRoomData);
+                // 💡 Room ID တူနေရင်တောင် Data မပျောက်အောင် Unique ဖြစ်တဲ့ History ID အသစ် ဖန်တီးခြင်း
+                const uniqueHistoryId = `${roomId}_${Date.now()}`;
+
+                // ၁။ history collection ထဲသို့ ID အသစ်ဖြင့် သွားသိမ်းမည် (အကုန်စုပြီးသားဖြစ်သွားပါမယ်)
+                await db.collection('history').doc(uniqueHistoryId).set(historyRoomData);
 
                 // ၂။ active_rooms ထဲမှ Room ကို ဖျက်ပစ်မည်
                 await roomRef.delete();
 
                 return res.status(200).json({ 
                     success: true, 
-                    message: "Match completed, room moved to history collection and deleted from active rooms." 
+                    message: "Match completed, room moved to history collection with unique ID and deleted from active rooms." 
                 });
             }
 
