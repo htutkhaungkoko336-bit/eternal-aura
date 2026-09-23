@@ -76,7 +76,7 @@ module.exports = async function handler(req, res) {
         }
 
 // -------------------------------------------------------------
-// 💡 Helper Function: HTML Format ဖြင့် Message စာသား ဖန်တီးပေးခြင်း
+// 💡 Helper Function: 1v1 နဲ့ 5v5 နှစ်မျိုးစလုံးအတွက် HTML Format ဖြင့် Message ဖန်တီးခြင်း
 // -------------------------------------------------------------
 function generateMatchPanelText(d, docId) {
     const hostTeamName = d.teamName || 'Host';
@@ -92,15 +92,20 @@ function generateMatchPanelText(d, docId) {
     text += `📊 <b>Status:</b> <code>${d.status || '-'}</code>\n`;
     text += `🕒 <b>Created At:</b> ${d.createdAt || '-'}\n\n`;
 
-    // 🔽 အောက်ပါ အစိတ်ပိုင်းသည် Telegram တွင် ခေါက်ထား/ဖြန့်ကြည့်လို့ရမည် (Expandable Blockquote)
+    // 🔽 အောက်ပါ အပိုင်းသည် Telegram တွင် ခေါက်ထား/ဖြန့်ကြည့်လို့ရမည် (Expandable Blockquote)
     text += `<blockquote expandable>`;
+    
     // 👑 HOST TEAM
     text += `👑 <b>HOST TEAM:</b> ${hostTeamName}\n`;
     text += `• User ID: <code>${d.hostId || '-'}</code>\n`;
     text += `• Contact Ph: ${d.contactPhNo || '-'}\n`;
     text += `• In-Game Name: ${d.inGameName || '-'}\n`;
-    text += `• Game ID: ${d.gameId || '-'}\n`;
+    text += `• Game ID: <code>${d.gameId || '-'}</code>\n`;
     text += `• Squad Name: ${d.sqName || '-'}\n`;
+    if (d.mode === '1v1') {
+        text += `• Hero Name: <b>${d.heroName || '-'}</b>\n`;
+        text += `• First Pick: ${d.firstPick || '-'}\n`;
+    }
     text += `• Kpay Name: ${d.kpayName || '-'}\n`;
     text += `• Kpay Ph: ${d.kpayPhNo || '-'}\n`;
     text += `• Host Ready: ${d.hostReady ? '✅ Yes' : '❌ No'}\n`;
@@ -120,8 +125,11 @@ function generateMatchPanelText(d, docId) {
     text += `• User ID: <code>${d.joinedUserId || '-'}</code>\n`;
     text += `• Contact Ph: ${d.joinerContactPhNo || '-'}\n`;
     text += `• In-Game Name: ${d.joinerInGameName || '-'}\n`;
-    text += `• Game ID: ${d.joinerGameId || '-'}\n`;
+    text += `• Game ID: <code>${d.joinerGameId || '-'}</code>\n`;
     text += `• Squad Name: ${d.joinerSqName || '-'}\n`;
+    if (d.mode === '1v1') {
+        text += `• Hero Name: <b>${d.joinerHeroName || '-'}</b>\n`;
+    }
     text += `• Kpay Name: ${d.joinerKpayName || '-'}\n`;
     text += `• Kpay Ph: ${d.joinerKpayPhNo || '-'}\n`;
     text += `• Joiner Ready: ${d.joinerReady ? '✅ Yes' : '❌ No'}\n`;
@@ -132,7 +140,7 @@ function generateMatchPanelText(d, docId) {
         text += `  🛡 Roamer: ${d.joinerRoamer?.name || '-'} (ID: ${d.joinerRoamer?.id || '-'})\n`;
         text += `  🗡 Exp: ${d.joinerExp?.name || '-'} (ID: ${d.joinerExp?.id || '-'})\n`;
         text += `  🪙 Gold: ${d.joinerGold?.name || '-'} (ID: ${d.joinerGold?.id || '-'})\n`;
-        text += `  🌿 Jungle: ${d.jungle?.name || '-'} (ID: ${d.jungle?.id || '-'})\n`;
+        text += `  🌿 Jungle: ${d.joinerJungle?.name || '-'} (ID: ${d.joinerJungle?.id || '-'})\n`;
     }
     text += `</blockquote>`;
 
@@ -179,7 +187,6 @@ if (update.message && update.message.text) {
                     docId = doc.id; 
                     if (d.winnerTeam) isCompleted = true;
 
-                    // HTML Message ပြုလုပ်ခြင်း
                     replyMessage = generateMatchPanelText(d, docId);
                 });
             }
@@ -190,7 +197,6 @@ if (update.message && update.message.text) {
                 parse_mode: 'HTML'
             };
 
-            // Winner မထွက်သေးပါက Choose Team ခလုတ် ပြသမည်
             if (!roomSnapshot.empty && !isCompleted) {
                 requestBody.reply_markup = {
                     inline_keyboard: [
@@ -223,7 +229,6 @@ if (update.callback_query) {
     const messageId = callbackQuery.message.message_id;
     const BOT_TOKEN = process.env.TELEGRAM_BOT_TOKEN;
 
-    // ၁။ Choose Team နှိပ်ပါက Winner ခလုတ်များ ပေါ်လာမည်
     if (callbackData && callbackData.startsWith('choose_team_')) {
         const roomId = callbackData.split('_')[2];
         try {
@@ -268,7 +273,6 @@ if (update.callback_query) {
         return res.status(200).json({ status: 'success' });
     }
 
-    // ၂။ Winner သတ်မှတ်ခြင်း (Win)
     if (callbackData && callbackData.startsWith('win_')) {
         const parts = callbackData.split('_');
         const winningSide = parts[2];
@@ -283,7 +287,6 @@ if (update.callback_query) {
             const winnerTeamName = winningSide === 'host' ? (roomData.teamName || 'Host') : (roomData.joinerTeamName || 'Joiner');
             const winnerUserId = winningSide === 'host' ? roomData.hostId : roomData.joinedUserId;
 
-            // Firestore Data Update ပြုလုပ်ခြင်း
             await roomRef.update({
                 winnerTeam: winnerTeamName,
                 winnerId: winnerUserId,
@@ -291,7 +294,6 @@ if (update.callback_query) {
                 status: 'completed'
             });
 
-            // Update ဖြစ်သွားသော Data ဖြင့် Message ကို အသစ်ပြန်လည် ဖန်တီးခြင်း
             const updatedRoomData = {
                 ...roomData,
                 winnerTeam: winnerTeamName,
@@ -302,7 +304,6 @@ if (update.callback_query) {
 
             const updatedMessageText = generateMatchPanelText(updatedRoomData, roomId);
 
-            // Message တိုက်ရိုက် Edit ပြုလုပ်ခြင်း (ခလုတ်များကို ဖျောက်လိုက်သည်)
             await fetch(`https://api.telegram.org/bot${BOT_TOKEN}/editMessageText`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
@@ -315,7 +316,6 @@ if (update.callback_query) {
                 })
             });
 
-            // Pop-up Alert ပြပေးခြင်း
             await fetch(`https://api.telegram.org/bot${BOT_TOKEN}/answerCallbackQuery`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
