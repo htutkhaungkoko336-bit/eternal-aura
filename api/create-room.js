@@ -131,7 +131,6 @@ module.exports = async function handler(req, res) {
 
                 let matchedReg = null;
                 if (regCollectionName) {
-                    // 🔥 used == false ဖြစ်နေသော Registration များကိုသာ ရှာမည်
                     const regSnapshot = await db.collection(regCollectionName)
                         .where('userId', '==', userId)
                         .where('used', '==', false)
@@ -142,7 +141,7 @@ module.exports = async function handler(req, res) {
                         const regData = doc.data();
                         const regFee = regData.fee || (lowerMode.includes('tournament') ? '50K' : '');
                         if (regFee && regFee.toString().toUpperCase() === (roomData.keyType || '').toUpperCase()) {
-                            matchedRegs.push(regData);
+                            matchedRegs.push({ id: doc.id, ...regData });
                         }
                     });
 
@@ -223,7 +222,6 @@ module.exports = async function handler(req, res) {
 
             let matchedReg = null;
             if (regCollectionName) {
-                // 🔥 used == false ဖြစ်နေသော Registration များကိုသာ ရှာမည်
                 const regSnapshot = await db.collection(regCollectionName)
                     .where('userId', '==', userId)
                     .where('used', '==', false)
@@ -234,7 +232,7 @@ module.exports = async function handler(req, res) {
                     const regData = doc.data();
                     const regFee = regData.fee || (lowerMode.includes('tournament') ? '50K' : '');
                     if (regFee && regFee.toString().toUpperCase() === targetKeyType.toUpperCase()) {
-                        matchedRegs.push(regData);
+                        matchedRegs.push({ id: doc.id, ...regData });
                     }
                 });
 
@@ -323,7 +321,7 @@ module.exports = async function handler(req, res) {
 
             const currentData = roomDoc.data();
 
-            // 🔥 Status က 'completed' သို့မဟုတ် 'complete' ဖြစ်သွားရင် History ထဲသို့ကူးပြီး Registration များကို used: true ပြောင်းမည်
+            // 🔥 Status က 'completed' သို့မဟုတ် 'complete' ဖြစ်သွားရင် History ထဲသို့ကူးပြီး Registration များကို used: true သေချာပြောင်းမည်
             if (status === 'completed' || status === 'complete') {
                 const historyRoomData = {
                     ...currentData,
@@ -334,7 +332,7 @@ module.exports = async function handler(req, res) {
                 const uniqueHistoryId = `${roomId}_${Date.now()}`;
                 await db.collection('history').doc(uniqueHistoryId).set(historyRoomData);
 
-                // 🔥 Host နဲ့ Joiner တို့ရဲ့ သုံးပြီးသား Registration များကို used: true သို့ ပြောင်းလဲခြင်း
+                // 🔥 Host နဲ့ Joiner တို့ရဲ့ used: false ဖြစ်နေသော Registration များကို Fee ပါ တိုက်စစ်၍ used: true သို့ ပြောင်းလဲခြင်း
                 let regCollectionName = '';
                 const lowerMode = (currentData.mode || '').toLowerCase();
                 if (lowerMode.includes('1v1') || lowerMode.includes('1vs1')) {
@@ -347,30 +345,49 @@ module.exports = async function handler(req, res) {
 
                 if (regCollectionName) {
                     const batch = db.batch();
+                    const roomKeyType = (currentData.keyType || '').toUpperCase();
                     
-                    // Host ရဲ့ used: false ဖြစ်နေသော Registration ကို ရှာပြီး used: true လုပ်ရန်
+                    // 1. Host ဘက်မှ Registration ကို ရှာပြီး update လုပ်ရန်
                     if (currentData.hostId) {
-                        const hostRegs = await db.collection(regCollectionName)
+                        const hostRegSnapshot = await db.collection(regCollectionName)
                             .where('userId', '==', currentData.hostId)
                             .where('used', '==', false)
                             .get();
-                        if (!hostRegs.empty) {
-                            sortRegistrationsByOldest(hostRegs.docs.map(doc => ({ id: doc.id, ...doc.data(), createdAt: doc.data().createdAt })));
-                            // အဟောင်းဆုံး တစ်ခုကို ယူ၍ update လုပ်မည်
-                            const oldestHostDoc = hostRegs.docs[0];
-                            batch.update(oldestHostDoc.ref, { used: true });
+
+                        let hostMatchedRegs = [];
+                        hostRegSnapshot.forEach(doc => {
+                            const regData = doc.data();
+                            const regFee = regData.fee || (lowerMode.includes('tournament') ? '50K' : '');
+                            if (regFee && regFee.toString().toUpperCase() === roomKeyType) {
+                                hostMatchedRegs.push({ id: doc.id, ref: doc.ref, ...regData });
+                            }
+                        });
+
+                        if (hostMatchedRegs.length > 0) {
+                            sortRegistrationsByOldest(hostMatchedRegs);
+                            batch.update(hostMatchedRegs[0].ref, { used: true });
                         }
                     }
 
-                    // Joiner ရဲ့ used: false ဖြစ်နေသော Registration ကို ရှာပြီး used: true လုပ်ရန်
+                    // 2. Joiner ဘက်မှ Registration ကို ရှာပြီး update လုပ်ရန်
                     if (currentData.joinedUserId) {
-                        const joinerRegs = await db.collection(regCollectionName)
+                        const joinerRegSnapshot = await db.collection(regCollectionName)
                             .where('userId', '==', currentData.joinedUserId)
                             .where('used', '==', false)
                             .get();
-                        if (!joinerRegs.empty) {
-                            const oldestJoinerDoc = joinerRegs.docs[0];
-                            batch.update(oldestJoinerDoc.ref, { used: true });
+
+                        let joinerMatchedRegs = [];
+                        joinerRegSnapshot.forEach(doc => {
+                            const regData = doc.data();
+                            const regFee = regData.fee || (lowerMode.includes('tournament') ? '50K' : '');
+                            if (regFee && regFee.toString().toUpperCase() === roomKeyType) {
+                                joinerMatchedRegs.push({ id: doc.id, ref: doc.ref, ...regData });
+                            }
+                        });
+
+                        if (joinerMatchedRegs.length > 0) {
+                            sortRegistrationsByOldest(joinerMatchedRegs);
+                            batch.update(joinerMatchedRegs[0].ref, { used: true });
                         }
                     }
 
@@ -381,7 +398,7 @@ module.exports = async function handler(req, res) {
 
                 return res.status(200).json({ 
                     success: true, 
-                    message: "Match completed, room moved to history, registrations marked as used, and room deleted." 
+                    message: "Match completed, room moved to history, registrations marked as used (true), and room deleted." 
                 });
             }
 
