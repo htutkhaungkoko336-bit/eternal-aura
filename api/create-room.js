@@ -305,7 +305,7 @@ module.exports = async function handler(req, res) {
         }
     }
 
-    if (method === 'PATCH') {
+if (method === 'PATCH') {
         try {
             const { userId, roomId, hostReady, joinerReady, firstPick, status } = req.body;
             if (!roomId) {
@@ -332,7 +332,6 @@ module.exports = async function handler(req, res) {
                 const uniqueHistoryId = `${roomId}_${Date.now()}`;
                 await db.collection('history').doc(uniqueHistoryId).set(historyRoomData);
 
-                // 🔥 Host နဲ့ Joiner တို့ရဲ့ used: false ဖြစ်နေသော Registration များကို Fee ပါ တိုက်စစ်၍ used: true သို့ ပြောင်းလဲခြင်း
                 let regCollectionName = '';
                 const lowerMode = (currentData.mode || '').toLowerCase();
                 if (lowerMode.includes('1v1') || lowerMode.includes('1vs1')) {
@@ -347,7 +346,6 @@ module.exports = async function handler(req, res) {
                     const batch = db.batch();
                     const roomKeyType = (currentData.keyType || '').toUpperCase();
                     
-                    // 1. Host ဘက်မှ Registration ကို ရှာပြီး update လုပ်ရန်
                     if (currentData.hostId) {
                         const hostRegSnapshot = await db.collection(regCollectionName)
                             .where('userId', '==', currentData.hostId)
@@ -369,7 +367,6 @@ module.exports = async function handler(req, res) {
                         }
                     }
 
-                    // 2. Joiner ဘက်မှ Registration ကို ရှာပြီး update လုပ်ရန်
                     if (currentData.joinedUserId) {
                         const joinerRegSnapshot = await db.collection(regCollectionName)
                             .where('userId', '==', currentData.joinedUserId)
@@ -421,6 +418,68 @@ module.exports = async function handler(req, res) {
                     updateData.matchCode = `REV-${randomStr}`;
                 }
 
+                // 🔥 Status က fully_matched ဖြစ်တာနဲ့ Host နဲ့ Joiner ရဲ့ သက်ဆိုင်ရာ registration ကို used: true ပြောင်းလဲခြင်း
+                let regCollectionName = '';
+                const lowerMode = (currentData.mode || '').toLowerCase();
+                if (lowerMode.includes('1v1') || lowerMode.includes('1vs1')) {
+                    regCollectionName = '1vs1_registrations';
+                } else if (lowerMode.includes('5v5') || lowerMode.includes('5vs5')) {
+                    regCollectionName = '5vs5_registrations';
+                } else if (lowerMode.includes('tournament')) {
+                    regCollectionName = 'tournament_registrations';
+                }
+
+                if (regCollectionName) {
+                    const regBatch = db.batch();
+                    const roomKeyType = (currentData.keyType || '').toUpperCase();
+
+                    // 1. Host ဘက်မှ registration ကို ရှာပြီး used: true လုပ်ရန်
+                    if (currentData.hostId) {
+                        const hostRegSnapshot = await db.collection(regCollectionName)
+                            .where('userId', '==', currentData.hostId)
+                            .where('used', '==', false)
+                            .get();
+
+                        let hostMatchedRegs = [];
+                        hostRegSnapshot.forEach(doc => {
+                            const regData = doc.data();
+                            const regFee = regData.fee || (lowerMode.includes('tournament') ? '50K' : '');
+                            if (regFee && regFee.toString().toUpperCase() === roomKeyType) {
+                                hostMatchedRegs.push({ id: doc.id, ref: doc.ref, ...regData });
+                            }
+                        });
+
+                        if (hostMatchedRegs.length > 0) {
+                            sortRegistrationsByOldest(hostMatchedRegs);
+                            regBatch.update(hostMatchedRegs[0].ref, { used: true });
+                        }
+                    }
+
+                    // 2. Joiner ဘက်မှ registration ကို ရှာပြီး used: true လုပ်ရန်
+                    if (currentData.joinedUserId) {
+                        const joinerRegSnapshot = await db.collection(regCollectionName)
+                            .where('userId', '==', currentData.joinedUserId)
+                            .where('used', '==', false)
+                            .get();
+
+                        let joinerMatchedRegs = [];
+                        joinerRegSnapshot.forEach(doc => {
+                            const regData = doc.data();
+                            const regFee = regData.fee || (lowerMode.includes('tournament') ? '50K' : '');
+                            if (regFee && regFee.toString().toUpperCase() === roomKeyType) {
+                                joinerMatchedRegs.push({ id: doc.id, ref: doc.ref, ...regData });
+                            }
+                        });
+
+                        if (joinerMatchedRegs.length > 0) {
+                            sortRegistrationsByOldest(joinerMatchedRegs);
+                            regBatch.update(joinerMatchedRegs[0].ref, { used: true });
+                        }
+                    }
+
+                    await regBatch.commit();
+                }
+
                 if (!currentData.keysDeducted) {
                     let modePrefix = '';
                     const lowerMode = (currentData.mode || '').toLowerCase();
@@ -463,7 +522,6 @@ module.exports = async function handler(req, res) {
             return res.status(500).json({ success: false, message: "Server Error", error: error.message });
         }
     }
-
     if (method === 'DELETE') {
         try {
             const userId = req.body?.userId || req.query?.userId;
