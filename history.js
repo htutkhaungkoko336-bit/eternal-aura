@@ -133,21 +133,23 @@ export function initHistoryManagement(historyData = []) {
     }
 }
 
-/**
- * 6. Optional: Backend / Firestore မှ history ဒေတာများကို API ဖြင့် လှမ်းဆွဲယူလိုပါက အောက်ပါ function ကို အသုံးပြုနိုင်ပါသည်။
- */
+// history.js ထဲတွင် API မှ ဒေတာလှမ်းဆွဲရန် function အသစ်ထည့်သွင်းခြင်း
+
 export async function fetchAndInitHistory() {
     try {
-        const response = await fetch('/api/history'); // သင့်ရဲ့ backend endpoint လမ်းကြောင်းအတိုင်း ပြင်ရန်
+        // သင့်ရဲ့ project ထဲက history/active room API endpoint လမ်းကြောင်းအတိုင်း ညှိပေးပါ
+        const response = await fetch('/api/active-room?type=history'); 
         const result = await response.json();
         
         if (result.success && result.history) {
             initHistoryManagement(result.history);
+        } else if (Array.isArray(result)) {
+            initHistoryManagement(result);
         } else {
             initHistoryManagement([]);
         }
     } catch (error) {
-        console.error('Failed to fetch history data:', error);
+        console.error('Failed to fetch match history from API:', error);
         initHistoryManagement([]);
     }
 }
