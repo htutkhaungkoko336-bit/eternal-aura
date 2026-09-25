@@ -1,5 +1,6 @@
 import { renderTrophyShowcase } from './trophies.js';
 import { initKeyManagement } from './key.js';
+import { initHistoryManagement } from './history.js';
 
 export function renderProfileScreen(container) {
     const userName = localStorage.getItem('user_profile_name') || localStorage.getItem('userName') || "CyberPlayer";
@@ -545,4 +546,10 @@ export function renderProfileScreen(container) {
 
     // Key Management ကို key.js မှ ခေါ်သုံးခြင်း
     initKeyManagement();
-}
+    const historyCardBtn = document.getElementById('history-card-btn');
+        if (historyCardBtn) {
+            historyCardBtn.addEventListener('click', () => {
+                initHistoryManagement();
+            });
+        }
+    }
