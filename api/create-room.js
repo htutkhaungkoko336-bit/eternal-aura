@@ -124,7 +124,7 @@ module.exports = async function handler(req, res) {
                 if (lowerMode.includes('1v1') || lowerMode.includes('1vs1')) {
                     regCollectionName = '1vs1_registrations';
                 } else if (lowerMode.includes('5v5') || lowerMode.includes('5vs5')) {
-                    regCollectionName = '5v5_registrations';
+                    regCollectionName = '5vs5_registrations';
                 } else if (lowerMode.includes('tournament')) {
                     regCollectionName = 'tournament_registrations';
                 }
@@ -173,6 +173,7 @@ module.exports = async function handler(req, res) {
                     joinerGameId: matchedReg?.gameId || matchedReg?.id || '-',
                     joinerHeroName: matchedReg?.heroName || '',
                     joinerSqName: matchedReg?.sqName || joinerTeamName,
+                    // 🔥 5v5 အတွက် Role Player များကို သေချာဆွဲထုတ်ပေးခြင်း
                     joinerRoamer: formatPlayerField(matchedReg?.roamer || matchedReg?.playerRoamer),
                     joinerExp: formatPlayerField(matchedReg?.exp || matchedReg?.playerExp),
                     joinerGold: formatPlayerField(matchedReg?.gold || matchedReg?.playerGold),
@@ -288,7 +289,22 @@ module.exports = async function handler(req, res) {
 
                 kpayName: matchedReg?.kpayName || matchedReg?.kpayAccountName || '',
                 kpayPhNo: matchedReg?.kpayPhNo || matchedReg?.contactPhNo || matchedReg?.kpayPhoneNumber || matchedReg?.contactPhoneNumber || '',
-                contactPhNo: matchedReg?.contactPhNo || matchedReg?.kpayPhNo || matchedReg?.kpayPhoneNumber || matchedReg?.contactPhoneNumber || ''
+                contactPhNo: matchedReg?.contactPhNo || matchedReg?.kpayPhNo || matchedReg?.kpayPhoneNumber || matchedReg?.contactPhoneNumber || '',
+
+                // Empty fields for joiner initially
+                joinerInGameName: null,
+                joinerGameId: null,
+                joinerTeamName: null,
+                joinerTeamLogo: null,
+                joinerSqName: null,
+                joinerRoamer: { name: '-', id: '-' },
+                joinerExp: { name: '-', id: '-' },
+                joinerGold: { name: '-', id: '-' },
+                joinerMid: { name: '-', id: '-' },
+                joinerJungle: { name: '-', id: '-' },
+                joinerKpayName: '',
+                joinerKpayPhNo: '',
+                joinerContactPhNo: ''
             };
 
             await db.collection('active_rooms').doc(userId).set(roomData);
@@ -321,7 +337,6 @@ module.exports = async function handler(req, res) {
 
             const currentData = roomDoc.data();
 
-            // 🔥 Status က 'completed' သို့မဟုတ် 'complete' ဖြစ်သွားရင် History ထဲသို့ကူးပြီး Registration များကို used: true သေချာပြောင်းမည်
             if (status === 'completed' || status === 'complete') {
                 const historyRoomData = {
                     ...currentData,
@@ -332,7 +347,6 @@ module.exports = async function handler(req, res) {
                 const uniqueHistoryId = `${roomId}_${Date.now()}`;
                 await db.collection('history').doc(uniqueHistoryId).set(historyRoomData);
 
-                // 🔥 Host နဲ့ Joiner တို့ရဲ့ used: false ဖြစ်နေသော Registration များကို Fee ပါ တိုက်စစ်၍ used: true သို့ ပြောင်းလဲခြင်း
                 let regCollectionName = '';
                 const lowerMode = (currentData.mode || '').toLowerCase();
                 if (lowerMode.includes('1v1') || lowerMode.includes('1vs1')) {
@@ -347,7 +361,6 @@ module.exports = async function handler(req, res) {
                     const batch = db.batch();
                     const roomKeyType = (currentData.keyType || '').toUpperCase();
                     
-                    // 1. Host ဘက်မှ Registration ကို ရှာပြီး update လုပ်ရန်
                     if (currentData.hostId) {
                         const hostRegSnapshot = await db.collection(regCollectionName)
                             .where('userId', '==', currentData.hostId)
@@ -369,7 +382,6 @@ module.exports = async function handler(req, res) {
                         }
                     }
 
-                    // 2. Joiner ဘက်မှ Registration ကို ရှာပြီး update လုပ်ရန်
                     if (currentData.joinedUserId) {
                         const joinerRegSnapshot = await db.collection(regCollectionName)
                             .where('userId', '==', currentData.joinedUserId)
@@ -421,14 +433,13 @@ module.exports = async function handler(req, res) {
                     updateData.matchCode = `REV-${randomStr}`;
                 }
 
-                // 🔥 1. Keys များကို နှုတ်ယူခြင်း (keysDeducted) နှင့် registrations များကို used: true ပြောင်းခြင်း
                 if (!currentData.keysDeducted) {
                     let modePrefix = '';
                     const lowerMode = (currentData.mode || '').toLowerCase();
                     if (lowerMode.includes('1v1') || lowerMode.includes('1vs1')) {
                         modePrefix = '1vs1';
                     } else if (lowerMode.includes('5v5') || lowerMode.includes('5vs5')) {
-                        modePrefix = '5v5';
+                        modePrefix = '5vs5';
                     }
 
                     let targetFee = currentData.keyType || currentData.fee || '';
@@ -441,7 +452,6 @@ module.exports = async function handler(req, res) {
 
                     const batch = db.batch();
                     
-                    // User keys များကို နှုတ်ရန်
                     if (keyFieldName) {
                         if (currentData.hostId) {
                             const hostUserRef = db.collection('users').doc(currentData.hostId);
@@ -457,12 +467,11 @@ module.exports = async function handler(req, res) {
                         }
                     }
 
-                    // Registrations များကို used: true ပြောင်းရန်
                     let regCollectionName = '';
                     if (lowerMode.includes('1v1') || lowerMode.includes('1vs1')) {
                         regCollectionName = '1vs1_registrations';
                     } else if (lowerMode.includes('5v5') || lowerMode.includes('5vs5')) {
-                        regCollectionName = '5v5_registrations';
+                        regCollectionName = '5vs5_registrations';
                     } else if (lowerMode.includes('tournament')) {
                         regCollectionName = 'tournament_registrations';
                     }
@@ -555,7 +564,12 @@ module.exports = async function handler(req, res) {
                             joinerTeamName: null,
                             joinerKpayName: null,
                             joinerKpayPhNo: null,
-                            joinerContactPhNo: null
+                            joinerContactPhNo: null,
+                            joinerRoamer: { name: '-', id: '-' },
+                            joinerExp: { name: '-', id: '-' },
+                            joinerGold: { name: '-', id: '-' },
+                            joinerMid: { name: '-', id: '-' },
+                            joinerJungle: { name: '-', id: '-' }
                         });
                         return res.status(200).json({ success: true, message: "Left room successfully" });
                     }
@@ -578,7 +592,12 @@ module.exports = async function handler(req, res) {
                     joinerTeamName: null,
                     joinerKpayName: null,
                     joinerKpayPhNo: null,
-                    joinerContactPhNo: null
+                    joinerContactPhNo: null,
+                    joinerRoamer: { name: '-', id: '-' },
+                    joinerExp: { name: '-', id: '-' },
+                    joinerGold: { name: '-', id: '-' },
+                    joinerMid: { name: '-', id: '-' },
+                    joinerJungle: { name: '-', id: '-' }
                 });
             });
             await batch.commit();
