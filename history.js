@@ -23,7 +23,7 @@ export function initHistoryManagement(historyData = []) {
         `;
         document.body.insertAdjacentHTML('beforeend', historyModalHTML);
 
-        // 2. Inject CSS styles dynamically (Modern & Sleek Design)
+        // 2. Inject CSS styles dynamically (Modern & Sleek Design with Win/Lose Badges)
         const historyStyles = `
             <style>
                 .history-modal-overlay{position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(15,23,42,0.75);backdrop-filter:blur(10px);display:flex;justify-content:center;align-items:center;z-index:1000;opacity:0;visibility:hidden;transition:all 0.3s cubic-bezier(0.4, 0, 0.2, 1);}
@@ -45,7 +45,12 @@ export function initHistoryManagement(historyData = []) {
                 
                 .match-card-header{display:flex;justify-content:space-between;align-items:center;border-bottom:1px solid rgba(255,255,255,0.05);padding-bottom:8px;}
                 .match-room-title{color:#38bdf8;font-size:0.85rem;font-weight:700;letter-spacing:0.3px;}
-                .match-code-badge{background:rgba(56, 189, 248, 0.1);color:#38bdf8;font-size:0.7rem;padding:3px 8px;border-radius:6px;font-weight:600;}
+                
+                /* Win / Lose Badge Styles */
+                .result-badge{font-size:0.75rem;padding:3px 10px;border-radius:6px;font-weight:700;text-transform:uppercase;}
+                .result-win{background:rgba(34, 197, 94, 0.2);color:#4ade80;border:1px solid rgba(34, 197, 94, 0.3);}
+                .result-lose{background:rgba(239, 68, 68, 0.2);color:#f87171;border:1px solid rgba(239, 68, 68, 0.3);}
+                .result-draw{background:rgba(234, 179, 8, 0.2);color:#facc15;border:1px solid rgba(234, 179, 8, 0.3);}
                 
                 .match-teams-row{display:flex;justify-content:space-between;align-items:center;gap:10px;padding:4px 0;}
                 .team-box{display:flex;align-items:center;gap:8px;flex:1;}
@@ -55,10 +60,6 @@ export function initHistoryManagement(historyData = []) {
                 .vs-badge{color:#64748b;font-size:0.75rem;font-weight:800;font-style:italic;}
                 
                 .match-card-footer{display:flex;justify-content:space-between;align-items:center;font-size:0.75rem;color:#94a3b8;border-top:1px solid rgba(255,255,255,0.05);padding-top:8px;}
-                .match-status-badge{padding:2px 8px;border-radius:4px;font-weight:600;text-transform:uppercase;font-size:0.65rem;}
-                .status-completed{background:rgba(34, 197, 94, 0.15);color:#4ade80;}
-                .status-pending{background:rgba(234, 179, 8, 0.15);color:#facc15;}
-                
                 .empty-history{text-align:center;color:#64748b;padding:30px 0;font-size:0.9rem;}
             </style>
         `;
@@ -70,42 +71,44 @@ export function initHistoryManagement(historyData = []) {
     const historyCloseBtn = document.getElementById('history-close-btn');
     const historyListContainer = document.getElementById('history-list-container');
 
-    // Render History Cards function (Real Data Implementation)
+    // Render History Cards function
     function renderHistory(data) {
         if (!historyListContainer) return;
         historyListContainer.innerHTML = '';
 
-        // အကယ်၍ Data မရှိခဲ့ရင်ပြရန်
         if (!data || data.length === 0) {
             historyListContainer.innerHTML = `<div class="empty-history">No battle history found yet.</div>`;
             return;
         }
 
         data.forEach(match => {
-            const statusClass = match.status === 'completed' ? 'status-completed' : 'status-pending';
-            
+            const result = match.myResult || 'Draw';
+            let resultClass = 'result-draw';
+            if (result === 'Win') resultClass = 'result-win';
+            else if (result === 'Lose') resultClass = 'result-lose';
+
             const cardHTML = `
                 <div class="history-card-item">
                     <div class="match-card-header">
                         <span class="match-room-title">${match.roomTitle || 'CUSTOM ROOM'} (${match.mode || '5v5'})</span>
-                        <span class="match-code-badge">${match.matchCode || 'N/A'}</span>
+                        <span class="result-badge ${resultClass}">${result}</span>
                     </div>
                     
                     <div class="match-teams-row">
                         <div class="team-box home">
-                            <img src="${match.teamLogo || 'https://via.placeholder.com/28'}" class="team-logo-img" alt="Logo">
-                            <span class="team-name-text" title="${match.teamName}">${match.teamName || 'Team 1'}</span>
+                            <img src="${match.teamLogo || match.hostLogo || 'https://via.placeholder.com/28'}" class="team-logo-img" alt="Logo">
+                            <span class="team-name-text" title="${match.teamName || match.hostName}">${match.teamName || match.hostName || 'Host'}</span>
                         </div>
                         <span class="vs-badge">${match.boType || 'VS'}</span>
                         <div class="team-box away">
-                            <span class="team-name-text" title="${match.joinerTeamName}">${match.joinerTeamName || 'Team 2'}</span>
-                            <img src="${match.joinerTeamLogo || 'https://via.placeholder.com/28'}" class="team-logo-img" alt="Logo">
+                            <span class="team-name-text" title="${match.joinerTeamName || match.joinedUserName}">${match.joinerTeamName || match.joinedUserName || 'Joiner'}</span>
+                            <img src="${match.joinerTeamLogo || match.joinedUserLogo || 'https://via.placeholder.com/28'}" class="team-logo-img" alt="Logo">
                         </div>
                     </div>
                     
                     <div class="match-card-footer">
                         <span>🕒 ${match.completedAt || match.createdAt || 'Recent'}</span>
-                        <span class="match-status-badge ${statusClass}">${match.status || 'finished'}</span>
+                        <span>Code: ${match.matchCode || match.roomId || 'N/A'}</span>
                     </div>
                 </div>
             `;
@@ -113,7 +116,6 @@ export function initHistoryManagement(historyData = []) {
         });
     }
 
-    // Open Modal and render data
     renderHistory(historyData);
     if (historyModal) {
         historyModal.classList.add('active');
@@ -133,15 +135,13 @@ export function initHistoryManagement(historyData = []) {
     }
 }
 
-// history.js ထဲတွင် API မှ ဒေတာလှမ်းဆွဲရန် function အသစ်ထည့်သွင်းခြင်း
-
-export async function fetchAndInitHistory() {
+// API မှ User ID ဖြင့် History လှမ်းဆွဲရန် function
+export async function fetchAndInitHistory(userId) {
     try {
-        // သင့်ရဲ့ project ထဲက history/active room API endpoint လမ်းကြောင်းအတိုင်း ညှိပေးပါ
-        const response = await fetch('/api/active-room?type=history'); 
+        const response = await fetch(`/api/active-room?history=true&userId=${userId || ''}`); 
         const result = await response.json();
         
-        if (result.success && result.history) {
+        if (result.success && Array.isArray(result.history)) {
             initHistoryManagement(result.history);
         } else if (Array.isArray(result)) {
             initHistoryManagement(result);

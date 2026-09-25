@@ -49,35 +49,74 @@ function sortRegistrationsByOldest(regs) {
 module.exports = async function handler(req, res) {
     const { method } = req;
 
-    if (method === 'GET') {
-        try {
-            const { mode, keyType, roomId } = req.query;
+if (method === 'GET') {
+    try {
+        const { mode, keyType, roomId, history, userId } = req.query;
+        
+        // ၁။ History ကို တောင်းဆိုလာခဲ့လျှင် (ဥပမာ: ?history=true&userId=xxx)
+        if (history === 'true' || history === '1') {
+            const histSnapshot = await db.collection('history').get();
+            let historyList = [];
             
-            if (roomId) {
-                const roomDoc = await db.collection('active_rooms').doc(roomId).get();
-                if (!roomDoc.exists) {
-                    return res.status(404).json({ success: false, message: "Room not found" });
+            histSnapshot.forEach(doc => {
+                const data = doc.data();
+                
+                // userId နဲ့ သက်ဆိုင်တဲ့ data တွေပဲ ယူမယ် (Host သို့မဟုတ် Joined User ဖြစ်ရင်)
+                if (!userId || data.hostId === userId || data.joinedUserId === userId) {
+                    
+                    // 🏆 Win / Lose / Draw အခြေအနေကို တွက်ချက်ခြင်း
+                    let result = 'Draw'; 
+                    
+                    if (data.winnerId) {
+                        if (data.winnerId === userId) {
+                            result = 'Win';
+                        } else {
+                            result = 'Lose';
+                        }
+                    } else if (data.status === 'completed') {
+                        if (data.hostId === userId && data.hostScore > data.joinedScore) result = 'Win';
+                        else if (data.joinedUserId === userId && data.joinedScore > data.hostScore) result = 'Win';
+                        else result = 'Lose';
+                    }
+
+                    historyList.push({
+                        id: doc.id,
+                        ...data,
+                        myResult: result // Frontend မှာ 'Win' သို့မဟုတ် 'Lose' လို့ တန်းပြဖို့
+                    });
                 }
-                return res.status(200).json({ success: true, room: { id: roomDoc.id, ...roomDoc.data() } });
-            }
-
-            let query = db.collection('active_rooms');
-            if (mode) query = query.where('mode', '==', mode);
-            if (keyType) query = query.where('keyType', '==', keyType);
-
-            const snapshot = await query.get();
-            let rooms = [];
-            snapshot.forEach(doc => {
-                rooms.push({ id: doc.id, ...doc.data() });
             });
 
-            return res.status(200).json({ success: true, rooms });
-        } catch (error) {
-            console.error("Get Rooms Error:", error);
-            return res.status(500).json({ success: false, message: "Server Error", error: error.message });
+            return res.status(200).json({ success: true, history: historyList });
         }
-    }
 
+        // ၂။ သီးသန့် Room ID တစ်ခုတည်းကို ရှာလိုလျှင် (ဥပမာ: ?roomId=xxx)
+        if (roomId) {
+            const roomDoc = await db.collection('active_rooms').doc(roomId).get();
+            if (!roomDoc.exists) {
+                return res.status(404).json({ success: false, message: "Room not found" });
+            }
+            return res.status(200).json({ success: true, room: { id: roomDoc.id, ...roomDoc.data() } });
+        }
+
+        // ၃။ ပုံမှန် Active Rooms စာရင်းများကို mode / keyType နဲ့ Filter လုပ်ပြီး ထုတ်ပေးရန်
+        let query = db.collection('active_rooms');
+        if (mode) query = query.where('mode', '==', mode);
+        if (keyType) query = query.where('keyType', '==', keyType);
+
+        const snapshot = await query.get();
+        let rooms = [];
+        snapshot.forEach(doc => {
+            rooms.push({ id: doc.id, ...doc.data() });
+        });
+
+        return res.status(200).json({ success: true, rooms });
+
+    } catch (error) {
+        console.error("GET Request Error:", error);
+        return res.status(500).json({ success: false, message: "Server Error", error: error.message });
+    }
+}
     if (method === 'POST') {
         try {
             const { userId, roomTitle, targetMode, targetKeyType, boType, roomId } = req.body;
