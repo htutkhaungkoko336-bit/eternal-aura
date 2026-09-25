@@ -124,7 +124,7 @@ module.exports = async function handler(req, res) {
                 if (lowerMode.includes('1v1') || lowerMode.includes('1vs1')) {
                     regCollectionName = '1vs1_registrations';
                 } else if (lowerMode.includes('5v5') || lowerMode.includes('5vs5')) {
-                    regCollectionName = '5vs5_registrations';
+                    regCollectionName = '5v5_registrations';
                 } else if (lowerMode.includes('tournament')) {
                     regCollectionName = 'tournament_registrations';
                 }
@@ -421,18 +421,27 @@ module.exports = async function handler(req, res) {
                     updateData.matchCode = `REV-${randomStr}`;
                 }
 
+                // 🔥 1. Keys များကို နှုတ်ယူခြင်း (keysDeducted) နှင့် registrations များကို used: true ပြောင်းခြင်း
                 if (!currentData.keysDeducted) {
                     let modePrefix = '';
                     const lowerMode = (currentData.mode || '').toLowerCase();
                     if (lowerMode.includes('1v1') || lowerMode.includes('1vs1')) {
                         modePrefix = '1vs1';
                     } else if (lowerMode.includes('5v5') || lowerMode.includes('5vs5')) {
-                        modePrefix = '5vs5';
+                        modePrefix = '5v5';
                     }
 
-                    const keyFieldName = modePrefix ? `${modePrefix}-${(currentData.keyType || '').toLowerCase()}` : null;
+                    let targetFee = currentData.keyType || currentData.fee || '';
+                    if (!targetFee && currentData.roomTitle) {
+                        const matchFee = currentData.roomTitle.match(/(\d+K)/i);
+                        if (matchFee) targetFee = matchFee[1];
+                    }
+
+                    const keyFieldName = modePrefix && targetFee ? `${modePrefix}-${targetFee.toLowerCase()}` : null;
 
                     const batch = db.batch();
+                    
+                    // User keys များကို နှုတ်ရန်
                     if (keyFieldName) {
                         if (currentData.hostId) {
                             const hostUserRef = db.collection('users').doc(currentData.hostId);
@@ -446,9 +455,65 @@ module.exports = async function handler(req, res) {
                                 [`keys.${keyFieldName}`]: FieldValue.increment(-1)
                             });
                         }
-                        await batch.commit();
                     }
 
+                    // Registrations များကို used: true ပြောင်းရန်
+                    let regCollectionName = '';
+                    if (lowerMode.includes('1v1') || lowerMode.includes('1vs1')) {
+                        regCollectionName = '1vs1_registrations';
+                    } else if (lowerMode.includes('5v5') || lowerMode.includes('5vs5')) {
+                        regCollectionName = '5v5_registrations';
+                    } else if (lowerMode.includes('tournament')) {
+                        regCollectionName = 'tournament_registrations';
+                    }
+
+                    if (regCollectionName) {
+                        const roomKeyType = targetFee.toString().toUpperCase();
+
+                        if (currentData.hostId) {
+                            const hostRegSnapshot = await db.collection(regCollectionName)
+                                .where('userId', '==', currentData.hostId)
+                                .where('used', '==', false)
+                                .get();
+
+                            let hostMatchedRegs = [];
+                            hostRegSnapshot.forEach(doc => {
+                                const regData = doc.data();
+                                const regFee = regData.fee || (lowerMode.includes('tournament') ? '50K' : '');
+                                if (!roomKeyType || regFee.toString().toUpperCase() === roomKeyType) {
+                                    hostMatchedRegs.push({ id: doc.id, ref: doc.ref, ...regData });
+                                }
+                            });
+
+                            if (hostMatchedRegs.length > 0) {
+                                sortRegistrationsByOldest(hostMatchedRegs);
+                                batch.update(hostMatchedRegs[0].ref, { used: true });
+                            }
+                        }
+
+                        if (currentData.joinedUserId) {
+                            const joinerRegSnapshot = await db.collection(regCollectionName)
+                                .where('userId', '==', currentData.joinedUserId)
+                                .where('used', '==', false)
+                                .get();
+
+                            let joinerMatchedRegs = [];
+                            joinerRegSnapshot.forEach(doc => {
+                                const regData = doc.data();
+                                const regFee = regData.fee || (lowerMode.includes('tournament') ? '50K' : '');
+                                if (!roomKeyType || regFee.toString().toUpperCase() === roomKeyType) {
+                                    joinerMatchedRegs.push({ id: doc.id, ref: doc.ref, ...regData });
+                                }
+                            });
+
+                            if (joinerMatchedRegs.length > 0) {
+                                sortRegistrationsByOldest(joinerMatchedRegs);
+                                batch.update(joinerMatchedRegs[0].ref, { used: true });
+                            }
+                        }
+                    }
+
+                    await batch.commit();
                     updateData.keysDeducted = true;
                 }
             } else {
