@@ -71,17 +71,17 @@ export function initHistoryManagement(historyData = []) {
     const historyListContainer = document.getElementById('history-list-container');
 
     // Render History Cards function (Real Data Implementation)
-    function renderHistory() {
+    function renderHistory(data) {
         if (!historyListContainer) return;
         historyListContainer.innerHTML = '';
 
         // အကယ်၍ Data မရှိခဲ့ရင်ပြရန်
-        if (!historyData || historyData.length === 0) {
+        if (!data || data.length === 0) {
             historyListContainer.innerHTML = `<div class="empty-history">No battle history found yet.</div>`;
             return;
         }
 
-        historyData.forEach(match => {
+        data.forEach(match => {
             const statusClass = match.status === 'completed' ? 'status-completed' : 'status-pending';
             
             const cardHTML = `
@@ -130,5 +130,24 @@ export function initHistoryManagement(historyData = []) {
                 historyModal.classList.remove('active');
             }
         };
+    }
+}
+
+/**
+ * 6. Optional: Backend / Firestore မှ history ဒေတာများကို API ဖြင့် လှမ်းဆွဲယူလိုပါက အောက်ပါ function ကို အသုံးပြုနိုင်ပါသည်။
+ */
+export async function fetchAndInitHistory() {
+    try {
+        const response = await fetch('/api/history'); // သင့်ရဲ့ backend endpoint လမ်းကြောင်းအတိုင်း ပြင်ရန်
+        const result = await response.json();
+        
+        if (result.success && result.history) {
+            initHistoryManagement(result.history);
+        } else {
+            initHistoryManagement([]);
+        }
+    } catch (error) {
+        console.error('Failed to fetch history data:', error);
+        initHistoryManagement([]);
     }
 }
