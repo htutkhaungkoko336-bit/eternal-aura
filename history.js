@@ -153,3 +153,21 @@ export async function fetchAndInitHistory(userId) {
         initHistoryManagement([]);
     }
 }
+
+// 6. History ခလုတ်နှိပ်သည့်အခါ အလုပ်လုပ်မည့် Setup Function (API မှရထားသော window.activeUserId ကို အသုံးပြုသည်)
+export function setupHistoryButton() {
+    const historyBtn = document.getElementById('history-open-btn'); // သင့် HTML ထဲက History ဖွင့်မည့် ခလုတ် ID
+    if (!historyBtn) return;
+
+    historyBtn.addEventListener('click', () => {
+        const currentUserId = window.activeUserId; 
+        
+        if (!currentUserId) {
+            console.warn("User ID not found. Please log in first.");
+            alert("ကျေးဇူးပြု၍ အရင်ဆုံး Login ဝင်ပါ။");
+            return;
+        }
+
+        fetchAndInitHistory(currentUserId);
+    });
+}
