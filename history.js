@@ -1,4 +1,3 @@
-// Backend API ကနေ History တွေ လှမ်းဆွဲထုတ်တဲ့ Main Function[cite: 2]
 export async function fetchAndInitHistory(userId) {
     try {
         if (!userId) {
@@ -6,8 +5,14 @@ export async function fetchAndInitHistory(userId) {
             return;
         }
 
-        // Backend API ကို history=true နဲ့ userId ပို့ပြီး လှမ်းခေါ်ခြင်း[cite: 2]
         const response = await fetch(`/api/rooms?history=true&userId=${userId}`);
+        
+        // Response က JSON ဟုတ်မဟုတ် အရင်စစ်ဆေးပါ (404 HTML Error တွေကြောင့် App မရပ်သွားအောင်)
+        const contentType = response.headers.get("content-type");
+        if (!contentType || !contentType.includes("application/json")) {
+            throw new Error("Server did not return JSON. Endpoint might be incorrect (404).");
+        }
+
         const data = await response.json();
 
         if (data.success) {
@@ -20,9 +25,7 @@ export async function fetchAndInitHistory(userId) {
     }
 }
 
-// UI မှာ History များကို Modal / Popup ပုံစံနဲ့ ဖော်ပြပေးခြင်း[cite: 2]
 function renderHistoryModal(historyList, userId) {
-    // အဟောင်းရှိရင် ဖယ်ရှားပါ[cite: 2]
     const existingModal = document.getElementById('history-modal');
     if (existingModal) existingModal.remove();
 
@@ -72,15 +75,12 @@ function renderHistoryModal(historyList, userId) {
         </div>
     `;
 
-    // အမှားပါနေသော 'риб' ကို ဖြုတ်ပြီး မှန်ကန်အောင် ပြင်ဆင်ထားပါပြီ[cite: 2]
     document.body.insertAdjacentHTML('beforeend', modalHTML);
 
-    // ပိတ်ရန် ခလုတ် Event[cite: 2]
     document.getElementById('close-history-modal').addEventListener('click', () => {
         document.getElementById('history-modal').remove();
     });
 
-    // နောက်ခံ နှိပ်ရင် ပိတ်ရန်[cite: 2]
     document.getElementById('history-modal').addEventListener('click', (e) => {
         if (e.target.id === 'history-modal') {
             document.getElementById('history-modal').remove();
