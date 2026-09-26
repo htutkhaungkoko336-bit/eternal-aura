@@ -76,7 +76,12 @@ export function initHistoryManagement(historyData = []) {
         if (!historyListContainer) return;
         historyListContainer.innerHTML = '';
 
-        if (!data || data.length === 0) {
+        // Data သည် Array ဟုတ်မဟုတ် သေချာစစ်ဆေးပါ (forEach Error မတက်စေရန်)
+        if (!Array.isArray(data)) {
+            data = [];
+        }
+
+        if (data.length === 0) {
             historyListContainer.innerHTML = `<div class="empty-history">No battle history found yet.</div>`;
             return;
         }
@@ -135,19 +140,26 @@ export function initHistoryManagement(historyData = []) {
     }
 }
 
-// API မှ User ID ဖြင့် History လှမ်းဆွဲရန် function
+// API မှ User ID ဖြင့် History လှမ်းဆွဲရန် function (Safe Array Handling)
 export async function fetchAndInitHistory(userId) {
     try {
         const response = await fetch(`/api/active-room?history=true&userId=${userId || ''}`); 
         const result = await response.json();
         
-        if (result.success && Array.isArray(result.history)) {
-            initHistoryManagement(result.history);
+        let historyArray = [];
+        
+        if (result && result.success && Array.isArray(result.history)) {
+            historyArray = result.history;
+        } else if (result && Array.isArray(result.data)) {
+            historyArray = result.data;
         } else if (Array.isArray(result)) {
-            initHistoryManagement(result);
+            historyArray = result;
         } else {
-            initHistoryManagement([]);
+            historyArray = [];
         }
+        
+        initHistoryManagement(historyArray);
+
     } catch (error) {
         console.error('Failed to fetch match history from API:', error);
         initHistoryManagement([]);
@@ -160,7 +172,6 @@ export function setupHistoryButton() {
     if (!historyBtn) return;
 
     historyBtn.addEventListener('click', () => {
-        // window.activeUserId (သို့မဟုတ်) localStorage ထဲရှိ 'user_id' ကို ယူသုံးမည်
         const currentUserId = window.activeUserId || localStorage.getItem('user_id'); 
         
         if (!currentUserId) {
