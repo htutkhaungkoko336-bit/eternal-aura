@@ -154,13 +154,14 @@ export async function fetchAndInitHistory(userId) {
     }
 }
 
-// 6. History ခလုတ်နှိပ်သည့်အခါ အလုပ်လုပ်မည့် Setup Function (API မှရထားသော window.activeUserId ကို အသုံးပြုသည်)
+// 6. History ခလုတ်နှိပ်သည့်အခါ (auth.js က သိမ်းထားသော user_id ကိုပါ တစ်ပါတည်း တွဲစစ်ပေးသည်)
 export function setupHistoryButton() {
-    const historyBtn = document.getElementById('history-open-btn'); // သင့် HTML ထဲက History ဖွင့်မည့် ခလုတ် ID
+    const historyBtn = document.getElementById('history-open-btn'); 
     if (!historyBtn) return;
 
     historyBtn.addEventListener('click', () => {
-        const currentUserId = window.activeUserId; 
+        // window.activeUserId (သို့မဟုတ်) localStorage ထဲရှိ 'user_id' ကို ယူသုံးမည်
+        const currentUserId = window.activeUserId || localStorage.getItem('user_id'); 
         
         if (!currentUserId) {
             console.warn("User ID not found. Please log in first.");
