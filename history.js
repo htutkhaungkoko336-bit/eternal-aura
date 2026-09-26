@@ -5,7 +5,7 @@ export async function fetchAndInitHistory(userId) {
             return;
         }
 
-        const response = await fetch('/api/rooms?history=true&userId=' + userId);        
+        const response = await fetch('/api/create-room?history=true&userId=' + userId);        
         // Response က JSON ဟုတ်မဟုတ် အရင်စစ်ဆေးပါ (404 HTML Error တွေကြောင့် App မရပ်သွားအောင်)
         const contentType = response.headers.get("content-type");
         if (!contentType || !contentType.includes("application/json")) {
