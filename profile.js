@@ -550,8 +550,8 @@ export function renderProfileScreen(container) {
     const historyCardBtn = document.getElementById('history-card-btn');
     if (historyCardBtn) {
         historyCardBtn.addEventListener('click', () => {
-            // userId ကို ထည့်ပေးပြီး ခေါ်လိုက်ပါ
-            initHistoryManagement(userId); 
+            // userId ထည့်ပြီး history.js ထဲက API function ကို တိုက်ရိုက်ခေါ်ပါ
+            fetchAndInitHistory(userId); 
         });
     }
  }
