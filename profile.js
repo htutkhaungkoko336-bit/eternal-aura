@@ -544,12 +544,14 @@ export function renderProfileScreen(container) {
         e.target === zoomModal && zoomModal.classList.remove('active');
     });
 
-    // Key Management ကို key.js မှ ခေါ်သုံးခြင်း
+// Key Management ကို key.js မှ ခေါ်သုံးခြင်း
     initKeyManagement();
+    
     const historyCardBtn = document.getElementById('history-card-btn');
-        if (historyCardBtn) {
-            historyCardBtn.addEventListener('click', () => {
-                initHistoryManagement();
-            });
-        }
+    if (historyCardBtn) {
+        historyCardBtn.addEventListener('click', () => {
+            // userId ကို ထည့်ပေးပြီး ခေါ်လိုက်ပါ
+            initHistoryManagement(userId); 
+        });
     }
+ }
