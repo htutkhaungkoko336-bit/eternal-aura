@@ -12,17 +12,17 @@
   "description": "Eternal Aura Matchmaking App",
 "icons": [
     {
-      "src": "/appstore-images (2)/android/launcheric-192x192.png",
+      "src": "/icon-192.png",
       "sizes": "192x192",
       "type": "image/png"
     },
     {
-      "src": "/appstore-images (2)/android/launcheric-512x512.png",
+      "src": "/icon-512.png",
       "sizes": "512x512",
       "type": "image/png"
     }
   ],
-    "lang": "en",
+      "lang": "en",
   "categories": [
     "graphics",
     "sports"
