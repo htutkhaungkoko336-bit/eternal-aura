@@ -1,0 +1,7 @@
+<?xml version='1.0' encoding='utf-8'?>
+<resources>
+    <string name="app_name">Eternal Aura</string>
+    <string name="title_activity_main">Eternal Aura</string>
+    <string name="package_name">com.eternalaura.app</string>
+    <string name="custom_url_scheme">com.eternalaura.app</string>
+</resources>

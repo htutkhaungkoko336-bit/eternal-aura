@@ -1,5 +1,8 @@
 {
   "dependencies": {
+    "@capacitor/android": "^8.5.2",
+    "@capacitor/cli": "^8.5.2",
+    "@capacitor/core": "^8.5.2",
     "bcryptjs": "^3.0.3",
     "firebase-admin": "^14.2.0"
   }

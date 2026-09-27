@@ -1,0 +1,9 @@
+{
+  "appId": "com.eternalaura.app",
+  "appName": "Eternal Aura",
+  "webDir": "www",
+  "server": {
+    "url": "https://www.eternal-aura-hub.com",
+    "cleartext": true
+  }
+}
