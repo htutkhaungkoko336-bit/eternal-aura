@@ -9,5 +9,22 @@
   "start_url": "/",
   "theme_color": "#092665",
   "id": "com.eternalaura.app",
-  "description": "Eternal Aura Matchmaking App"
+  "description": "Eternal Aura Matchmaking App",
+  "icons": [
+    {
+      "src": "/launcheric/android/mipmap-hdpi/ic_launcher.png",
+      "sizes": "72x72",
+      "type": "image/png"
+    },
+    {
+      "src": "/launcheric/android/mipmap-xxxhdpi/ic_launcher.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "/launcheric/android/mipmap-xxxhdpi/ic_launcher.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ]
 }
