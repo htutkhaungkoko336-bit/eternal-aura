@@ -65,7 +65,6 @@ function renderHistoryModal(historyList, userId) {
                         const isLose = item.myResult === 'Lose';
                         const badgeBg = isWin ? 'linear-gradient(135deg, #10b981, #059669)' : (isLose ? 'linear-gradient(135deg, #ef4444, #dc2626)' : 'linear-gradient(135deg, #f59e0b, #d97706)');
                         
-                        // Database တွေက Team Name နဲ့ Logo တွေကို သုံးပေးထားပါတယ်
                         const hostTeamName = item.teamName || 'Host Team';
                         const hostLogo = item.teamLogo || 'https://via.placeholder.com/32';
                         const joinerTeamName = item.joinerTeamName || 'Joiner Team';
@@ -82,31 +81,26 @@ function renderHistoryModal(historyList, userId) {
                                 position: relative; overflow: hidden;
                             " onmouseover="this.style.borderColor='rgba(56, 189, 248, 0.4)'" onmouseout="this.style.borderColor='rgba(255, 255, 255, 0.08)'">
                                 
-                                <!-- Top Row: Teams VS Layout like Active Room -->
+                                <!-- Top Row: Teams VS Layout -->
                                 <div style="display: flex; align-items: center; justify-content: space-between; gap: 8px;">
-                                    
-                                    <!-- Host Team -->
                                     <div style="display: flex; align-items: center; gap: 8px; flex: 1; min-width: 0;">
                                         <img src="${hostLogo}" style="width: 30px; height: 30px; border-radius: 50%; object-fit: cover; border: 1px solid rgba(255,255,255,0.2);" onerror="this.src='https://via.placeholder.com/30'">
                                         <span style="color: #f8fafc; font-weight: 600; font-size: 13px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">${hostTeamName}</span>
                                     </div>
 
-                                    <!-- VS Badge -->
                                     <div style="
                                         background: linear-gradient(135deg, #0ea5e9, #2563eb); color: #fff;
                                         font-size: 10px; font-weight: 800; padding: 3px 8px; border-radius: 8px;
                                         letter-spacing: 0.5px; box-shadow: 0 2px 6px rgba(14, 165, 233, 0.4);
                                     ">VS</div>
 
-                                    <!-- Joiner Team -->
                                     <div style="display: flex; align-items: center; justify-content: flex-end; gap: 8px; flex: 1; min-width: 0;">
                                         <span style="color: #f8fafc; font-weight: 600; font-size: 13px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; text-align: right;">${joinerTeamName}</span>
                                         <img src="${joinerLogo}" style="width: 30px; height: 30px; border-radius: 50%; object-fit: cover; border: 1px solid rgba(255,255,255,0.2);" onerror="this.src='https://via.placeholder.com/30'">
                                     </div>
-
                                 </div>
 
-                                <!-- Bottom Row: Date/Time & Win/Lose Status Badge -->
+                                <!-- Bottom Row: Date/Time & Win/Lose Badge -->
                                 <div style="display: flex; justify-content: space-between; align-items: center; border-top: 1px solid rgba(255,255,255,0.06); padding-top: 8px;">
                                     <div style="color: #94a3b8; font-size: 11px; display: flex; align-items: center; gap: 4px;">
                                         <span>🕒</span> ${item.completedAt || item.createdAt || '-'}
@@ -128,28 +122,81 @@ function renderHistoryModal(historyList, userId) {
             </div>
         </div>
 
-        <!-- Detail Modal Container (Hidden by default) -->
+        <!-- Detailed Comparison Modal (Matches the requested design) -->
         <div id="match-detail-modal" style="
             position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(0, 0, 0, 0.75); backdrop-filter: blur(8px);
+            background: rgba(0, 0, 0, 0.8); backdrop-filter: blur(10px);
             display: none; justify-content: center; align-items: center; z-index: 1100;
             font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', sans-serif;
         ">
             <div style="
-                background: #1e293b; border: 1px solid rgba(255, 255, 255, 0.15); width: 88%; max-width: 360px;
-                border-radius: 22px; padding: 22px; box-shadow: 0 20px 40px rgba(0,0,0,0.7);
+                background: linear-gradient(180deg, #1e293b 0%, #0f172a 100%);
+                border: 1px solid rgba(255, 255, 255, 0.15); width: 92%; max-width: 440px;
+                border-radius: 24px; padding: 20px; box-shadow: 0 25px 50px rgba(0,0,0,0.8);
+                display: flex; flex-direction: column; max-height: 90vh;
             ">
-                <h4 style="color: #f8fafc; margin: 0 0 15px 0; font-size: 16px; font-weight: 600; border-bottom: 1px solid rgba(255,255,255,0.08); padding-bottom: 10px;">📊 Match Details</h4>
-                
-                <div id="detail-content" style="display: flex; flex-direction: column; gap: 10px; font-size: 13px; color: #cbd5e1;">
-                    <!-- Dynamically injected detail info -->
+                <!-- Header -->
+                <div style="text-align: center; border-bottom: 1px solid rgba(255,255,255,0.08); padding-bottom: 12px; margin-bottom: 15px;">
+                    <h3 id="detail-title" style="color: #38bdf8; margin: 0; font-size: 17px; font-weight: 700; letter-spacing: 0.5px;">5V5 MATCH DETAILS</h3>
+                    <p style="color: #94a3b8; font-size: 11px; margin: 4px 0 0 0;">Players Comparison</p>
                 </div>
 
+                <!-- Comparison Body (Side by Side Cards) -->
+                <div style="display: flex; gap: 10px; overflow-y: auto; flex: 1; padding-bottom: 10px;">
+                    
+                    <!-- Host Team Box -->
+                    <div style="
+                        flex: 1; background: rgba(30, 41, 59, 0.6); border: 1px solid rgba(255,255,255,0.08);
+                        border-radius: 14px; padding: 12px; display: flex; flex-direction: column; gap: 8px;
+                    ">
+                        <div style="display: flex; align-items: center; gap: 6px; border-bottom: 1px solid rgba(255,255,255,0.08); padding-bottom: 8px;">
+                            <img id="detail-host-logo" src="" style="width: 22px; height: 22px; border-radius: 50%; object-fit: cover;">
+                            <span id="detail-host-name" style="color: #38bdf8; font-weight: 700; font-size: 12px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">Host Team</span>
+                        </div>
+                        
+                        <div style="display: flex; flex-direction: column; gap: 6px; font-size: 12px; color: #cbd5e1;">
+                            <div style="display: flex; justify-content: space-between; border-bottom: 1px solid rgba(255,255,255,0.04); padding-bottom: 4px;"><span style="color: #94a3b8; font-size: 11px;">Roamer:</span> <strong id="h-roamer" style="color: #fff;">-</strong></div>
+                            <div style="display: flex; justify-content: space-between; border-bottom: 1px solid rgba(255,255,255,0.04); padding-bottom: 4px;"><span style="color: #94a3b8; font-size: 11px;">EXP:</span> <strong id="h-exp" style="color: #fff;">-</strong></div>
+                            <div style="display: flex; justify-content: space-between; border-bottom: 1px solid rgba(255,255,255,0.04); padding-bottom: 4px;"><span style="color: #94a3b8; font-size: 11px;">Gold:</span> <strong id="h-gold" style="color: #fff;">-</strong></div>
+                            <div style="display: flex; justify-content: space-between; border-bottom: 1px solid rgba(255,255,255,0.04); padding-bottom: 4px;"><span style="color: #94a3b8; font-size: 11px;">Mid:</span> <strong id="h-mid" style="color: #fff;">-</strong></div>
+                            <div style="display: flex; justify-content: space-between;"><span style="color: #94a3b8; font-size: 11px;">Jungle:</span> <strong id="h-jungle" style="color: #fff;">-</strong></div>
+                        </div>
+                    </div>
+
+                    <!-- Joiner Team Box -->
+                    <div style="
+                        flex: 1; background: rgba(30, 41, 59, 0.6); border: 1px solid rgba(255,255,255,0.08);
+                        border-radius: 14px; padding: 12px; display: flex; flex-direction: column; gap: 8px;
+                    ">
+                        <div style="display: flex; align-items: center; justify-content: flex-end; gap: 6px; border-bottom: 1px solid rgba(255,255,255,0.08); padding-bottom: 8px;">
+                            <span id="detail-joiner-name" style="color: #f87171; font-weight: 700; font-size: 12px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; text-align: right;">Joiner Team</span>
+                            <img id="detail-joiner-logo" src="" style="width: 22px; height: 22px; border-radius: 50%; object-fit: cover;">
+                        </div>
+                        
+                        <div style="display: flex; flex-direction: column; gap: 6px; font-size: 12px; color: #cbd5e1;">
+                            <div style="display: flex; justify-content: space-between; border-bottom: 1px solid rgba(255,255,255,0.04); padding-bottom: 4px;"><strong id="j-roamer" style="color: #fff;">-</strong> <span style="color: #94a3b8; font-size: 11px;">:Roamer</span></div>
+                            <div style="display: flex; justify-content: space-between; border-bottom: 1px solid rgba(255,255,255,0.04); padding-bottom: 4px;"><strong id="j-exp" style="color: #fff;">-</strong> <span style="color: #94a3b8; font-size: 11px;">:EXP</span></div>
+                            <div style="display: flex; justify-content: space-between; border-bottom: 1px solid rgba(255,255,255,0.04); padding-bottom: 4px;"><strong id="j-gold" style="color: #fff;">-</strong> <span style="color: #94a3b8; font-size: 11px;">:Gold</span></div>
+                            <div style="display: flex; justify-content: space-between; border-bottom: 1px solid rgba(255,255,255,0.04); padding-bottom: 4px;"><strong id="j-mid" style="color: #fff;">-</strong> <span style="color: #94a3b8; font-size: 11px;">:Mid</span></div>
+                            <div style="display: flex; justify-content: space-between;"><strong id="j-jungle" style="color: #fff;">-</strong> <span style="color: #94a3b8; font-size: 11px;">:Jungle</span></div>
+                        </div>
+                    </div>
+
+                </div>
+
+                <!-- Footer Extra Meta Info (Result, Fee, Time) -->
+                <div style="background: rgba(15, 23, 42, 0.5); padding: 10px; border-radius: 12px; margin-top: 10px; font-size: 11px; color: #94a3b8; display: flex; justify-content: space-between; align-items: center;">
+                    <div>Result: <strong id="detail-result" style="color: #fff;">-</strong></div>
+                    <div>Fee: <strong id="detail-fee" style="color: #facc15;">-</strong></div>
+                    <div>Time: <strong id="detail-time" style="color: #fff;">-</strong></div>
+                </div>
+
+                <!-- Close Button -->
                 <button id="close-detail-modal" style="
-                    width: 100%; margin-top: 18px; background: linear-gradient(135deg, #3b82f6, #2563eb); color: #fff; border: none;
+                    width: 100%; margin-top: 12px; background: linear-gradient(135deg, #3b82f6, #2563eb); color: #fff; border: none;
                     padding: 11px; border-radius: 12px; font-weight: 600; cursor: pointer;
                     box-shadow: 0 4px 12px rgba(59, 130, 246, 0.4);
-                ">ပိတ်မည်</button>
+                ">Close</button>
             </div>
         </div>
     `;
@@ -167,35 +214,41 @@ function renderHistoryModal(historyList, userId) {
         }
     });
 
-    // Open Detail Modal on Card Click
+    // Open Comparison Detail Modal on Card Click
     document.querySelectorAll('.history-card-item').forEach(card => {
         card.addEventListener('click', () => {
             const index = card.getAttribute('data-index');
             const item = historyList[index];
             
-            const detailContainer = document.getElementById('detail-content');
+            // Populate Header & Title info
+            document.getElementById('detail-title').innerText = item.roomTitle || `${item.mode ? item.mode.toUpperCase() : 'MATCH'} DETAILS`;
             
-            let membersHTML = '-';
-            if (item.teamMembers && Array.isArray(item.teamMembers)) {
-                membersHTML = item.teamMembers.map(m => `<span style="background: rgba(255,255,255,0.06); padding: 3px 8px; border-radius: 6px; font-size: 11px; display: inline-block; margin: 2px;">${m}</span>`).join(' ');
-            } else if (typeof item.teamMembers === 'string') {
-                membersHTML = item.teamMembers;
-            }
+            // Host Info
+            document.getElementById('detail-host-name').innerText = item.teamName || 'Host Team';
+            document.getElementById('detail-host-logo').src = item.teamLogo || 'https://via.placeholder.com/22';
+            
+            // Joiner Info
+            document.getElementById('detail-joiner-name').innerText = item.joinerTeamName || 'Joiner Team';
+            document.getElementById('detail-joiner-logo').src = item.joinerTeamLogo || 'https://via.placeholder.com/22';
 
-            detailContainer.innerHTML = `
-                <div style="display: flex; justify-content: space-between;"><span style="color: #94a3b8;">Match/Room:</span> <strong style="color: #fff;">${item.roomTitle || '-'}</strong></div>
-                <div style="display: flex; justify-content: space-between;"><span style="color: #94a3b8;">Matchup:</span> <strong style="color: #38bdf8;">${item.teamName || 'Team 1'} vs ${item.joinerTeamName || 'Team 2'}</strong></div>
-                <div style="display: flex; justify-content: space-between;"><span style="color: #94a3b8;">Mode:</span> <strong style="color: #38bdf8;">${item.mode || '-'} (${item.boType || 'BO1'})</strong></div>
-                <div style="display: flex; justify-content: space-between;"><span style="color: #94a3b8;">Fee/Key:</span> <strong style="color: #facc15;">${item.keyType || item.fee || 'Free'}</strong></div>
-                <div style="display: flex; justify-content: space-between;"><span style="color: #94a3b8;">Result:</span> <strong style="color: ${item.myResult === 'Win' ? '#34d399' : '#f87171'};">${item.myResult || '-'}</strong></div>
-                <div style="display: flex; justify-content: space-between;"><span style="color: #94a3b8;">Date & Time:</span> <span style="color: #fff; font-size: 12px;">${item.completedAt || item.createdAt || '-'}</span></div>
-                <div style="margin-top: 6px;">
-                    <span style="color: #94a3b8; display: block; margin-bottom: 4px;">Team Members:</span>
-                    <div style="background: rgba(15, 23, 42, 0.6); padding: 8px; border-radius: 8px; max-height: 90px; overflow-y: auto; border: 1px solid rgba(255,255,255,0.05);">
-                        ${membersHTML}
-                    </div>
-                </div>
-            `;
+            // Host Roles (roamer, exp, gold, mid, jungle maps/objects or strings)
+            document.getElementById('h-roamer').innerText = item.roamer?.name || item.roamer || '-';
+            document.getElementById('h-exp').innerText = item.exp?.name || item.exp || '-';
+            document.getElementById('h-gold').innerText = item.gold?.name || item.gold || '-';
+            document.getElementById('h-mid').innerText = item.mid?.name || item.mid || '-';
+            document.getElementById('h-jungle').innerText = item.jungle?.name || item.jungle || '-';
+
+            // Joiner Roles
+            document.getElementById('j-roamer').innerText = item.joinerRoamer?.name || item.joinerRoamer || '-';
+            document.getElementById('j-exp').innerText = item.joinerExp?.name || item.joinerExp || '-';
+            document.getElementById('j-gold').innerText = item.joinerGold?.name || item.joinerGold || '-';
+            document.getElementById('j-mid').innerText = item.joinerMid?.name || item.joinerMid || '-';
+            document.getElementById('j-jungle').innerText = item.joinerJungle?.name || item.joinerJungle || '-';
+
+            // Meta Info
+            document.getElementById('detail-result').innerText = item.myResult || '-';
+            document.getElementById('detail-fee').innerText = item.keyType || item.fee || 'Free';
+            document.getElementById('detail-time').innerText = item.completedAt || item.createdAt || '-';
 
             document.getElementById('match-detail-modal').style.display = 'flex';
         });
