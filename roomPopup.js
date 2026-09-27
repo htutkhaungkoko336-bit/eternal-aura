@@ -297,56 +297,45 @@ export function showSpinWheelPopup(room, mode, userId, callbacks) {
 
     const styleTag = document.createElement('style');
     styleTag.innerHTML = `
-        @keyframes pulseShake {
-            0% { transform: scale(1); }
-            25% { transform: scale(1.1) rotate(-3deg); }
-            50% { transform: scale(1.15) rotate(3deg); }
-            75% { transform: scale(1.1) rotate(-2deg); }
-            100% { transform: scale(1); }
+        @keyframes vsPulse {
+            0% { transform: scale(1); filter: drop-shadow(0 0 10px rgba(0,122,255,0.5)); }
+            50% { transform: scale(1.08); filter: drop-shadow(0 0 25px rgba(255,59,48,0.8)); }
+            100% { transform: scale(1); filter: drop-shadow(0 0 10px rgba(0,122,255,0.5)); }
         }
-        @keyframes rollerGlow {
-            0% { box-shadow: 0 0 15px rgba(0,122,255,0.4); border-color: rgba(0,122,255,0.6); }
-            50% { box-shadow: 0 0 30px rgba(52,199,89,0.7); border-color: rgba(52,199,89,0.9); }
-            100% { box-shadow: 0 0 15px rgba(0,122,255,0.4); border-color: rgba(0,122,255,0.6); }
-        }
-        .shake-num {
-            display: inline-block;
-            animation: pulseShake 0.6s infinite ease-in-out;
-            color: #ff3b30;
-            text-shadow: 0 0 15px rgba(255,59,48,0.6);
-        }
-        .roller-box {
-            animation: rollerGlow 1.5s infinite ease-in-out;
+        .vs-badge {
+            animation: vsPulse 1.5s infinite ease-in-out;
         }
     `;
     document.head.appendChild(styleTag);
 
     overlay.innerHTML = `
         <div class="popup-box" style="max-width: 420px; width: 95%; background: rgba(20, 20, 25, 0.98); backdrop-filter: blur(20px); border: 1px solid rgba(255,255,255,0.1); border-radius: 24px; box-shadow: 0 20px 40px rgba(0,0,0,0.8); color: #fff; padding: 24px; text-align: center; position: relative;">
-            <div style="font-size: 12px; text-transform: uppercase; letter-spacing: 2px; color: #8e8e93; margin-bottom: 6px;">⚡ Destiny Battle Draw ⚡</div>
-            <div style="font-size: 20px; font-weight: 800; color: #fff; margin-bottom: 16px;" id="spinStatusText">
-                🔥 Fate is choosing... <span id="countdownNum" class="shake-num">3</span>
+            <div style="font-size: 12px; text-transform: uppercase; letter-spacing: 2px; color: #8e8e93; margin-bottom: 6px;">⚡ First Pick Battle Draw ⚡</div>
+            <div style="font-size: 18px; font-weight: 800; color: #fff; margin-bottom: 16px;" id="spinStatusText">
+                🔥 Selecting First Pick Team...
             </div>
 
-            <div class="roller-box" style="position: relative; width: 100%; height: 90px; margin: 15px auto; background: rgba(0,0,0,0.5); border-radius: 16px; border: 2px solid rgba(0,122,255,0.6); display: flex; align-items: center; justify-content: center; overflow: hidden; box-shadow: inset 0 0 20px rgba(0,0,0,0.8);">
-                <div style="position: absolute; top: 0; bottom: 0; width: 4px; background: #ff3b30; z-index: 5; box-shadow: 0 0 12px #ff3b30;"></div>
-                <div id="rollerDisplay" style="font-size: 24px; font-weight: 900; letter-spacing: 1px; color: #38bdf8; text-shadow: 0 0 15px rgba(56,189,248,0.6); transition: all 0.1s ease;">
-                    READY?
+            <!-- VS Teams Comparison Container -->
+            <div style="display: flex; align-items: center; justify-content: space-between; gap: 10px; margin: 15px 0;">
+                <!-- Team 1 Box -->
+                <div id="team1Box" style="flex: 1; background: rgba(52, 199, 89, 0.1); border: 2px solid rgba(52, 199, 89, 0.3); border-radius: 16px; padding: 16px 10px; display: flex; flex-direction: column; align-items: center; gap: 8px; transition: all 0.3s ease;">
+                    <div style="width: 36px; height: 36px; background: #34c759; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: 900; font-size: 16px; color: #fff; box-shadow: 0 0 15px rgba(52,199,89,0.5);">1</div>
+                    <span style="font-size: 13px; font-weight: 700; color: #fff; max-width: 120px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">${team1Name}</span>
+                </div>
+
+                <!-- VS Badge -->
+                <div class="vs-badge" style="font-size: 14px; font-weight: 900; color: #ff3b30; background: rgba(255,59,48,0.15); padding: 8px 12px; border-radius: 12px; border: 1px solid rgba(255,59,48,0.3);">
+                    VS
+                </div>
+
+                <!-- Team 2 Box -->
+                <div id="team2Box" style="flex: 1; background: rgba(0, 122, 255, 0.1); border: 2px solid rgba(0, 122, 255, 0.3); border-radius: 16px; padding: 16px 10px; display: flex; flex-direction: column; align-items: center; gap: 8px; transition: all 0.3s ease;">
+                    <div style="width: 36px; height: 36px; background: #007aff; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: 900; font-size: 16px; color: #fff; box-shadow: 0 0 15px rgba(0,122,255,0.5);">2</div>
+                    <span style="font-size: 13px; font-weight: 700; color: #fff; max-width: 120px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">${team2Name}</span>
                 </div>
             </div>
 
-            <div style="display: flex; justify-content: space-around; margin-top: 18px; padding: 10px; background: rgba(255,255,255,0.05); border-radius: 12px; border: 1px solid rgba(255,255,255,0.08);">
-                <div style="display: flex; align-items: center; gap: 8px;">
-                    <div style="width: 16px; height: 16px; background: #34c759; border-radius: 4px; box-shadow: 0 0 8px rgba(52,199,89,0.5);"></div>
-                    <span style="font-size: 13px; font-weight: 700; color: #fff; max-width: 130px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">${team1Name}</span>
-                </div>
-                <div style="display: flex; align-items: center; gap: 8px;">
-                    <div style="width: 16px; height: 16px; background: #007aff; border-radius: 4px; box-shadow: 0 0 8px rgba(0,122,255,0.5);"></div>
-                    <span style="font-size: 13px; font-weight: 700; color: #fff; max-width: 130px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">${team2Name}</span>
-                </div>
-            </div>
-
-            <div style="font-size: 13px; color: #aeaeb2; margin-top: 14px;" id="spinSubText">
+            <div style="font-size: 13px; color: #aeaeb2; margin-top: 16px;" id="spinSubText">
                 May the best legend claim the first strike! ⚡
             </div>
         </div>
@@ -354,111 +343,86 @@ export function showSpinWheelPopup(room, mode, userId, callbacks) {
 
     document.body.appendChild(overlay);
 
-    const rollerEl = overlay.querySelector('#rollerDisplay');
     const statusText = overlay.querySelector('#spinStatusText');
     const subText = overlay.querySelector('#spinSubText');
-    const numEl = overlay.querySelector('#countdownNum');
+    const team1Box = overlay.querySelector('#team1Box');
+    const team2Box = overlay.querySelector('#team2Box');
 
-    const startTime = room.spinStartTime || (Date.now() + 3000);
+    let chosenWinner = room.firstPick;
 
-    const countdownInterval = setInterval(() => {
-        const now = Date.now();
-        const timeLeft = startTime - now;
-
-        if (timeLeft > 0) {
-            const secs = Math.ceil(timeLeft / 1000);
-            if (numEl) numEl.textContent = secs;
-        } else {
-            clearInterval(countdownInterval);
-            if (numEl) {
-                numEl.textContent = "GO!";
-                numEl.className = ""; 
-                numEl.style.color = "#34c759";
-                numEl.style.textShadow = "0 0 20px rgba(52,199,89,0.8)";
-            }
-
-            if (statusText) statusText.innerHTML = `⚡ Rolling the destiny grid...`;
-
-            let chosenWinner = room.firstPick;
-
-            if (userId === room.hostId && !chosenWinner) {
-                const teams = [team1Name, team2Name];
-                chosenWinner = teams[Math.floor(Math.random() * teams.length)];
-                
-                fetch('/api/create-room', { 
-                    method: 'PATCH',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({
-                        roomId: room.id,
-                        userId: userId,
-                        firstPick: chosenWinner
-                    })
-                }).catch(err => console.error("Failed to save final winner", err));
-            }
-
-            if (userId === room.joinedUserId && !chosenWinner) {
-                const checkWinnerInterval = setInterval(async () => {
-                    try {
-                        const res = await fetch(`/api/create-room?roomId=${room.id}`);
-                        const data = await res.json();
-                        if (data.success && data.room && data.room.firstPick) {
-                            clearInterval(checkWinnerInterval);
-                            executeRoller(data.room.firstPick);
-                        }
-                    } catch (e) {
-                        console.error("Error fetching winner:", e);
-                    }
-                }, 500);
-                return;
-            }
-
-            if (chosenWinner) {
-                executeRoller(chosenWinner);
-            }
-        }
-    }, 200);
-
-    function executeRoller(winner) {
+    if (userId === room.hostId && !chosenWinner) {
         const teams = [team1Name, team2Name];
-        let counter = 0;
-        const rollSpeed = 80; // ms per change
-        const totalRolls = 40; // Total frames before stopping
+        chosenWinner = teams[Math.floor(Math.random() * teams.length)];
+        
+        fetch('/api/create-room', { 
+            method: 'PATCH',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                roomId: room.id,
+                userId: userId,
+                firstPick: chosenWinner
+            })
+        }).catch(err => console.error("Failed to save final winner", err));
+    }
 
-        const rollInterval = setInterval(() => {
-            counter++;
-            const randomTeam = teams[counter % teams.length];
-            if (rollerEl) {
-                rollerEl.textContent = randomTeam;
-                rollerEl.style.color = counter % 2 === 0 ? '#34c759' : '#007aff';
+    if (userId === room.joinedUserId && !chosenWinner) {
+        const checkWinnerInterval = setInterval(async () => {
+            try {
+                const res = await fetch(`/api/create-room?roomId=${room.id}`);
+                const data = await res.json();
+                if (data.success && data.room && data.room.firstPick) {
+                    clearInterval(checkWinnerInterval);
+                    highlightWinner(data.room.firstPick);
+                }
+            } catch (e) {
+                console.error("Error fetching winner:", e);
             }
+        }, 500);
+        return;
+    }
 
-            if (counter >= totalRolls) {
-                clearInterval(rollInterval);
-                
-                // Final Winner Lock
-                if (rollerEl) {
-                    rollerEl.textContent = winner;
-                    rollerEl.style.color = '#34c759';
-                    rollerEl.style.textShadow = '0 0 25px rgba(52,199,89,0.8)';
-                }
+    if (chosenWinner) {
+        // ခဏစောင့်ပြီးမှ ရလဒ်ပေါ်စေရန် (ရိုးရှင်းပြီး ကြည့်ရတာ သဘာဝကျစေရန်)
+        setTimeout(() => {
+            highlightWinner(chosenWinner);
+        }, 800);
+    }
 
-                if (statusText) {
-                    statusText.innerHTML = `🏆 First Pick Winner: <span style="color: #34c759; text-shadow: 0 0 20px rgba(52,199,89,0.4);">${winner}</span>`;
-                }
-                if (subText) {
-                    subText.textContent = 'Entering the battlefield arena... 🚀';
-                }
+    function highlightWinner(winner) {
+        const isTeam1 = winner === team1Name;
 
-                setTimeout(() => {
-                    styleTag.remove();
-                    overlay.remove();
-                    
-                    if (callbacks.onBothReady) {
-                        callbacks.onBothReady({ ...room, firstPick: winner });
-                    }
-                }, 2500);
+        // အနိုင်ရတဲ့ဘက်ကို အရောင်လင်းစေပြီး၊ ရှုံးတဲ့ဘက်ကို မှေးသွားစေခြင်း
+        if (isTeam1) {
+            team1Box.style.background = 'rgba(52, 199, 89, 0.3)';
+            team1Box.style.borderColor = '#34c759';
+            team1Box.style.transform = 'scale(1.05)';
+            team1Box.style.boxShadow = '0 0 25px rgba(52,199,89,0.6)';
+            
+            team2Box.style.opacity = '0.4';
+        } else {
+            team2Box.style.background = 'rgba(0, 122, 255, 0.3)';
+            team2Box.style.borderColor = '#007aff';
+            team2Box.style.transform = 'scale(1.05)';
+            team2Box.style.boxShadow = '0 0 25px rgba(0,122,255,0.6)';
+            
+            team1Box.style.opacity = '0.4';
+        }
+
+        if (statusText) {
+            statusText.innerHTML = `🏆 First Pick Winner: <span style="color: #34c759; text-shadow: 0 0 15px rgba(52,199,89,0.5);">${winner}</span>`;
+        }
+        if (subText) {
+            subText.textContent = 'Entering the battlefield arena... 🚀';
+        }
+
+        setTimeout(() => {
+            styleTag.remove();
+            overlay.remove();
+            
+            if (callbacks.onBothReady) {
+                callbacks.onBothReady({ ...room, firstPick: winner });
             }
-        }, rollSpeed);
+        }, 2000);
     }
 }
 export function showRewardCodePopup(room, mode, userId, callbacks = {}) {
