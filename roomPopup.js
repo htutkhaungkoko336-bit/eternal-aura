@@ -287,7 +287,7 @@ export function showRoomDetailsPopup(room, mode, userId, callbacks = {}) {
     });
 }
 
-function showSpinWheelPopup(room, mode, userId, callbacks) {
+export function showSpinWheelPopup(room, mode, userId, callbacks) {
     const is1v1 = mode.toLowerCase().includes('1v1');
     const team1Name = is1v1 ? (room.inGameName || room.teamName || room.userName || 'Host') : (room.sqName || room.teamName || 'Host SQ');
     const team2Name = is1v1 ? (room.joinerTeamName || room.joinerUserName || 'Joiner') : (room.joinerSqName || room.joinerTeamName || 'Joiner SQ');
@@ -304,11 +304,19 @@ function showSpinWheelPopup(room, mode, userId, callbacks) {
             75% { transform: scale(1.1) rotate(-2deg); }
             100% { transform: scale(1); }
         }
+        @keyframes rollerGlow {
+            0% { box-shadow: 0 0 15px rgba(0,122,255,0.4); border-color: rgba(0,122,255,0.6); }
+            50% { box-shadow: 0 0 30px rgba(52,199,89,0.7); border-color: rgba(52,199,89,0.9); }
+            100% { box-shadow: 0 0 15px rgba(0,122,255,0.4); border-color: rgba(0,122,255,0.6); }
+        }
         .shake-num {
             display: inline-block;
             animation: pulseShake 0.6s infinite ease-in-out;
             color: #ff3b30;
             text-shadow: 0 0 15px rgba(255,59,48,0.6);
+        }
+        .roller-box {
+            animation: rollerGlow 1.5s infinite ease-in-out;
         }
     `;
     document.head.appendChild(styleTag);
@@ -320,11 +328,10 @@ function showSpinWheelPopup(room, mode, userId, callbacks) {
                 🔥 Fate is choosing... <span id="countdownNum" class="shake-num">3</span>
             </div>
 
-            <div style="position: relative; width: 190px; height: 190px; margin: 10px auto; border-radius: 50%; box-shadow: 0 0 40px rgba(0,122,255,0.3), inset 0 0 20px rgba(255,255,255,0.2); border: 4px solid rgba(255,255,255,0.8); display: flex; align-items: center; justify-content: center;">
-                <div id="wheelElement" style="position: absolute; inset: 0; border-radius: 50%; background: conic-gradient(from 90deg, #34c759 0deg 180deg, #007aff 180deg 360deg); transition: transform 10s cubic-bezier(0.05, 0.9, 0.1, 1);"></div>
-                <div style="position: absolute; top: -12px; left: 50%; transform: translateX(-50%); width: 0; height: 0; border-left: 8px solid transparent; border-right: 8px solid transparent; border-bottom: 16px solid #ff3b30; filter: drop-shadow(0 2px 4px rgba(0,0,0,0.3)); z-index: 10;"></div>
-                <div style="width: 40px; height: 40px; background: rgba(255,255,255,0.9); backdrop-filter: blur(10px); border-radius: 50%; box-shadow: 0 4px 10px rgba(0,0,0,0.3); display: flex; align-items: center; justify-content: center; z-index: 5;">
-                    <div style="width: 12px; height: 12px; background: #1c1c1e; border-radius: 50%;"></div>
+            <div class="roller-box" style="position: relative; width: 100%; height: 90px; margin: 15px auto; background: rgba(0,0,0,0.5); border-radius: 16px; border: 2px solid rgba(0,122,255,0.6); display: flex; align-items: center; justify-content: center; overflow: hidden; box-shadow: inset 0 0 20px rgba(0,0,0,0.8);">
+                <div style="position: absolute; top: 0; bottom: 0; width: 4px; background: #ff3b30; z-index: 5; box-shadow: 0 0 12px #ff3b30;"></div>
+                <div id="rollerDisplay" style="font-size: 24px; font-weight: 900; letter-spacing: 1px; color: #38bdf8; text-shadow: 0 0 15px rgba(56,189,248,0.6); transition: all 0.1s ease;">
+                    READY?
                 </div>
             </div>
 
@@ -347,7 +354,7 @@ function showSpinWheelPopup(room, mode, userId, callbacks) {
 
     document.body.appendChild(overlay);
 
-    const wheelEl = overlay.querySelector('#wheelElement');
+    const rollerEl = overlay.querySelector('#rollerDisplay');
     const statusText = overlay.querySelector('#spinStatusText');
     const subText = overlay.querySelector('#spinSubText');
     const numEl = overlay.querySelector('#countdownNum');
@@ -370,7 +377,7 @@ function showSpinWheelPopup(room, mode, userId, callbacks) {
                 numEl.style.textShadow = "0 0 20px rgba(52,199,89,0.8)";
             }
 
-            if (statusText) statusText.innerHTML = `⚡ Spinning the wheel of destiny...`;
+            if (statusText) statusText.innerHTML = `⚡ Rolling the destiny grid...`;
 
             let chosenWinner = room.firstPick;
 
@@ -396,7 +403,7 @@ function showSpinWheelPopup(room, mode, userId, callbacks) {
                         const data = await res.json();
                         if (data.success && data.room && data.room.firstPick) {
                             clearInterval(checkWinnerInterval);
-                            executeSpin(data.room.firstPick);
+                            executeRoller(data.room.firstPick);
                         }
                     } catch (e) {
                         console.error("Error fetching winner:", e);
@@ -406,42 +413,54 @@ function showSpinWheelPopup(room, mode, userId, callbacks) {
             }
 
             if (chosenWinner) {
-                executeSpin(chosenWinner);
+                executeRoller(chosenWinner);
             }
         }
     }, 200);
 
-    function executeSpin(winner) {
-        const baseRotations = 360 * 10;
-        const targetDegree = winner === team1Name 
-            ? baseRotations + 180  
-            : baseRotations + 360; 
+    function executeRoller(winner) {
+        const teams = [team1Name, team2Name];
+        let counter = 0;
+        const rollSpeed = 80; // ms per change
+        const totalRolls = 40; // Total frames before stopping
 
-        if (wheelEl) {
-            wheelEl.style.transform = `rotate(${targetDegree}deg)`;
-        }
-
-        setTimeout(() => {
-            if (statusText) {
-                statusText.innerHTML = `🏆 First Pick Winner: <span style="color: #34c759; text-shadow: 0 0 20px rgba(52,199,89,0.4);">${winner}</span>`;
-            }
-            if (subText) {
-                subText.textContent = 'Entering the battlefield arena... 🚀';
+        const rollInterval = setInterval(() => {
+            counter++;
+            const randomTeam = teams[counter % teams.length];
+            if (rollerEl) {
+                rollerEl.textContent = randomTeam;
+                rollerEl.style.color = counter % 2 === 0 ? '#34c759' : '#007aff';
             }
 
-            setTimeout(() => {
-                styleTag.remove();
-                overlay.remove();
+            if (counter >= totalRolls) {
+                clearInterval(rollInterval);
                 
-                if (callbacks.onBothReady) {
-                    callbacks.onBothReady({ ...room, firstPick: winner });
+                // Final Winner Lock
+                if (rollerEl) {
+                    rollerEl.textContent = winner;
+                    rollerEl.style.color = '#34c759';
+                    rollerEl.style.textShadow = '0 0 25px rgba(52,199,89,0.8)';
                 }
-            }, 2500);
 
-        }, 10000);
+                if (statusText) {
+                    statusText.innerHTML = `🏆 First Pick Winner: <span style="color: #34c759; text-shadow: 0 0 20px rgba(52,199,89,0.4);">${winner}</span>`;
+                }
+                if (subText) {
+                    subText.textContent = 'Entering the battlefield arena... 🚀';
+                }
+
+                setTimeout(() => {
+                    styleTag.remove();
+                    overlay.remove();
+                    
+                    if (callbacks.onBothReady) {
+                        callbacks.onBothReady({ ...room, firstPick: winner });
+                    }
+                }, 2500);
+            }
+        }, rollSpeed);
     }
 }
-
 export function showRewardCodePopup(room, mode, userId, callbacks = {}) {
     const is1v1 = mode.toLowerCase().includes('1v1');
     const isHost = userId === room.hostId;
