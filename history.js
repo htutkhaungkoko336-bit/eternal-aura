@@ -130,7 +130,7 @@ function renderHistoryModal(historyList, userId) {
             </div>
         </div>
 
-        <!-- Detailed Comparison Modal (Dynamic for 1v1 vs 5v5) -->
+        <!-- Detailed Comparison Modal -->
         <div id="match-detail-modal" style="
             position: fixed; top: 0; left: 0; width: 100%; height: 100%;
             background: rgba(0, 0, 0, 0.8); backdrop-filter: blur(10px);
@@ -149,12 +149,12 @@ function renderHistoryModal(historyList, userId) {
                     <p id="detail-subtitle" style="color: #94a3b8; font-size: 11px; margin: 4px 0 0 0;">Player & Hero Details</p>
                 </div>
 
-                <!-- Comparison Body (Dynamic Content Container) -->
+                <!-- Comparison Body Container -->
                 <div id="detail-content-container" style="display: flex; gap: 10px; overflow-y: auto; flex: 1; padding-bottom: 10px;">
-                    <!-- Content will be injected dynamically via JS based on mode -->
+                    <!-- Content injected via JS -->
                 </div>
 
-                <!-- Footer Extra Meta Info (Result, Fee, Time) -->
+                <!-- Footer Extra Meta Info -->
                 <div style="background: rgba(15, 23, 42, 0.5); padding: 10px; border-radius: 12px; margin-top: 10px; font-size: 11px; color: #94a3b8; display: flex; justify-content: space-between; align-items: center;">
                     <div>Result: <strong id="detail-result" style="color: #fff;">-</strong></div>
                     <div>Fee: <strong id="detail-fee" style="color: #facc15;">-</strong></div>
@@ -199,46 +199,42 @@ function renderHistoryModal(historyList, userId) {
             const container = document.getElementById('detail-content-container');
 
             if (is1v1) {
-                // 1v1 Layout (Name & Hero Name)
+                // 1v1 Layout: Logo centered, Team Name centered below logo, Inline Player & Hero Name
                 container.innerHTML = `
                     <!-- Host Team Box -->
-                    <div style="flex: 1; background: rgba(30, 41, 59, 0.6); border: 1px solid rgba(255,255,255,0.08); border-radius: 14px; padding: 12px; display: flex; flex-direction: column; gap: 10px;">
-                        <div style="display: flex; align-items: center; gap: 6px; border-bottom: 1px solid rgba(255,255,255,0.08); padding-bottom: 8px;">
-                            <img src="${item.teamLogo || 'https://via.placeholder.com/22'}" style="width: 22px; height: 22px; border-radius: 50%; object-fit: cover;">
-                            <span style="color: #38bdf8; font-weight: 700; font-size: 12px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">${item.teamName || 'Host Team'}</span>
+                    <div style="flex: 1; background: rgba(30, 41, 59, 0.6); border: 1px solid rgba(255,255,255,0.08); border-radius: 14px; padding: 12px; display: flex; flex-direction: column; align-items: center; gap: 10px;">
+                        <div style="display: flex; flex-direction: column; align-items: center; gap: 4px; border-bottom: 1px solid rgba(255,255,255,0.08); padding-bottom: 8px; width: 100%;">
+                            <img src="${item.teamLogo || 'https://via.placeholder.com/28'}" style="width: 28px; height: 28px; border-radius: 50%; object-fit: cover; border: 1px solid rgba(255,255,255,0.2);">
+                            <span style="color: #38bdf8; font-weight: 700; font-size: 12px; text-align: center; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 100%;">${item.teamName || 'Host Team'}</span>
                         </div>
-                        <div style="display: flex; flex-direction: column; gap: 8px; font-size: 12px; color: #cbd5e1;">
-                            <div>
-                                <span style="color: #94a3b8; font-size: 10px; display: block;">Player Name:</span>
-                                <strong style="color: #fff; font-size: 13px;">${item.inGameName || item.name || '-'}</strong>
+                        <div style="display: flex; flex-direction: column; gap: 8px; font-size: 12px; color: #cbd5e1; width: 100%;">
+                            <div style="font-size: 12px;">
+                                <span style="color: #94a3b8; font-size: 11px;">Player Name:</span> <strong style="color: #fff;">${item.inGameName || item.name || '-'}</strong>
                             </div>
-                            <div>
-                                <span style="color: #94a3b8; font-size: 10px; display: block;">Hero Name:</span>
-                                <strong style="color: #38bdf8; font-size: 13px;">${item.heroName || '-'}</strong>
+                            <div style="font-size: 12px;">
+                                <span style="color: #94a3b8; font-size: 11px;">Hero Name:</span> <strong style="color: #38bdf8;">${item.heroName || '-'}</strong>
                             </div>
                         </div>
                     </div>
 
                     <!-- Joiner Team Box -->
-                    <div style="flex: 1; background: rgba(30, 41, 59, 0.6); border: 1px solid rgba(255,255,255,0.08); border-radius: 14px; padding: 12px; display: flex; flex-direction: column; gap: 10px;">
-                        <div style="display: flex; align-items: center; justify-content: flex-end; gap: 6px; border-bottom: 1px solid rgba(255,255,255,0.08); padding-bottom: 8px;">
-                            <span style="color: #f87171; font-weight: 700; font-size: 12px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; text-align: right;">${item.joinerTeamName || 'Joiner Team'}</span>
-                            <img src="${item.joinerTeamLogo || 'https://via.placeholder.com/22'}" style="width: 22px; height: 22px; border-radius: 50%; object-fit: cover;">
+                    <div style="flex: 1; background: rgba(30, 41, 59, 0.6); border: 1px solid rgba(255,255,255,0.08); border-radius: 14px; padding: 12px; display: flex; flex-direction: column; align-items: center; gap: 10px;">
+                        <div style="display: flex; flex-direction: column; align-items: center; gap: 4px; border-bottom: 1px solid rgba(255,255,255,0.08); padding-bottom: 8px; width: 100%;">
+                            <img src="${item.joinerTeamLogo || 'https://via.placeholder.com/28'}" style="width: 28px; height: 28px; border-radius: 50%; object-fit: cover; border: 1px solid rgba(255,255,255,0.2);">
+                            <span style="color: #f87171; font-weight: 700; font-size: 12px; text-align: center; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 100%;">${item.joinerTeamName || 'Joiner Team'}</span>
                         </div>
-                        <div style="display: flex; flex-direction: column; gap: 8px; font-size: 12px; color: #cbd5e1; text-align: right;">
-                            <div>
-                                <span style="color: #94a3b8; font-size: 10px; display: block;">Player Name:</span>
-                                <strong style="color: #fff; font-size: 13px;">${item.joinerInGameName || item.joinerName || '-'}</strong>
+                        <div style="display: flex; flex-direction: column; gap: 8px; font-size: 12px; color: #cbd5e1; width: 100%;">
+                            <div style="font-size: 12px;">
+                                <span style="color: #94a3b8; font-size: 11px;">Player Name:</span> <strong style="color: #fff;">${item.joinerInGameName || item.joinerName || '-'}</strong>
                             </div>
-                            <div>
-                                <span style="color: #94a3b8; font-size: 10px; display: block;">Hero Name:</span>
-                                <strong style="color: #f87171; font-size: 13px;">${item.joinerHeroName || '-'}</strong>
+                            <div style="font-size: 12px;">
+                                <span style="color: #94a3b8; font-size: 11px;">Hero Name:</span> <strong style="color: #f87171;">${item.joinerHeroName || '-'}</strong>
                             </div>
                         </div>
                     </div>
                 `;
             } else {
-                // 5v5 / Team Layout (Lane Roles)
+                // 5v5 / Team Layout: Logo centered, Team Name centered below logo, Both boxes start from left (Role Name : Player Name)
                 const hRoamer = item.roamer?.name || item.roamer || '-';
                 const hExp = item.exp?.name || item.exp || '-';
                 const hGold = item.gold?.name || item.gold || '-';
@@ -253,12 +249,12 @@ function renderHistoryModal(historyList, userId) {
 
                 container.innerHTML = `
                     <!-- Host Team Box -->
-                    <div style="flex: 1; background: rgba(30, 41, 59, 0.6); border: 1px solid rgba(255,255,255,0.08); border-radius: 14px; padding: 12px; display: flex; flex-direction: column; gap: 8px;">
-                        <div style="display: flex; align-items: center; gap: 6px; border-bottom: 1px solid rgba(255,255,255,0.08); padding-bottom: 8px;">
-                            <img src="${item.teamLogo || 'https://via.placeholder.com/22'}" style="width: 22px; height: 22px; border-radius: 50%; object-fit: cover;">
-                            <span style="color: #38bdf8; font-weight: 700; font-size: 12px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">${item.teamName || 'Host Team'}</span>
+                    <div style="flex: 1; background: rgba(30, 41, 59, 0.6); border: 1px solid rgba(255,255,255,0.08); border-radius: 14px; padding: 12px; display: flex; flex-direction: column; align-items: center; gap: 8px;">
+                        <div style="display: flex; flex-direction: column; align-items: center; gap: 4px; border-bottom: 1px solid rgba(255,255,255,0.08); padding-bottom: 8px; width: 100%;">
+                            <img src="${item.teamLogo || 'https://via.placeholder.com/28'}" style="width: 28px; height: 28px; border-radius: 50%; object-fit: cover; border: 1px solid rgba(255,255,255,0.2);">
+                            <span style="color: #38bdf8; font-weight: 700; font-size: 12px; text-align: center; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 100%;">${item.teamName || 'Host Team'}</span>
                         </div>
-                        <div style="display: flex; flex-direction: column; gap: 6px; font-size: 12px; color: #cbd5e1;">
+                        <div style="display: flex; flex-direction: column; gap: 6px; font-size: 12px; color: #cbd5e1; width: 100%;">
                             <div style="display: flex; justify-content: space-between; border-bottom: 1px solid rgba(255,255,255,0.04); padding-bottom: 4px;"><span style="color: #94a3b8; font-size: 11px;">Roamer:</span> <strong style="color: #fff;">${hRoamer}</strong></div>
                             <div style="display: flex; justify-content: space-between; border-bottom: 1px solid rgba(255,255,255,0.04); padding-bottom: 4px;"><span style="color: #94a3b8; font-size: 11px;">EXP:</span> <strong style="color: #fff;">${hExp}</strong></div>
                             <div style="display: flex; justify-content: space-between; border-bottom: 1px solid rgba(255,255,255,0.04); padding-bottom: 4px;"><span style="color: #94a3b8; font-size: 11px;">Gold:</span> <strong style="color: #fff;">${hGold}</strong></div>
@@ -268,17 +264,17 @@ function renderHistoryModal(historyList, userId) {
                     </div>
 
                     <!-- Joiner Team Box -->
-                    <div style="flex: 1; background: rgba(30, 41, 59, 0.6); border: 1px solid rgba(255,255,255,0.08); border-radius: 14px; padding: 12px; display: flex; flex-direction: column; gap: 8px;">
-                        <div style="display: flex; align-items: center; justify-content: flex-end; gap: 6px; border-bottom: 1px solid rgba(255,255,255,0.08); padding-bottom: 8px;">
-                            <span style="color: #f87171; font-weight: 700; font-size: 12px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; text-align: right;">${item.joinerTeamName || 'Joiner Team'}</span>
-                            <img src="${item.joinerTeamLogo || 'https://via.placeholder.com/22'}" style="width: 22px; height: 22px; border-radius: 50%; object-fit: cover;">
+                    <div style="flex: 1; background: rgba(30, 41, 59, 0.6); border: 1px solid rgba(255,255,255,0.08); border-radius: 14px; padding: 12px; display: flex; flex-direction: column; align-items: center; gap: 8px;">
+                        <div style="display: flex; flex-direction: column; align-items: center; gap: 4px; border-bottom: 1px solid rgba(255,255,255,0.08); padding-bottom: 8px; width: 100%;">
+                            <img src="${item.joinerTeamLogo || 'https://via.placeholder.com/28'}" style="width: 28px; height: 28px; border-radius: 50%; object-fit: cover; border: 1px solid rgba(255,255,255,0.2);">
+                            <span style="color: #f87171; font-weight: 700; font-size: 12px; text-align: center; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 100%;">${item.joinerTeamName || 'Joiner Team'}</span>
                         </div>
-                        <div style="display: flex; flex-direction: column; gap: 6px; font-size: 12px; color: #cbd5e1;">
-                            <div style="display: flex; justify-content: space-between; border-bottom: 1px solid rgba(255,255,255,0.04); padding-bottom: 4px;"><strong style="color: #fff;">${jRoamer}</strong> <span style="color: #94a3b8; font-size: 11px;">:Roamer</span></div>
-                            <div style="display: flex; justify-content: space-between; border-bottom: 1px solid rgba(255,255,255,0.04); padding-bottom: 4px;"><strong style="color: #fff;">${jExp}</strong> <span style="color: #94a3b8; font-size: 11px;">:EXP</span></div>
-                            <div style="display: flex; justify-content: space-between; border-bottom: 1px solid rgba(255,255,255,0.04); padding-bottom: 4px;"><strong style="color: #fff;">${jGold}</strong> <span style="color: #94a3b8; font-size: 11px;">:Gold</span></div>
-                            <div style="display: flex; justify-content: space-between; border-bottom: 1px solid rgba(255,255,255,0.04); padding-bottom: 4px;"><strong style="color: #fff;">${jMid}</strong> <span style="color: #94a3b8; font-size: 11px;">:Mid</span></div>
-                            <div style="display: flex; justify-content: space-between;"><strong style="color: #fff;">${jJungle}</strong> <span style="color: #94a3b8; font-size: 11px;">:Jungle</span></div>
+                        <div style="display: flex; flex-direction: column; gap: 6px; font-size: 12px; color: #cbd5e1; width: 100%;">
+                            <div style="display: flex; justify-content: space-between; border-bottom: 1px solid rgba(255,255,255,0.04); padding-bottom: 4px;"><span style="color: #94a3b8; font-size: 11px;">Roamer:</span> <strong style="color: #fff;">${jRoamer}</strong></div>
+                            <div style="display: flex; justify-content: space-between; border-bottom: 1px solid rgba(255,255,255,0.04); padding-bottom: 4px;"><span style="color: #94a3b8; font-size: 11px;">EXP:</span> <strong style="color: #fff;">${jExp}</strong></div>
+                            <div style="display: flex; justify-content: space-between; border-bottom: 1px solid rgba(255,255,255,0.04); padding-bottom: 4px;"><span style="color: #94a3b8; font-size: 11px;">Gold:</span> <strong style="color: #fff;">${jGold}</strong></div>
+                            <div style="display: flex; justify-content: space-between; border-bottom: 1px solid rgba(255,255,255,0.04); padding-bottom: 4px;"><span style="color: #94a3b8; font-size: 11px;">Mid:</span> <strong style="color: #fff;">${jMid}</strong></div>
+                            <div style="display: flex; justify-content: space-between;"><span style="color: #94a3b8; font-size: 11px;">Jungle:</span> <strong style="color: #fff;">${jJungle}</strong></div>
                         </div>
                     </div>
                 `;
