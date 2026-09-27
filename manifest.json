@@ -26,5 +26,10 @@
       "sizes": "512x512",
       "type": "image/png"
     }
+  ],
+  "lang": "en",
+  "categories": [
+    "graphics",
+    "sports"
   ]
 }
