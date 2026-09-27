@@ -308,6 +308,7 @@ export function showSpinWheelPopup(room, mode, userId, callbacks) {
     `;
     document.head.appendChild(styleTag);
 
+    // ၇ စက္ကန့်ကြာမြင့်ချိန်အတွက် လည်ပတ်မည့် အကွက်အရေအတွက်ကို ပိုများအောင် ပြင်ဆင်ထားသည်
     overlay.innerHTML = `
         <div class="popup-box" style="max-width: 420px; width: 95%; background: rgba(20, 20, 25, 0.98); backdrop-filter: blur(20px); border: 1px solid rgba(255,255,255,0.1); border-radius: 24px; box-shadow: 0 20px 40px rgba(0,0,0,0.8); color: #fff; padding: 24px; text-align: center; position: relative;">
             <div style="font-size: 12px; text-transform: uppercase; letter-spacing: 2px; color: #8e8e93; margin-bottom: 6px;">⚡ First Pick Wheel Draw ⚡</div>
@@ -319,7 +320,15 @@ export function showSpinWheelPopup(room, mode, userId, callbacks) {
             <div style="position: relative; width: 100%; height: 60px; margin: 15px auto; background: rgba(0,0,0,0.6); border-radius: 14px; border: 2px solid rgba(255,255,255,0.15); overflow: hidden; display: flex; align-items: center; justify-content: center;">
                 <div style="position: absolute; inset: 0; background: linear-gradient(to bottom, rgba(0,0,0,0.7), transparent 25%, transparent 75%, rgba(0,0,0,0.7)); z-index: 2; pointer-events: none;"></div>
                 <div id="wheelReel" style="position: absolute; top: 0; width: 100%; will-change: transform;">
-                    <!-- สร้างรายการซ้ำๆ เพื่อให้เอฟเฟกต์การหมุนยาวนานและเนียนตา -->
+                    <!-- 7 စက္ကန့်စာ အရှည်လည်နိုင်ရန် ထပ်ခါတလဲလဲ ထည့်သွင်းထားသော စာရင်းများ -->
+                    <div class="reel-item" style="color: #34c759;">${team1Name}</div>
+                    <div class="reel-item" style="color: #007aff;">${team2Name}</div>
+                    <div class="reel-item" style="color: #34c759;">${team1Name}</div>
+                    <div class="reel-item" style="color: #007aff;">${team2Name}</div>
+                    <div class="reel-item" style="color: #34c759;">${team1Name}</div>
+                    <div class="reel-item" style="color: #007aff;">${team2Name}</div>
+                    <div class="reel-item" style="color: #34c759;">${team1Name}</div>
+                    <div class="reel-item" style="color: #007aff;">${team2Name}</div>
                     <div class="reel-item" style="color: #34c759;">${team1Name}</div>
                     <div class="reel-item" style="color: #007aff;">${team2Name}</div>
                     <div class="reel-item" style="color: #34c759;">${team1Name}</div>
@@ -392,17 +401,17 @@ export function showSpinWheelPopup(room, mode, userId, callbacks) {
     if (chosenWinner) {
         setTimeout(() => {
             startSmoothSpin(chosenWinner);
-        }, 500);
+        }, 300);
     }
 
     function startSmoothSpin(winner) {
         const itemHeight = 60;
-        // အနိုင်ရတဲ့အသင်းရဲ့ အညွှန်းကိန်းကို ရွေးချယ်ခြင်း (Index 6 သို့မဟုတ် 7 တွင် ရပ်တန့်ရန်)
-        const targetIndex = winner === team1Name ? 6 : 7;
+        // ၇ စက္ကန့်ကြာမြင့်မည့် လည်ပတ်မှုအတွက် အောက်ဆုံးနားရှိ သင့်လျော်သော အညွှန်းကိန်းကို ရွေးချယ်ခြင်း
+        const targetIndex = winner === team1Name ? 14 : 15;
         const targetPixel = targetIndex * itemHeight;
 
-        // Cubic-bezier ပုံစံဖြင့် အချိန်ကြာကြာလည်ပြီး ဖြည်းဖြည်းချင်းရပ်မည့် Animation ကို တပ်ဆင်ခြင်း
-        wheelReel.style.transition = 'transform 3.5s cubic-bezier(0.15, 0.85, 0.15, 1.0)';
+        // ၇ စက္ကန့်တိတိ (7s) ဖြင့် ပထမပိုင်း အလွန်မြန်ပြီး ရပ်ခါနီးမှ ဖြည်းဖြည်းချင်း အရှိန်သေသွားမည့် Cubic-bezier ပုံစံ
+        wheelReel.style.transition = 'transform 7s cubic-bezier(0.08, 0.92, 0.08, 1.0)';
         wheelReel.style.transform = `translateY(-${targetPixel}px)`;
 
         setTimeout(() => {
@@ -421,7 +430,7 @@ export function showSpinWheelPopup(room, mode, userId, callbacks) {
                     callbacks.onBothReady({ ...room, firstPick: winner });
                 }
             }, 2000);
-        }, 3500);
+        }, 7000);
     }
 }
 export function showRewardCodePopup(room, mode, userId, callbacks = {}) {
