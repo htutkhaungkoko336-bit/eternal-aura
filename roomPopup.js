@@ -297,31 +297,39 @@ export function showSpinWheelPopup(room, mode, userId, callbacks) {
 
     const styleTag = document.createElement('style');
     styleTag.innerHTML = `
-        @keyframes reelSpin {
-            0% { transform: translateY(0); }
-            100% { transform: translateY(-50%); }
-        }
-        .reel-container {
+        .reel-item {
+            height: 60px;
             display: flex;
-            flex-direction: column;
-            animation: reelSpin 0.4s linear infinite;
+            align-items: center;
+            justify-content: center;
+            font-size: 20px;
+            font-weight: 900;
         }
     `;
     document.head.appendChild(styleTag);
 
     overlay.innerHTML = `
         <div class="popup-box" style="max-width: 420px; width: 95%; background: rgba(20, 20, 25, 0.98); backdrop-filter: blur(20px); border: 1px solid rgba(255,255,255,0.1); border-radius: 24px; box-shadow: 0 20px 40px rgba(0,0,0,0.8); color: #fff; padding: 24px; text-align: center; position: relative;">
-            <div style="font-size: 12px; text-transform: uppercase; letter-spacing: 2px; color: #8e8e93; margin-bottom: 6px;">⚡ First Pick Draw ⚡</div>
+            <div style="font-size: 12px; text-transform: uppercase; letter-spacing: 2px; color: #8e8e93; margin-bottom: 6px;">⚡ First Pick Wheel Draw ⚡</div>
             <div style="font-size: 18px; font-weight: 800; color: #fff; margin-bottom: 16px;" id="spinStatusText">
-                🎲 Selecting First Pick...
+                🎲 Spinning the Wheel...
             </div>
 
-            <!-- Vertical Wheel Reel Box -->
-            <div style="position: relative; width: 100%; height: 70px; margin: 15px auto; background: rgba(0,0,0,0.6); border-radius: 14px; border: 2px solid rgba(255,255,255,0.15); overflow: hidden; display: flex; align-items: center; justify-content: center;">
-                <div style="position: absolute; inset: 0; background: linear-gradient(to bottom, rgba(0,0,0,0.8), transparent 30%, transparent 70%, rgba(0,0,0,0.8)); z-index: 2; pointer-events: none;"></div>
-                <div id="wheelReel" class="reel-container" style="width: 100%;">
-                    <div style="height: 70px; display: flex; align-items: center; justify-content: center; font-size: 18px; font-weight: 800; color: #34c759;">${team1Name}</div>
-                    <div style="height: 70px; display: flex; align-items: center; justify-content: center; font-size: 18px; font-weight: 800; color: #007aff;">${team2Name}</div>
+            <!-- Smooth Rolling Wheel Box -->
+            <div style="position: relative; width: 100%; height: 60px; margin: 15px auto; background: rgba(0,0,0,0.6); border-radius: 14px; border: 2px solid rgba(255,255,255,0.15); overflow: hidden; display: flex; align-items: center; justify-content: center;">
+                <div style="position: absolute; inset: 0; background: linear-gradient(to bottom, rgba(0,0,0,0.7), transparent 25%, transparent 75%, rgba(0,0,0,0.7)); z-index: 2; pointer-events: none;"></div>
+                <div id="wheelReel" style="position: absolute; top: 0; width: 100%; will-change: transform;">
+                    <!-- สร้างรายการซ้ำๆ เพื่อให้เอฟเฟกต์การหมุนยาวนานและเนียนตา -->
+                    <div class="reel-item" style="color: #34c759;">${team1Name}</div>
+                    <div class="reel-item" style="color: #007aff;">${team2Name}</div>
+                    <div class="reel-item" style="color: #34c759;">${team1Name}</div>
+                    <div class="reel-item" style="color: #007aff;">${team2Name}</div>
+                    <div class="reel-item" style="color: #34c759;">${team1Name}</div>
+                    <div class="reel-item" style="color: #007aff;">${team2Name}</div>
+                    <div class="reel-item" style="color: #34c759;">${team1Name}</div>
+                    <div class="reel-item" style="color: #007aff;">${team2Name}</div>
+                    <div class="reel-item" style="color: #34c759;">${team1Name}</div>
+                    <div class="reel-item" style="color: #007aff;">${team2Name}</div>
                 </div>
             </div>
 
@@ -372,7 +380,7 @@ export function showSpinWheelPopup(room, mode, userId, callbacks) {
                 const data = await res.json();
                 if (data.success && data.room && data.room.firstPick) {
                     clearInterval(checkWinnerInterval);
-                    stopReel(data.room.firstPick);
+                    startSmoothSpin(data.room.firstPick);
                 }
             } catch (e) {
                 console.error("Error fetching winner:", e);
@@ -383,35 +391,37 @@ export function showSpinWheelPopup(room, mode, userId, callbacks) {
 
     if (chosenWinner) {
         setTimeout(() => {
-            stopReel(chosenWinner);
-        }, 1200);
+            startSmoothSpin(chosenWinner);
+        }, 500);
     }
 
-    function stopReel(winner) {
-        if (wheelReel) {
-            wheelReel.style.animation = 'none';
-            // အနိုင်ရတဲ့အသင်းပေါ်မူတည်၍ တည်နေရာကို ချိန်ညှိပြသခြင်း
-            const isTeam1 = winner === team1Name;
-            wheelReel.innerHTML = `
-                <div style="height: 70px; display: flex; align-items: center; justify-content: center; font-size: 20px; font-weight: 900; color: ${isTeam1 ? '#34c759' : '#007aff'}; text-shadow: 0 0 15px rgba(52,199,89,0.5);">${winner}</div>
-            `;
-        }
+    function startSmoothSpin(winner) {
+        const itemHeight = 60;
+        // အနိုင်ရတဲ့အသင်းရဲ့ အညွှန်းကိန်းကို ရွေးချယ်ခြင်း (Index 6 သို့မဟုတ် 7 တွင် ရပ်တန့်ရန်)
+        const targetIndex = winner === team1Name ? 6 : 7;
+        const targetPixel = targetIndex * itemHeight;
 
-        if (statusText) {
-            statusText.innerHTML = `🏆 First Pick Winner: <span style="color: #34c759; text-shadow: 0 0 15px rgba(52,199,89,0.5);">${winner}</span>`;
-        }
-        if (subText) {
-            subText.textContent = 'Entering the battlefield arena... 🚀';
-        }
+        // Cubic-bezier ပုံစံဖြင့် အချိန်ကြာကြာလည်ပြီး ဖြည်းဖြည်းချင်းရပ်မည့် Animation ကို တပ်ဆင်ခြင်း
+        wheelReel.style.transition = 'transform 3.5s cubic-bezier(0.15, 0.85, 0.15, 1.0)';
+        wheelReel.style.transform = `translateY(-${targetPixel}px)`;
 
         setTimeout(() => {
-            styleTag.remove();
-            overlay.remove();
-            
-            if (callbacks.onBothReady) {
-                callbacks.onBothReady({ ...room, firstPick: winner });
+            if (statusText) {
+                statusText.innerHTML = `🏆 First Pick Winner: <span style="color: #34c759; text-shadow: 0 0 15px rgba(52,199,89,0.5);">${winner}</span>`;
             }
-        }, 2000);
+            if (subText) {
+                subText.textContent = 'Entering the battlefield arena... 🚀';
+            }
+
+            setTimeout(() => {
+                styleTag.remove();
+                overlay.remove();
+                
+                if (callbacks.onBothReady) {
+                    callbacks.onBothReady({ ...room, firstPick: winner });
+                }
+            }, 2000);
+        }, 3500);
     }
 }
 export function showRewardCodePopup(room, mode, userId, callbacks = {}) {
