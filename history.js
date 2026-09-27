@@ -36,7 +36,7 @@ function renderHistoryModal(historyList, userId) {
         ">
             <div style="
                 background: linear-gradient(180deg, #1e293b 0%, #0f172a 100%);
-                border: 1px solid rgba(255, 255, 255, 0.12); width: 92%; max-width: 420px;
+                border: 1px solid rgba(255, 255, 255, 0.12); width: 94%; max-width: 440px;
                 max-height: 85vh; border-radius: 24px; display: flex; flex-direction: column; overflow: hidden;
                 box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.8);
             ">
@@ -65,42 +65,62 @@ function renderHistoryModal(historyList, userId) {
                         const isLose = item.myResult === 'Lose';
                         const badgeBg = isWin ? 'linear-gradient(135deg, #10b981, #059669)' : (isLose ? 'linear-gradient(135deg, #ef4444, #dc2626)' : 'linear-gradient(135deg, #f59e0b, #d97706)');
                         
+                        // Database တွေက Team Name နဲ့ Logo တွေကို သုံးပေးထားပါတယ်
+                        const hostTeamName = item.teamName || 'Host Team';
+                        const hostLogo = item.teamLogo || 'https://via.placeholder.com/32';
+                        const joinerTeamName = item.joinerTeamName || 'Joiner Team';
+                        const joinerLogo = item.joinerTeamLogo || 'https://via.placeholder.com/32';
+
                         return `
                             <div class="history-card-item" data-index="${index}" style="
-                                background: linear-gradient(135deg, rgba(30, 41, 59, 0.8) 0%, rgba(15, 23, 42, 0.9) 100%);
+                                background: linear-gradient(135deg, rgba(30, 41, 59, 0.85) 0%, rgba(15, 23, 42, 0.95) 100%);
                                 border: 1px solid rgba(255, 255, 255, 0.08);
-                                border-radius: 16px; padding: 14px 16px;
-                                display: flex; justify-content: space-between; align-items: center;
+                                border-radius: 18px; padding: 14px;
+                                display: flex; flex-direction: column; gap: 10px;
                                 cursor: pointer; transition: all 0.2s ease;
-                                box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+                                box-shadow: 0 4px 15px rgba(0, 0, 0, 0.25);
+                                position: relative; overflow: hidden;
                             " onmouseover="this.style.borderColor='rgba(56, 189, 248, 0.4)'" onmouseout="this.style.borderColor='rgba(255, 255, 255, 0.08)'">
                                 
-                                <!-- Left side: Team vs Team & Date -->
-                                <div style="display: flex; flex-direction: column; gap: 6px;">
-                                    <div style="display: flex; align-items: center; gap: 8px;">
-                                        <span style="color: #f8fafc; font-weight: 700; font-size: 14px; letter-spacing: -0.2px;">
-                                            ${item.teamVsTeam || item.roomTitle || 'Team A vs Team B'}
-                                        </span>
-                                        <span style="
-                                            background: rgba(56, 189, 248, 0.15); color: #38bdf8; 
-                                            font-size: 10px; font-weight: 700; padding: 2px 6px; border-radius: 6px;
-                                            border: 1px solid rgba(56, 189, 248, 0.3);
-                                        ">VS</span>
+                                <!-- Top Row: Teams VS Layout like Active Room -->
+                                <div style="display: flex; align-items: center; justify-content: space-between; gap: 8px;">
+                                    
+                                    <!-- Host Team -->
+                                    <div style="display: flex; align-items: center; gap: 8px; flex: 1; min-width: 0;">
+                                        <img src="${hostLogo}" style="width: 30px; height: 30px; border-radius: 50%; object-fit: cover; border: 1px solid rgba(255,255,255,0.2);" onerror="this.src='https://via.placeholder.com/30'">
+                                        <span style="color: #f8fafc; font-weight: 600; font-size: 13px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">${hostTeamName}</span>
                                     </div>
+
+                                    <!-- VS Badge -->
+                                    <div style="
+                                        background: linear-gradient(135deg, #0ea5e9, #2563eb); color: #fff;
+                                        font-size: 10px; font-weight: 800; padding: 3px 8px; border-radius: 8px;
+                                        letter-spacing: 0.5px; box-shadow: 0 2px 6px rgba(14, 165, 233, 0.4);
+                                    ">VS</div>
+
+                                    <!-- Joiner Team -->
+                                    <div style="display: flex; align-items: center; justify-content: flex-end; gap: 8px; flex: 1; min-width: 0;">
+                                        <span style="color: #f8fafc; font-weight: 600; font-size: 13px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; text-align: right;">${joinerTeamName}</span>
+                                        <img src="${joinerLogo}" style="width: 30px; height: 30px; border-radius: 50%; object-fit: cover; border: 1px solid rgba(255,255,255,0.2);" onerror="this.src='https://via.placeholder.com/30'">
+                                    </div>
+
+                                </div>
+
+                                <!-- Bottom Row: Date/Time & Win/Lose Status Badge -->
+                                <div style="display: flex; justify-content: space-between; align-items: center; border-top: 1px solid rgba(255,255,255,0.06); padding-top: 8px;">
                                     <div style="color: #94a3b8; font-size: 11px; display: flex; align-items: center; gap: 4px;">
                                         <span>🕒</span> ${item.completedAt || item.createdAt || '-'}
                                     </div>
+                                    <div>
+                                        <span style="
+                                            background: ${badgeBg}; color: #ffffff; padding: 4px 12px;
+                                            border-radius: 14px; font-size: 10px; font-weight: 800;
+                                            letter-spacing: 0.5px; text-transform: uppercase;
+                                            box-shadow: 0 2px 6px rgba(0,0,0,0.3); display: inline-block;
+                                        ">${item.myResult || 'MATCH'}</span>
+                                    </div>
                                 </div>
 
-                                <!-- Right side: Win/Lose Badge -->
-                                <div>
-                                    <span style="
-                                        background: ${badgeBg}; color: #ffffff; padding: 6px 14px;
-                                        border-radius: 20px; font-size: 11px; font-weight: 800;
-                                        letter-spacing: 0.5px; text-transform: uppercase;
-                                        box-shadow: 0 2px 8px rgba(0,0,0,0.3); display: inline-block;
-                                    ">${item.myResult || 'MATCH'}</span>
-                                </div>
                             </div>
                         `;
                     }).join('')}
@@ -163,11 +183,12 @@ function renderHistoryModal(historyList, userId) {
             }
 
             detailContainer.innerHTML = `
-                <div style="display: flex; justify-content: space-between;"><span style="color: #94a3b8;">Match/Team:</span> <strong style="color: #fff;">${item.teamVsTeam || item.roomTitle || '-'}</strong></div>
-                <div style="display: flex; justify-content: space-between;"><span style="color: #94a3b8;">Mode:</span> <strong style="color: #38bdf8;">${item.mode || '-'}</strong></div>
-                <div style="display: flex; justify-content: space-between;"><span style="color: #94a3b8;">Fee:</span> <strong style="color: #facc15;">${item.fee || 'Free'}</strong></div>
+                <div style="display: flex; justify-content: space-between;"><span style="color: #94a3b8;">Match/Room:</span> <strong style="color: #fff;">${item.roomTitle || '-'}</strong></div>
+                <div style="display: flex; justify-content: space-between;"><span style="color: #94a3b8;">Matchup:</span> <strong style="color: #38bdf8;">${item.teamName || 'Team 1'} vs ${item.joinerTeamName || 'Team 2'}</strong></div>
+                <div style="display: flex; justify-content: space-between;"><span style="color: #94a3b8;">Mode:</span> <strong style="color: #38bdf8;">${item.mode || '-'} (${item.boType || 'BO1'})</strong></div>
+                <div style="display: flex; justify-content: space-between;"><span style="color: #94a3b8;">Fee/Key:</span> <strong style="color: #facc15;">${item.keyType || item.fee || 'Free'}</strong></div>
                 <div style="display: flex; justify-content: space-between;"><span style="color: #94a3b8;">Result:</span> <strong style="color: ${item.myResult === 'Win' ? '#34d399' : '#f87171'};">${item.myResult || '-'}</strong></div>
-                <div style="display: flex; justify-content: space-between;"><span style="color: #94a3b8;">Date & Time:</span> <span style="color: #fff;">${item.completedAt || item.createdAt || '-'}</span></div>
+                <div style="display: flex; justify-content: space-between;"><span style="color: #94a3b8;">Date & Time:</span> <span style="color: #fff; font-size: 12px;">${item.completedAt || item.createdAt || '-'}</span></div>
                 <div style="margin-top: 6px;">
                     <span style="color: #94a3b8; display: block; margin-bottom: 4px;">Team Members:</span>
                     <div style="background: rgba(15, 23, 42, 0.6); padding: 8px; border-radius: 8px; max-height: 90px; overflow-y: auto; border: 1px solid rgba(255,255,255,0.05);">
