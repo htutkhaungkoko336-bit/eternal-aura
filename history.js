@@ -32,7 +32,7 @@ function renderHistoryModal(historyList, userId) {
         <div id="history-modal" style="
             position: fixed; top: 0; left: 0; width: 100%; height: 100%;
             background: rgba(2, 6, 23, 0.85); backdrop-filter: blur(12px);
-            display: flex; justify-content: center; align-items: center; z-index: 1000; font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'Segoe UI', Roboto, sans-serif;
+            display: flex; justify-content: center; align-items: center; z-index: 1000; font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', sans-serif;
         ">
             <div style="
                 background: linear-gradient(180deg, #1e293b 0%, #0f172a 100%);
@@ -63,38 +63,43 @@ function renderHistoryModal(historyList, userId) {
                     ` : historyList.map((item, index) => {
                         const isWin = item.myResult === 'Win';
                         const isLose = item.myResult === 'Lose';
-                        const accentColor = isWin ? '#34d399' : (isLose ? '#f87171' : '#fbbf24');
+                        const badgeBg = isWin ? 'linear-gradient(135deg, #10b981, #059669)' : (isLose ? 'linear-gradient(135deg, #ef4444, #dc2626)' : 'linear-gradient(135deg, #f59e0b, #d97706)');
                         
                         return `
                             <div class="history-card-item" data-index="${index}" style="
-                                background: rgba(30, 41, 59, 0.7);
+                                background: linear-gradient(135deg, rgba(30, 41, 59, 0.8) 0%, rgba(15, 23, 42, 0.9) 100%);
                                 border: 1px solid rgba(255, 255, 255, 0.08);
                                 border-radius: 16px; padding: 14px 16px;
                                 display: flex; justify-content: space-between; align-items: center;
-                                position: relative; overflow: hidden; cursor: pointer;
-                                transition: all 0.2s ease;
-                                backdrop-filter: blur(6px);
-                            " onmouseover="this.style.background='rgba(51, 65, 85, 0.85)'" onmouseout="this.style.background='rgba(30, 41, 59, 0.7)'">
+                                cursor: pointer; transition: all 0.2s ease;
+                                box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+                            " onmouseover="this.style.borderColor='rgba(56, 189, 248, 0.4)'" onmouseout="this.style.borderColor='rgba(255, 255, 255, 0.08)'">
                                 
-                                <!-- Left Glowing Indicator -->
-                                <div style="position: absolute; left: 0; top: 0; bottom: 0; width: 4px; background: ${accentColor};"></div>
-
-                                <div style="padding-left: 6px;">
-                                    <div style="color: #f8fafc; font-weight: 600; font-size: 15px; letter-spacing: -0.2px;">
-                                        ${item.roomTitle || item.teamVsTeam || item.mode || 'Match'}
+                                <!-- Left side: Team vs Team & Date -->
+                                <div style="display: flex; flex-direction: column; gap: 6px;">
+                                    <div style="display: flex; align-items: center; gap: 8px;">
+                                        <span style="color: #f8fafc; font-weight: 700; font-size: 14px; letter-spacing: -0.2px;">
+                                            ${item.teamVsTeam || item.roomTitle || 'Team A vs Team B'}
+                                        </span>
+                                        <span style="
+                                            background: rgba(56, 189, 248, 0.15); color: #38bdf8; 
+                                            font-size: 10px; font-weight: 700; padding: 2px 6px; border-radius: 6px;
+                                            border: 1px solid rgba(56, 189, 248, 0.3);
+                                        ">VS</span>
                                     </div>
-                                    <div style="color: #94a3b8; font-size: 12px; margin-top: 5px; display: flex; align-items: center; gap: 5px;">
+                                    <div style="color: #94a3b8; font-size: 11px; display: flex; align-items: center; gap: 4px;">
                                         <span>🕒</span> ${item.completedAt || item.createdAt || '-'}
                                     </div>
                                 </div>
 
-                                <div style="display: flex; align-items: center; gap: 10px;">
+                                <!-- Right side: Win/Lose Badge -->
+                                <div>
                                     <span style="
-                                        background: ${accentColor}20; color: ${accentColor}; border: 1px solid${accentColor}40;
-                                        padding: 4px 12px; border-radius: 20px; font-size: 11px; font-weight: 700;
-                                        text-transform: uppercase; letter-spacing: 0.5px;
-                                    ">${item.myResult}</span>
-                                    <span style="color: #64748b; font-size: 14px;">❯</span>
+                                        background: ${badgeBg}; color: #ffffff; padding: 6px 14px;
+                                        border-radius: 20px; font-size: 11px; font-weight: 800;
+                                        letter-spacing: 0.5px; text-transform: uppercase;
+                                        box-shadow: 0 2px 8px rgba(0,0,0,0.3); display: inline-block;
+                                    ">${item.myResult || 'MATCH'}</span>
                                 </div>
                             </div>
                         `;
@@ -106,24 +111,24 @@ function renderHistoryModal(historyList, userId) {
         <!-- Detail Modal Container (Hidden by default) -->
         <div id="match-detail-modal" style="
             position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(0, 0, 0, 0.7); backdrop-filter: blur(8px);
+            background: rgba(0, 0, 0, 0.75); backdrop-filter: blur(8px);
             display: none; justify-content: center; align-items: center; z-index: 1100;
             font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', sans-serif;
         ">
             <div style="
                 background: #1e293b; border: 1px solid rgba(255, 255, 255, 0.15); width: 88%; max-width: 360px;
-                border-radius: 20px; padding: 22px; box-shadow: 0 20px 40px rgba(0,0,0,0.6);
-                position: relative;
+                border-radius: 22px; padding: 22px; box-shadow: 0 20px 40px rgba(0,0,0,0.7);
             ">
                 <h4 style="color: #f8fafc; margin: 0 0 15px 0; font-size: 16px; font-weight: 600; border-bottom: 1px solid rgba(255,255,255,0.08); padding-bottom: 10px;">📊 Match Details</h4>
                 
-                <div id="detail-content" style="display: flex; flex-direction: column; gap: 10px; font-size: 14px; color: #cbd5e1;">
+                <div id="detail-content" style="display: flex; flex-direction: column; gap: 10px; font-size: 13px; color: #cbd5e1;">
                     <!-- Dynamically injected detail info -->
                 </div>
 
                 <button id="close-detail-modal" style="
-                    width: 100%; margin-top: 18px; background: #3b82f6; color: #fff; border: none;
-                    padding: 10px; border-radius: 12px; font-weight: 600; cursor: pointer;
+                    width: 100%; margin-top: 18px; background: linear-gradient(135deg, #3b82f6, #2563eb); color: #fff; border: none;
+                    padding: 11px; border-radius: 12px; font-weight: 600; cursor: pointer;
+                    box-shadow: 0 4px 12px rgba(59, 130, 246, 0.4);
                 ">ပိတ်မည်</button>
             </div>
         </div>
@@ -131,7 +136,7 @@ function renderHistoryModal(historyList, userId) {
 
     document.body.insertAdjacentHTML('beforeend', modalHTML);
 
-    // Event Listeners for Closing Main History Modal
+    // Close Main History Modal
     document.getElementById('close-history-modal').addEventListener('click', () => {
         document.getElementById('history-modal').remove();
     });
@@ -142,7 +147,7 @@ function renderHistoryModal(historyList, userId) {
         }
     });
 
-    // Event Listeners to Open Detail Modal when a card is clicked
+    // Open Detail Modal on Card Click
     document.querySelectorAll('.history-card-item').forEach(card => {
         card.addEventListener('click', () => {
             const index = card.getAttribute('data-index');
@@ -150,23 +155,22 @@ function renderHistoryModal(historyList, userId) {
             
             const detailContainer = document.getElementById('detail-content');
             
-            // Format Team Members list safely
             let membersHTML = '-';
             if (item.teamMembers && Array.isArray(item.teamMembers)) {
-                membersHTML = item.teamMembers.map(m => `<span style="background: rgba(255,255,255,0.06); padding: 3px 8px; border-radius: 6px; font-size: 12px; display: inline-block; margin: 2px;">${m}</span>`).join(' ');
+                membersHTML = item.teamMembers.map(m => `<span style="background: rgba(255,255,255,0.06); padding: 3px 8px; border-radius: 6px; font-size: 11px; display: inline-block; margin: 2px;">${m}</span>`).join(' ');
             } else if (typeof item.teamMembers === 'string') {
                 membersHTML = item.teamMembers;
             }
 
             detailContainer.innerHTML = `
-                <div style="display: flex; justify-content: space-between;"><span style="color: #94a3b8;">Team vs Team:</span> <strong style="color: #fff;">${item.roomTitle || item.teamVsTeam || '-'}</strong></div>
+                <div style="display: flex; justify-content: space-between;"><span style="color: #94a3b8;">Match/Team:</span> <strong style="color: #fff;">${item.teamVsTeam || item.roomTitle || '-'}</strong></div>
                 <div style="display: flex; justify-content: space-between;"><span style="color: #94a3b8;">Mode:</span> <strong style="color: #38bdf8;">${item.mode || '-'}</strong></div>
                 <div style="display: flex; justify-content: space-between;"><span style="color: #94a3b8;">Fee:</span> <strong style="color: #facc15;">${item.fee || 'Free'}</strong></div>
                 <div style="display: flex; justify-content: space-between;"><span style="color: #94a3b8;">Result:</span> <strong style="color: ${item.myResult === 'Win' ? '#34d399' : '#f87171'};">${item.myResult || '-'}</strong></div>
-                <div style="display: flex; justify-content: space-between;"><span style="color: #94a3b8;">Time/Date:</span> <span style="color: #fff; font-size: 13px;">${item.completedAt || item.createdAt || '-'}</span></div>
+                <div style="display: flex; justify-content: space-between;"><span style="color: #94a3b8;">Date & Time:</span> <span style="color: #fff;">${item.completedAt || item.createdAt || '-'}</span></div>
                 <div style="margin-top: 6px;">
                     <span style="color: #94a3b8; display: block; margin-bottom: 4px;">Team Members:</span>
-                    <div style="background: rgba(15, 23, 42, 0.5); padding: 8px; border-radius: 8px; max-height: 90px; overflow-y: auto;">
+                    <div style="background: rgba(15, 23, 42, 0.6); padding: 8px; border-radius: 8px; max-height: 90px; overflow-y: auto; border: 1px solid rgba(255,255,255,0.05);">
                         ${membersHTML}
                     </div>
                 </div>
