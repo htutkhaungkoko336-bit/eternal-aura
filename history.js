@@ -69,6 +69,9 @@ function renderHistoryModal(historyList, userId) {
                         const hostLogo = item.teamLogo || 'https://via.placeholder.com/32';
                         const joinerTeamName = item.joinerTeamName || 'Joiner Team';
                         const joinerLogo = item.joinerTeamLogo || 'https://via.placeholder.com/32';
+                        
+                        const modeText = item.mode ? item.mode.toUpperCase() : 'MATCH';
+                        const feeText = item.keyType || item.fee ? `• ${item.keyType || item.fee}` : '';
 
                         return `
                             <div class="history-card-item" data-index="${index}" style="
@@ -100,10 +103,15 @@ function renderHistoryModal(historyList, userId) {
                                     </div>
                                 </div>
 
-                                <!-- Bottom Row: Date/Time & Win/Lose Badge -->
+                                <!-- Bottom Row: Mode, Fee, Date & Win/Lose Badge -->
                                 <div style="display: flex; justify-content: space-between; align-items: center; border-top: 1px solid rgba(255,255,255,0.06); padding-top: 8px;">
-                                    <div style="color: #94a3b8; font-size: 11px; display: flex; align-items: center; gap: 4px;">
-                                        <span>🕒</span> ${item.completedAt || item.createdAt || '-'}
+                                    <div style="display: flex; flex-direction: column; gap: 2px;">
+                                        <div style="color: #38bdf8; font-size: 11px; font-weight: 700;">
+                                            ${modeText} <span style="color: #facc15; font-weight: 600;">${feeText}</span>
+                                        </div>
+                                        <div style="color: #94a3b8; font-size: 10px; display: flex; align-items: center; gap: 4px;">
+                                            <span>🕒</span> ${item.completedAt || item.createdAt || '-'}
+                                        </div>
                                     </div>
                                     <div>
                                         <span style="
@@ -122,7 +130,7 @@ function renderHistoryModal(historyList, userId) {
             </div>
         </div>
 
-        <!-- Detailed Comparison Modal (Matches the requested design) -->
+        <!-- Detailed Comparison Modal -->
         <div id="match-detail-modal" style="
             position: fixed; top: 0; left: 0; width: 100%; height: 100%;
             background: rgba(0, 0, 0, 0.8); backdrop-filter: blur(10px);
@@ -137,8 +145,8 @@ function renderHistoryModal(historyList, userId) {
             ">
                 <!-- Header -->
                 <div style="text-align: center; border-bottom: 1px solid rgba(255,255,255,0.08); padding-bottom: 12px; margin-bottom: 15px;">
-                    <h3 id="detail-title" style="color: #38bdf8; margin: 0; font-size: 17px; font-weight: 700; letter-spacing: 0.5px;">5V5 MATCH DETAILS</h3>
-                    <p style="color: #94a3b8; font-size: 11px; margin: 4px 0 0 0;">Players Comparison</p>
+                    <h3 id="detail-title" style="color: #38bdf8; margin: 0; font-size: 17px; font-weight: 700; letter-spacing: 0.5px;">MATCH DETAILS</h3>
+                    <p style="color: #94a3b8; font-size: 11px; margin: 4px 0 0 0;">Player & Hero Details</p>
                 </div>
 
                 <!-- Comparison Body (Side by Side Cards) -->
@@ -147,38 +155,44 @@ function renderHistoryModal(historyList, userId) {
                     <!-- Host Team Box -->
                     <div style="
                         flex: 1; background: rgba(30, 41, 59, 0.6); border: 1px solid rgba(255,255,255,0.08);
-                        border-radius: 14px; padding: 12px; display: flex; flex-direction: column; gap: 8px;
+                        border-radius: 14px; padding: 12px; display: flex; flex-direction: column; gap: 10px;
                     ">
                         <div style="display: flex; align-items: center; gap: 6px; border-bottom: 1px solid rgba(255,255,255,0.08); padding-bottom: 8px;">
                             <img id="detail-host-logo" src="" style="width: 22px; height: 22px; border-radius: 50%; object-fit: cover;">
                             <span id="detail-host-name" style="color: #38bdf8; font-weight: 700; font-size: 12px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">Host Team</span>
                         </div>
                         
-                        <div style="display: flex; flex-direction: column; gap: 6px; font-size: 12px; color: #cbd5e1;">
-                            <div style="display: flex; justify-content: space-between; border-bottom: 1px solid rgba(255,255,255,0.04); padding-bottom: 4px;"><span style="color: #94a3b8; font-size: 11px;">Roamer:</span> <strong id="h-roamer" style="color: #fff;">-</strong></div>
-                            <div style="display: flex; justify-content: space-between; border-bottom: 1px solid rgba(255,255,255,0.04); padding-bottom: 4px;"><span style="color: #94a3b8; font-size: 11px;">EXP:</span> <strong id="h-exp" style="color: #fff;">-</strong></div>
-                            <div style="display: flex; justify-content: space-between; border-bottom: 1px solid rgba(255,255,255,0.04); padding-bottom: 4px;"><span style="color: #94a3b8; font-size: 11px;">Gold:</span> <strong id="h-gold" style="color: #fff;">-</strong></div>
-                            <div style="display: flex; justify-content: space-between; border-bottom: 1px solid rgba(255,255,255,0.04); padding-bottom: 4px;"><span style="color: #94a3b8; font-size: 11px;">Mid:</span> <strong id="h-mid" style="color: #fff;">-</strong></div>
-                            <div style="display: flex; justify-content: space-between;"><span style="color: #94a3b8; font-size: 11px;">Jungle:</span> <strong id="h-jungle" style="color: #fff;">-</strong></div>
+                        <div style="display: flex; flex-direction: column; gap: 8px; font-size: 12px; color: #cbd5e1;">
+                            <div>
+                                <span style="color: #94a3b8; font-size: 10px; display: block;">Player Name:</span>
+                                <strong id="h-name" style="color: #fff; font-size: 13px;">-</strong>
+                            </div>
+                            <div>
+                                <span style="color: #94a3b8; font-size: 10px; display: block;">Hero Name:</span>
+                                <strong id="h-hero" style="color: #38bdf8; font-size: 13px;">-</strong>
+                            </div>
                         </div>
                     </div>
 
                     <!-- Joiner Team Box -->
                     <div style="
                         flex: 1; background: rgba(30, 41, 59, 0.6); border: 1px solid rgba(255,255,255,0.08);
-                        border-radius: 14px; padding: 12px; display: flex; flex-direction: column; gap: 8px;
+                        border-radius: 14px; padding: 12px; display: flex; flex-direction: column; gap: 10px;
                     ">
                         <div style="display: flex; align-items: center; justify-content: flex-end; gap: 6px; border-bottom: 1px solid rgba(255,255,255,0.08); padding-bottom: 8px;">
                             <span id="detail-joiner-name" style="color: #f87171; font-weight: 700; font-size: 12px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; text-align: right;">Joiner Team</span>
                             <img id="detail-joiner-logo" src="" style="width: 22px; height: 22px; border-radius: 50%; object-fit: cover;">
                         </div>
                         
-                        <div style="display: flex; flex-direction: column; gap: 6px; font-size: 12px; color: #cbd5e1;">
-                            <div style="display: flex; justify-content: space-between; border-bottom: 1px solid rgba(255,255,255,0.04); padding-bottom: 4px;"><strong id="j-roamer" style="color: #fff;">-</strong> <span style="color: #94a3b8; font-size: 11px;">:Roamer</span></div>
-                            <div style="display: flex; justify-content: space-between; border-bottom: 1px solid rgba(255,255,255,0.04); padding-bottom: 4px;"><strong id="j-exp" style="color: #fff;">-</strong> <span style="color: #94a3b8; font-size: 11px;">:EXP</span></div>
-                            <div style="display: flex; justify-content: space-between; border-bottom: 1px solid rgba(255,255,255,0.04); padding-bottom: 4px;"><strong id="j-gold" style="color: #fff;">-</strong> <span style="color: #94a3b8; font-size: 11px;">:Gold</span></div>
-                            <div style="display: flex; justify-content: space-between; border-bottom: 1px solid rgba(255,255,255,0.04); padding-bottom: 4px;"><strong id="j-mid" style="color: #fff;">-</strong> <span style="color: #94a3b8; font-size: 11px;">:Mid</span></div>
-                            <div style="display: flex; justify-content: space-between;"><strong id="j-jungle" style="color: #fff;">-</strong> <span style="color: #94a3b8; font-size: 11px;">:Jungle</span></div>
+                        <div style="display: flex; flex-direction: column; gap: 8px; font-size: 12px; color: #cbd5e1; text-align: right;">
+                            <div>
+                                <span style="color: #94a3b8; font-size: 10px; display: block;">Player Name:</span>
+                                <strong id="j-name" style="color: #fff; font-size: 13px;">-</strong>
+                            </div>
+                            <div>
+                                <span style="color: #94a3b8; font-size: 10px; display: block;">Hero Name:</span>
+                                <strong id="j-hero" style="color: #f87171; font-size: 13px;">-</strong>
+                            </div>
                         </div>
                     </div>
 
@@ -231,19 +245,13 @@ function renderHistoryModal(historyList, userId) {
             document.getElementById('detail-joiner-name').innerText = item.joinerTeamName || 'Joiner Team';
             document.getElementById('detail-joiner-logo').src = item.joinerTeamLogo || 'https://via.placeholder.com/22';
 
-            // Host Roles (roamer, exp, gold, mid, jungle maps/objects or strings)
-            document.getElementById('h-roamer').innerText = item.roamer?.name || item.roamer || '-';
-            document.getElementById('h-exp').innerText = item.exp?.name || item.exp || '-';
-            document.getElementById('h-gold').innerText = item.gold?.name || item.gold || '-';
-            document.getElementById('h-mid').innerText = item.mid?.name || item.mid || '-';
-            document.getElementById('h-jungle').innerText = item.jungle?.name || item.jungle || '-';
+            // Host Name & Hero Name (1v1 or regular fields support)
+            document.getElementById('h-name').innerText = item.inGameName || item.name || '-';
+            document.getElementById('h-hero').innerText = item.heroName || '-';
 
-            // Joiner Roles
-            document.getElementById('j-roamer').innerText = item.joinerRoamer?.name || item.joinerRoamer || '-';
-            document.getElementById('j-exp').innerText = item.joinerExp?.name || item.joinerExp || '-';
-            document.getElementById('j-gold').innerText = item.joinerGold?.name || item.joinerGold || '-';
-            document.getElementById('j-mid').innerText = item.joinerMid?.name || item.joinerMid || '-';
-            document.getElementById('j-jungle').innerText = item.joinerJungle?.name || item.joinerJungle || '-';
+            // Joiner Name & Hero Name
+            document.getElementById('j-name').innerText = item.joinerInGameName || item.joinerName || '-';
+            document.getElementById('j-hero').innerText = item.joinerHeroName || '-';
 
             // Meta Info
             document.getElementById('detail-result').innerText = item.myResult || '-';
