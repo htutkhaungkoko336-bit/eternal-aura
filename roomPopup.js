@@ -297,45 +297,46 @@ export function showSpinWheelPopup(room, mode, userId, callbacks) {
 
     const styleTag = document.createElement('style');
     styleTag.innerHTML = `
-        @keyframes vsPulse {
-            0% { transform: scale(1); filter: drop-shadow(0 0 10px rgba(0,122,255,0.5)); }
-            50% { transform: scale(1.08); filter: drop-shadow(0 0 25px rgba(255,59,48,0.8)); }
-            100% { transform: scale(1); filter: drop-shadow(0 0 10px rgba(0,122,255,0.5)); }
+        @keyframes reelSpin {
+            0% { transform: translateY(0); }
+            100% { transform: translateY(-50%); }
         }
-        .vs-badge {
-            animation: vsPulse 1.5s infinite ease-in-out;
+        .reel-container {
+            display: flex;
+            flex-direction: column;
+            animation: reelSpin 0.4s linear infinite;
         }
     `;
     document.head.appendChild(styleTag);
 
     overlay.innerHTML = `
         <div class="popup-box" style="max-width: 420px; width: 95%; background: rgba(20, 20, 25, 0.98); backdrop-filter: blur(20px); border: 1px solid rgba(255,255,255,0.1); border-radius: 24px; box-shadow: 0 20px 40px rgba(0,0,0,0.8); color: #fff; padding: 24px; text-align: center; position: relative;">
-            <div style="font-size: 12px; text-transform: uppercase; letter-spacing: 2px; color: #8e8e93; margin-bottom: 6px;">⚡ First Pick Battle Draw ⚡</div>
+            <div style="font-size: 12px; text-transform: uppercase; letter-spacing: 2px; color: #8e8e93; margin-bottom: 6px;">⚡ First Pick Draw ⚡</div>
             <div style="font-size: 18px; font-weight: 800; color: #fff; margin-bottom: 16px;" id="spinStatusText">
-                🔥 Selecting First Pick Team...
+                🎲 Selecting First Pick...
             </div>
 
-            <!-- VS Teams Comparison Container -->
-            <div style="display: flex; align-items: center; justify-content: space-between; gap: 10px; margin: 15px 0;">
-                <!-- Team 1 Box -->
-                <div id="team1Box" style="flex: 1; background: rgba(52, 199, 89, 0.1); border: 2px solid rgba(52, 199, 89, 0.3); border-radius: 16px; padding: 16px 10px; display: flex; flex-direction: column; align-items: center; gap: 8px; transition: all 0.3s ease;">
-                    <div style="width: 36px; height: 36px; background: #34c759; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: 900; font-size: 16px; color: #fff; box-shadow: 0 0 15px rgba(52,199,89,0.5);">1</div>
-                    <span style="font-size: 13px; font-weight: 700; color: #fff; max-width: 120px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">${team1Name}</span>
-                </div>
-
-                <!-- VS Badge -->
-                <div class="vs-badge" style="font-size: 14px; font-weight: 900; color: #ff3b30; background: rgba(255,59,48,0.15); padding: 8px 12px; border-radius: 12px; border: 1px solid rgba(255,59,48,0.3);">
-                    VS
-                </div>
-
-                <!-- Team 2 Box -->
-                <div id="team2Box" style="flex: 1; background: rgba(0, 122, 255, 0.1); border: 2px solid rgba(0, 122, 255, 0.3); border-radius: 16px; padding: 16px 10px; display: flex; flex-direction: column; align-items: center; gap: 8px; transition: all 0.3s ease;">
-                    <div style="width: 36px; height: 36px; background: #007aff; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: 900; font-size: 16px; color: #fff; box-shadow: 0 0 15px rgba(0,122,255,0.5);">2</div>
-                    <span style="font-size: 13px; font-weight: 700; color: #fff; max-width: 120px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">${team2Name}</span>
+            <!-- Vertical Wheel Reel Box -->
+            <div style="position: relative; width: 100%; height: 70px; margin: 15px auto; background: rgba(0,0,0,0.6); border-radius: 14px; border: 2px solid rgba(255,255,255,0.15); overflow: hidden; display: flex; align-items: center; justify-content: center;">
+                <div style="position: absolute; inset: 0; background: linear-gradient(to bottom, rgba(0,0,0,0.8), transparent 30%, transparent 70%, rgba(0,0,0,0.8)); z-index: 2; pointer-events: none;"></div>
+                <div id="wheelReel" class="reel-container" style="width: 100%;">
+                    <div style="height: 70px; display: flex; align-items: center; justify-content: center; font-size: 18px; font-weight: 800; color: #34c759;">${team1Name}</div>
+                    <div style="height: 70px; display: flex; align-items: center; justify-content: center; font-size: 18px; font-weight: 800; color: #007aff;">${team2Name}</div>
                 </div>
             </div>
 
-            <div style="font-size: 13px; color: #aeaeb2; margin-top: 16px;" id="spinSubText">
+            <div style="display: flex; justify-content: space-around; margin-top: 18px; padding: 10px; background: rgba(255,255,255,0.05); border-radius: 12px; border: 1px solid rgba(255,255,255,0.08);">
+                <div style="display: flex; align-items: center; gap: 8px;">
+                    <div style="width: 14px; height: 14px; background: #34c759; border-radius: 4px;"></div>
+                    <span style="font-size: 12px; font-weight: 700; color: #fff; max-width: 120px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">${team1Name}</span>
+                </div>
+                <div style="display: flex; align-items: center; gap: 8px;">
+                    <div style="width: 14px; height: 14px; background: #007aff; border-radius: 4px;"></div>
+                    <span style="font-size: 12px; font-weight: 700; color: #fff; max-width: 120px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">${team2Name}</span>
+                </div>
+            </div>
+
+            <div style="font-size: 13px; color: #aeaeb2; margin-top: 14px;" id="spinSubText">
                 May the best legend claim the first strike! ⚡
             </div>
         </div>
@@ -343,10 +344,9 @@ export function showSpinWheelPopup(room, mode, userId, callbacks) {
 
     document.body.appendChild(overlay);
 
+    const wheelReel = overlay.querySelector('#wheelReel');
     const statusText = overlay.querySelector('#spinStatusText');
     const subText = overlay.querySelector('#spinSubText');
-    const team1Box = overlay.querySelector('#team1Box');
-    const team2Box = overlay.querySelector('#team2Box');
 
     let chosenWinner = room.firstPick;
 
@@ -372,7 +372,7 @@ export function showSpinWheelPopup(room, mode, userId, callbacks) {
                 const data = await res.json();
                 if (data.success && data.room && data.room.firstPick) {
                     clearInterval(checkWinnerInterval);
-                    highlightWinner(data.room.firstPick);
+                    stopReel(data.room.firstPick);
                 }
             } catch (e) {
                 console.error("Error fetching winner:", e);
@@ -382,30 +382,19 @@ export function showSpinWheelPopup(room, mode, userId, callbacks) {
     }
 
     if (chosenWinner) {
-        // ခဏစောင့်ပြီးမှ ရလဒ်ပေါ်စေရန် (ရိုးရှင်းပြီး ကြည့်ရတာ သဘာဝကျစေရန်)
         setTimeout(() => {
-            highlightWinner(chosenWinner);
-        }, 800);
+            stopReel(chosenWinner);
+        }, 1200);
     }
 
-    function highlightWinner(winner) {
-        const isTeam1 = winner === team1Name;
-
-        // အနိုင်ရတဲ့ဘက်ကို အရောင်လင်းစေပြီး၊ ရှုံးတဲ့ဘက်ကို မှေးသွားစေခြင်း
-        if (isTeam1) {
-            team1Box.style.background = 'rgba(52, 199, 89, 0.3)';
-            team1Box.style.borderColor = '#34c759';
-            team1Box.style.transform = 'scale(1.05)';
-            team1Box.style.boxShadow = '0 0 25px rgba(52,199,89,0.6)';
-            
-            team2Box.style.opacity = '0.4';
-        } else {
-            team2Box.style.background = 'rgba(0, 122, 255, 0.3)';
-            team2Box.style.borderColor = '#007aff';
-            team2Box.style.transform = 'scale(1.05)';
-            team2Box.style.boxShadow = '0 0 25px rgba(0,122,255,0.6)';
-            
-            team1Box.style.opacity = '0.4';
+    function stopReel(winner) {
+        if (wheelReel) {
+            wheelReel.style.animation = 'none';
+            // အနိုင်ရတဲ့အသင်းပေါ်မူတည်၍ တည်နေရာကို ချိန်ညှိပြသခြင်း
+            const isTeam1 = winner === team1Name;
+            wheelReel.innerHTML = `
+                <div style="height: 70px; display: flex; align-items: center; justify-content: center; font-size: 20px; font-weight: 900; color: ${isTeam1 ? '#34c759' : '#007aff'}; text-shadow: 0 0 15px rgba(52,199,89,0.5);">${winner}</div>
+            `;
         }
 
         if (statusText) {
