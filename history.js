@@ -24,32 +24,6 @@ export async function fetchAndInitHistory(userId) {
     }
 }
 
-export async function fetchAndInitHistory(userId) {
-    try {
-        if (!userId) {
-            console.error("User ID is missing for fetching history.");
-            return;
-        }
-
-        const response = await fetch('/api/create-room?history=true&userId=' + userId);
-        
-        const contentType = response.headers.get("content-type");
-        if (!contentType || !contentType.includes("application/json")) {
-            throw new Error("Server did not return JSON. Endpoint might be incorrect (404).");
-        }
-
-        const data = await response.json();
-
-        if (data.success) {
-            renderHistoryModal(data.history || [], userId);
-        } else {
-            console.error("Failed to load history:", data.message);
-        }
-    } catch (error) {
-        console.error("Error fetching history:", error);
-    }
-}
-
 function renderHistoryModal(historyList, userId) {
     const existingModal = document.getElementById('history-modal');
     if (existingModal) existingModal.remove();
@@ -67,23 +41,23 @@ function renderHistoryModal(historyList, userId) {
                 box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.8);
             ">
                 <!-- Modal Header -->
-                <div style="padding: 16px 20px; border-bottom: 1px solid rgba(255, 255, 255, 0.08); display: flex; justify-content: space-between; align-items: center; background: rgba(15, 23, 42, 0.7); flex-shrink: 0;">
+                <div style="padding: 20px; border-bottom: 1px solid rgba(255, 255, 255, 0.08); display: flex; justify-content: space-between; align-items: center; background: rgba(15, 23, 42, 0.7); flex-shrink: 0;">
                     <div style="display: flex; align-items: center; gap: 10px;">
                         <span style="font-size: 18px;">📜</span>
-                        <h3 style="color: #f8fafc; margin: 0; font-size: 17px; font-weight: 600; letter-spacing: -0.3px;">Match History</h3>
+                        <h3 style="color: #f8fafc; margin: 0; font-size: 18px; font-weight: 600; letter-spacing: -0.3px;">Match History</h3>
                     </div>
                     <button id="close-history-modal" style="
-                        background: rgba(255, 255, 255, 0.08); border: none; color: #94a3b8; width: 30px; height: 30px;
+                        background: rgba(255, 255, 255, 0.08); border: none; color: #94a3b8; width: 32px; height: 32px;
                         border-radius: 50%; font-size: 18px; cursor: pointer; display: flex; align-items: center; justify-content: center;
                         transition: all 0.2s ease;
                     ">&times;</button>
                 </div>
 
-                <!-- Modal Body (History Cards List) -->
-                <div style="padding: 14px 16px; overflow-y: auto; flex: 1; display: flex; flex-direction: column; gap: 10px;">
+                <!-- Modal Body (History Cards List with Proper Scrolling) -->
+                <div style="padding: 16px; overflow-y: auto; flex: 1; min-height: 0; display: flex; flex-direction: column; gap: 12px;">
                     ${historyList.length === 0 ? `
-                        <div style="text-align: center; padding: 40px 0;">
-                            <div style="font-size: 40px; margin-bottom: 10px;">📭</div>
+                        <div style="text-align: center; padding: 50px 0;">
+                            <div style="font-size: 45px; margin-bottom: 12px;">📭</div>
                             <p style="color: #94a3b8; font-size: 14px; margin: 0;">မှတ်တမ်း မရှိသေးပါ</p>
                         </div>
                     ` : historyList.map((item, index) => {
@@ -92,9 +66,9 @@ function renderHistoryModal(historyList, userId) {
                         const badgeBg = isWin ? 'linear-gradient(135deg, #10b981, #059669)' : (isLose ? 'linear-gradient(135deg, #ef4444, #dc2626)' : 'linear-gradient(135deg, #f59e0b, #d97706)');
                         
                         const hostTeamName = item.teamName || 'Host Team';
-                        const hostLogo = item.teamLogo || 'https://via.placeholder.com/28';
+                        const hostLogo = item.teamLogo || 'https://via.placeholder.com/32';
                         const joinerTeamName = item.joinerTeamName || 'Joiner Team';
-                        const joinerLogo = item.joinerTeamLogo || 'https://via.placeholder.com/28';
+                        const joinerLogo = item.joinerTeamLogo || 'https://via.placeholder.com/32';
                         
                         const modeText = item.mode ? item.mode.toUpperCase() : 'MATCH';
                         const feeText = item.keyType || item.fee ? `• ${item.keyType || item.fee}` : '';
@@ -103,48 +77,48 @@ function renderHistoryModal(historyList, userId) {
                             <div class="history-card-item" data-index="${index}" style="
                                 background: linear-gradient(135deg, rgba(30, 41, 59, 0.85) 0%, rgba(15, 23, 42, 0.95) 100%);
                                 border: 1px solid rgba(255, 255, 255, 0.08);
-                                border-radius: 14px; padding: 12px;
-                                display: flex; flex-direction: column; gap: 8px;
+                                border-radius: 18px; padding: 14px;
+                                display: flex; flex-direction: column; gap: 10px;
                                 cursor: pointer; transition: all 0.2s ease;
-                                box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
-                                position: relative; overflow: hidden;
+                                box-shadow: 0 4px 15px rgba(0, 0, 0, 0.25);
+                                position: relative; overflow: hidden; flex-shrink: 0;
                             " onmouseover="this.style.borderColor='rgba(56, 189, 248, 0.4)'" onmouseout="this.style.borderColor='rgba(255, 255, 255, 0.08)'">
                                 
                                 <!-- Top Row: Teams VS Layout -->
-                                <div style="display: flex; align-items: center; justify-content: space-between; gap: 6px;">
-                                    <div style="display: flex; align-items: center; gap: 6px; flex: 1; min-width: 0;">
-                                        <img src="${hostLogo}" style="width: 26px; height: 26px; border-radius: 50%; object-fit: cover; border: 1px solid rgba(255,255,255,0.2);" onerror="this.src='https://via.placeholder.com/26'">
-                                        <span style="color: #f8fafc; font-weight: 600; font-size: 12px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">${hostTeamName}</span>
+                                <div style="display: flex; align-items: center; justify-content: space-between; gap: 8px;">
+                                    <div style="display: flex; align-items: center; gap: 8px; flex: 1; min-width: 0;">
+                                        <img src="${hostLogo}" style="width: 30px; height: 30px; border-radius: 50%; object-fit: cover; border: 1px solid rgba(255,255,255,0.2);" onerror="this.src='https://via.placeholder.com/30'">
+                                        <span style="color: #f8fafc; font-weight: 600; font-size: 13px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">${hostTeamName}</span>
                                     </div>
 
                                     <div style="
                                         background: linear-gradient(135deg, #0ea5e9, #2563eb); color: #fff;
-                                        font-size: 9px; font-weight: 800; padding: 2px 6px; border-radius: 6px;
-                                        letter-spacing: 0.5px; flex-shrink: 0;
+                                        font-size: 10px; font-weight: 800; padding: 3px 8px; border-radius: 8px;
+                                        letter-spacing: 0.5px; box-shadow: 0 2px 6px rgba(14, 165, 233, 0.4);
                                     ">VS</div>
 
-                                    <div style="display: flex; align-items: center; justify-content: flex-end; gap: 6px; flex: 1; min-width: 0;">
-                                        <span style="color: #f8fafc; font-weight: 600; font-size: 12px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; text-align: right;">${joinerTeamName}</span>
-                                        <img src="${joinerLogo}" style="width: 26px; height: 26px; border-radius: 50%; object-fit: cover; border: 1px solid rgba(255,255,255,0.2);" onerror="this.src='https://via.placeholder.com/26'">
+                                    <div style="display: flex; align-items: center; justify-content: flex-end; gap: 8px; flex: 1; min-width: 0;">
+                                        <span style="color: #f8fafc; font-weight: 600; font-size: 13px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; text-align: right;">${joinerTeamName}</span>
+                                        <img src="${joinerLogo}" style="width: 30px; height: 30px; border-radius: 50%; object-fit: cover; border: 1px solid rgba(255,255,255,0.2);" onerror="this.src='https://via.placeholder.com/30'">
                                     </div>
                                 </div>
 
                                 <!-- Bottom Row: Mode, Fee, Date & Win/Lose Badge -->
-                                <div style="display: flex; justify-content: space-between; align-items: center; border-top: 1px solid rgba(255,255,255,0.06); padding-top: 6px;">
-                                    <div style="display: flex; flex-direction: column; gap: 2px; min-width: 0; flex: 1;">
-                                        <div style="color: #38bdf8; font-size: 11px; font-weight: 700; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">
+                                <div style="display: flex; justify-content: space-between; align-items: center; border-top: 1px solid rgba(255,255,255,0.06); padding-top: 8px;">
+                                    <div style="display: flex; flex-direction: column; gap: 2px;">
+                                        <div style="color: #38bdf8; font-size: 11px; font-weight: 700;">
                                             ${modeText} <span style="color: #facc15; font-weight: 600;">${feeText}</span>
                                         </div>
                                         <div style="color: #94a3b8; font-size: 10px; display: flex; align-items: center; gap: 4px;">
                                             <span>🕒</span> ${item.completedAt || item.createdAt || '-'}
                                         </div>
                                     </div>
-                                    <div style="flex-shrink: 0; margin-left: 8px;">
+                                    <div>
                                         <span style="
-                                            background: ${badgeBg}; color: #ffffff; padding: 3px 10px;
-                                            border-radius: 10px; font-size: 9px; font-weight: 800;
+                                            background: ${badgeBg}; color: #ffffff; padding: 4px 12px;
+                                            border-radius: 14px; font-size: 10px; font-weight: 800;
                                             letter-spacing: 0.5px; text-transform: uppercase;
-                                            display: inline-block;
+                                            box-shadow: 0 2px 6px rgba(0,0,0,0.3); display: inline-block;
                                         ">${item.myResult || 'MATCH'}</span>
                                     </div>
                                 </div>
@@ -304,6 +278,7 @@ function renderHistoryModal(historyList, userId) {
                 `;
             }
 
+            // Meta Info
             document.getElementById('detail-result').innerText = item.myResult || '-';
             document.getElementById('detail-fee').innerText = item.keyType || item.fee || 'Free';
             document.getElementById('detail-time').innerText = item.completedAt || item.createdAt || '-';
