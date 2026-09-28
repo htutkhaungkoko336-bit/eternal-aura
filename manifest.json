@@ -1,5 +1,5 @@
 {
-  "background_color": "#092665",
+  "background_color": "#000000",
   "dir": "ltr",
   "display": "standalone",
   "name": "Eternal Aura",
@@ -7,10 +7,10 @@
   "scope": "/",
   "short_name": "Eternal Aura",
   "start_url": "/",
-  "theme_color": "#092665",
+  "theme_color": "#000000",
   "id": "com.eternalaura.app",
   "description": "Eternal Aura Matchmaking App",
-"icons": [
+  "icons": [
     {
       "src": "/icon-192.png",
       "sizes": "192x192",
@@ -22,7 +22,7 @@
       "type": "image/png"
     }
   ],
-      "lang": "en",
+  "lang": "en",
   "categories": [
     "graphics",
     "sports"
