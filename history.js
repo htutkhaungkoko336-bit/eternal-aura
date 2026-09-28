@@ -53,8 +53,17 @@ function renderHistoryModal(historyList, userId) {
                     ">&times;</button>
                 </div>
 
-                <!-- Modal Body (History Cards List) -->
-                <div style="padding: 16px; overflow-y: auto; flex: 1; display: flex; flex-direction: column; gap: 12px;">
+                <!-- Modal Body (History Cards List - Scrollable without Scrollbar) -->
+                <style>
+                    .history-scroll-container::-webkit-scrollbar {
+                        display: none; /* Chrome, Safari, Opera တို့တွင် Scrollbar ဖျောက်ရန် */
+                    }
+                </style>
+                <div class="history-scroll-container" style="
+                    padding: 16px; overflow-y: auto; flex: 1; display: flex; flex-direction: column; gap: 12px;
+                    scrollbar-width: none; /* Firefox တွင် Scrollbar ဖျောက်ရန် */
+                    -ms-overflow-style: none; /* IE နှင့် Edge တွင် Scrollbar ဖျောက်ရန် */
+                ">
                     ${historyList.length === 0 ? `
                         <div style="text-align: center; padding: 50px 0;">
                             <div style="font-size: 45px; margin-bottom: 12px;">📭</div>
@@ -199,7 +208,6 @@ function renderHistoryModal(historyList, userId) {
             const container = document.getElementById('detail-content-container');
 
             if (is1v1) {
-                // 1v1 Layout: Logo centered, Team Name centered below logo, Inline Player & Hero Name
                 container.innerHTML = `
                     <!-- Host Team Box -->
                     <div style="flex: 1; background: rgba(30, 41, 59, 0.6); border: 1px solid rgba(255,255,255,0.08); border-radius: 14px; padding: 12px; display: flex; flex-direction: column; align-items: center; gap: 10px;">
@@ -234,7 +242,6 @@ function renderHistoryModal(historyList, userId) {
                     </div>
                 `;
             } else {
-                // 5v5 / Team Layout: Logo centered, Team Name centered below logo, Both boxes start from left (Role Name : Player Name)
                 const hRoamer = item.roamer?.name || item.roamer || '-';
                 const hExp = item.exp?.name || item.exp || '-';
                 const hGold = item.gold?.name || item.gold || '-';
