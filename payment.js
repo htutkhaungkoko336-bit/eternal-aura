@@ -250,7 +250,7 @@ export function renderPaymentPage(appContent, formData) {
         updateConfirmButtonState();
     });
 
-    document.getElementById('pay-back-btn').addEventListener('click', (e) => {
+document.getElementById('pay-back-btn').addEventListener('click', (e) => {
         e.preventDefault();
         e.stopPropagation();
 
@@ -259,32 +259,30 @@ export function renderPaymentPage(appContent, formData) {
             qrModal.style.display = 'none';
         }
 
-        // formData ထဲက mode ကို အသေအချာ စစ်ဆေးခြင်း
+        // Mode ကို စစ်ဆေးခြင်း
         const modeStr = (formData.mode || '').toLowerCase();
         
-        // 1vs1 သို့မဟုတ် 1v1 ဖြစ်ပါက 1v1 ဖောင်ဆီသို့ အသေအချာ ပြန်သွားရန်
         if (modeStr.includes('1v') || modeStr.includes('1vs1')) {
+            // 1v1 ဖောင်ဆီသို့ savedData (သို့) formData အဟောင်းများဖြင့် ပြန်သွားရန်
             import('./register1v1.js')
                 .then(module => {
                     if (typeof module.renderRegister1v1Form === 'function') {
                         module.renderRegister1v1Form(appContent, formData);
                     } else {
-                        console.error("register1v1.js ထဲတွင် renderRegister1v1Form ကို မတွေ့ပါ။");
+                        console.error("register1v1.js ထဲတွင် renderRegister1v1Form မရှိပါ။");
                     }
                 })
                 .catch(err => {
                     console.error("register1v1.js ကို import လုပ်၍ မရပါ။", err);
                 });
-        } else if (modeStr.includes('tournament')) {
-            renderTournamentRegister(appContent, formData);
         } else {
-            // 5vs5 သို့မဟုတ် ပုံမှန် 
+            // ပုံမှန် 5vs5 ဖောင်အတွက်
             if (typeof renderNormalRegister === 'function') {
                 renderNormalRegister(appContent, formData);
             }
         }
     });
-        confirmBtn.addEventListener('click', async () => {
+            confirmBtn.addEventListener('click', async () => {
         if (confirmBtn.disabled) return;
 
         let modeType = '5vs5'; 
