@@ -261,31 +261,38 @@ const backBtn = document.getElementById('pay-back-btn') || document.getElementBy
                 qrModal.style.display = 'none';
             }
 
-            // Tournament Registration ကနေ လာတာဖြစ်ရင် savedData (သို့) formData အဟောင်းတွေနဲ့အတူ ပြန်ပို့ရန်
+            // Tournament ဘက်ကလာတဲ့ Registration ဖြစ်ရင် tournamentRegistration.js ဆီ data တွေနဲ့အတူ ပြန်ပို့ရန်
             const modeStr = (formData.mode || '').toLowerCase();
-            const isTournament = formData.selectedSlot || formData.teamName || modeStr.includes('tournament') || modeStr.includes('slot');
+            const isTournament = formData.selectedSlot || modeStr.includes('tournament') || modeStr.includes('slot');
 
             if (isTournament) {
                 import('./tournamentRegistration.js')
                     .then(module => {
                         if (typeof module.renderRegisterForm === 'function') {
-                            // formData ထဲက data တွေကို tournamentRegistration မျှော်လင့်တဲ့ savedData ပုံစံနဲ့ ပြန်ပို့ပေးခြင်း
                             module.renderRegisterForm(appContent, formData);
                         }
                     })
                     .catch(err => {
                         console.error("tournamentRegistration.js ကို import လုပ်၍ မရပါ။", err);
                     });
+            } else if (modeStr.includes('1v') || modeStr.includes('1vs1')) {
+                import('./register-1v1.js')
+                    .then(module => {
+                        if (typeof module.renderRegister1v1Form === 'function') {
+                            module.renderRegister1v1Form(appContent, formData);
+                        }
+                    })
+                    .catch(err => {
+                        console.error("register-1v1.js ကို import လုပ်၍ မရပါ။", err);
+                    });
             } else {
-                // အခြား Mode များအတွက်...
-                import('./register-1v1.js').then(m => m.renderRegister1v1Form(appContent, formData)).catch(() => {});
+                if (typeof renderNormalRegister === 'function') {
+                    renderNormalRegister(appContent, formData);
+                }
             }
         });
     }
-    
-    
-    
-    confirmBtn.addEventListener('click', async () => {
+            confirmBtn.addEventListener('click', async () => {
         if (confirmBtn.disabled) return;
 
         let modeType = '5vs5'; 
