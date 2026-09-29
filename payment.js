@@ -250,19 +250,42 @@ export function renderPaymentPage(appContent, formData) {
         updateConfirmButtonState();
     });
 
-    document.getElementById('pay-back-btn').addEventListener('click', () => {
-        // formData ထဲမှာပါလာတဲ့ mode ကို စစ်ဆေးပါ (ဥပမာ- '1vs1')
-        if (formData.mode === '1vs1') {
-            import('./register1v1.js').then(module => { // သင့်ရဲ့ 1v1 file နာမည်အတိုင်း ထည့်ပါ
-                module.renderRegister1v1Form(appContent, formData);
-            });
+    document.getElementById('pay-back-btn').addEventListener('click', (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+
+        // Modal ပွင့်နေခဲ့ရင် ပိတ်မယ်
+        if (qrModal) {
+            qrModal.style.display = 'none';
+        }
+
+        // Mode ကို အသေးစိတ် စစ်ဆေးခြင်း (1v1, 1vs1 စသည်ဖြင့် အားလုံးကို ခြုံမိစေရန်)
+        const modeStr = (formData.mode || formData.gameMode || '').toLowerCase();
+        
+        if (modeStr.includes('1v')) {
+            // 1vs1 သို့မဟုတ် 1v1 ဖြစ်ပါက
+            import('./register1v1.js')
+                .then(module => {
+                    if (typeof module.renderRegister1v1Form === 'function') {
+                        module.renderRegister1v1Form(appContent, formData);
+                    } else if (typeof module.renderRegisterForm === 'function') {
+                        module.renderRegisterForm(appContent, formData);
+                    } else {
+                        console.error("register1v1.js ထဲတွင် render လုပ်ရန် function မတွေ့ပါ။");
+                        renderNormalRegister(appContent, formData);
+                    }
+                })
+                .catch(err => {
+                    console.error("register1v1.js ကို import လုပ်၍ မရပါ။", err);
+                    renderNormalRegister(appContent, formData);
+                });
         } else if (isTournament) {
             renderTournamentRegister(appContent, formData);
         } else {
             renderNormalRegister(appContent, formData); // 5vs5 ဖောင်အတွက်
         }
     });
-    confirmBtn.addEventListener('click', async () => {
+        confirmBtn.addEventListener('click', async () => {
         if (confirmBtn.disabled) return;
 
         let modeType = '5vs5'; 
