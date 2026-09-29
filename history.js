@@ -15,42 +15,7 @@ export async function fetchAndInitHistory(userId) {
         const data = await response.json();
 
         if (data.success) {
-            let historyList = data.history || [];
-            
-            // ရက်စွဲအသစ်ဆုံးကို အပေါ်ဆုံးရောက်အောင် အတိအကျ စဉ်ပေးခြင်း (Newest First)
-            historyList.sort((a, b) => {
-                const parseCustomDate = (dateStr) => {
-                    if (!dateStr) return 0;
-                    // ဥပမာ - "29-9-2026 10:40 pm"
-                    const parts = dateStr.trim().split(' ');
-                    if (parts.length < 3) return 0;
-                    
-                    const dateParts = parts[0].split('-'); // [DD, MM, YYYY]
-                    if (dateParts.length !== 3) return 0;
-                    
-                    let day = parseInt(dateParts[0], 10);
-                    let month = parseInt(dateParts[1], 10) - 1; // JS Date မှာ month က 0-11 ထိဖြစ်ပါတယ်
-                    let year = parseInt(dateParts[2], 10);
-                    
-                    let timeParts = parts[1].split(':');
-                    let hours = parseInt(timeParts[0], 10);
-                    let minutes = parseInt(timeParts[1], 10);
-                    
-                    let ampm = parts[2].toLowerCase();
-                    if (ampm === 'pm' && hours < 12) hours += 12;
-                    if (ampm === 'am' && hours === 12) hours = 0;
-                    
-                    return new Date(year, month, day, hours, minutes).getTime();
-                };
-
-                const timeA = parseCustomDate(a.completedAt || a.createdAt);
-                const timeB = parseCustomDate(b.completedAt || b.createdAt);
-                
-                // timeB - timeA လုပ်မှသာ အသစ်ဆုံးအချိန်က ထိပ်ဆုံးသို့ ရောက်မည်
-                return timeB - timeA; 
-            });
-
-            renderHistoryModal(historyList, userId);
+            renderHistoryModal(data.history || [], userId);
         } else {
             console.error("Failed to load history:", data.message);
         }
@@ -58,6 +23,7 @@ export async function fetchAndInitHistory(userId) {
         console.error("Error fetching history:", error);
     }
 }
+
 function renderHistoryModal(historyList, userId) {
     const existingModal = document.getElementById('history-modal');
     if (existingModal) existingModal.remove();
