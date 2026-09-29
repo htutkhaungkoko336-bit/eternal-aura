@@ -255,24 +255,17 @@ export function renderPaymentPage(appContent, formData) {
             ...formData,
             slot: slotNum,
             selectedSlot: isTournament ? `Slot ${slotNum}` : formData.selectedSlot,
-            ssBase64: base64SS,
-            // Mode ကို ထပ်မံအတည်ပြုပေးရန်
-            mode: currentMode,
-            gameMode: currentMode
+            ssBase64: base64SS
         };
 
         if (isTournament) {
             renderTournamentRegister(appContent, updatedDataForBack);
         } else {
-            // တကယ်လို့ Normal Register မဟုတ်ဘဲ အခြား Mode Screen ကို ပြန်သွားချင်တာဆိုရင် ဒီမှာ စစ်ဆေးနိုင်ပါတယ်
-            if (formData.isFromModeScreen || !formData.fee) {
-                renderModeScreen(appContent, updatedDataForBack);
-            } else {
-                renderNormalRegister(appContent, updatedDataForBack);
-            }
+            renderNormalRegister(appContent, updatedDataForBack);
         }
-    });
-        confirmBtn.addEventListener('click', async () => {
+    });  
+
+    confirmBtn.addEventListener('click', async () => {
         if (confirmBtn.disabled) return;
 
         let modeType = '5vs5'; 
