@@ -21,16 +21,16 @@ export async function fetchAndInitHistory(userId) {
         historyList.sort((a, b) => {
             const parseCustomDate = (dateStr) => {
                 if (!dateStr) return 0;
-                // ဥပမာ - "20-9-2025 10:25 pm" ကိုခွဲထုတ်ရန်
+                // ဥပမာ - "29-9-2026 10:40 pm" ကိုခွဲထုတ်ရန်
                 const parts = dateStr.trim().split(' ');
-                if (parts.length < 2) return new Date(dateStr).getTime() || 0;
+                if (parts.length < 3) return 0;
                 
                 const dateParts = parts[0].split('-'); // [DD, MM, YYYY]
                 if (dateParts.length !== 3) return 0;
                 
                 let [day, month, year] = dateParts;
-                let timePart = parts[1]; // 10:25
-                let ampm = parts[2] ? parts[2].toLowerCase() : ''; // pm/am
+                let timePart = parts[1]; // 10:40
+                let ampm = parts[2].toLowerCase(); // pm / am
                 
                 let [hours, minutes] = timePart.split(':');
                 hours = parseInt(hours, 10);
@@ -49,9 +49,7 @@ export async function fetchAndInitHistory(userId) {
             const timeB = parseCustomDate(b.completedAt || b.createdAt);
             
             return timeB - timeA; // အသစ်ဆုံးက ထိပ်ဆုံးသို့ ရောက်မည်
-        });
-
-            renderHistoryModal(historyList, userId);
+        });            renderHistoryModal(historyList, userId);
         } else {
             console.error("Failed to load history:", data.message);
         }
