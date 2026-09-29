@@ -251,20 +251,15 @@ export function renderPaymentPage(appContent, formData) {
     });
 
     document.getElementById('pay-back-btn').addEventListener('click', () => {
-        const updatedDataForBack = {
-            ...formData,
-            mode: currentMode, // mode ကို ထည့်ပေးရန်
-            gameMode: currentMode,
-            slot: slotNum,
-            selectedSlot: isTournament ? `Slot ${slotNum}` : formData.selectedSlot,
-            ssBase64: base64SS
-        };
-
-        if (isTournament) {
-            renderTournamentRegister(appContent, updatedDataForBack);
+        // formData ထဲမှာပါလာတဲ့ mode ကို စစ်ဆေးပါ (ဥပမာ- '1vs1')
+        if (formData.mode === '1vs1') {
+            import('./register1v1.js').then(module => { // သင့်ရဲ့ 1v1 file နာမည်အတိုင်း ထည့်ပါ
+                module.renderRegister1v1Form(appContent, formData);
+            });
+        } else if (isTournament) {
+            renderTournamentRegister(appContent, formData);
         } else {
-            // Normal Register ထဲမှာ 1vs1 လား 5vs5 လားဆိုတာကို mode ပေါ်မူတည်ပြီး စစ်ဆေးပေးရပါမယ်
-            renderNormalRegister(appContent, updatedDataForBack);
+            renderNormalRegister(appContent, formData); // 5vs5 ဖောင်အတွက်
         }
     });
     confirmBtn.addEventListener('click', async () => {
