@@ -17,39 +17,40 @@ export async function fetchAndInitHistory(userId) {
         if (data.success) {
             let historyList = data.history || [];
             
-        // ရက်စွဲအသစ်ဆုံးကို အပေါ်ဆုံးရောက်အောင် စဉ်ပေးခြင်း (Newest First)
-        historyList.sort((a, b) => {
-            const parseCustomDate = (dateStr) => {
-                if (!dateStr) return 0;
-                // ဥပမာ - "29-9-2026 10:40 pm" ကိုခွဲထုတ်ရန်
-                const parts = dateStr.trim().split(' ');
-                if (parts.length < 3) return 0;
-                
-                const dateParts = parts[0].split('-'); // [DD, MM, YYYY]
-                if (dateParts.length !== 3) return 0;
-                
-                let [day, month, year] = dateParts;
-                let timePart = parts[1]; // 10:40
-                let ampm = parts[2].toLowerCase(); // pm / am
-                
-                let [hours, minutes] = timePart.split(':');
-                hours = parseInt(hours, 10);
-                minutes = parseInt(minutes, 10);
-                
-                if (ampm === 'pm' && hours < 12) hours += 12;
-                if (ampm === 'am' && hours === 12) hours = 0;
-                
-                // Standard ISO date string တည်ဆောက်ခြင်း (YYYY-MM-DDTHH:mm:ss)
-                const isoString = `${year}-${month.padStart(2, '0')}-${day.padStart(2, '0')}T${String(hours).padStart(2, '0')}:${String(minutes).padStart(2, '0')}:00`;
-                
-                return new Date(isoString).getTime();
-            };
+            // ရက်စွဲအသစ်ဆုံးကို အပေါ်ဆုံးရောက်အောင် အတိအကျ စဉ်ပေးခြင်း (Newest First)
+            historyList.sort((a, b) => {
+                const parseCustomDate = (dateStr) => {
+                    if (!dateStr) return 0;
+                    // ဥပမာ - "29-9-2026 10:40 pm"
+                    const parts = dateStr.trim().split(' ');
+                    if (parts.length < 3) return 0;
+                    
+                    const dateParts = parts[0].split('-'); // [DD, MM, YYYY]
+                    if (dateParts.length !== 3) return 0;
+                    
+                    let day = parseInt(dateParts[0], 10);
+                    let month = parseInt(dateParts[1], 10) - 1; // JS Date မှာ month က 0-11 ထိဖြစ်ပါတယ်
+                    let year = parseInt(dateParts[2], 10);
+                    
+                    let timeParts = parts[1].split(':');
+                    let hours = parseInt(timeParts[0], 10);
+                    let minutes = parseInt(timeParts[1], 10);
+                    
+                    let ampm = parts[2].toLowerCase();
+                    if (ampm === 'pm' && hours < 12) hours += 12;
+                    if (ampm === 'am' && hours === 12) hours = 0;
+                    
+                    return new Date(year, month, day, hours, minutes).getTime();
+                };
 
-            const timeA = parseCustomDate(a.completedAt || a.createdAt);
-            const timeB = parseCustomDate(b.completedAt || b.createdAt);
-            
-            return timeB - timeA; // အသစ်ဆုံးက ထိပ်ဆုံးသို့ ရောက်မည်
-        });            renderHistoryModal(historyList, userId);
+                const timeA = parseCustomDate(a.completedAt || a.createdAt);
+                const timeB = parseCustomDate(b.completedAt || b.createdAt);
+                
+                // timeB - timeA လုပ်မှသာ အသစ်ဆုံးအချိန်က ထိပ်ဆုံးသို့ ရောက်မည်
+                return timeB - timeA; 
+            });
+
+            renderHistoryModal(historyList, userId);
         } else {
             console.error("Failed to load history:", data.message);
         }
@@ -57,7 +58,6 @@ export async function fetchAndInitHistory(userId) {
         console.error("Error fetching history:", error);
     }
 }
-
 function renderHistoryModal(historyList, userId) {
     const existingModal = document.getElementById('history-modal');
     if (existingModal) existingModal.remove();
