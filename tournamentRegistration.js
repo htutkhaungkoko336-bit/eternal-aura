@@ -187,13 +187,7 @@ document.getElementById('reg-form').addEventListener('submit', function(e) {
         });
     });
     
-document.getElementById('back-btn').addEventListener('click', () => {
-        // Tournament Screen ဆီသို့ တိုက်ရိုက်ပြန်သွားရန်
-        import('./tournamentRegistration.js').then(module => {
-            if (typeof module.renderTournamentScreen === 'function') {
-                module.renderTournamentScreen(appContent);
-            }
-        }).catch(err => {
-            console.error("tournamentRegistraion.js ကို import လုပ်၍ မရပါ။", err);
-        });
-    });}
+    document.getElementById('back-btn').addEventListener('click', () => {
+        renderTournamentScreen(appContent);
+    });
+}
