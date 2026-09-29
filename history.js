@@ -17,12 +17,39 @@ export async function fetchAndInitHistory(userId) {
         if (data.success) {
             let historyList = data.history || [];
             
-            // ရက်စွဲအသစ်ဆုံးကို အပေါ်ဆုံးရောက်အောင် စဉ်ပေးခြင်း (Newest First)
-            historyList.sort((a, b) => {
-                const dateA = new Date(a.completedAt || a.createdAt || 0);
-                const dateB = new Date(b.completedAt || b.createdAt || 0);
-                return dateB - dateA; // အသစ်ဆုံးက ထိပ်ဆုံးသို့ ရောက်မည်
-            });
+        // ရက်စွဲအသစ်ဆုံးကို အပေါ်ဆုံးရောက်အောင် စဉ်ပေးခြင်း (Newest First)
+        historyList.sort((a, b) => {
+            const parseCustomDate = (dateStr) => {
+                if (!dateStr) return 0;
+                // ဥပမာ - "20-9-2025 10:25 pm" ကိုခွဲထုတ်ရန်
+                const parts = dateStr.trim().split(' ');
+                if (parts.length < 2) return new Date(dateStr).getTime() || 0;
+                
+                const dateParts = parts[0].split('-'); // [DD, MM, YYYY]
+                if (dateParts.length !== 3) return 0;
+                
+                let [day, month, year] = dateParts;
+                let timePart = parts[1]; // 10:25
+                let ampm = parts[2] ? parts[2].toLowerCase() : ''; // pm/am
+                
+                let [hours, minutes] = timePart.split(':');
+                hours = parseInt(hours, 10);
+                minutes = parseInt(minutes, 10);
+                
+                if (ampm === 'pm' && hours < 12) hours += 12;
+                if (ampm === 'am' && hours === 12) hours = 0;
+                
+                // Standard ISO date string တည်ဆောက်ခြင်း (YYYY-MM-DDTHH:mm:ss)
+                const isoString = `${year}-${month.padStart(2, '0')}-${day.padStart(2, '0')}T${String(hours).padStart(2, '0')}:${String(minutes).padStart(2, '0')}:00`;
+                
+                return new Date(isoString).getTime();
+            };
+
+            const timeA = parseCustomDate(a.completedAt || a.createdAt);
+            const timeB = parseCustomDate(b.completedAt || b.createdAt);
+            
+            return timeB - timeA; // အသစ်ဆုံးက ထိပ်ဆုံးသို့ ရောက်မည်
+        });
 
             renderHistoryModal(historyList, userId);
         } else {
