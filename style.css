@@ -19,11 +19,13 @@ body {
     font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
     display: flex;
     justify-content: center;
-    align-items: center; /* flex-start အစား center သို့မဟုတ် stretch ထားပါ */
+    align-items: center;
     min-height: 100vh;
-    padding-top: 0px; /* အပေါ်ကွက်လပ်ကြီး ပပျောက်စေရန် 0 သို့ပြောင်းပါ */
+    padding-top: 0px;
     margin: 0;
     box-sizing: border-box;
+    overscroll-behavior-y: none; /* 👈 ဤနေရာတွင် ထည့်ပေးပါ (အောက်ကိုဆွဲချ၍ refresh ဖြစ်ခြင်းကို တားဆီးရန်) */
+    overflow: hidden; /* Page တစ်ခုလုံး scroll မဖြစ်စေဘဲ container ထဲမှာပဲ ထိန်းချုပ်ရန် */
 }
 
 .container {
@@ -36,11 +38,13 @@ body {
     display: flex;
     flex-direction: column;
     align-items: center;
-    justify-content: center; /* Login မျက်နှာပြင် အလယ်ကျစေရန် center ပြန်ထားပါ */
+    justify-content: center;
     padding: 20px;
     box-sizing: border-box;
     overflow: hidden;
+    overscroll-behavior-y: none; /* 👈 Container မှာပါ ထပ်ထည့်ပေးခြင်းဖြင့် ပိုသေချာစေသည် */
 }
+
 .logo-img {
     width: 120px;
     height: 120px;
@@ -58,16 +62,17 @@ h1 {
 
 .form-group {
     display: flex;
-    flex-direction: column; /* အစကတည်းက အပေါ်အောက် အတိအကျ ဖြစ်နေစေရန် ဤနေရာတွင် ထည့်ပေးပါ */
+    flex-direction: column;
     gap: 12px;
     align-items: center;
-    width: 100%; /* container အပြည့် ယူထားရန် */
+    width: 100%;
     margin-top: 0px; 
 }
+
 .input-box {
-    flex: 1.3; /* ခလုတ်ထက် အနည်းငယ် ပိုကျယ်စေရန် */
+    flex: 1.3;
     background-color: var(--input-bg);
-    padding: 18px 24px; /* ဘယ်ညာ အကွာအဝေးကို ပိုတိုးပေးထားသည် */
+    padding: 18px 24px;
     border-radius: 16px;
     border: 1px solid var(--border-color);
     transition: border-color 0.2s ease;
