@@ -15,7 +15,16 @@ export async function fetchAndInitHistory(userId) {
         const data = await response.json();
 
         if (data.success) {
-            renderHistoryModal(data.history || [], userId);
+            let historyList = data.history || [];
+            
+            // ရက်စွဲအသစ်ဆုံးကို အပေါ်ဆုံးရောက်အောင် စဉ်ပေးခြင်း (Newest First)
+            historyList.sort((a, b) => {
+                const dateA = new Date(a.completedAt || a.createdAt || 0);
+                const dateB = new Date(b.completedAt || b.createdAt || 0);
+                return dateB - dateA; // အသစ်ဆုံးက ထိပ်ဆုံးသို့ ရောက်မည်
+            });
+
+            renderHistoryModal(historyList, userId);
         } else {
             console.error("Failed to load history:", data.message);
         }
