@@ -255,34 +255,33 @@ export function renderPaymentPage(appContent, formData) {
         e.stopPropagation();
 
         // Modal ပွင့်နေခဲ့ရင် ပိတ်မယ်
-        if (qrModal) {
+        if (typeof qrModal !== 'undefined' && qrModal) {
             qrModal.style.display = 'none';
         }
 
-        // Mode ကို အသေးစိတ် စစ်ဆေးခြင်း (1v1, 1vs1 စသည်ဖြင့် အားလုံးကို ခြုံမိစေရန်)
-        const modeStr = (formData.mode || formData.gameMode || '').toLowerCase();
+        // formData ထဲက mode ကို အသေအချာ စစ်ဆေးခြင်း
+        const modeStr = (formData.mode || '').toLowerCase();
         
-        if (modeStr.includes('1v')) {
-            // 1vs1 သို့မဟုတ် 1v1 ဖြစ်ပါက
+        // 1vs1 သို့မဟုတ် 1v1 ဖြစ်ပါက 1v1 ဖောင်ဆီသို့ အသေအချာ ပြန်သွားရန်
+        if (modeStr.includes('1v') || modeStr.includes('1vs1')) {
             import('./register1v1.js')
                 .then(module => {
                     if (typeof module.renderRegister1v1Form === 'function') {
                         module.renderRegister1v1Form(appContent, formData);
-                    } else if (typeof module.renderRegisterForm === 'function') {
-                        module.renderRegisterForm(appContent, formData);
                     } else {
-                        console.error("register1v1.js ထဲတွင် render လုပ်ရန် function မတွေ့ပါ။");
-                        renderNormalRegister(appContent, formData);
+                        console.error("register1v1.js ထဲတွင် renderRegister1v1Form ကို မတွေ့ပါ။");
                     }
                 })
                 .catch(err => {
                     console.error("register1v1.js ကို import လုပ်၍ မရပါ။", err);
-                    renderNormalRegister(appContent, formData);
                 });
-        } else if (isTournament) {
+        } else if (modeStr.includes('tournament')) {
             renderTournamentRegister(appContent, formData);
         } else {
-            renderNormalRegister(appContent, formData); // 5vs5 ဖောင်အတွက်
+            // 5vs5 သို့မဟုတ် ပုံမှန် 
+            if (typeof renderNormalRegister === 'function') {
+                renderNormalRegister(appContent, formData);
+            }
         }
     });
         confirmBtn.addEventListener('click', async () => {
