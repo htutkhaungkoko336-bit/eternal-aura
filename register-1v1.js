@@ -1,5 +1,3 @@
-// register-1v1.js
-
 export function renderRegister1v1Form(appContent, savedData = {}) {
     appContent.innerHTML = `
         <div style="display: flex; flex-direction: column; align-items: center; justify-content: flex-start; width: 100%; height: 100%; padding: 4px 14px 10px 14px; box-sizing: border-box; overflow-y: auto;">
