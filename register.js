@@ -52,28 +52,28 @@ export function renderRegisterForm(appContent, savedData = {}) {
                         <input type="number" id="roamer-id" class="reg-input" placeholder="ID" value="${savedData.roamerId || ''}" required style="width: 42%; height: 38px; padding: 0 8px; background-color: #1e293b; border: 1px solid #334155; border-radius: 6px; color: white; font-size: 12px; outline: none; box-sizing: border-box;">
                     </div>
 
-                    <!-- EXP LANER -->
+                    <!-- EXP LANER (expName / expId ကိုပါ တွဲသုံးပေးရန်) -->
                     <div style="display: flex; gap: 6px;">
-                        <input type="text" id="exp-laner-name" class="reg-input" placeholder="EXP LANER" value="${savedData.expLanerName || ''}" required style="width: 58%; height: 38px; padding: 0 8px; background-color: #1e293b; border: 1px solid #334155; border-radius: 6px; color: white; font-size: 12px; outline: none; box-sizing: border-box;">
-                        <input type="number" id="exp-laner-id" class="reg-input" placeholder="ID" value="${savedData.expLanerId || ''}" required style="width: 42%; height: 38px; padding: 0 8px; background-color: #1e293b; border: 1px solid #334155; border-radius: 6px; color: white; font-size: 12px; outline: none; box-sizing: border-box;">
+                        <input type="text" id="exp-laner-name" class="reg-input" placeholder="EXP LANER" value="${savedData.expName || savedData.expLanerName || ''}" required style="width: 58%; height: 38px; padding: 0 8px; background-color: #1e293b; border: 1px solid #334155; border-radius: 6px; color: white; font-size: 12px; outline: none; box-sizing: border-box;">
+                        <input type="number" id="exp-laner-id" class="reg-input" placeholder="ID" value="${savedData.expId || savedData.expLanerId || ''}" required style="width: 42%; height: 38px; padding: 0 8px; background-color: #1e293b; border: 1px solid #334155; border-radius: 6px; color: white; font-size: 12px; outline: none; box-sizing: border-box;">
                     </div>
 
-                    <!-- GOLD LANER -->
+                    <!-- GOLD LANER (goldName / goldId ကိုပါ တွဲသုံးပေးရန်) -->
                     <div style="display: flex; gap: 6px;">
-                        <input type="text" id="gold-laner-name" class="reg-input" placeholder="GOLD LANER" value="${savedData.goldLanerName || ''}" required style="width: 58%; height: 38px; padding: 0 8px; background-color: #1e293b; border: 1px solid #334155; border-radius: 6px; color: white; font-size: 12px; outline: none; box-sizing: border-box;">
-                        <input type="number" id="gold-laner-id" class="reg-input" placeholder="ID" value="${savedData.goldLanerId || ''}" required style="width: 42%; height: 38px; padding: 0 8px; background-color: #1e293b; border: 1px solid #334155; border-radius: 6px; color: white; font-size: 12px; outline: none; box-sizing: border-box;">
+                        <input type="text" id="gold-laner-name" class="reg-input" placeholder="GOLD LANER" value="${savedData.goldName || savedData.goldLanerName || ''}" required style="width: 58%; height: 38px; padding: 0 8px; background-color: #1e293b; border: 1px solid #334155; border-radius: 6px; color: white; font-size: 12px; outline: none; box-sizing: border-box;">
+                        <input type="number" id="gold-laner-id" class="reg-input" placeholder="ID" value="${savedData.goldId || savedData.goldLanerId || ''}" required style="width: 42%; height: 38px; padding: 0 8px; background-color: #1e293b; border: 1px solid #334155; border-radius: 6px; color: white; font-size: 12px; outline: none; box-sizing: border-box;">
                     </div>
 
-                    <!-- MID LANER -->
+                    <!-- MID LANER (midName / midId ကိုပါ တွဲသုံးပေးရန်) -->
                     <div style="display: flex; gap: 6px;">
-                        <input type="text" id="mid-laner-name" class="reg-input" placeholder="MID LANER" value="${savedData.midLanerName || ''}" required style="width: 58%; height: 38px; padding: 0 8px; background-color: #1e293b; border: 1px solid #334155; border-radius: 6px; color: white; font-size: 12px; outline: none; box-sizing: border-box;">
-                        <input type="number" id="mid-laner-id" class="reg-input" placeholder="ID" value="${savedData.midLanerId || ''}" required style="width: 42%; height: 38px; padding: 0 8px; background-color: #1e293b; border: 1px solid #334155; border-radius: 6px; color: white; font-size: 12px; outline: none; box-sizing: border-box;">
+                        <input type="text" id="mid-laner-name" class="reg-input" placeholder="MID LANER" value="${savedData.midName || savedData.midLanerName || ''}" required style="width: 58%; height: 38px; padding: 0 8px; background-color: #1e293b; border: 1px solid #334155; border-radius: 6px; color: white; font-size: 12px; outline: none; box-sizing: border-box;">
+                        <input type="number" id="mid-laner-id" class="reg-input" placeholder="ID" value="${savedData.midId || savedData.midLanerId || ''}" required style="width: 42%; height: 38px; padding: 0 8px; background-color: #1e293b; border: 1px solid #334155; border-radius: 6px; color: white; font-size: 12px; outline: none; box-sizing: border-box;">
                     </div>
 
-                    <!-- JUNGLER -->
+                    <!-- JUNGLER (jungleName / jungleId ကိုပါ တွဲသုံးပေးရန်) -->
                     <div style="display: flex; gap: 6px;">
-                        <input type="text" id="jungler-name" class="reg-input" placeholder="JUNGLER" value="${savedData.junglerName || ''}" required style="width: 58%; height: 38px; padding: 0 8px; background-color: #1e293b; border: 1px solid #334155; border-radius: 6px; color: white; font-size: 12px; outline: none; box-sizing: border-box;">
-                        <input type="number" id="jungler-id" class="reg-input" placeholder="ID" value="${savedData.junglerId || ''}" required style="width: 42%; height: 38px; padding: 0 8px; background-color: #1e293b; border: 1px solid #334155; border-radius: 6px; color: white; font-size: 12px; outline: none; box-sizing: border-box;">
+                        <input type="text" id="jungler-name" class="reg-input" placeholder="JUNGLER" value="${savedData.jungleName || savedData.junglerName || ''}" required style="width: 58%; height: 38px; padding: 0 8px; background-color: #1e293b; border: 1px solid #334155; border-radius: 6px; color: white; font-size: 12px; outline: none; box-sizing: border-box;">
+                        <input type="number" id="jungler-id" class="reg-input" placeholder="ID" value="${savedData.jungleId || savedData.junglerId || ''}" required style="width: 42%; height: 38px; padding: 0 8px; background-color: #1e293b; border: 1px solid #334155; border-radius: 6px; color: white; font-size: 12px; outline: none; box-sizing: border-box;">
                     </div>
                 </div>
 
@@ -85,14 +85,14 @@ export function renderRegisterForm(appContent, savedData = {}) {
                     </div>
                     <div style="display: flex; flex-direction: column; gap: 3px; width: 50%;">
                         <label style="color: #94a3b8; font-size: 11px; font-weight: 600;">KPay Phone Number</label>
-                        <input type="tel" inputmode="numeric" pattern="[0-9]*" id="kpay-phone-number" class="reg-input" placeholder="09..." value="${savedData.kpayPhoneNumber || ''}" required style="width: 100%; height: 40px; padding: 0 8px; background-color: #1e293b; border: 1px solid #334155; border-radius: 6px; color: white; font-size: 12px; outline: none; box-sizing: border-box;" oninput="this.value = this.value.replace(/[^0-9]/g, '')">
+                        <input type="tel" inputmode="numeric" pattern="[0-9]*" id="kpay-phone-number" class="reg-input" placeholder="09..." value="${savedData.kpayPhNo || savedData.kpayPhoneNumber || ''}" required style="width: 100%; height: 40px; padding: 0 8px; background-color: #1e293b; border: 1px solid #334155; border-radius: 6px; color: white; font-size: 12px; outline: none; box-sizing: border-box;" oninput="this.value = this.value.replace(/[^0-9]/g, '')">
                     </div>
                 </div>
 
                 <div style="display: flex; gap: 8px;">
                     <div style="display: flex; flex-direction: column; gap: 3px; width: 50%;">
                         <label style="color: #94a3b8; font-size: 11px; font-weight: 600;">Contact Phone Number</label>
-                        <input type="tel" inputmode="numeric" pattern="[0-9]*" id="contact-phone-number" class="reg-input" placeholder="09..." value="${savedData.contactPhoneNumber || ''}" required style="width: 100%; height: 40px; padding: 0 8px; background-color: #1e293b; border: 1px solid #334155; border-radius: 6px; color: white; font-size: 12px; outline: none; box-sizing: border-box;" oninput="this.value = this.value.replace(/[^0-9]/g, '')">
+                        <input type="tel" inputmode="numeric" pattern="[0-9]*" id="contact-phone-number" class="reg-input" placeholder="09..." value="${savedData.contactPhNo || savedData.contactPhoneNumber || ''}" required style="width: 100%; height: 40px; padding: 0 8px; background-color: #1e293b; border: 1px solid #334155; border-radius: 6px; color: white; font-size: 12px; outline: none; box-sizing: border-box;" oninput="this.value = this.value.replace(/[^0-9]/g, '')">
                     </div>
                     
                     <!-- Entry Fee -->
@@ -112,16 +112,16 @@ export function renderRegisterForm(appContent, savedData = {}) {
                             <div class="fee-option" data-value="50k" style="padding: 8px 12px; font-size: 12px; color: white; cursor: pointer;">50k</div>
                         </div>
                         <input type="hidden" id="fee-value" value="${savedData.fee || ''}" required>
-                    </div>
+                      </div>
                 </div>
 
                 <!-- Buttons -->
                 <div style="display: flex; gap: 8px; margin-top: 6px;">
-                    <button type="button" id="back-btn" style="width: 50%; height: 42px; background-color: #334155; color: white; border: none; border-radius: 8px; font-size: 14px; font-weight: 700; cursor: pointer;">Back</button>
-                    <button type="submit" style="width: 50%; height: 42px; background-color: #38bdf8; color: #0f172a; border: none; border-radius: 8px; font-size: 14px; font-weight: 700; cursor: pointer;">Next</button>
+                      <button type="button" id="back-btn" style="width: 50%; height: 42px; background-color: #334155; color: white; border: none; border-radius: 8px; font-size: 14px; font-weight: 700; cursor: pointer;">Back</button>
+                      <button type="submit" style="width: 50%; height: 42px; background-color: #38bdf8; color: #0f172a; border: none; border-radius: 8px; font-size: 14px; font-weight: 700; cursor: pointer;">Next</button>
                 </div>
-            </form>
-        </div>
+        </form>
+                </div>
     `;
 
     const logoInput = document.getElementById('sq-logo-input');
