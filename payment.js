@@ -253,6 +253,8 @@ export function renderPaymentPage(appContent, formData) {
     document.getElementById('pay-back-btn').addEventListener('click', () => {
         const updatedDataForBack = {
             ...formData,
+            mode: currentMode, // mode ကို ထည့်ပေးရန်
+            gameMode: currentMode,
             slot: slotNum,
             selectedSlot: isTournament ? `Slot ${slotNum}` : formData.selectedSlot,
             ssBase64: base64SS
@@ -261,10 +263,10 @@ export function renderPaymentPage(appContent, formData) {
         if (isTournament) {
             renderTournamentRegister(appContent, updatedDataForBack);
         } else {
+            // Normal Register ထဲမှာ 1vs1 လား 5vs5 လားဆိုတာကို mode ပေါ်မူတည်ပြီး စစ်ဆေးပေးရပါမယ်
             renderNormalRegister(appContent, updatedDataForBack);
         }
-    });  
-
+    });
     confirmBtn.addEventListener('click', async () => {
         if (confirmBtn.disabled) return;
 
