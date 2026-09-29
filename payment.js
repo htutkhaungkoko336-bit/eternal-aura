@@ -266,7 +266,7 @@ export function renderPaymentPage(appContent, formData) {
                 const modeStr = (formData.mode || '').toLowerCase();
                 
                 if (modeStr.includes('1v') || modeStr.includes('1vs1')) {
-                    import('./register1v1.js')
+                    import('./register-1v1.js')
                         .then(module => {
                             if (typeof module.renderRegister1v1Form === 'function') {
                                 module.renderRegister1v1Form(appContent, formData);
