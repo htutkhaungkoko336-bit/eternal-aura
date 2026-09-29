@@ -188,6 +188,16 @@ document.getElementById('reg-form').addEventListener('submit', function(e) {
     });
     
     document.getElementById('back-btn').addEventListener('click', () => {
-        renderTournamentScreen(appContent);
-    });
+            // 5vs5 သို့ တိုက်ရိုက်မရောက်သွားစေဘဲ သင့်လျော်သော Tournament Screen (သို့) Mode Screen သို့ ပြန်ပို့ရန်
+            // အကယ်၍ Slot ရွေးချယ်မှု သို့မဟုတ် 1v1/5v5 ရွေးချယ်သည့် screen ဆီ ပြန်လိုပါက 
+            import('./mode.js').then(module => {
+                if (typeof module.renderModeScreen === 'function') {
+                    module.renderModeScreen(appContent);
+                } else {
+                    renderTournamentScreen(appContent);
+                }
+            }).catch(() => {
+                renderTournamentScreen(appContent);
+            });
+        });
 }
