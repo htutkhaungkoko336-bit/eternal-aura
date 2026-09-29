@@ -250,39 +250,39 @@ export function renderPaymentPage(appContent, formData) {
         updateConfirmButtonState();
     });
 
-document.getElementById('pay-back-btn').addEventListener('click', (e) => {
-        e.preventDefault();
-        e.stopPropagation();
-
-        // Modal ပွင့်နေခဲ့ရင် ပိတ်မယ်
-        if (typeof qrModal !== 'undefined' && qrModal) {
-            qrModal.style.display = 'none';
-        }
-
-        // Mode ကို စစ်ဆေးခြင်း
-        const modeStr = (formData.mode || '').toLowerCase();
+    // ID နှစ်မျိုးစလုံးကို ခြုံပြီး ဖမ်းနိုင်ရန် (back-btn သို့မဟုတ် pay-back-btn)
+        const backBtn = document.getElementById('pay-back-btn') || document.getElementById('back-btn');
         
-        if (modeStr.includes('1v') || modeStr.includes('1vs1')) {
-            // 1v1 ဖောင်ဆီသို့ savedData (သို့) formData အဟောင်းများဖြင့် ပြန်သွားရန်
-            import('./register1v1.js')
-                .then(module => {
-                    if (typeof module.renderRegister1v1Form === 'function') {
-                        module.renderRegister1v1Form(appContent, formData);
-                    } else {
-                        console.error("register1v1.js ထဲတွင် renderRegister1v1Form မရှိပါ။");
+        if (backBtn) {
+            backBtn.addEventListener('click', (e) => {
+                e.preventDefault();
+                e.stopPropagation();
+
+                if (typeof qrModal !== 'undefined' && qrModal) {
+                    qrModal.style.display = 'none';
+                }
+
+                // formData ထဲက mode ကို စစ်ဆေးခြင်း
+                const modeStr = (formData.mode || '').toLowerCase();
+                
+                if (modeStr.includes('1v') || modeStr.includes('1vs1')) {
+                    import('./register1v1.js')
+                        .then(module => {
+                            if (typeof module.renderRegister1v1Form === 'function') {
+                                module.renderRegister1v1Form(appContent, formData);
+                            }
+                        })
+                        .catch(err => {
+                            console.error("register1v1.js ကို import လုပ်၍ မရပါ။", err);
+                        });
+                } else {
+                    if (typeof renderNormalRegister === 'function') {
+                        renderNormalRegister(appContent, formData);
                     }
-                })
-                .catch(err => {
-                    console.error("register1v1.js ကို import လုပ်၍ မရပါ။", err);
-                });
-        } else {
-            // ပုံမှန် 5vs5 ဖောင်အတွက်
-            if (typeof renderNormalRegister === 'function') {
-                renderNormalRegister(appContent, formData);
-            }
+                }
+            });
         }
-    });
-            confirmBtn.addEventListener('click', async () => {
+                confirmBtn.addEventListener('click', async () => {
         if (confirmBtn.disabled) return;
 
         let modeType = '5vs5'; 
