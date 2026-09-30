@@ -188,37 +188,67 @@ function renderGroupCard(group) {
     `;
 }
 
-// Admin Editor Panel with Backend API Integration
+// Admin Editor Panel (Slots များကိုပါ Team Name ထည့်ရန်နှင့် Block လုပ်ရန် ပြင်ဆင်ထားသည်)
 function showAdminEditor(container) {
-    const allEditableItems = [
-        ...tournamentData.groups,
-        ...tournamentData.semis,
-        { name: "Champion", ...tournamentData.champion }
-    ];
-
     container.innerHTML = `
         <div style="padding: 15px; color: white; display: flex; flex-direction: column; align-items: center; width: 100%; box-sizing: border-box; overflow-y: auto; height: 100%; background-color: #0f172a;">
-            <div style="display: flex; justify-content: space-between; align-items: center; width: 100%; max-width: 360px; margin-bottom: 15px;">
+            <div style="display: flex; justify-content: space-between; align-items: center; width: 100%; max-width: 380px; margin-bottom: 15px;">
                 <button id="back-to-bracket" style="background: none; border: none; color: #38bdf8; cursor: pointer; font-weight: bold;">← Back</button>
-                <h3 style="color: #38bdf8; margin: 0; font-size: 14px;">Admin: Edit Date & Time</h3>
+                <h3 style="color: #38bdf8; margin: 0; font-size: 13px;">Admin: Manage Brackets & Slots</h3>
             </div>
             
-            <div style="width: 100%; max-width: 360px; display: flex; flex-direction: column; gap: 10px; padding-bottom: 20px;">
-                ${allEditableItems.map((item, idx) => `
+            <div style="width: 100%; max-width: 380px; display: flex; flex-direction: column; gap: 12px; padding-bottom: 20px;">
+                
+                <!-- GROUPS & SLOTS EDITING SECTION -->
+                <h4 style="color: #f97316; margin: 5px 0 0 0; font-size: 11px; text-transform: uppercase;">Groups & Slots Settings</h4>
+                ${tournamentData.groups.map((group, gIdx) => `
                     <div style="background: #1e293b; padding: 10px; border-radius: 8px; border: 1px solid #334155;">
-                        <h4 style="margin: 0 0 6px 0; color: #38bdf8; font-size: 11px;">${item.name} Settings</h4>
-                        <div style="display: flex; gap: 8px;">
-                            <div style="flex: 1;">
-                                <label style="font-size: 8px; color: #94a3b8;">Date</label>
-                                <input type="text" id="date-${idx}" value="${item.date}" style="width: 100%; padding: 6px; background: #0f172a; border: 1px solid #475569; border-radius: 4px; color: white; font-size: 10px; box-sizing: border-box;">
+                        <div style="font-size: 11px; color: #38bdf8; font-weight: bold; margin-bottom: 6px;">${group.name}</div>
+                        <div style="display: flex; gap: 6px; margin-bottom: 8px;">
+                            <div style="flex: 1;"><label style="font-size: 8px; color: #94a3b8;">Date</label><input type="text" id="g-date-${gIdx}" value="${group.date}" style="width: 100%; padding: 5px; background: #0f172a; border: 1px solid #475569; border-radius: 4px; color: white; font-size: 9px; box-sizing: border-box;"></div>
+                            <div style="flex: 1;"><label style="font-size: 8px; color: #94a3b8;">Time</label><input type="text" id="g-time-${gIdx}" value="${group.time}" style="width: 100%; padding: 5px; background: #0f172a; border: 1px solid #475569; border-radius: 4px; color: white; font-size: 9px; box-sizing: border-box;"></div>
+                        </div>
+
+                        <!-- Slots 1 & 2 for each group -->
+                        ${group.slots.map((slot, sIdx) => `
+                            <div style="background: #0f172a; padding: 8px; border-radius: 6px; border: 1px solid #475569; margin-bottom: 6px;">
+                                <div style="font-size: 9px; color: #cbd5e1; margin-bottom: 4px; font-weight: bold;">${slot.label} (Team / Status)</div>
+                                <div style="display: flex; gap: 6px;">
+                                    <input type="text" id="slot-team-${gIdx}-${sIdx}" value="${slot.team || ''}" placeholder="Team/Squad Name" style="flex: 2; padding: 5px; background: #1e293b; border: 1px solid #475569; border-radius: 4px; color: white; font-size: 9px; box-sizing: border-box;">
+                                    <select id="slot-status-${gIdx}-${sIdx}" style="flex: 1; padding: 5px; background: #1e293b; border: 1px solid #475569; border-radius: 4px; color: white; font-size: 9px;">
+                                        <option value="available" ${slot.status === 'available' ? 'selected' : ''}>Available</option>
+                                        <option value="booked" ${slot.status === 'booked' ? 'selected' : ''}>Booked/Block</option>
+                                    </select>
+                                </div>
                             </div>
-                            <div style="flex: 1;">
-                                <label style="font-size: 8px; color: #94a3b8;">Time</label>
-                                <input type="text" id="time-${idx}" value="${item.time}" style="width: 100%; padding: 6px; background: #0f172a; border: 1px solid #475569; border-radius: 4px; color: white; font-size: 10px; box-sizing: border-box;">
-                            </div>
+                        `).join('')}
+                    </div>
+                `).join('')}
+
+                <!-- SEMIS & CHAMPION EDITING SECTION -->
+                <h4 style="color: #f97316; margin: 10px 0 0 0; font-size: 11px; text-transform: uppercase;">Semis & Champion Time</h4>
+                ${tournamentData.semis.map((semi, sIdx) => `
+                    <div style="background: #1e293b; padding: 10px; border-radius: 8px; border: 1px solid #334155;">
+                        <div style="font-size: 11px; color: #38bdf8; font-weight: bold; margin-bottom: 6px;">${semi.name}</div>
+                        <div style="display: flex; gap: 6px; margin-bottom: 6px;">
+                            <div style="flex: 1;"><label style="font-size: 8px; color: #94a3b8;">Date</label><input type="text" id="semi-date-${sIdx}" value="${semi.date}" style="width: 100%; padding: 5px; background: #0f172a; border: 1px solid #475569; border-radius: 4px; color: white; font-size: 9px; box-sizing: border-box;"></div>
+                            <div style="flex: 1;"><label style="font-size: 8px; color: #94a3b8;">Time</label><input type="text" id="semi-time-${sIdx}" value="${semi.time}" style="width: 100%; padding: 5px; background: #0f172a; border: 1px solid #475569; border-radius: 4px; color: white; font-size: 9px; box-sizing: border-box;"></div>
+                        </div>
+                        <div style="display: flex; gap: 6px;">
+                            <input type="text" id="semi-team1-${sIdx}" value="${semi.team1}" style="flex: 1; padding: 5px; background: #0f172a; border: 1px solid #475569; border-radius: 4px; color: white; font-size: 9px;">
+                            <input type="text" id="semi-team2-${sIdx}" value="${semi.team2}" style="flex: 1; padding: 5px; background: #0f172a; border: 1px solid #475569; border-radius: 4px; color: white; font-size: 9px;">
                         </div>
                     </div>
                 `).join('')}
+
+                <!-- Champion Box Setting -->
+                <div style="background: #1e293b; padding: 10px; border-radius: 8px; border: 1px solid #334155;">
+                    <div style="font-size: 11px; color: #facc15; font-weight: bold; margin-bottom: 6px;">Champion Settings</div>
+                    <div style="display: flex; gap: 6px;">
+                        <div style="flex: 1;"><label style="font-size: 8px; color: #94a3b8;">Date</label><input type="text" id="champ-date" value="${tournamentData.champion.date}" style="width: 100%; padding: 5px; background: #0f172a; border: 1px solid #475569; border-radius: 4px; color: white; font-size: 9px; box-sizing: border-box;"></div>
+                        <div style="flex: 1;"><label style="font-size: 8px; color: #94a3b8;">Time</label><input type="text" id="champ-time" value="${tournamentData.champion.time}" style="width: 100%; padding: 5px; background: #0f172a; border: 1px solid #475569; border-radius: 4px; color: white; font-size: 9px; box-sizing: border-box;"></div>
+                    </div>
+                </div>
                 
                 <button id="save-settings" style="width: 100%; padding: 10px; background: #38bdf8; border: none; border-radius: 6px; font-weight: bold; color: #0f172a; cursor: pointer; margin-top: 10px;">Save All Changes</button>
             </div>
@@ -227,23 +257,40 @@ function showAdminEditor(container) {
 
     document.getElementById('back-to-bracket').addEventListener('click', () => renderTournamentScreen(container));
 
-    // Backend API သို့ ဒေတာများ တိုက်ရိုက်ပို့၍ သိမ်းဆည်းခြင်း
+    // သိမ်းဆည်းသည့် အခါ Input တန်ဖိုးများကို tournamentData ထဲသို့ စုစည်းထည့်သွင်းခြင်း
     document.getElementById('save-settings').addEventListener('click', async () => {
-        // 1. Input တွေထဲက ဖြည့်ထားတဲ့ Value အသစ်တွေကို tournamentData ထဲ အရင်ထည့်မည်
-        tournamentData.groups.forEach((group, idx) => {
-            group.date = document.getElementById(`date-${idx}`).value.trim();
-            group.time = document.getElementById(`time-${idx}`).value.trim();
+        // 1. Groups & Slots များကို Form ထဲမှ ပြန်ဖတ်ယူမည်
+        tournamentData.groups.forEach((group, gIdx) => {
+            group.date = document.getElementById(`g-date-${gIdx}`).value.trim();
+            group.time = document.getElementById(`g-time-${gIdx}`).value.trim();
+
+            group.slots.forEach((slot, sIdx) => {
+                const teamInputVal = document.getElementById(`slot-team-${gIdx}-${sIdx}`).value.trim();
+                const statusInputVal = document.getElementById(`slot-status-${gIdx}-${sIdx}`).value;
+
+                slot.status = statusInputVal;
+                // Team နာမည် ရိုက်ထည့်ထားလျှင် (သို့) ရိုက်မထားဘဲ status က available ဖြစ်နေလျှင် slot label ကို ပြန်သုံးရန်
+                if (teamInputVal !== '') {
+                    slot.team = teamInputVal;
+                } else if (statusInputVal === 'available') {
+                    slot.team = null; // ဘာမှမရှိရင် null ထားမည်
+                } else {
+                    slot.team = "BLOCKED"; // Block ထားပြီး နာမည်မရှိရင်ပြရန်
+                }
+            });
         });
 
-        tournamentData.semis.forEach((semi, idx) => {
-            const mappedIdx = tournamentData.groups.length + idx;
-            semi.date = document.getElementById(`date-${mappedIdx}`).value.trim();
-            semi.time = document.getElementById(`time-${mappedIdx}`).value.trim(); 
+        // 2. Semis များကို ဖတ်ယူမည်
+        tournamentData.semis.forEach((semi, sIdx) => {
+            semi.date = document.getElementById(`semi-date-${sIdx}`).value.trim();
+            semi.time = document.getElementById(`semi-time-${sIdx}`).value.trim();
+            semi.team1 = document.getElementById(`semi-team1-${sIdx}`).value.trim();
+            semi.team2 = document.getElementById(`semi-team2-${sIdx}`).value.trim();
         });
 
-        const champIdx = tournamentData.groups.length + tournamentData.semis.length;
-        tournamentData.champion.date = document.getElementById(`date-${champIdx}`).value.trim();
-        tournamentData.champion.time = document.getElementById(`time-${champIdx}`).value.trim(); 
+        // 3. Champion ကို ဖတ်ယူမည်
+        tournamentData.champion.date = document.getElementById(`champ-date`).value.trim();
+        tournamentData.champion.time = document.getElementById(`champ-time`).value.trim();
 
         const saveBtn = document.getElementById('save-settings');
         saveBtn.disabled = true;
@@ -252,9 +299,7 @@ function showAdminEditor(container) {
         try {
             const response = await fetch('/api/register', { 
                 method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json'
-                },
+                headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
                     mode: 'update_brackets',
                     data: {
@@ -269,7 +314,7 @@ function showAdminEditor(container) {
             const result = await response.json();
             
             if (result.success) {
-                alert("ပြောင်းလဲမှုများကို Server တွင် အောင်မြင်စွာ သိမ်းဆည်းပြီးပါပြီ။");
+                alert("ပြောင်းလဲမှုများနှင့် Slot များကို Server တွင် အောင်မြင်စွာ သိမ်းဆည်းပြီးပါပြီ။");
                 renderTournamentScreen(container);
             } else {
                 alert("သိမ်းဆည်းရာတွင် အမှားရှိပါသည်: " + result.message);

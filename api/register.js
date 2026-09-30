@@ -186,9 +186,9 @@ module.exports = async function handler(req, res) {
 
             return res.status(200).json({ 
                 success: true, 
-                message: "Tournament brackets updated successfully" 
+                message: "Tournament brackets and slots updated successfully" 
             });
-        } 
+        }
         else {
             return res.status(400).json({ success: false, message: "Invalid registration mode" });
         }
