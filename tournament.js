@@ -23,7 +23,7 @@ let tournamentData = {
         { name: "SEMI 1", date: "16.8.2026", time: "10:00 PM", team1: "Group 1 Winner", team2: "Group 2 Winner" },
         { name: "SEMI 2", date: "16.8.2026", time: "10:30 PM", team1: "Group 3 Winner", team2: "Group 4 Winner" }
     ],
-    champion: { name: "CHAMPION", date: "17.8.2026", time: "8:00 PM" }
+    champion: { name: "CHAMPION", date: "17.8.2026", time: "8:00 PM", team1: "Semi 1 Winner", team2: "Semi 2 Winner" }
 };
 
 export async function renderTournamentScreen(container) {
@@ -94,12 +94,12 @@ export async function renderTournamentScreen(container) {
                     <div style="font-size: 8px; color: #94a3b8; margin-bottom: 10px;">${tournamentData.champion.date} | ${tournamentData.champion.time}</div>
                     
                     <div style="display: flex; justify-content: space-between; align-items: center; gap: 8px;">
-                        <div style="flex:1; background: #1e293b; border: 1px solid #475569; padding: 8px; border-radius: 6px; font-size: 9px; color: #f8fafc; font-weight: bold;">Semi 1 Winner</div>
+                        <div style="flex:1; background: #1e293b; border: 1px solid #475569; padding: 8px; border-radius: 6px; font-size: 9px; color: #f8fafc; font-weight: bold;">${tournamentData.champion.team1 || 'Semi 1 Winner'}</div>
                         <div style="display: flex; flex-direction: column; align-items: center;">
                             <span style="color: #f97316; font-weight: bold; font-size: 10px;">VS</span>
                             <span style="color: #ffffff; font-weight: bold; font-size: 8px;">BO5</span>
                         </div>
-                        <div style="flex:1; background: #1e293b; border: 1px solid #475569; padding: 8px; border-radius: 6px; font-size: 9px; color: #f8fafc; font-weight: bold;">Semi 2 Winner</div>
+                        <div style="flex:1; background: #1e293b; border: 1px solid #475569; padding: 8px; border-radius: 6px; font-size: 9px; color: #f8fafc; font-weight: bold;">${tournamentData.champion.team2 || 'Semi 2 Winner'}</div>
                     </div>
                 </div>
 
@@ -161,9 +161,9 @@ function renderGroupCard(group) {
             </div>
             <div style="display: flex; flex-direction: column; gap: 6px;">
                 
-                <!-- Slot 0 (အားလုံး ပုံမှန်အရောင် #0f172a နှင့် #334155 ဘောင်သာ သုံးထားသည်) -->
+                <!-- Slot 0 (ပံုမှန် အပြာရောင်ဘောင်နှင့် နောက်ခံအရောင်သာ သုံးထားသည်) -->
                 <div class="group-slot" data-group="${group.id}" data-slot="0"
-                     style="background: #0f172a; border: 1px solid #334155; padding: 8px 5px; border-radius: 6px; text-align: center; cursor: pointer;">
+                     style="background: #0f172a; border: 1px solid #38bdf8; padding: 8px 5px; border-radius: 6px; text-align: center; cursor: pointer;">
                     <span style="font-size: 9px; color: ${group.slots[0].team ? '#ffffff' : '#38bdf8'}; font-weight: bold; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; display: block;">
                         ${group.slots[0].team || group.slots[0].label}
                     </span>
@@ -174,9 +174,9 @@ function renderGroupCard(group) {
                     <span style="font-size: 7px; color: #ffffff; font-weight: bold; line-height: 1; margin-top: 2px;">BO3</span>
                 </div>
 
-                <!-- Slot 1 (အားလုံး ပုံမှန်အရောင် #0f172a နှင့် #334155 ဘောင်သာ သုံးထားသည်) -->
+                <!-- Slot 1 (ပံုမှန် အပြာရောင်ဘောင်နှင့် နောက်ခံအရောင်သာ သုံးထားသည်) -->
                 <div class="group-slot" data-group="${group.id}" data-slot="1"
-                     style="background: #0f172a; border: 1px solid #334155; padding: 8px 5px; border-radius: 6px; text-align: center; cursor: pointer;">
+                     style="background: #0f172a; border: 1px solid #38bdf8; padding: 8px 5px; border-radius: 6px; text-align: center; cursor: pointer;">
                     <span style="font-size: 9px; color: ${group.slots[1].team ? '#ffffff' : '#38bdf8'}; font-weight: bold; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; display: block;">
                         ${group.slots[1].team || group.slots[1].label}
                     </span>
@@ -221,7 +221,7 @@ function showAdminEditor(container) {
                     </div>
                 `).join('')}
 
-                <h4 style="color: #f97316; margin: 10px 0 0 0; font-size: 11px; text-transform: uppercase;">Semis & Champion Time</h4>
+                <h4 style="color: #f97316; margin: 10px 0 0 0; font-size: 11px; text-transform: uppercase;">Semis & Winners Settings</h4>
                 ${tournamentData.semis.map((semi, sIdx) => `
                     <div style="background: #1e293b; padding: 10px; border-radius: 8px; border: 1px solid #334155;">
                         <div style="font-size: 11px; color: #38bdf8; font-weight: bold; margin-bottom: 6px;">${semi.name}</div>
@@ -229,18 +229,24 @@ function showAdminEditor(container) {
                             <div style="flex: 1;"><label style="font-size: 8px; color: #94a3b8;">Date</label><input type="text" id="semi-date-${sIdx}" value="${semi.date}" style="width: 100%; padding: 5px; background: #0f172a; border: 1px solid #475569; border-radius: 4px; color: white; font-size: 9px; box-sizing: border-box;"></div>
                             <div style="flex: 1;"><label style="font-size: 8px; color: #94a3b8;">Time</label><input type="text" id="semi-time-${sIdx}" value="${semi.time}" style="width: 100%; padding: 5px; background: #0f172a; border: 1px solid #475569; border-radius: 4px; color: white; font-size: 9px; box-sizing: border-box;"></div>
                         </div>
+                        <div style="font-size: 8px; color: #94a3b8; margin-bottom: 2px;">Teams / Winners</div>
                         <div style="display: flex; gap: 6px;">
-                            <input type="text" id="semi-team1-${sIdx}" value="${semi.team1}" style="flex: 1; padding: 5px; background: #0f172a; border: 1px solid #475569; border-radius: 4px; color: white; font-size: 9px;">
-                            <input type="text" id="semi-team2-${sIdx}" value="${semi.team2}" style="flex: 1; padding: 5px; background: #0f172a; border: 1px solid #475569; border-radius: 4px; color: white; font-size: 9px;">
+                            <input type="text" id="semi-team1-${sIdx}" value="${semi.team1}" placeholder="Team 1" style="flex: 1; padding: 5px; background: #0f172a; border: 1px solid #475569; border-radius: 4px; color: white; font-size: 9px;">
+                            <input type="text" id="semi-team2-${sIdx}" value="${semi.team2}" placeholder="Team 2" style="flex: 1; padding: 5px; background: #0f172a; border: 1px solid #475569; border-radius: 4px; color: white; font-size: 9px;">
                         </div>
                     </div>
                 `).join('')}
 
                 <div style="background: #1e293b; padding: 10px; border-radius: 8px; border: 1px solid #334155;">
                     <div style="font-size: 11px; color: #facc15; font-weight: bold; margin-bottom: 6px;">Champion Settings</div>
-                    <div style="display: flex; gap: 6px;">
+                    <div style="display: flex; gap: 6px; margin-bottom: 6px;">
                         <div style="flex: 1;"><label style="font-size: 8px; color: #94a3b8;">Date</label><input type="text" id="champ-date" value="${tournamentData.champion.date}" style="width: 100%; padding: 5px; background: #0f172a; border: 1px solid #475569; border-radius: 4px; color: white; font-size: 9px; box-sizing: border-box;"></div>
                         <div style="flex: 1;"><label style="font-size: 8px; color: #94a3b8;">Time</label><input type="text" id="champ-time" value="${tournamentData.champion.time}" style="width: 100%; padding: 5px; background: #0f172a; border: 1px solid #475569; border-radius: 4px; color: white; font-size: 9px; box-sizing: border-box;"></div>
+                    </div>
+                    <div style="font-size: 8px; color: #94a3b8; margin-bottom: 2px;">Finalists (Semi Winners)</div>
+                    <div style="display: flex; gap: 6px;">
+                        <input type="text" id="champ-team1" value="${tournamentData.champion.team1 || 'Semi 1 Winner'}" placeholder="Semi 1 Winner" style="flex: 1; padding: 5px; background: #0f172a; border: 1px solid #475569; border-radius: 4px; color: white; font-size: 9px;">
+                        <input type="text" id="champ-team2" value="${tournamentData.champion.team2 || 'Semi 2 Winner'}" placeholder="Semi 2 Winner" style="flex: 1; padding: 5px; background: #0f172a; border: 1px solid #475569; border-radius: 4px; color: white; font-size: 9px;">
                     </div>
                 </div>
                 
@@ -280,6 +286,8 @@ function showAdminEditor(container) {
 
         tournamentData.champion.date = document.getElementById(`champ-date`).value.trim();
         tournamentData.champion.time = document.getElementById(`champ-time`).value.trim();
+        tournamentData.champion.team1 = document.getElementById(`champ-team1`).value.trim();
+        tournamentData.champion.team2 = document.getElementById(`champ-team2`).value.trim();
 
         const saveBtn = document.getElementById('save-settings');
         saveBtn.disabled = true;
@@ -303,7 +311,7 @@ function showAdminEditor(container) {
             const result = await response.json();
             
             if (result.success) {
-                alert("ပြောင်းလဲမှုများနှင့် Slot များကို Server တွင် အောင်မြင်စွာ သိမ်းဆည်းပြီးပါပြီ။");
+                alert("ပြောင်းလဲမှုများနှင့် အချက်အလက်များကို Server တွင် အောင်မြင်စွာ သိမ်းဆည်းပြီးပါပြီ။");
                 renderTournamentScreen(container);
             } else {
                 alert("သိမ်းဆည်းရာတွင် အမှားရှိပါသည်: " + result.message);
