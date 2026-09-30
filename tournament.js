@@ -231,8 +231,7 @@ function showAdminEditor(container) {
         saveBtn.innerText = "Saving to Server...";
 
         try {
-            // 2. ပေးထားတဲ့ Backend API ဆီသို့ POST Request ပို့မည်
-            const response = await fetch('/api/your-register-endpoint', { // ကိုယ့်ဆာဗာ API endpoint လမ်းကြောင်းနဲ့ အစားထိုးပါ
+            const response = await fetch('/api/register', { 
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json'
