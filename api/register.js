@@ -46,8 +46,29 @@ async function uploadToImgBB(base64Image) {
 }
 
 module.exports = async function handler(req, res) {
+    // 🔥 GET Request လာလျှင် Firestore ထဲရှိ Tournament Brackets များကို ပြန်ထုတ်ပေးရန်
+    if (req.method === 'GET') {
+        try {
+            const docRef = db.collection('tournaments').doc('mainConfig');
+            const docSnap = await docRef.get();
+
+            if (!docSnap.exists) {
+                return res.status(200).json({ success: true, data: null });
+            }
+
+            return res.status(200).json({ 
+                success: true, 
+                data: docSnap.data() 
+            });
+        } catch (error) {
+            console.error("GET Brackets Error:", error);
+            return res.status(500).json({ success: false, message: error.message });
+        }
+    }
+
+    // POST Request မဟုတ်လျှင် ခွင့်မပြုပါ
     if (req.method !== 'POST') {
-        res.setHeader('Allow', ['POST']);
+        res.setHeader('Allow', ['POST', 'GET']);
         return res.status(405).json({ success: false, message: `Method ${req.method} not allowed` });
     }
 
@@ -149,7 +170,6 @@ module.exports = async function handler(req, res) {
             };
         } 
         else if (mode === 'update_brackets') {
-            // 🔥 Tournament Bracket အချက်အလက်များကို 'tournaments' collection အောက်သို့ သိမ်းဆည်းရန်
             collectionName = 'tournaments';
             const docId = 'mainConfig'; 
 
@@ -173,7 +193,6 @@ module.exports = async function handler(req, res) {
             return res.status(400).json({ success: false, message: "Invalid registration mode" });
         }
 
-        // 1vs1, 5vs5 နှင့် tournament များအတွက် Firestore သို့ စာရင်းသွင်းခြင်း
         const docRef = await db.collection(collectionName).add(registrationData);
 
         const userRef = db.collection('users').doc(data.userId);

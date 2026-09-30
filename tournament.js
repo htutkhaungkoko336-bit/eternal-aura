@@ -26,11 +26,30 @@ let tournamentData = {
     champion: { name: "CHAMPION", date: "17.8.2026", time: "8:00 PM" }
 };
 
-// အက်ပ်စဖွင့်ချင်း (သို့မဟုတ် Home နှိပ်လျှင်) Tournament Brackets ကို တန်းပြရန်
-export function renderTournamentScreen(container) {
+// 🔥 အက်ပ်စဖွင့်ချင်း (သို့မဟုတ် Home နှိပ်လျှင်) Server ဆီမှ Data အရင်လှမ်းဆွဲရန် async သုံးပေးခြင်း
+export async function renderTournamentScreen(container) {
     const userRole = localStorage.getItem('userRole') || 'user'; 
     const isAdmin = (userRole === 'admin');
 
+    // 1. Server/API ကနေ သိမ်းထားပြီးသား Brackets အချက်အလက်များကို GET Method ဖြင့် အရင်လှမ်းဆွဲမည်
+    try {
+        const response = await fetch('/api/register', {
+            method: 'GET',
+            headers: {
+                'Content-Type': 'application/json'
+            }
+        });
+        const result = await response.json();
+        if (result.success && result.data) {
+            tournamentData.groups = result.data.groups || tournamentData.groups;
+            tournamentData.semis = result.data.semis || tournamentData.semis;
+            tournamentData.champion = result.data.champion || tournamentData.champion;
+        }
+    } catch (e) {
+        console.log("Using default local data, server fetch failed:", e);
+    }
+
+    // 2. ပြီးမှ UI ကို ဆွဲထုတ်ပြမည်
     container.innerHTML = `
         <div style="padding: 10px; color: white; display: flex; flex-direction: column; align-items: center; width: 100%; height: 100%; box-sizing: border-box; overflow-y: auto; background-color: #0f172a;">
             
@@ -48,7 +67,7 @@ export function renderTournamentScreen(container) {
                     ${renderGroupCard(tournamentData.groups[0])}
                     ${renderGroupCard(tournamentData.groups[1])}
                 </div>
- 
+
                 <!-- SEMI FINAL 1 -->
                 <div style="background: rgba(30, 41, 59, 0.9); border: 1px solid #38bdf8; padding: 10px 12px; border-radius: 8px; width: 90%; text-align: center; box-shadow: 0 0 10px rgba(56, 189, 248, 0.2);">
                     <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px; border-bottom: 1px solid #334155; padding-bottom: 4px;">
@@ -253,7 +272,7 @@ function showAdminEditor(container) {
                 alert("ပြောင်းလဲမှုများကို Server တွင် အောင်မြင်စွာ သိမ်းဆည်းပြီးပါပြီ။");
                 renderTournamentScreen(container);
             } else {
-                alert("သိမ်းဆည်းရာတွင် အမှားရှိ습니다: " + result.message);
+                alert("သိမ်းဆည်းရာတွင် အမှားရှိပါသည်: " + result.message);
                 saveBtn.disabled = false;
                 saveBtn.innerText = "Save All Changes";
             }
