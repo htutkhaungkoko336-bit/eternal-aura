@@ -87,7 +87,7 @@ module.exports = async function handler(req, res) {
                 status: 'PENDING', 
                 time: getYangonTimeStr(),
                 createdAt: new Date(),
-                used: false // 🔥 1vs1 အတွက် used: false ထည့်သွင်းပြီးပါပြီ
+                used: false 
             };
         }
         else if (mode === '5vs5') {
@@ -115,7 +115,7 @@ module.exports = async function handler(req, res) {
                 status: 'PENDING',
                 time: getYangonTimeStr(),
                 createdAt: new Date(),
-                used: false // 🔥 5vs5 အတွက် used: false ထည့်သွင်းပြီးပါပြီ
+                used: false 
             };
         } 
         else if (mode === 'tournament') {
@@ -145,12 +145,35 @@ module.exports = async function handler(req, res) {
                 status: 'PENDING',
                 time: getYangonTimeStr(),
                 createdAt: new Date(),
-                used: false // 🔥 tournament အတွက် used: false ထည့်သွင်းပြီးပါပြီ
+                used: false 
             };
-        } else {
+        } 
+        else if (mode === 'update_brackets') {
+            // 🔥 Tournament Bracket အချက်အလက်များကို 'tournaments' collection အောက်သို့ သိမ်းဆည်းရန်
+            collectionName = 'tournaments';
+            const docId = 'mainConfig'; 
+
+            registrationData = {
+                groups: data.groups || [],
+                semis: data.semis || [],
+                champion: data.champion || {},
+                updatedAt: new Date(),
+                updatedBy: data.userId || 'admin'
+            };
+
+            const bracketRef = db.collection(collectionName).doc(docId);
+            await bracketRef.set(registrationData, { merge: true });
+
+            return res.status(200).json({ 
+                success: true, 
+                message: "Tournament brackets updated successfully" 
+            });
+        } 
+        else {
             return res.status(400).json({ success: false, message: "Invalid registration mode" });
         }
 
+        // 1vs1, 5vs5 နှင့် tournament များအတွက် Firestore သို့ စာရင်းသွင်းခြင်း
         const docRef = await db.collection(collectionName).add(registrationData);
 
         const userRef = db.collection('users').doc(data.userId);

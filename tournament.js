@@ -28,7 +28,6 @@ let tournamentData = {
 
 // အက်ပ်စဖွင့်ချင်း (သို့မဟုတ် Home နှိပ်လျှင်) Tournament Brackets ကို တန်းပြရန်
 export function renderTournamentScreen(container) {
-    // LocalStorage ထဲတွင် သိမ်းထားသော userRole ကို စစ်ဆေးခြင်း
     const userRole = localStorage.getItem('userRole') || 'user'; 
     const isAdmin = (userRole === 'admin');
 
@@ -38,8 +37,6 @@ export function renderTournamentScreen(container) {
             <!-- Header -->
             <div style="display: flex; justify-content: space-between; align-items: center; width: 100%; max-width: 380px; margin-bottom: 10px;">
                 <h2 style="color: #38bdf8; margin: 0; font-size: 13px; text-transform: uppercase; letter-spacing: 1px;">TOURNAMENT BRACKETS</h2>
-                
-                <!-- Admin ဖြစ်မှသာ Admin Edit ခလုတ်ကို ပေါ်စေမည် -->
                 ${isAdmin ? '<button id="toggle-admin" style="background: #334155; border: 1px solid #38bdf8; color: #38bdf8; padding: 3px 8px; border-radius: 4px; font-size: 10px; cursor: pointer;">Admin Edit</button>' : ''}
             </div>
 
@@ -51,7 +48,7 @@ export function renderTournamentScreen(container) {
                     ${renderGroupCard(tournamentData.groups[0])}
                     ${renderGroupCard(tournamentData.groups[1])}
                 </div>
-
+ 
                 <!-- SEMI FINAL 1 -->
                 <div style="background: rgba(30, 41, 59, 0.9); border: 1px solid #38bdf8; padding: 10px 12px; border-radius: 8px; width: 90%; text-align: center; box-shadow: 0 0 10px rgba(56, 189, 248, 0.2);">
                     <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px; border-bottom: 1px solid #334155; padding-bottom: 4px;">
@@ -118,7 +115,6 @@ export function renderTournamentScreen(container) {
         </div>
     `;
 
-    // Admin ခလုတ် ရှိမှသာ (Admin ဖြစ်မှသာ) Event Listener ချိတ်မည်
     const toggleAdminBtn = document.getElementById('toggle-admin');
     if (toggleAdminBtn) {
         toggleAdminBtn.addEventListener('click', () => {
@@ -126,7 +122,6 @@ export function renderTournamentScreen(container) {
         }); 
     }
 
-    // Slot တစ်ခုချင်းစီကို နှိပ်၍ စာရင်းပေးသွင်းခြင်း
     container.querySelectorAll('.group-slot').forEach(el => {
         el.addEventListener('click', (e) => {
             const groupId = parseInt(e.currentTarget.getAttribute('data-group'));
@@ -143,7 +138,6 @@ export function renderTournamentScreen(container) {
     });
 }
 
-// Group Card UI
 function renderGroupCard(group) {
     return `
         <div style="background: #1e293b; border: 1px solid #334155; padding: 10px; border-radius: 10px; width: 48%; box-sizing: border-box; box-shadow: 0 4px 6px rgba(0,0,0,0.3);">
@@ -175,7 +169,7 @@ function renderGroupCard(group) {
     `;
 }
 
-// Admin Editor Panel
+// Admin Editor Panel with Backend API Integration
 function showAdminEditor(container) {
     const allEditableItems = [
         ...tournamentData.groups,
@@ -214,27 +208,61 @@ function showAdminEditor(container) {
 
     document.getElementById('back-to-bracket').addEventListener('click', () => renderTournamentScreen(container));
 
-    // Admin Editor Panel အတွင်းက save-settings event listener
-    document.getElementById('save-settings').addEventListener('click', () => {
-        // Groups များ သိမ်းခြင်း
+    // Backend API သို့ ဒေတာများ တိုက်ရိုက်ပို့၍ သိမ်းဆည်းခြင်း
+    document.getElementById('save-settings').addEventListener('click', async () => {
+        // 1. Input တွေထဲက ဖြည့်ထားတဲ့ Value အသစ်တွေကို tournamentData ထဲ အရင်ထည့်မည်
         tournamentData.groups.forEach((group, idx) => {
             group.date = document.getElementById(`date-${idx}`).value.trim();
             group.time = document.getElementById(`time-${idx}`).value.trim();
         });
 
-        // Semis များ သိမ်းခြင်း
         tournamentData.semis.forEach((semi, idx) => {
             const mappedIdx = tournamentData.groups.length + idx;
             semi.date = document.getElementById(`date-${mappedIdx}`).value.trim();
             semi.time = document.getElementById(`time-${mappedIdx}`).value.trim(); 
         });
 
-        // Champion သိမ်းခြင်း
         const champIdx = tournamentData.groups.length + tournamentData.semis.length;
         tournamentData.champion.date = document.getElementById(`date-${champIdx}`).value.trim();
         tournamentData.champion.time = document.getElementById(`time-${champIdx}`).value.trim(); 
 
-        alert("ပြောင်းလဲမှုများကို သိမ်းဆည်းပြီးပါပြီ။");
-        renderTournamentScreen(container);
+        const saveBtn = document.getElementById('save-settings');
+        saveBtn.disabled = true;
+        saveBtn.innerText = "Saving to Server...";
+
+        try {
+            // 2. ပေးထားတဲ့ Backend API ဆီသို့ POST Request ပို့မည်
+            const response = await fetch('/api/your-register-endpoint', { // ကိုယ့်ဆာဗာ API endpoint လမ်းကြောင်းနဲ့ အစားထိုးပါ
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    mode: 'update_brackets',
+                    data: {
+                        userId: localStorage.getItem('userId') || 'admin_user',
+                        groups: tournamentData.groups,
+                        semis: tournamentData.semis,
+                        champion: tournamentData.champion
+                    }
+                })
+            });
+
+            const result = await response.json();
+            
+            if (result.success) {
+                alert("ပြောင်းလဲမှုများကို Server တွင် အောင်မြင်စွာ သိမ်းဆည်းပြီးပါပြီ။");
+                renderTournamentScreen(container);
+            } else {
+                alert("သိမ်းဆည်းရာတွင် အမှားရှိ습니다: " + result.message);
+                saveBtn.disabled = false;
+                saveBtn.innerText = "Save All Changes";
+            }
+        } catch (error) {
+            console.error("API Error:", error);
+            alert("ဆာဗာသို့ ချိတ်ဆက်၍ မရပါ။ ကျေးဇူးပြု၍ ထပ်ကြိုးစားပါ။");
+            saveBtn.disabled = false;
+            saveBtn.innerText = "Save All Changes";
+        }
     });
 }
