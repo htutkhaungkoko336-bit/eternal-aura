@@ -56,7 +56,7 @@ function handleLoginSuccess(data) {
                     <path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path>
                     <polyline points="9 22 9 12 15 12 15 22"></polyline>
                 </svg>
-                <span style="font-size: 10px; margin-top: 4px;">Mode</span>
+                <span style="font-size: 10px; margin-top: 4px;">Register</span>
             </div>
 
             <div class="nav-item" data-tab="match" style="display: flex; flex-direction: column; align-items: center; cursor: pointer; color: #94a3b8;">
