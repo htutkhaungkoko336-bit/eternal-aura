@@ -26,18 +26,14 @@ let tournamentData = {
     champion: { name: "CHAMPION", date: "17.8.2026", time: "8:00 PM" }
 };
 
-// 🔥 အက်ပ်စဖွင့်ချင်း (သို့မဟုတ် Home နှိပ်လျှင်) Server ဆီမှ Data အရင်လှမ်းဆွဲရန် async သုံးပေးခြင်း
 export async function renderTournamentScreen(container) {
     const userRole = localStorage.getItem('userRole') || 'user'; 
     const isAdmin = (userRole === 'admin');
 
-    // 1. Server/API ကနေ သိမ်းထားပြီးသား Brackets အချက်အလက်များကို GET Method ဖြင့် အရင်လှမ်းဆွဲမည်
     try {
         const response = await fetch('/api/register', {
             method: 'GET',
-            headers: {
-                'Content-Type': 'application/json'
-            }
+            headers: { 'Content-Type': 'application/json' }
         });
         const result = await response.json();
         if (result.success && result.data) {
@@ -49,7 +45,6 @@ export async function renderTournamentScreen(container) {
         console.log("Using default local data, server fetch failed:", e);
     }
 
-    // 2. ပြီးမှ UI ကို ဆွဲထုတ်ပြမည်
     container.innerHTML = `
         <div style="padding: 10px; color: white; display: flex; flex-direction: column; align-items: center; width: 100%; height: 100%; box-sizing: border-box; overflow-y: auto; background-color: #0f172a;">
             
@@ -151,7 +146,7 @@ export async function renderTournamentScreen(container) {
             if (group.slots[slotIndex].status === 'available') {
                 renderRegisterForm(container, { selectedSlot: selectedSlotLabel });
             } else {
-                alert("ဒီ Slot ကို အဖွဲ့တစ်ဖွဲ့မှ ယူပြီးပါပြီ။");
+                alert("ဒီ Slot ကို အဖွဲ့တစ်ဖွဲ့မှ ယူပြီးပါပြီ (သို့) ပိတ်ထားပါသည်။");
             }
         });
     });
@@ -165,9 +160,11 @@ function renderGroupCard(group) {
                 <span style="font-size: 8px; color: #94a3b8;">${group.date} ${group.time}</span>
             </div>
             <div style="display: flex; flex-direction: column; gap: 6px;">
+                
+                <!-- Slot 0 (အားလုံး ပုံမှန်အရောင် #0f172a နှင့် #334155 ဘောင်သာ သုံးထားသည်) -->
                 <div class="group-slot" data-group="${group.id}" data-slot="0"
-                     style="background: ${group.slots[0].status === 'available' ? '#0f172a' : '#334155'}; border: 1px solid ${group.slots[0].status === 'available' ? '#38bdf8' : '#ef4444'}; padding: 8px 5px; border-radius: 6px; text-align: center; cursor: pointer;">
-                    <span style="font-size: 9px; color: ${group.slots[0].team ? '#fff' : '#38bdf8'}; font-weight: bold; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; display: block;">
+                     style="background: #0f172a; border: 1px solid #334155; padding: 8px 5px; border-radius: 6px; text-align: center; cursor: pointer;">
+                    <span style="font-size: 9px; color: ${group.slots[0].team ? '#ffffff' : '#38bdf8'}; font-weight: bold; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; display: block;">
                         ${group.slots[0].team || group.slots[0].label}
                     </span>
                 </div>
@@ -177,18 +174,19 @@ function renderGroupCard(group) {
                     <span style="font-size: 7px; color: #ffffff; font-weight: bold; line-height: 1; margin-top: 2px;">BO3</span>
                 </div>
 
+                <!-- Slot 1 (အားလုံး ပုံမှန်အရောင် #0f172a နှင့် #334155 ဘောင်သာ သုံးထားသည်) -->
                 <div class="group-slot" data-group="${group.id}" data-slot="1"
-                     style="background: ${group.slots[1].status === 'available' ? '#0f172a' : '#334155'}; border: 1px solid ${group.slots[1].status === 'available' ? '#38bdf8' : '#ef4444'}; padding: 8px 5px; border-radius: 6px; text-align: center; cursor: pointer;">
-                    <span style="font-size: 9px; color: ${group.slots[1].team ? '#fff' : '#38bdf8'}; font-weight: bold; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; display: block;">
+                     style="background: #0f172a; border: 1px solid #334155; padding: 8px 5px; border-radius: 6px; text-align: center; cursor: pointer;">
+                    <span style="font-size: 9px; color: ${group.slots[1].team ? '#ffffff' : '#38bdf8'}; font-weight: bold; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; display: block;">
                         ${group.slots[1].team || group.slots[1].label}
                     </span>
                 </div>
+
             </div>
         </div>
     `;
 }
 
-// Admin Editor Panel (Slots များကိုပါ Team Name ထည့်ရန်နှင့် Block လုပ်ရန် ပြင်ဆင်ထားသည်)
 function showAdminEditor(container) {
     container.innerHTML = `
         <div style="padding: 15px; color: white; display: flex; flex-direction: column; align-items: center; width: 100%; box-sizing: border-box; overflow-y: auto; height: 100%; background-color: #0f172a;">
@@ -199,7 +197,6 @@ function showAdminEditor(container) {
             
             <div style="width: 100%; max-width: 380px; display: flex; flex-direction: column; gap: 12px; padding-bottom: 20px;">
                 
-                <!-- GROUPS & SLOTS EDITING SECTION -->
                 <h4 style="color: #f97316; margin: 5px 0 0 0; font-size: 11px; text-transform: uppercase;">Groups & Slots Settings</h4>
                 ${tournamentData.groups.map((group, gIdx) => `
                     <div style="background: #1e293b; padding: 10px; border-radius: 8px; border: 1px solid #334155;">
@@ -209,7 +206,6 @@ function showAdminEditor(container) {
                             <div style="flex: 1;"><label style="font-size: 8px; color: #94a3b8;">Time</label><input type="text" id="g-time-${gIdx}" value="${group.time}" style="width: 100%; padding: 5px; background: #0f172a; border: 1px solid #475569; border-radius: 4px; color: white; font-size: 9px; box-sizing: border-box;"></div>
                         </div>
 
-                        <!-- Slots 1 & 2 for each group -->
                         ${group.slots.map((slot, sIdx) => `
                             <div style="background: #0f172a; padding: 8px; border-radius: 6px; border: 1px solid #475569; margin-bottom: 6px;">
                                 <div style="font-size: 9px; color: #cbd5e1; margin-bottom: 4px; font-weight: bold;">${slot.label} (Team / Status)</div>
@@ -225,7 +221,6 @@ function showAdminEditor(container) {
                     </div>
                 `).join('')}
 
-                <!-- SEMIS & CHAMPION EDITING SECTION -->
                 <h4 style="color: #f97316; margin: 10px 0 0 0; font-size: 11px; text-transform: uppercase;">Semis & Champion Time</h4>
                 ${tournamentData.semis.map((semi, sIdx) => `
                     <div style="background: #1e293b; padding: 10px; border-radius: 8px; border: 1px solid #334155;">
@@ -241,7 +236,6 @@ function showAdminEditor(container) {
                     </div>
                 `).join('')}
 
-                <!-- Champion Box Setting -->
                 <div style="background: #1e293b; padding: 10px; border-radius: 8px; border: 1px solid #334155;">
                     <div style="font-size: 11px; color: #facc15; font-weight: bold; margin-bottom: 6px;">Champion Settings</div>
                     <div style="display: flex; gap: 6px;">
@@ -257,9 +251,7 @@ function showAdminEditor(container) {
 
     document.getElementById('back-to-bracket').addEventListener('click', () => renderTournamentScreen(container));
 
-    // သိမ်းဆည်းသည့် အခါ Input တန်ဖိုးများကို tournamentData ထဲသို့ စုစည်းထည့်သွင်းခြင်း
     document.getElementById('save-settings').addEventListener('click', async () => {
-        // 1. Groups & Slots များကို Form ထဲမှ ပြန်ဖတ်ယူမည်
         tournamentData.groups.forEach((group, gIdx) => {
             group.date = document.getElementById(`g-date-${gIdx}`).value.trim();
             group.time = document.getElementById(`g-time-${gIdx}`).value.trim();
@@ -269,18 +261,16 @@ function showAdminEditor(container) {
                 const statusInputVal = document.getElementById(`slot-status-${gIdx}-${sIdx}`).value;
 
                 slot.status = statusInputVal;
-                // Team နာမည် ရိုက်ထည့်ထားလျှင် (သို့) ရိုက်မထားဘဲ status က available ဖြစ်နေလျှင် slot label ကို ပြန်သုံးရန်
                 if (teamInputVal !== '') {
                     slot.team = teamInputVal;
                 } else if (statusInputVal === 'available') {
-                    slot.team = null; // ဘာမှမရှိရင် null ထားမည်
+                    slot.team = null; 
                 } else {
-                    slot.team = "BLOCKED"; // Block ထားပြီး နာမည်မရှိရင်ပြရန်
+                    slot.team = "BLOCKED"; 
                 }
             });
         });
 
-        // 2. Semis များကို ဖတ်ယူမည်
         tournamentData.semis.forEach((semi, sIdx) => {
             semi.date = document.getElementById(`semi-date-${sIdx}`).value.trim();
             semi.time = document.getElementById(`semi-time-${sIdx}`).value.trim();
@@ -288,7 +278,6 @@ function showAdminEditor(container) {
             semi.team2 = document.getElementById(`semi-team2-${sIdx}`).value.trim();
         });
 
-        // 3. Champion ကို ဖတ်ယူမည်
         tournamentData.champion.date = document.getElementById(`champ-date`).value.trim();
         tournamentData.champion.time = document.getElementById(`champ-time`).value.trim();
 
