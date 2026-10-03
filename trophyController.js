@@ -6,14 +6,14 @@ function injectTrophyControllerStyles() {
     const style = document.createElement('style');
     style.id = 'trophy-controller-styles';
     style.innerHTML = `
-        /* ဖလား showcase ထဲရှိ ဖလားအားလုံးကို အမြဲတမ်း မှိန်ထားရန် */
+        /* Showcase ထဲရှိ ဖလားများကို သင့်တော်ရုံ အမှိန်အနေအထား ဖြစ်စေရန် (brightness နဲ့ opacity ကို မြှင့်ထားသည်) */
         .pure-trophy-item {
-            filter: grayscale(100%) brightness(0.4) !important;
-            opacity: 0.35 !important;
+            filter: grayscale(80%) brightness(0.8) !important;
+            opacity: 0.75 !important;
             transition: filter 0.4s ease, opacity 0.4s ease, transform 0.25s ease;
         }
 
-        /* Modal သို့မဟုတ် Zoom ပေါ်လာသည့် ကွန်တိန်နာအတွင်းရှိ ဖလားအစိတ်အပိုင်းအားလုံးကို မှိန်ရန် */
+        /* Modal / Zoom Popup ထဲရှိ ဖလားများအတွက်လည်း အလားတူ သင့်တော်ရုံ အမှိန်ပေးရန် */
         .trophy-modal,
         .modal,
         .modal-content,
@@ -21,8 +21,8 @@ function injectTrophyControllerStyles() {
         div[class*="modal"],
         div[class*="popup"],
         div[class*="zoom"] {
-            filter: grayscale(100%) brightness(0.4) !important;
-            opacity: 0.4 !important;
+            filter: grayscale(80%) brightness(0.85) !important;
+            opacity: 0.8 !important;
         }
     `;
     document.head.appendChild(style);
