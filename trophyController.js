@@ -6,27 +6,32 @@ function injectTrophyControllerStyles() {
     const style = document.createElement('style');
     style.id = 'trophy-controller-styles';
     style.innerHTML = `
-        /* Showcase ထဲရှိ ဖလားများကို သင့်တော်ရုံ အမှိန်အနေအထား ဖြစ်စေရန် (brightness နဲ့ opacity ကို မြှင့်ထားသည်) */
+        /* ဖလား showcase ထဲရှိ ဖလားအားလုံးကို အမြဲတမ်း မှိန်ထားရန် */
         .pure-trophy-item {
-            filter: grayscale(80%) brightness(0.8) !important;
-            opacity: 0.75 !important;
+            filter: grayscale(100%) brightness(0.4) !important;
+            opacity: 0.35 !important;
             transition: filter 0.4s ease, opacity 0.4s ease, transform 0.25s ease;
         }
 
-        /* Modal / Zoom Popup ထဲရှိ ဖလားများအတွက်လည်း အလားတူ သင့်တော်ရုံ အမှိန်ပေးရန် */
-        .trophy-modal,
-        .modal,
-        .modal-content,
-        .modal-body,
-        div[class*="modal"],
-        div[class*="popup"],
-        div[class*="zoom"] {
-            filter: grayscale(80%) brightness(0.85) !important;
-            opacity: 0.8 !important;
+        /* Modal / Zoom Popup ထဲရှိ ဖလားနှင့် သက်ဆိုင်သော Element များကိုသာ မှိန်ရန် (နောက်ခံကွန်တိန်နာ မပါ) */
+        .trophy-modal img, 
+        .trophy-modal svg,
+        .trophy-modal .pure-trophy-display,
+        .modal-content img,
+        .modal-content svg,
+        .modal-trophy-container,
+        div[class*="modal"] img,
+        div[class*="modal"] svg,
+        div[class*="popup"] img,
+        div[class*="popup"] svg {
+            filter: grayscale(100%) brightness(0.4) !important;
+            opacity: 0.4 !important;
         }
     `;
     document.head.appendChild(style);
-}import { renderTrophyShowcase as renderOriginalShowcase, trophyDataList } from './trophies.js';
+}
+
+import { renderTrophyShowcase as renderOriginalShowcase, trophyDataList } from './trophies.js';
 
 export function renderTrophyShowcaseWithLogic(containerId, winnersData = [], onTrophyClick) {
     injectTrophyControllerStyles();
