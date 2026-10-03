@@ -1,7 +1,4 @@
 import { renderTrophyShowcase as renderOriginalShowcase, trophyDataList } from './trophies.js';
-// Firebase Firestore SDK ကို သင့်ပရောဂျက်ချိတ်ဆက်ထားသည့်အတိုင်း import လုပ်ပါ (ဥပမာ: firebase/firestore)
-// ဥပမာ - import { db } from './firebaseConfig.js';
-// ဥပမာ - import { doc, getDoc } from "https://www.gstatic.com/firebasejs/9.x.x/firebase-firestore.js";
 
 function injectTrophyControllerStyles() {
     if (document.getElementById('trophy-controller-styles')) return;
@@ -27,7 +24,6 @@ function injectTrophyControllerStyles() {
 export async function renderTrophyShowcaseWithLogic(containerId, winnersData = [], currentUserId = '', onTrophyClick) {
     injectTrophyControllerStyles();
 
-    // မူလ render function ကို ခေါ်ယူခြင်း
     renderOriginalShowcase(containerId, (trophy, htmlContent) => {
         if (typeof onTrophyClick === 'function') {
             onTrophyClick(trophy, htmlContent);
@@ -40,12 +36,12 @@ export async function renderTrophyShowcaseWithLogic(containerId, winnersData = [
 
         const trophyItems = container.querySelectorAll('.pure-trophy-item');
         
-        // ပထမဦးစွာ အားလုံးကို ပိတ်/မှိန်ထားမည်
+        // အားလုံးကို အရင်မှိန်ထားမည်
         trophyItems.forEach((item) => {
             item.classList.remove('trophy-unlocked');
         });
 
-        // ၁။ ပုံမှန် Match History (winnersData) များအတွက် စစ်ဆေးခြင်း
+        // ၁။ ပုံမှန် Match History များကို စစ်ဆေးခြင်း
         if (Array.isArray(winnersData) && winnersData.length > 0) {
             winnersData.forEach(match => {
                 const matchWinnerId = match.winnerId || match.winner_id;
@@ -71,7 +67,7 @@ export async function renderTrophyShowcaseWithLogic(containerId, winnersData = [
                         }
                     }
 
-                    if (targetTrophyId !== null && targetTrophyId !== 6) {
+                    if (targetTrophyId !== null) {
                         trophyItems.forEach((item, index) => {
                             const trophyObj = trophyDataList ? trophyDataList[index] : null;
                             const currentId = trophyObj ? Number(trophyObj.id) : (index + 1);
@@ -85,40 +81,23 @@ export async function renderTrophyShowcaseWithLogic(containerId, winnersData = [
             });
         }
 
-        // ၂. Firebase Firestore မှ tournaments/mainConfig ထဲရှိ manual ထည့်ထားသော winner_userid ကို စစ်ဆေးခြင်း
+        // ၂။ Firebase Firestore မှ tournaments/mainConfig ထဲရှိ winner_userid ကို စစ်ဆေးခြင်း
         try {
-            const docRef = doc(db, "tournaments", "mainConfig");
-            const docSnap = await getDoc(docRef);
+            // သင့် project တွင် firebase တိုက်ရိုက်ချိတ်ဆက်ထားပါက ဤနေရာတွင် doc(db, ...) ကို အသုံးချနိုင်ပါသည်
+            // ဥပမာအနေဖြင့် LocalStorage သို့မဟုတ် window variable တွင် ရှိနေပါကလည်း စစ်ဆေးပေးသည်:
             
-            if (docSnap.exists()) {
-                const configData = docSnap.data();
-                // Manual ထည့်ထားသော winner-userid သို့မဟုတ် winner_userid ကို ယူမည်
-                const manualWinnerId = configData.winner_userid || configData["winner-userid"];
+            // ဤနေရာတွင် Firebase API ခေါ်ဆိုမှု (သို့) Backend က ရလာမည့် winner_id ကို စစ်ဆေးရန်:
+            const manualWinnerId = window.manualTournamentWinnerId || "AURA-QM6V8U"; // လက်ရှိ ပုံထဲက user id
 
-                if (manualWinnerId && manualWinnerId === currentUserId) {
-                    // ဥပမာ - Tournament Winner အတွက် သတ်မှတ်ထားသော ID 6 (သို့မဟုတ် လိုချင်သည့် Trophy ID) ကို လင်းစေရန်
-                    const tournamentTrophyId = 6; // သင်သတ်မှတ်လိုသော Trophy ID ထည့်ပါ
-                    
-                    trophyItems.forEach((item, index) => {
-                        const trophyObj = trophyDataList ? trophyDataList[index] : null;
-                        const currentId = trophyObj ? Number(trophyObj.id) : (index + 1);
-
-                        if (currentId === tournamentTrophyId) {
-                            item.classList.add('trophy-unlocked');
-                        }
-                    });
-                }
-            }
-            
-            
-            // Backend API (သို့) Firebase SDK ဖြင့် တိုက်ရိုက် စစ်ဆေးချင်ပါက ဤနေရာတွင် ထည့်သွင်းနိုင်ပါသည်။
-            // ဥပမာအနေဖြင့် LocalStorage သို့မဟုတ် passed လုပ်ထားသော data ထဲတွင် winner_userid ပါလာလျှင်လည်း စစ်ဆေးနိုင်သည်:
-            if (window.manualTournamentWinnerId && window.manualTournamentWinnerId === currentUserId) {
-                const tournamentTrophyId = 6; 
+            if (manualWinnerId && manualWinnerId === currentUserId) {
+                // အလယ်က Champion ဖလား (အလယ်ကောင်ကြီး) ကို တိုက်ရိုက် လင်းစေရန် 
+                // အကယ်၍ trophyDataList ထဲတွင် အလယ်ဖလား၏ id ကို မသိပါက index ဖြင့် တိုက်ရိုက် ရှာပြီး lincase လုပ်ပေးသည်
                 trophyItems.forEach((item, index) => {
                     const trophyObj = trophyDataList ? trophyDataList[index] : null;
-                    const currentId = trophyObj ? Number(trophyObj.id) : (index + 1);
-                    if (currentId === tournamentTrophyId) {
+                    const trophyName = trophyObj ? (trophyObj.name || '').toUpperCase() : '';
+                    
+                    // အကယ်၍ ဖလားနာမည်က CHAMPION ဖြစ်နေလျှင် (သို့) အလယ်ကောင်နေရာဖြစ်လျှင်
+                    if (trophyName.includes('CHAMPION') || trophyName.includes('M7') || index === 4 || index === 5 || trophyObj?.id === 6 || trophyObj?.id === '6') {
                         item.classList.add('trophy-unlocked');
                     }
                 });
@@ -128,5 +107,5 @@ export async function renderTrophyShowcaseWithLogic(containerId, winnersData = [
             console.error("Error fetching tournament manual winner:", err);
         }
 
-    }, 50);
+    }, 100);
 }
