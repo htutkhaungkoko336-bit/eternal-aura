@@ -152,23 +152,6 @@ export function renderProfileScreen(container) {
                 display: none;
             }
 
-            .nested-cubic-wrapper::after {
-                content: '';
-                position: absolute;
-                bottom: -24px;
-                width: 3px;
-                height: 24px;
-                background: #c084fc;
-                box-shadow: 0 0 12px #c084fc, 0 0 25px #9333ea, 0 0 35px #ffffff;
-                opacity: 0.9;
-                animation: beamPulse 1.6s ease-in-out infinite;
-            }
-
-            @keyframes beamPulse {
-                0%, 100% { opacity: 0.4; height: 20px; }
-                50% { opacity: 1; height: 28px; }
-            }
-
             .cyber-cube.outer-cube {
                 width: 85px;
                 height: 85px;
