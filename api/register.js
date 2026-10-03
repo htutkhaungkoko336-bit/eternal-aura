@@ -46,23 +46,19 @@ async function uploadToImgBB(base64Image) {
 }
 
 module.exports = async function handler(req, res) {
-    // 🔥 GET Request လာလျှင် Firestore ထဲရှိ Tournament Brackets များနှင့် Winner စာရင်းများကို ပြန်ထုတ်ပေးရန်
+    // 🔥 GET Request လာလျှင် Firestore ထဲရှိ Tournament Brackets များကို ပြန်ထုတ်ပေးရန်
     if (req.method === 'GET') {
         try {
             const docRef = db.collection('tournaments').doc('mainConfig');
             const docSnap = await docRef.get();
 
-            // ပြီးတော့ Winner များကို သိမ်းထားသော collection (ဥပမာ - tournament_winners သို့မဟုတ် tournaments တစ်ခုလုံး) 
-            const winnersSnapshot = await db.collection('tournaments').get();
-            let allTournaments = [];
-            winnersSnapshot.forEach(doc => {
-                allTournaments.push({ id: doc.id, ...doc.data() });
-            });
+            if (!docSnap.exists) {
+                return res.status(200).json({ success: true, data: null });
+            }
 
             return res.status(200).json({ 
                 success: true, 
-                data: docSnap.exists ? docSnap.data() : null,
-                winners: allTournaments // Frontend က Trophy စစ်ရန် Winner စာရင်းများ
+                data: docSnap.data() 
             });
         } catch (error) {
             console.error("GET Brackets Error:", error);
