@@ -1,6 +1,4 @@
 import { renderTrophyShowcase as renderOriginalShowcase, trophyDataList } from './trophies.js';
-import { db } from './firebaseConfig.js'; // သင့် Project တွင် ချိတ်ဆက်ထားသည့် firebase db ကို import လုပ်ပါ
-import { doc, getDoc } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore.js";
 
 function injectTrophyControllerStyles() {
     if (document.getElementById('trophy-controller-styles')) return;
@@ -83,18 +81,15 @@ export async function renderTrophyShowcaseWithLogic(containerId, winnersData = [
             });
         }
 
-        // ၂။ Firebase Firestore မှ tournaments/mainConfig ထဲရှိ Winner User IDs များကို ဝင်ရောက်စစ်ဆေးခြင်း
+        // ၂။ Backend API မှတစ်ဆင့် tournaments/mainConfig ဒေတာကို ဆွဲထုတ်ခြင်း (404 Error များကို ကာကွယ်ရန်)
         try {
-            const docRef = doc(db, "tournaments", "mainConfig");
-            const docSnap = await getDoc(docRef);
+            const response = await fetch('/api/handler'); // သင့် Backend API route လိပ်စာအတိုင်း ထည့်ပါ
+            const result = await response.json();
             
-            if (docSnap.exists()) {
-                const configData = docSnap.data();
+            if (result.success && result.data) {
+                const configData = result.data;
                 
-                // Firestore document ထဲက field ပုံစံအမျိုးမျိုး (string ဖြစ်စေ၊ array ဖြစ်စေ) ကို စုစည်းဖမ်းယူခြင်း
                 let allWinnerIds = [];
-
-                // ဥပမာ - winner_userid သို့မဟုတ် winner-userid က တစ်ခုတည်း သို့မဟုတ် Multiple ဖြစ်နေပါက
                 const rawWinner1 = configData.winner_userid;
                 const rawWinner2 = configData["winner-userid"];
 
@@ -104,7 +99,6 @@ export async function renderTrophyShowcaseWithLogic(containerId, winnersData = [
                 if (Array.isArray(rawWinner2)) allWinnerIds.push(...rawWinner2);
                 else if (rawWinner2) allWinnerIds.push(rawWinner2);
 
-                // အကယ်၍ winners တွေထဲမှာ လက်ရှိဝင်ထားတဲ့ currentUserId ပါဝင်နေမလား စစ်ဆေးမည်
                 const isTournamentWinner = allWinnerIds.includes(currentUserId);
 
                 if (isTournamentWinner) {
@@ -112,7 +106,6 @@ export async function renderTrophyShowcaseWithLogic(containerId, winnersData = [
                         const trophyObj = trophyDataList ? trophyDataList[index] : null;
                         const trophyName = trophyObj ? (trophyObj.name || '').toUpperCase() : '';
                         
-                        // အလယ်က Champion ဖလားကို လင်းစေရန်
                         if (trophyName.includes('CHAMPION') || trophyName.includes('M7') || index === 4 || index === 5 || trophyObj?.id === 6 || trophyObj?.id === '6') {
                             item.classList.add('trophy-unlocked');
                         }
@@ -121,7 +114,7 @@ export async function renderTrophyShowcaseWithLogic(containerId, winnersData = [
             }
 
         } catch (err) {
-            console.error("Error fetching tournament winners from Firebase:", err);
+            console.error("Error fetching tournament winners from API:", err);
         }
 
     }, 100);
