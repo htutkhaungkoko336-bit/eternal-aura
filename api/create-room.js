@@ -375,29 +375,57 @@ if (method === 'GET') {
             }
 
             const currentData = roomDoc.data();
-
             if (status === 'completed' || status === 'complete') {
+                // winnerId နှင့် နိုင်ခဲ့သော mode/keyType ကို စစ်ဆေးခြင်း
+                const winnerId = req.body.winnerId || currentData.winnerId;
+                let winningModePrefix = '';
+                let winningFee = '';
+                
+                const lowerMode = (currentData.mode || '').toLowerCase();
+                if (lowerMode.includes('1v1') || lowerMode.includes('1vs1')) {
+                    winningModePrefix = '1vs1';
+                } else if (lowerMode.includes('5v5') || lowerMode.includes('5vs5')) {
+                    winningModePrefix = '5v5';
+                }
+
+                winningFee = (currentData.keyType || '').toLowerCase(); // ဥပမာ: 50k, 25k စသည်ဖြင့်
+
                 const historyRoomData = {
                     ...currentData,
+                    winnerId: winnerId || null,
                     status: 'completed',
                     completedAt: getYangonTimeStr()
                 };
 
                 const uniqueHistoryId = `${roomId}_${Date.now()}`;
-                await db.collection('history').doc(uniqueHistoryId).set(historyRoomData);
+                const batch = db.batch();
+
+                // History ကို သိမ်းဆည်းရန်
+                const historyRef = db.collection('history').doc(uniqueHistoryId);
+                batch.set(historyRef, historyRoomData);
+
+                // 🔥 Winner ထွက်လာပါက သက်ဆိုင်ရာ user document ထဲတွင် နိုင်ပွဲ field ကို တွက်ချက်တိုးပေးခြင်း
+                if (winnerId && winningModePrefix && winningFee) {
+                    const winnerUserRef = db.collection('users').doc(winnerId);
+                    
+                    // ဥပမာ: winners.5vs5-50k သို့မဟုတ် winners.1vs1-25k ဆိုပြီး field သတ်မှတ်ပေးခြင်း
+                    const winnerFieldKey = `winners.${winningModePrefix}-${winningFee}`;
+                    
+                    batch.update(winnerUserRef, {
+                        [winnerFieldKey]: FieldValue.increment(1)
+                    });
+                }
 
                 let regCollectionName = '';
-                const lowerMode = (currentData.mode || '').toLowerCase();
                 if (lowerMode.includes('1v1') || lowerMode.includes('1vs1')) {
                     regCollectionName = '1vs1_registrations';
                 } else if (lowerMode.includes('5v5') || lowerMode.includes('5vs5')) {
-                    regCollectionName = '5vs5_registrations';
+                    regCollectionName = '5v5_registrations';
                 } else if (lowerMode.includes('tournament')) {
                     regCollectionName = 'tournament_registrations';
                 }
 
                 if (regCollectionName) {
-                    const batch = db.batch();
                     const roomKeyType = (currentData.keyType || '').toUpperCase();
                     
                     if (currentData.hostId) {
@@ -441,18 +469,18 @@ if (method === 'GET') {
                             batch.update(joinerMatchedRegs[0].ref, { used: true });
                         }
                     }
-
-                    await batch.commit();
                 }
 
-                await roomRef.delete();
+                // Active room ကို ဖျက်ရန်
+                batch.delete(roomRef);
+
+                await batch.commit();
 
                 return res.status(200).json({ 
                     success: true, 
-                    message: "Match completed, room moved to history, registrations marked as used (true), and room deleted." 
+                    message: "Match completed, winner updated in database, room moved to history, and room deleted." 
                 });
             }
-
             let updateData = {};
             if (hostReady !== undefined) updateData.hostReady = hostReady;
             if (joinerReady !== undefined) updateData.joinerReady = joinerReady;
