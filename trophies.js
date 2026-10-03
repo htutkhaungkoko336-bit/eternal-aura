@@ -1,6 +1,8 @@
 // trophies.js - Updated with Twin Blades for No. 11 (Background and border removed)[cite: 4]
 
-const trophyDataList = [
+// trophies.js
+
+export const trophyDataList = [
     { id: 1, title: "ANGELIC ASCENT", subtitle: "ANGELIC ASCENT", date: "2026-01-15", desc: "Eternal Aura Angelic Halo Trophy.", isCustom: true, styleType: 'angelic-large' },
     { id: 2, title: "CYBER BLADE SHIELD", subtitle: "CYBER BLADE CHAMPION", date: "2026-02-10", desc: "Eternal Aura Cyber Blade Trophy. The Ultimate Cyber Shield." },
     { id: 3, title: "PHOENIX PROTOCOL", subtitle: "PHOENIX PROTOCOL", date: "2026-03-05", desc: "Eternal Aura Phoenix Shield Trophy.", isCustom: true, styleType: 'phoenix' },
@@ -17,7 +19,6 @@ const trophyDataList = [
     { id: 10, title: "CRESCENT ECLIPSE", subtitle: "CRESCENT ECLIPSE", date: "2026-07-02", desc: "Cyber Crescent Eclipse Trophy with Diamond Core Edition.", isCustom: true, styleType: 'eclipse-small' },
     { id: 11, title: "ANGELIC ASCENT", subtitle: "TWIN BLADES", date: "2026-07-20", desc: "Quantum Twin Blades Trophy." }
 ];
-
 export function renderTrophyShowcase(containerId, onTrophyClick) {
     const container = document.getElementById(containerId);
     if (!container) return;
