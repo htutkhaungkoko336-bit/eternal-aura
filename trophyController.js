@@ -1,4 +1,4 @@
-// trophyController.js - Showcase နှင့် Modal (Zoom) ပါ ဖလားများအားလုံးကို အဖြူအမဲနှင့် မှိန်ထားရန်
+// trophyController.js - ဖလားများကို ကလစ်နှိပ်၍ Zoom ကြည့်မရအောင် ပိတ်ထားရန်
 
 function injectTrophyControllerStyles() {
     if (document.getElementById('trophy-controller-styles')) return;
@@ -6,20 +6,16 @@ function injectTrophyControllerStyles() {
     const style = document.createElement('style');
     style.id = 'trophy-controller-styles';
     style.innerHTML = `
-        /* ဖလား showcase ထဲရှိ ဖလားအားလုံးကို အမြဲတမ်း အမှိန်နှင့် အဖြူအမဲ ဖြစ်စေရန် */
+        /* ဖလား showcase ထဲရှိ ဖလားများကို အမြဲတမ်း အမှိန်နှင့် အဖြူအမဲ ဖြစ်စေရန် */
         .pure-trophy-item {
             filter: grayscale(100%) brightness(0.5) !important;
             opacity: 0.4 !important;
             transition: filter 0.4s ease, opacity 0.4s ease, transform 0.25s ease;
         }
 
-        /* Modal / Zoom Popup ထဲတွင် ပေါ်လာမည့် ဖလားနှင့် အစိတ်အပိုင်း အားလုံးကိုပါ အရောင်ဖယ်ရှားပြီး အမှိန်ဖြစ်စေရန် */
-        .trophy-modal *,
-        .modal *,
-        .modal-content *,
-        div[class*="modal"] *,
-        div[class*="popup"] * {
-            filter: grayscale(100%) brightness(0.6) !important;
+        /* ဖလားများကို ကလစ်နှိပ်၍ မရတော့စေရန် (Pointer Events ပိတ်ခြင်း) */
+        .pure-trophy-item {
+            pointer-events: none !important;
         }
     `;
     document.head.appendChild(style);
