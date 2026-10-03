@@ -1,4 +1,4 @@
-// trophyController.js - ဖလားအားလုံးကို အမြဲမှိန်ထားရန်
+// trophyController.js - showcase နှင့် popup ပါ ဖလားအားလုံးကို အမြဲမှိန်ထားရန်
 
 function injectTrophyControllerStyles() {
     if (document.getElementById('trophy-controller-styles')) return;
@@ -6,11 +6,22 @@ function injectTrophyControllerStyles() {
     const style = document.createElement('style');
     style.id = 'trophy-controller-styles';
     style.innerHTML = `
-        /* ဖလားအားလုံးကို အမြဲတမ်း မှိန်ထားရန် */
+        /* ဖလား showcase ထဲရှိ ဖလားအားလုံးကို အမြဲတမ်း မှိန်ထားရန် */
         .pure-trophy-item {
-            filter: grayscale(100%) brightness(0.4);
-            opacity: 0.35;
+            filter: grayscale(100%) brightness(0.4) !important;
+            opacity: 0.35 !important;
             transition: filter 0.4s ease, opacity 0.4s ease, transform 0.25s ease;
+        }
+
+        /* နှိပ်လိုက်၍ ပေါ်လာသော Modal / Zoom Popup ထဲရှိ ဖလားပုံများကိုပါ မှိန်ထားရန် */
+        .trophy-modal img, 
+        .trophy-modal .pure-trophy-display,
+        .modal-content img,
+        .modal-trophy-container,
+        div[class*="modal"] img,
+        div[class*="popup"] img {
+            filter: grayscale(100%) brightness(0.4) !important;
+            opacity: 0.35 !important;
         }
     `;
     document.head.appendChild(style);
@@ -24,12 +35,11 @@ export function renderTrophyShowcaseWithLogic(containerId, winnersData = [], onT
     // မူလ render function ကို ခေါ်ယူခြင်း
     renderOriginalShowcase(containerId, (trophy, htmlContent) => {
         if (typeof onTrophyClick === 'function') {
-            // လိုအပ်ပါက click လုပ်ဆောင်ချက်ကို ဆက်လက်လုပ်ဆောင်နိုင်သည်
             onTrophyClick(trophy, htmlContent);
         }
     });
 
-    // ဖလားများအားလုံးကို ခြွင်းချက်မရှိ အမြဲမှိန်နေစေရန် (unlocked class များကို ဖယ်ရှားခြင်း)
+    // ဖလားများအားလုံးကို အမြဲမှိန်နေစေရန်
     setTimeout(() => {
         const container = document.getElementById(containerId);
         if (!container) return;
