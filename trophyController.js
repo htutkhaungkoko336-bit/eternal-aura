@@ -13,12 +13,17 @@ function injectTrophyControllerStyles() {
             transition: filter 0.4s ease, opacity 0.4s ease, transform 0.25s ease;
         }
 
-        /* Modal / Zoom Popup ထဲတွင် ပေါ်လာသော ဖလားပုံ သို့မဟုတ် ကွန်တိန်နာများကိုပါ အပြီးတိုင် မှိန်သွားစေရန် */
-        .trophy-modal *, 
-        .modal-content *,
+        /* Modal / Zoom Popup ထဲရှိ ဖလားနှင့် သက်ဆိုင်သော Element များကိုသာ မှိန်ရန် (နောက်ခံကွန်တိန်နာ မပါ) */
+        .trophy-modal img, 
+        .trophy-modal svg,
+        .trophy-modal .pure-trophy-display,
+        .modal-content img,
+        .modal-content svg,
         .modal-trophy-container,
-        div[class*="modal"] *,
-        div[class*="popup"] * {
+        div[class*="modal"] img,
+        div[class*="modal"] svg,
+        div[class*="popup"] img,
+        div[class*="popup"] svg {
             filter: grayscale(100%) brightness(0.4) !important;
             opacity: 0.4 !important;
         }
