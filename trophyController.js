@@ -1,4 +1,6 @@
 import { renderTrophyShowcase as renderOriginalShowcase, trophyDataList } from './trophies.js';
+import { db } from './firebaseConfig.js'; // သင့် Project တွင် ချိတ်ဆက်ထားသည့် firebase db ကို import လုပ်ပါ
+import { doc, getDoc } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore.js";
 
 function injectTrophyControllerStyles() {
     if (document.getElementById('trophy-controller-styles')) return;
@@ -81,30 +83,45 @@ export async function renderTrophyShowcaseWithLogic(containerId, winnersData = [
             });
         }
 
-        // ၂။ Firebase Firestore မှ tournaments/mainConfig ထဲရှိ winner_userid ကို စစ်ဆေးခြင်း
+        // ၂။ Firebase Firestore မှ tournaments/mainConfig ထဲရှိ Winner User IDs များကို ဝင်ရောက်စစ်ဆေးခြင်း
         try {
-            // သင့် project တွင် firebase တိုက်ရိုက်ချိတ်ဆက်ထားပါက ဤနေရာတွင် doc(db, ...) ကို အသုံးချနိုင်ပါသည်
-            // ဥပမာအနေဖြင့် LocalStorage သို့မဟုတ် window variable တွင် ရှိနေပါကလည်း စစ်ဆေးပေးသည်:
+            const docRef = doc(db, "tournaments", "mainConfig");
+            const docSnap = await getDoc(docRef);
             
-            // ဤနေရာတွင် Firebase API ခေါ်ဆိုမှု (သို့) Backend က ရလာမည့် winner_id ကို စစ်ဆေးရန်:
-            const manualWinnerId = window.manualTournamentWinnerId || "AURA-QM6V8U"; // လက်ရှိ ပုံထဲက user id
+            if (docSnap.exists()) {
+                const configData = docSnap.data();
+                
+                // Firestore document ထဲက field ပုံစံအမျိုးမျိုး (string ဖြစ်စေ၊ array ဖြစ်စေ) ကို စုစည်းဖမ်းယူခြင်း
+                let allWinnerIds = [];
 
-            if (manualWinnerId && manualWinnerId === currentUserId) {
-                // အလယ်က Champion ဖလား (အလယ်ကောင်ကြီး) ကို တိုက်ရိုက် လင်းစေရန် 
-                // အကယ်၍ trophyDataList ထဲတွင် အလယ်ဖလား၏ id ကို မသိပါက index ဖြင့် တိုက်ရိုက် ရှာပြီး lincase လုပ်ပေးသည်
-                trophyItems.forEach((item, index) => {
-                    const trophyObj = trophyDataList ? trophyDataList[index] : null;
-                    const trophyName = trophyObj ? (trophyObj.name || '').toUpperCase() : '';
-                    
-                    // အကယ်၍ ဖလားနာမည်က CHAMPION ဖြစ်နေလျှင် (သို့) အလယ်ကောင်နေရာဖြစ်လျှင်
-                    if (trophyName.includes('CHAMPION') || trophyName.includes('M7') || index === 4 || index === 5 || trophyObj?.id === 6 || trophyObj?.id === '6') {
-                        item.classList.add('trophy-unlocked');
-                    }
-                });
+                // ဥပမာ - winner_userid သို့မဟုတ် winner-userid က တစ်ခုတည်း သို့မဟုတ် Multiple ဖြစ်နေပါက
+                const rawWinner1 = configData.winner_userid;
+                const rawWinner2 = configData["winner-userid"];
+
+                if (Array.isArray(rawWinner1)) allWinnerIds.push(...rawWinner1);
+                else if (rawWinner1) allWinnerIds.push(rawWinner1);
+
+                if (Array.isArray(rawWinner2)) allWinnerIds.push(...rawWinner2);
+                else if (rawWinner2) allWinnerIds.push(rawWinner2);
+
+                // အကယ်၍ winners တွေထဲမှာ လက်ရှိဝင်ထားတဲ့ currentUserId ပါဝင်နေမလား စစ်ဆေးမည်
+                const isTournamentWinner = allWinnerIds.includes(currentUserId);
+
+                if (isTournamentWinner) {
+                    trophyItems.forEach((item, index) => {
+                        const trophyObj = trophyDataList ? trophyDataList[index] : null;
+                        const trophyName = trophyObj ? (trophyObj.name || '').toUpperCase() : '';
+                        
+                        // အလယ်က Champion ဖလားကို လင်းစေရန်
+                        if (trophyName.includes('CHAMPION') || trophyName.includes('M7') || index === 4 || index === 5 || trophyObj?.id === 6 || trophyObj?.id === '6') {
+                            item.classList.add('trophy-unlocked');
+                        }
+                    });
+                }
             }
 
         } catch (err) {
-            console.error("Error fetching tournament manual winner:", err);
+            console.error("Error fetching tournament winners from Firebase:", err);
         }
 
     }, 100);
