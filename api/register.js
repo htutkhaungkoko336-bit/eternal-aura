@@ -177,6 +177,7 @@ module.exports = async function handler(req, res) {
                 groups: data.groups || [],
                 semis: data.semis || [],
                 champion: data.champion || {},
+                winner_userid: data.winner_userid || data.winnerUserId || '',
                 updatedAt: new Date(),
                 updatedBy: data.userId || 'admin'
             };
