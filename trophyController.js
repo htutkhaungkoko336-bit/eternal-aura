@@ -11,7 +11,7 @@ function injectTrophyControllerStyles() {
             filter: grayscale(100%) brightness(0.5) !important;
             opacity: 0.4 !important;
             transition: filter 0.4s ease, opacity 0.4s ease, transform 0.25s ease;
-            pointer-events: none !important; /* မူလက ပိတ်ထားသည် */
+            pointer-events: none !important;
         }
 
         /* နိုင်ထားသည့် ဖလားများ (Unlocked ဖြစ်လာပါက) လင်းလာစေရန်နှင့် ကလစ်နှိပ်၍ Zoom ကြည့်နိုင်ရန် */
@@ -51,13 +51,14 @@ export function renderTrophyShowcaseWithLogic(containerId, winnersData = [], onT
         // ဝင်လာသော Match History စာရင်းကို စစ်ဆေးခြင်း
         if (Array.isArray(winnersData) && winnersData.length > 0) {
             winnersData.forEach(match => {
-                // match တစ်ခုချင်းစီတွင် နိုင်ပွဲဖြစ်မဖြစ် စစ်ဆေးရန် (Backend မှလာသော myResult သို့မဟုတ် winnerId ကိုသုံးသည်)
+                // နိုင်ပွဲဖြစ်မဖြစ် စစ်ဆေးခြင်း (myResult က Win ဖြစ်ရင် သို့မဟုတ် winnerId ကိုက်ညီရင်)
                 const isWinner = match.myResult === 'Win' || (match.winnerId && match.winnerId === match.currentUserId);
                 
-                if (isWinner && match.status === 'completed') {
+                // status စစ်ဆေးမှုကို ဖြုတ်လိုက်သည် (သို့မဟုတ် match.status ရှိမှသာ စစ်ရန်)
+                if (isWinner) {
                     let targetTrophyId = null;
                     const mode = (match.mode || '').toLowerCase();
-                    const keyType = (match.keyType || '').toLowerCase(); // ဥပမာ: '5k', '10k', '15k', '25k', '50k'
+                    const keyType = (match.keyType || match.fee || '').toLowerCase(); // fee ပါ ထည့်စစ်ပေးထားသည်
 
                     // Key Type အလိုက် Index (0 မှ 4 ထိ) သတ်မှတ်ခြင်း
                     let keyIndex = -1;
@@ -68,19 +69,16 @@ export function renderTrophyShowcaseWithLogic(containerId, winnersData = [], onT
                     else if (keyType.includes('5k')) keyIndex = 0;
 
                     if (keyIndex !== -1) {
-                        if (mode.includes('1v1')) {
-                            // 1v1 အတွက် Trophy ID 1 မှ 5 ထိ (Index 0 ถึง 4 => ID 1 ถึง 5)
-                            targetTrophyId = keyIndex + 1;
-                        } else if (mode.includes('5v5')) {
-                            // 5v5 အတွက် Trophy ID 7 မှ 11 ထိ (Index 0 ถึง 4 => ID 7 ถึง 11)
-                            targetTrophyId = keyIndex + 7;
+                        if (mode.includes('1v1') || mode.includes('1vs1')) {
+                            targetTrophyId = keyIndex + 1; // ID 1 မှ 5 ထိ
+                        } else if (mode.includes('5v5') || mode.includes('5vs5')) {
+                            targetTrophyId = keyIndex + 7; // ID 7 မှ 11 ထိ
                         }
                     }
 
                     // သက်ဆိုင်ရာ Trophy Element ကို ရှာပြီး .trophy-unlocked ထည့်ပေးခြင်း
-                    if (targetTrophyId) {
+                    if (targetTrophyId !== null) {
                         trophyItems.forEach((item, index) => {
-                            // ဥပမာ - trophyDataList သို့မဟုတ် index ကိုအသုံးပြု၍ ID တိုက်စစ်ခြင်း
                             const trophyObj = trophyDataList ? trophyDataList[index] : null;
                             const currentId = trophyObj ? Number(trophyObj.id) : (index + 1);
 
