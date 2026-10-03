@@ -13,15 +13,14 @@ function injectTrophyControllerStyles() {
             transition: filter 0.4s ease, opacity 0.4s ease, transform 0.25s ease;
         }
 
-        /* နှိပ်လိုက်၍ ပေါ်လာသော Modal / Zoom Popup ထဲရှိ ဖလားပုံများကိုပါ မှိန်ထားရန် */
-        .trophy-modal img, 
-        .trophy-modal .pure-trophy-display,
-        .modal-content img,
+        /* Modal / Zoom Popup ထဲတွင် ပေါ်လာသော ဖလားပုံ သို့မဟုတ် ကွန်တိန်နာများကိုပါ အပြီးတိုင် မှိန်သွားစေရန် */
+        .trophy-modal *, 
+        .modal-content *,
         .modal-trophy-container,
-        div[class*="modal"] img,
-        div[class*="popup"] img {
+        div[class*="modal"] *,
+        div[class*="popup"] * {
             filter: grayscale(100%) brightness(0.4) !important;
-            opacity: 0.35 !important;
+            opacity: 0.4 !important;
         }
     `;
     document.head.appendChild(style);
