@@ -81,7 +81,6 @@ export async function renderTrophyShowcaseWithLogic(containerId, winnersData = [
             });
         }
 
-        // ၂။ Backend API မှတစ်ဆင့် tournaments/mainConfig ဒေတာကို ဆွဲထုတ်ခြင်း (404 Error များကို ကာကွယ်ရန်)
 // ၂။ Backend API မှတစ်ဆင့် tournaments/mainConfig ဒေတာကို ဆွဲထုတ်ခြင်း
         try {
             const response = await fetch('/api/register'); 

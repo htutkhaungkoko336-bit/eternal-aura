@@ -46,7 +46,7 @@ async function uploadToImgBB(base64Image) {
 }
 
 module.exports = async function handler(req, res) {
-    // 🔥 GET Request လာလျှင် Firestore ထဲရှိ Tournament Brackets များကို ပြန်ထုတ်ပေးရန်
+    // 🔥 GET Request လာလျှင် Firestore ထဲရှိ Tournament Brackets များကို ပြန်ထုတ်ပေးရန် (Winner Array များကိုပါ စနစ်တကျ စုစည်းပေးမည်)
     if (req.method === 'GET') {
         try {
             const docRef = db.collection('tournaments').doc('mainConfig');
@@ -56,9 +56,28 @@ module.exports = async function handler(req, res) {
                 return res.status(200).json({ success: true, data: null });
             }
 
+            const data = docSnap.data();
+            let finalWinnerIds = [];
+            
+            // Firebase ထဲက winner-userid (Array သို့မဟုတ် String ဖြစ်နိုင်သည်) ကို ပုံစံမျိုးစုံဖြင့် စစ်ဆေးခြင်း
+            const rawWinner = data['winner-userid'] || data['winner_userid'] || data['winnerUserId'];
+            
+            if (rawWinner) {
+                if (Array.isArray(rawWinner)) {
+                    // Array ဖြစ်ပါက အထဲပါသမျှ ID အားလုံးကို ထည့်ပါ
+                    finalWinnerIds.push(...rawWinner);
+                } else if (typeof rawWinner === 'string') {
+                    // String ဖြစ်နေလျှင် ကော်မာ သို့မဟုတ် space များဖြင့် ခွဲထုတ်ပါ
+                    finalWinnerIds.push(...rawWinner.split(/[,,\s]+/).map(id => id.trim()).filter(Boolean));
+                }
+            }
+
+            // ထပ်နေသော ID များကို ဖယ်ထုတ်ပြီး Array သန့်သန့်အဖြစ် data ထဲသို့ ပြန်ထည့်ခြင်း
+            data.winner_userid = [...new Set(finalWinnerIds)];
+
             return res.status(200).json({ 
                 success: true, 
-                data: docSnap.data() 
+                data: data 
             });
         } catch (error) {
             console.error("GET Brackets Error:", error);
