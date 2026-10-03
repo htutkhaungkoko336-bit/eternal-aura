@@ -523,15 +523,17 @@ export function renderProfileScreen(container) {
         }
     });
 
-    // Backend API မှ Winner History များကို လှမ်းယူပြီး Winner ID ဖြင့် တိုက်စစ်၍ ဖလားများပြသခြင်း
-    async function loadUserTrophiesFromBackend() {
+    // API မှ Winner/History စာရင်းများကို ဆွဲထုတ်ပြီး ဖလားလင်းစေရန် ချိတ်ဆက်ခြင်း
+    async function loadUserTrophies() {
         try {
-            const response = await fetch(`/api/create-room?history=true&userId=${userId}`);
-            const data = await response.json();
+            // လိုအပ်ချက်အရ /api/register (သို့) /api/create-room ကို အသုံးပြုနိုင်ပါသည်
+            const response = await fetch('/api/register');
+            const result = await response.json();
 
-            const historyData = data.success && Array.isArray(data.history) ? data.history : [];
+            // ဆွဲထုတ်လာသော winners စာရင်း (သို့) အခြား history အချက်အလက်များ
+            const winnersData = (result.success && result.winners) ? result.winners : [];
 
-            renderTrophyShowcaseWithLogic('trophy-showcase-target', historyData, userId, (trophy, elementHTML) => {
+            renderTrophyShowcaseWithLogic('trophy-showcase-target', winnersData, userId, (trophy, elementHTML) => {
                 if (elementHTML) {
                     zoomedTrophyWrapper.innerHTML = elementHTML;
                 } else {
@@ -545,14 +547,14 @@ export function renderProfileScreen(container) {
                 zoomModal.classList.add('active');
             });
         } catch (error) {
-            console.error('Error loading history trophies:', error);
-            // Error ဖြစ်သွားပါက အလွတ်ဒေတာဖြင့် ဆက်ပြရန်
+            console.error("Failed to load trophies:", error);
+            // Error ဖြစ်ပေါ်ပါက ဒေတာလွတ်ဖြင့် ဆက်လက် render လုပ်ပေးရန်
             renderTrophyShowcaseWithLogic('trophy-showcase-target', [], userId, () => {});
         }
     }
 
     // ဖလားများ စတင်တင်ဆောင်ခြင်း
-    loadUserTrophiesFromBackend();
+    loadUserTrophies();
 
     zoomCloseBtn.addEventListener('click', () => {
         zoomModal.classList.remove('active');
