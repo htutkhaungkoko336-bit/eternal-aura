@@ -52,13 +52,12 @@ export function renderTrophyShowcaseWithLogic(containerId, winnersData = [], onT
         if (Array.isArray(winnersData) && winnersData.length > 0) {
             winnersData.forEach(match => {
                 // နိုင်ပွဲဖြစ်မဖြစ် စစ်ဆေးခြင်း (myResult က Win ဖြစ်ရင် သို့မဟုတ် winnerId ကိုက်ညီရင်)
-                const isWinner = match.myResult === 'Win' || (match.winnerId && match.winnerId === match.currentUserId);
+                const isWinner = match.myResult === 'Win' || (match.winnerId && match.winnerId === match.currentUserId) || match.isWinner;
                 
-                // status စစ်ဆေးမှုကို ဖြုတ်လိုက်သည် (သို့မဟုတ် match.status ရှိမှသာ စစ်ရန်)
                 if (isWinner) {
                     let targetTrophyId = null;
                     const mode = (match.mode || '').toLowerCase();
-                    const keyType = (match.keyType || match.fee || '').toLowerCase(); // fee ပါ ထည့်စစ်ပေးထားသည်
+                    const keyType = (match.keyType || match.fee || '').toLowerCase();
 
                     // Key Type အလိုက် Index (0 မှ 4 ထိ) သတ်မှတ်ခြင်း
                     let keyIndex = -1;
@@ -70,14 +69,14 @@ export function renderTrophyShowcaseWithLogic(containerId, winnersData = [], onT
 
                     if (keyIndex !== -1) {
                         if (mode.includes('1v1') || mode.includes('1vs1')) {
-                            targetTrophyId = keyIndex + 1; // ID 1 မှ 5 ထိ
+                            targetTrophyId = keyIndex + 1; // ID 1 မှ 5 ထိ (1vs1: 5k, 10k, 15k, 25k, 50k)
                         } else if (mode.includes('5v5') || mode.includes('5vs5')) {
-                            targetTrophyId = keyIndex + 7; // ID 7 မှ 11 ထိ
+                            targetTrophyId = keyIndex + 7; // ID 7 မှ 11 ထိ (5vs5: 5k, 10k, 15k, 25k, 50k)
                         }
                     }
 
-                    // သက်ဆိုင်ရာ Trophy Element ကို ရှာပြီး .trophy-unlocked ထည့်ပေးခြင်း
-                    if (targetTrophyId !== null) {
+                    // သက်ဆိုင်ရာ Trophy Element ကို ရှာပြီး .trophy-unlocked ထည့်ပေးခြင်း (ID 6 ကို ကျော်သွားမည်)
+                    if (targetTrophyId !== null && targetTrophyId !== 6) {
                         trophyItems.forEach((item, index) => {
                             const trophyObj = trophyDataList ? trophyDataList[index] : null;
                             const currentId = trophyObj ? Number(trophyObj.id) : (index + 1);
