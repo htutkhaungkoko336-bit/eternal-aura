@@ -87,8 +87,6 @@ export async function renderTrophyShowcaseWithLogic(containerId, winnersData = [
 
         // ၂. Firebase Firestore မှ tournaments/mainConfig ထဲရှိ manual ထည့်ထားသော winner_userid ကို စစ်ဆေးခြင်း
         try {
-            // Firestore ကနေ mainConfig ကို ဆွဲထုတ်ခြင်း (သင့် project ရဲ့ db ချိတ်ဆက်ပုံအတိုင်း ဖြည့်စွက်ပါ)
-            /* 
             const docRef = doc(db, "tournaments", "mainConfig");
             const docSnap = await getDoc(docRef);
             
@@ -111,7 +109,7 @@ export async function renderTrophyShowcaseWithLogic(containerId, winnersData = [
                     });
                 }
             }
-            */
+            
             
             // Backend API (သို့) Firebase SDK ဖြင့် တိုက်ရိုက် စစ်ဆေးချင်ပါက ဤနေရာတွင် ထည့်သွင်းနိုင်ပါသည်။
             // ဥပမာအနေဖြင့် LocalStorage သို့မဟုတ် passed လုပ်ထားသော data ထဲတွင် winner_userid ပါလာလျှင်လည်း စစ်ဆေးနိုင်သည်:
