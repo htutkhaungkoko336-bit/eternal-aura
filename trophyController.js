@@ -82,23 +82,35 @@ export async function renderTrophyShowcaseWithLogic(containerId, winnersData = [
         }
 
         // ၂။ Backend API မှတစ်ဆင့် tournaments/mainConfig ဒေတာကို ဆွဲထုတ်ခြင်း (404 Error များကို ကာကွယ်ရန်)
+// ၂။ Backend API မှတစ်ဆင့် tournaments/mainConfig ဒေတာကို ဆွဲထုတ်ခြင်း
         try {
-            const response = await fetch('/api/handler'); // သင့် Backend API route လိပ်စာအတိုင်း ထည့်ပါ
+            const response = await fetch('/api/register'); 
             const result = await response.json();
             
             if (result.success && result.data) {
                 const configData = result.data;
                 
                 let allWinnerIds = [];
-                const rawWinner1 = configData.winner_userid;
-                const rawWinner2 = configData["winner-userid"];
+                
+                // Field ပုံစံအမျိုးမျိုးကို လိုက်လံစစ်ဆေးပြီး စုစည်းခြင်း
+                const possibleKeys = ['winner_userid', 'winner-userid', 'winnerUserId', 'winner_id', 'winnerId'];
+                possibleKeys.forEach(key => {
+                    const val = configData[key];
+                    if (val) {
+                        if (Array.isArray(val)) allWinnerIds.push(...val);
+                        else allWinnerIds.push(val);
+                    }
+                });
 
-                if (Array.isArray(rawWinner1)) allWinnerIds.push(...rawWinner1);
-                else if (rawWinner1) allWinnerIds.push(rawWinner1);
+                // အကယ်၍ champion object ထဲမှာ userId ပါနေရင် အဲ့ဒါကိုပါ ထည့်စစ်ပေးပါမည်
+                if (configData.champion && configData.champion.userId) {
+                    allWinnerIds.push(configData.champion.userId);
+                }
 
-                if (Array.isArray(rawWinner2)) allWinnerIds.push(...rawWinner2);
-                else if (rawWinner2) allWinnerIds.push(rawWinner2);
+                // ထပ်နေသော ID များကို ဖယ်ထုတ်ခြင်း
+                allWinnerIds = [...new Set(allWinnerIds)];
 
+                // လက်ရှိ ဝင်ထားသော user ID ပါဝင်ခြင်း ရှိမစစ်ဆေးပါ
                 const isTournamentWinner = allWinnerIds.includes(currentUserId);
 
                 if (isTournamentWinner) {
@@ -106,6 +118,7 @@ export async function renderTrophyShowcaseWithLogic(containerId, winnersData = [
                         const trophyObj = trophyDataList ? trophyDataList[index] : null;
                         const trophyName = trophyObj ? (trophyObj.name || '').toUpperCase() : '';
                         
+                        // Champion ဖလား သို့မဟုတ် M7 ဖလားကို လင်းစေရန်
                         if (trophyName.includes('CHAMPION') || trophyName.includes('M7') || index === 4 || index === 5 || trophyObj?.id === 6 || trophyObj?.id === '6') {
                             item.classList.add('trophy-unlocked');
                         }
@@ -116,6 +129,5 @@ export async function renderTrophyShowcaseWithLogic(containerId, winnersData = [
         } catch (err) {
             console.error("Error fetching tournament winners from API:", err);
         }
-
     }, 100);
 }
