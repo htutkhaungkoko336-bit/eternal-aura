@@ -13,24 +13,20 @@ function injectTrophyControllerStyles() {
             transition: filter 0.4s ease, opacity 0.4s ease, transform 0.25s ease;
         }
 
-        /* Modal / Zoom Popup ထဲရှိ ဖလားနှင့် သက်ဆိုင်သော Element များကိုသာ မှိန်ရန် (နောက်ခံကွန်တိန်နာ မပါ) */
-        .trophy-modal img, 
-        .trophy-modal svg,
-        .trophy-modal .pure-trophy-display,
-        .modal-content img,
-        .modal-content svg,
-        .modal-trophy-container,
-        div[class*="modal"] img,
-        div[class*="modal"] svg,
-        div[class*="popup"] img,
-        div[class*="popup"] svg {
+        /* Modal သို့မဟုတ် Zoom ပေါ်လာသည့် ကွန်တိန်နာအတွင်းရှိ ဖလားအစိတ်အပိုင်းအားလုံးကို မှိန်ရန် */
+        .trophy-modal,
+        .modal,
+        .modal-content,
+        .modal-body,
+        div[class*="modal"],
+        div[class*="popup"],
+        div[class*="zoom"] {
             filter: grayscale(100%) brightness(0.4) !important;
             opacity: 0.4 !important;
         }
     `;
     document.head.appendChild(style);
 }
-
 import { renderTrophyShowcase as renderOriginalShowcase, trophyDataList } from './trophies.js';
 
 export function renderTrophyShowcaseWithLogic(containerId, winnersData = [], onTrophyClick) {
