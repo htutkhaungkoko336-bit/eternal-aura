@@ -1,4 +1,5 @@
 import { renderTrophyShowcase } from './trophies.js';
+import { renderTrophyShowcaseWithLogic } from './trophyController.js';
 import { initKeyManagement } from './key.js';
 import { fetchAndInitHistory } from './history.js';
 
@@ -522,7 +523,11 @@ export function renderProfileScreen(container) {
         }
     });
 
-    renderTrophyShowcase('trophy-showcase-target', (trophy, elementHTML) => {
+    // 🏆 လက်ရှိ နိုင်ထားတဲ့ Winner ID များ (လိုအပ်သလို ပြင်ဆင်နိုင်သည်)
+    const currentWinners = [1, 6]; 
+
+    // မူလ renderTrophyShowcase အစား renderTrophyShowcaseWithLogic ကို အသုံးပြုခြင်း
+    renderTrophyShowcaseWithLogic('trophy-showcase-target', currentWinners, (trophy, elementHTML) => {
         if (elementHTML) {
             zoomedTrophyWrapper.innerHTML = elementHTML;
         } else {
@@ -544,13 +549,13 @@ export function renderProfileScreen(container) {
         e.target === zoomModal && zoomModal.classList.remove('active');
     });
 
-// Key Management ကို key.js မှ ခေါ်သုံးခြင်း
+    // Key Management ကို key.js မှ ခေါ်သုံးခြင်း
     initKeyManagement();
     
-    const historyBtn = document.getElementById('history-card-btn'); // သင့် HTML ထဲက History ခလုတ် ID နဲ့ တိုက်စစ်ပါ
+    const historyBtn = document.getElementById('history-card-btn'); 
     if (historyBtn) {
         historyBtn.addEventListener('click', () => {
             fetchAndInitHistory(userId); 
         });
     }
- }
+}
