@@ -523,23 +523,36 @@ export function renderProfileScreen(container) {
         }
     });
 
-    // 🏆 လက်ရှိ နိုင်ထားတဲ့ Winner ID များ (လိုအပ်သလို ပြင်ဆင်နိုင်သည်)
-    const currentWinners = [1, 6]; 
+    // Backend API မှ Winner History များကို လှမ်းယူပြီး Winner ID ဖြင့် တိုက်စစ်၍ ဖလားများပြသခြင်း
+    async function loadUserTrophiesFromBackend() {
+        try {
+            const response = await fetch(`/api/create-room?history=true&userId=${userId}`);
+            const data = await response.json();
 
-    // မူလ renderTrophyShowcase အစား renderTrophyShowcaseWithLogic ကို အသုံးပြုခြင်း
-    renderTrophyShowcaseWithLogic('trophy-showcase-target', currentWinners, (trophy, elementHTML) => {
-        if (elementHTML) {
-            zoomedTrophyWrapper.innerHTML = elementHTML;
-        } else {
-            zoomedTrophyWrapper.innerHTML = `
-                <div style="text-align: center; color: #d8b4fe;">
-                    <div style="font-size: 50px;">${trophy.icon || '🏆'}</div>
-                    <div style="font-size: 14px; font-weight: bold; margin-top: 8px;">${trophy.name || ''}</div>
-                </div>
-            `;
+            const historyData = data.success && Array.isArray(data.history) ? data.history : [];
+
+            renderTrophyShowcaseWithLogic('trophy-showcase-target', historyData, userId, (trophy, elementHTML) => {
+                if (elementHTML) {
+                    zoomedTrophyWrapper.innerHTML = elementHTML;
+                } else {
+                    zoomedTrophyWrapper.innerHTML = `
+                        <div style="text-align: center; color: #d8b4fe;">
+                            <div style="font-size: 50px;">${trophy.icon || '🏆'}</div>
+                            <div style="font-size: 14px; font-weight: bold; margin-top: 8px;">${trophy.name || ''}</div>
+                        </div>
+                    `;
+                }
+                zoomModal.classList.add('active');
+            });
+        } catch (error) {
+            console.error('Error loading history trophies:', error);
+            // Error ဖြစ်သွားပါက အလွတ်ဒေတာဖြင့် ဆက်ပြရန်
+            renderTrophyShowcaseWithLogic('trophy-showcase-target', [], userId, () => {});
         }
-        zoomModal.classList.add('active');
-    });
+    }
+
+    // ဖလားများ စတင်တင်ဆောင်ခြင်း
+    loadUserTrophiesFromBackend();
 
     zoomCloseBtn.addEventListener('click', () => {
         zoomModal.classList.remove('active');

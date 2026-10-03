@@ -1,4 +1,4 @@
-// trophyController.js - Match History ကိုအခြေခံ၍ သက်ဆိုင်ရာ ဖလားများကို အလိုအလျောက် လင်းစေရန်
+// trophyController.js - Match History ထဲရှိ winnerId ကို အခြေခံ၍ ဖလားများ လင်းစေရန်
 
 function injectTrophyControllerStyles() {
     if (document.getElementById('trophy-controller-styles')) return;
@@ -26,7 +26,7 @@ function injectTrophyControllerStyles() {
 
 import { renderTrophyShowcase as renderOriginalShowcase, trophyDataList } from './trophies.js';
 
-export function renderTrophyShowcaseWithLogic(containerId, winnersData = [], onTrophyClick) {
+export function renderTrophyShowcaseWithLogic(containerId, winnersData = [], currentUserId = '', onTrophyClick) {
     injectTrophyControllerStyles();
 
     // မူလ render function ကို ခေါ်ယူခြင်း
@@ -51,8 +51,11 @@ export function renderTrophyShowcaseWithLogic(containerId, winnersData = [], onT
         // ဝင်လာသော Match History စာရင်းကို စစ်ဆေးခြင်း
         if (Array.isArray(winnersData) && winnersData.length > 0) {
             winnersData.forEach(match => {
-                // နိုင်ပွဲဖြစ်မဖြစ် စစ်ဆေးခြင်း (myResult က Win ဖြစ်ရင် သို့မဟုတ် winnerId ကိုက်ညီရင်)
-                const isWinner = match.myResult === 'Win' || (match.winnerId && match.winnerId === match.currentUserId) || match.isWinner;
+                // ကိုယ့် ID မဟုတ်ဘဲ မိတ်ဆွေပြောတဲ့အတိုင်း 'winnerId' က ကိုယ်နဲ့ တူရဲ့လား (သို့မဟုတ် winnerId အစစ်အမှန် ရှိနေသလား) ဆိုတာကို စစ်ဆေးခြင်း
+                const matchWinnerId = match.winnerId || match.winner_id;
+                
+                // အကယ်၍ match ထဲက winnerId သည် လက်ရှိဝင်ထားသော currentUserId နှင့် တိုက်ဆိုင်နေလျှင် (သို့မဟုတ် နိုင်သူအဖြစ် သတ်မှတ်ထားလျှင်)
+                const isWinner = matchWinnerId && matchWinnerId === currentUserId;
                 
                 if (isWinner) {
                     let targetTrophyId = null;
