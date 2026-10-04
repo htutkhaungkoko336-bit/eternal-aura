@@ -19,7 +19,7 @@ function injectTrophyControllerStyles() {
             pointer-events: auto !important;
         }
 
-        /* Modal ထဲရှိ ခလုတ်ပေါ်တွင် စာသားအပြည့်အစုံ ပေါ်စေရန်နှင့် ကွယ်မနေစေရန် Style ချိန်ညှိခြင်း */
+        /* Modal ထဲရှိ ခလုတ်ပေါ်တွင် စာသားအပြည့်အစုံ ပေါ်စေရန် Style ချိန်ညှိခြင်း */
         .trophy-modal button, 
         .modal-content button, 
         div[id*="modal"] button,
@@ -59,7 +59,7 @@ export async function renderTrophyShowcaseWithLogic(containerId, winnersData = [
             if (existingBadge) existingBadge.remove();
         });
 
-        // ၁။ Match History များကို စစ်ဆေးပြီး အကြိမ်ရေ ရေတွက်ခြင်း
+        // ၁။ Match History များကို စစ်ဆေးပြီး အကြိမ်ရေ ရေတွက်ခြင်း (ID 1 မှ 5 နှင့် 7 မှ 11 အတွက်)
         if (Array.isArray(winnersData) && winnersData.length > 0) {
             winnersData.forEach(match => {
                 const matchWinnerId = match.winnerId || match.winner_id;
@@ -92,33 +92,36 @@ export async function renderTrophyShowcaseWithLogic(containerId, winnersData = [
             });
         }
 
-        // ၂။ Backend API မှ Data များကို စစ်ဆေးရန်
+        // ၂။ Firebase Backend API (`/api/register`) မှ tournaments/mainConfig ရှိ winner-userid များကို ဆွဲထုတ်စစ်ဆေးရန်
         try {
             const response = await fetch('/api/register'); 
             const result = await response.json();
             
             if (result.success && result.data) {
                 const configData = result.data;
-                let allWinnerIds = [];
+                let tournamentWinnerIds = [];
                 
-                const possibleKeys = ['winner_userid', 'winner-userid', 'winnerUserId', 'winner_id', 'winnerId'];
-                possibleKeys.forEach(key => {
-                    const val = configData[key];
-                    if (val) {
-                        if (Array.isArray(val)) allWinnerIds.push(...val);
-                        else allWinnerIds.push(val);
+                // ပေးထားသော register.js ကဲ့သို့ winner-userid, winner_userid များကို ရယူခြင်း
+                const rawWinner = configData['winner-userid'] || configData['winner_userid'] || configData['winnerUserId'];
+                
+                if (rawWinner) {
+                    if (Array.isArray(rawWinner)) {
+                        tournamentWinnerIds.push(...rawWinner);
+                    } else if (typeof rawWinner === 'string') {
+                        tournamentWinnerIds.push(...rawWinner.split(/[,,\s]+/).map(id => id.trim()).filter(Boolean));
                     }
-                });
-
-                if (configdata && configData.champion && configData.champion.userId) {
-                    allWinnerIds.push(configData.champion.userId);
-                } else if (configData.champion && configData.champion.user_id) {
-                    allWinnerIds.push(configData.champion.user_id);
                 }
 
-                const matchCount = allWinnerIds.filter(id => id === currentUserId).length;
-                if (matchCount > 0) {
-                    trophyWinCounts[6] = (trophyWinCounts[6] || 0) + matchCount;
+                // champion object ထဲတွင်ပါသော userId ကိုပါ ထပ်မံစစ်ဆေးရန်
+                if (configData.champion) {
+                    if (configData.champion.userId) tournamentWinnerIds.push(configData.champion.userId);
+                    if (configData.champion.user_id) tournamentWinnerIds.push(configData.champion.user_id);
+                }
+
+                // လက်ရှိဝင်ထားသော user ID ပါဝင်သည့် အရေအတွက်ကို ရေတွက်ခြင်း (ID 6 အတွက်)
+                const championMatchCount = tournamentWinnerIds.filter(id => id === currentUserId).length;
+                if (championMatchCount > 0) {
+                    trophyWinCounts[6] = (trophyWinCounts[6] || 0) + championMatchCount;
                 }
             }
         } catch (err) {
@@ -153,7 +156,7 @@ export async function renderTrophyShowcaseWithLogic(containerId, winnersData = [
             11: "5v5 50k Trophy"
         };
 
-        // ၅။ Trophy ကို နှိပ်လိုက်သည့်အခါ Modal ထဲရှိ ခလုတ်တွင် စာသားအပြည့်အစုံ အဖြူရောင်ဖြင့်ပေါ်စေရန်
+        // ၅။ Trophy ကို နှိပ်လိုက်သည့်အခါ Modal ထဲရှိ ခလုတ်တွင် စာသားအဖြူရောင်စစ်စစ်ဖြင့် အပြည့်အစုံပေါ်စေရန်
         trophyItems.forEach((item, index) => {
             const currentTrophyObj = trophyDataList ? trophyDataList[index] : null;
             const currentId = currentTrophyObj ? Number(currentTrophyObj.id) : (index + 1);
