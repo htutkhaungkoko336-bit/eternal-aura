@@ -11,7 +11,6 @@ function injectTrophyControllerStyles() {
             opacity: 0.4 !important;
             transition: filter 0.4s ease, opacity 0.4s ease, transform 0.25s ease;
             pointer-events: none !important;
-            position: relative; /* Badge နေရာမှန်ကန်စေရန် */
         }
         .pure-trophy-item.trophy-unlocked {
             filter: grayscale(0%) brightness(1) !important;
@@ -19,36 +18,9 @@ function injectTrophyControllerStyles() {
             pointer-events: auto !important;
         }
 
-        /* ဖလားအားလုံးအတွက် (အကြီးရော၊ အသေးပါ) ညာဘက်အောက်ထောင့် သို့မဟုတ် အပေါ်ထောင့်တွင် အမြဲသပ်ရပ်စွာ ပေါ်စေရန် */
-        .pure-trophy-item .trophy-count-badge {
-            position: absolute;
-            bottom: 2px;  /* ပုံရဲ့အတွင်းဘက် အောက်ခြေနား */
-            right: 2px;   /* ပုံရဲ့အတွင်းဘက် ညာဘက်နား */
-            background: rgba(15, 23, 42, 0.9);
-            color: #38bdf8;
-            font-size: 9px;
-            font-weight: 700;
-            padding: 1px 4px;
-            border-radius: 4px;
-            border: 1px solid rgba(56, 189, 248, 0.4);
-            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);
-            z-index: 10;
-            backdrop-filter: blur(4px);
-        }
-
-        /* ကြီးတဲ့ Trophy (ID 6) အတွက်ဆိုရင် ပုံစံလေး နည်းနည်း ပိုကြီးပေးမည် */
-        .pure-trophy-item.is-main-trophy .trophy-count-badge {
-            bottom: 6px;
-            right: 6px;
-            font-size: 11px;
-            padding: 2px 6px;
-            border-radius: 6px;
-        }
-
-        /* Modal ထဲတွင် မပေါ်စေရန် တားဆီးခြင်း */
-        .trophy-modal .trophy-count-badge,
-        .modal-content .trophy-count-badge,
-        div[id*="modal"] .trophy-count-badge {
+        /* Modal / Zoom ထဲရောက်ရင် နာမည်ပုံစံ မူလအတိုင်း ပြန်ဖြစ်စေရန် */
+        .trophy-modal .trophy-count-text,
+        .modal-content .trophy-count-text {
             display: none !important;
         }
     `;
@@ -145,27 +117,30 @@ export async function renderTrophyShowcaseWithLogic(containerId, winnersData = [
             console.error("Error fetching tournament winners from API:", err);
         }
 
-// ၃။ တွက်ချက်ထားသော Count များအပေါ် မူတည်၍ UI တွင် Trophy များကို ပုံဖော်ခြင်း
+// ၃။ တွက်ချက်ထားသော Count များအပေါ် မူတည်၍ Trophy များကို ပုံဖော်ခြင်း
         trophyItems.forEach((item, index) => {
             const trophyObj = trophyDataList ? trophyDataList[index] : null;
             const currentId = trophyObj ? Number(trophyObj.id) : (index + 1);
 
             const winCount = trophyWinCounts[currentId] || 0;
 
-            // ကြီးတဲ့ Trophy ကြီး (သို့မဟုတ် index က အလယ်ကောင်ဖြစ်ရင်) ဟုတ်မဟုတ် စစ်ဆေးရန်
-            const isLargeTrophy = (currentId === 6 || (trophyObj && (trophyObj.name || '').toUpperCase().includes('CHAMPION')));
-            if (isLargeTrophy) {
-                item.classList.add('is-main-trophy');
-            }
-
             if (winCount > 0) {
                 item.classList.add('trophy-unlocked');
                 
+                // အကယ်၍ ၂ ခါ သို့မဟုတ် ထို့ထက်ပို၍ နိုင်ထားပါက နာမည်ဘေးတွင် Count တန်းပြမည်
                 if (winCount > 1) {
-                    const badge = document.createElement('span');
-                    badge.className = 'trophy-count-badge';
-                    badge.innerText = `x${winCount}`;
-                    item.appendChild(badge);
+                    // Trophy ထဲက နာမည်ပြား သို့မဟုတ် စာသားပါတဲ့ Element ကို ရှာမည် (ဥပမာ - label သို့မဟုတ် text element)
+                    const labelElement = item.querySelector('.trophy-name, .trophy-label, span, p') || item;
+                    
+                    // နောက်ထပ် x ထပ်မပေါ်အောင် စစ်ပြီးမှ ထည့်မည်
+                    if (!labelElement.querySelector('.trophy-count-text')) {
+                        const countSpan = document.createElement('span');
+                        countSpan.className = 'trophy-count-text';
+                        countSpan.style.color = '#38bdf8'; // Theme နဲ့လိုက်မယ့် အရောင်
+                        countSpan.style.fontWeight = 'bold';
+                        countSpan.innerText = ` (x${winCount})`;
+                        labelElement.appendChild(countSpan);
+                    }
                 }
             }
         });
