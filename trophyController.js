@@ -18,6 +18,20 @@ function injectTrophyControllerStyles() {
             opacity: 1 !important;
             pointer-events: auto !important;
         }
+
+        /* Modal ထဲရှိ ခလုတ်ပေါ်တွင် စာသားအပြည့်အစုံ ပေါ်စေရန်နှင့် ကွယ်မနေစေရန် Style ချိန်ညှိခြင်း */
+        .trophy-modal button, 
+        .modal-content button, 
+        div[id*="modal"] button,
+        .trophy-modal .ok-btn,
+        .modal-content .ok-btn {
+            font-size: 13px !important;
+            padding: 6px 12px !important;
+            white-space: nowrap !important;
+            max-width: 100% !important;
+            overflow: hidden !important;
+            text-overflow: ellipsis !important;
+        }
     `;
     document.head.appendChild(style);
 }
@@ -39,7 +53,6 @@ export async function renderTrophyShowcaseWithLogic(containerId, winnersData = [
 
         const trophyItems = container.querySelectorAll('.pure-trophy-item');
         
-        // အရင် badge ဟောင်းများကို ရှင်းထုတ်မည်
         trophyItems.forEach((item) => {
             item.classList.remove('trophy-unlocked');
             const existingBadge = item.querySelector('.trophy-count-badge');
@@ -97,8 +110,10 @@ export async function renderTrophyShowcaseWithLogic(containerId, winnersData = [
                     }
                 });
 
-                if (configData.champion && configData.champion.userId) {
+                if (configdata && configData.champion && configData.champion.userId) {
                     allWinnerIds.push(configData.champion.userId);
+                } else if (configData.champion && configData.champion.user_id) {
+                    allWinnerIds.push(configData.champion.user_id);
                 }
 
                 const matchCount = allWinnerIds.filter(id => id === currentUserId).length;
@@ -110,7 +125,7 @@ export async function renderTrophyShowcaseWithLogic(containerId, winnersData = [
             console.error("Error fetching tournament winners from API:", err);
         }
 
-        // ၃။ Trophy များကို ပုံဖော်ခြင်း (အပြင်ဘက် badge လုံးဝမပါတော့ပါ)
+        // ၃။ Trophy များကို ပုံဖော်ခြင်း
         trophyItems.forEach((item, index) => {
             const trophyObj = trophyDataList ? trophyDataList[index] : null;
             const currentId = trophyObj ? Number(trophyObj.id) : (index + 1);
@@ -123,7 +138,7 @@ export async function renderTrophyShowcaseWithLogic(containerId, winnersData = [
             }
         });
 
-        // ၄။ Trophy ID အလိုက် အမည်များ သတ်မှတ်ခြင်း (ID 6 အတွက် Champion Trophy ထည့်သွင်းထားသည်)
+        // ၄။ Trophy ID အလိုက် အမည်များ သတ်မှတ်ခြင်း
         const customTrophyNames = {
             1: "1v1 5k Trophy",
             2: "1v1 10k Trophy",
@@ -138,7 +153,7 @@ export async function renderTrophyShowcaseWithLogic(containerId, winnersData = [
             11: "5v5 50k Trophy"
         };
 
-        // ၅။ Trophy ကို နှိပ်လိုက်သည့်အခါ Modal ထဲရှိ ခလုတ်တွင် စာသားအဖြူရောင်စစ်စစ်ဖြင့် အကုန်တူညီစွာ ပြရန်
+        // ၅။ Trophy ကို နှိပ်လိုက်သည့်အခါ Modal ထဲရှိ ခလုတ်တွင် စာသားအပြည့်အစုံ အဖြူရောင်ဖြင့်ပေါ်စေရန်
         trophyItems.forEach((item, index) => {
             const currentTrophyObj = trophyDataList ? trophyDataList[index] : null;
             const currentId = currentTrophyObj ? Number(currentTrophyObj.id) : (index + 1);
@@ -154,9 +169,9 @@ export async function renderTrophyShowcaseWithLogic(containerId, winnersData = [
                             let trophyName = customTrophyNames[currentId] || (currentTrophyObj ? (currentTrophyObj.name || currentTrophyObj.title) : `Trophy #${currentId}`);
 
                             if (winCount > 0) {
-                                okButton.innerHTML = `<span style="color: #ffffff; font-weight: bold;">${trophyName} x${winCount}</span>`;
+                                okButton.innerHTML = `<span style="color: #ffffff; font-weight: bold; font-size: 12px; display: inline-block;">${trophyName} x${winCount}</span>`;
                             } else {
-                                okButton.innerHTML = `<span style="color: #ffffff; font-weight: bold;">${trophyName}</span>`;
+                                okButton.innerHTML = `<span style="color: #ffffff; font-weight: bold; font-size: 12px; display: inline-block;">${trophyName}</span>`;
                             }
                         }
                     }
