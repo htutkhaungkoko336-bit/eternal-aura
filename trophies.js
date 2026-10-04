@@ -10,7 +10,7 @@ export const trophyDataList = [
     { id: 5, title: "PRISM PROTOCOL", subtitle: "PRISM PROTOCOL", date: "2026-04-12", desc: "Eternal Aura Cyber Prism Trophy.", isCustom: true, styleType: 'prism' },
     
     // အလယ်အကြီးစား ၁ လုံး
-    { id: 6, title: "ETERNAL SUPREME", subtitle: "Eternal Sovereign", date: "2026-08-23", desc: "The Ultimate Cyber Angelic Shield Trophy. Undisputed king of all tournaments." },
+    { id: 6, title: "ETERNAL SUPREME", subtitle: "M7 HALO CHAMPION", date: "2026-08-23", desc: "The Ultimate Cyber Angelic Shield Trophy. Undisputed king of all tournaments." },
 
     // အောက်ဘက် ၅ လုံး
     { id: 7, title: "FEATHER NEXUS", subtitle: "FEATHER NEXUS", date: "2026-05-01", desc: "Eternal Aura Feather Matrix Trophy.", isCustom: true, styleType: 'feather-small' },
@@ -1959,7 +1959,7 @@ export function renderTrophyShowcase(containerId, onTrophyClick) {
                         <div class="glow-dot"></div>
                     </div>
                     <div class="cyber-base-v2">
-                        <span class="cyber-badge-text-v2">M7 HALO CHAMPION</span>
+                        <span class="cyber-badge-text-v2">Eternal Sovereign</span>
                     </div>
                 </div>
             </div>
