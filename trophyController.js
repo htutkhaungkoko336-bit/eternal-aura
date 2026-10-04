@@ -18,24 +18,6 @@ function injectTrophyControllerStyles() {
             opacity: 1 !important;
             pointer-events: auto !important;
         }
-
-        /* ID 6 (အလယ်က အကြီးဆုံးဖလား) အတွက် မူလ badge ပုံစံအတိုင်း အပြင်ဘက်တွင်သာ ပြရန် */
-        .pure-trophy-item.is-main-trophy .trophy-count-badge,
-        .pure-trophy-item[data-trophy-id="6"] .trophy-count-badge {
-            position: absolute;
-            bottom: -15px;
-            right: 50%;
-            transform: translateX(50%);
-            background: rgba(15, 23, 42, 0.95);
-            color: #ffffff;
-            font-size: 11px;
-            font-weight: 700;
-            padding: 2px 8px;
-            border-radius: 6px;
-            border: 1px solid rgba(255, 255, 255, 0.3);
-            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);
-            z-index: 10;
-        }
     `;
     document.head.appendChild(style);
 }
@@ -57,8 +39,9 @@ export async function renderTrophyShowcaseWithLogic(containerId, winnersData = [
 
         const trophyItems = container.querySelectorAll('.pure-trophy-item');
         
+        // အရင် badge ဟောင်းများကို ရှင်းထုတ်မည်
         trophyItems.forEach((item) => {
-            item.classList.remove('trophy-unlocked', 'is-main-trophy');
+            item.classList.remove('trophy-unlocked');
             const existingBadge = item.querySelector('.trophy-count-badge');
             if (existingBadge) existingBadge.remove();
         });
@@ -127,7 +110,7 @@ export async function renderTrophyShowcaseWithLogic(containerId, winnersData = [
             console.error("Error fetching tournament winners from API:", err);
         }
 
-        // ၃။ Trophy များကို ပုံဖော်ခြင်း
+        // ၃။ Trophy များကို ပုံဖော်ခြင်း (အပြင်ဘက် badge လုံးဝမပါတော့ပါ)
         trophyItems.forEach((item, index) => {
             const trophyObj = trophyDataList ? trophyDataList[index] : null;
             const currentId = trophyObj ? Number(trophyObj.id) : (index + 1);
@@ -137,26 +120,17 @@ export async function renderTrophyShowcaseWithLogic(containerId, winnersData = [
 
             if (winCount > 0) {
                 item.classList.add('trophy-unlocked');
-
-                if (currentId === 6) {
-                    item.classList.add('is-main-trophy');
-                    if (!item.querySelector('.trophy-count-badge')) {
-                        const badge = document.createElement('div');
-                        badge.className = 'trophy-count-badge';
-                        badge.innerText = `x${winCount}`;
-                        item.appendChild(badge);
-                    }
-                }
             }
         });
 
-        // ၄။ Trophy ID အလိုက် သီးသန့် အမည်များကို သတ်မှတ်ပေးခြင်း
+        // ၄။ Trophy ID အလိုက် အမည်များ သတ်မှတ်ခြင်း (ID 6 အတွက် Champion Trophy ထည့်သွင်းထားသည်)
         const customTrophyNames = {
             1: "1v1 5k Trophy",
             2: "1v1 10k Trophy",
             3: "1v1 15k Trophy",
             4: "1v1 25k Trophy",
             5: "1v1 50k Trophy",
+            6: "Champion Trophy",
             7: "5v5 5k Trophy",
             8: "5v5 10k Trophy",
             9: "5v5 15k Trophy",
@@ -164,7 +138,7 @@ export async function renderTrophyShowcaseWithLogic(containerId, winnersData = [
             11: "5v5 50k Trophy"
         };
 
-        // ၅။ Trophy ကို နှိပ်လိုက်သည့်အခါ Modal ထဲရှိ ခလုတ်တွင် စာသားအဖြူရောင်စစ်စစ်ဖြင့် ပြရန်
+        // ၅။ Trophy ကို နှိပ်လိုက်သည့်အခါ Modal ထဲရှိ ခလုတ်တွင် စာသားအဖြူရောင်စစ်စစ်ဖြင့် အကုန်တူညီစွာ ပြရန်
         trophyItems.forEach((item, index) => {
             const currentTrophyObj = trophyDataList ? trophyDataList[index] : null;
             const currentId = currentTrophyObj ? Number(currentTrophyObj.id) : (index + 1);
@@ -177,13 +151,6 @@ export async function renderTrophyShowcaseWithLogic(containerId, winnersData = [
                         const okButton = modalElement.querySelector('button, .ok-btn, [class*="btn"]');
                         
                         if (okButton) {
-                            // ID 6 (M7 Champion) ဖြစ်ပါက အထဲတွင် count လုံးဝမပြဘဲ မူလ OK ခလုတ်အတိုင်း သန့်ရှင်းစွာ ထားရှိမည်
-                            if (currentId === 6) {
-                                okButton.innerHTML = `<span style="color: #ffffff; font-weight: bold;">OK</span>`;
-                                return;
-                            }
-
-                            // အခြား Trophy များအတွက် နာမည်နှင့် count ကို စာသားအဖြူရောင်စစ်စစ်ဖြင့် ပြမည်
                             let trophyName = customTrophyNames[currentId] || (currentTrophyObj ? (currentTrophyObj.name || currentTrophyObj.title) : `Trophy #${currentId}`);
 
                             if (winCount > 0) {
