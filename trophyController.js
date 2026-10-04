@@ -19,18 +19,19 @@ function injectTrophyControllerStyles() {
             pointer-events: auto !important;
         }
 
-        /* Modal ထဲရှိ ခလုတ်ပေါ်တွင် စာသားအပြည့်အစုံ ပေါ်စေရန် Style ချိန်ညှိခြင်း */
+        /* Modal ထဲရှိ ခလုတ်ကို အောက်ဘက်သို့ ပိုဆင်းပေးပြီး စာသားအပြည့်အစုံ ပေါ်စေရန် */
         .trophy-modal button, 
         .modal-content button, 
         div[id*="modal"] button,
         .trophy-modal .ok-btn,
         .modal-content .ok-btn {
-            font-size: 13px !important;
-            padding: 6px 12px !important;
+            font-size: 12px !important;
+            padding: 8px 14px !important;
+            margin-top: 15px !important;
+            transform: translateY(10px) !important;
             white-space: nowrap !important;
             max-width: 100% !important;
-            overflow: hidden !important;
-            text-overflow: ellipsis !important;
+            overflow: visible !important;
         }
     `;
     document.head.appendChild(style);
@@ -59,7 +60,7 @@ export async function renderTrophyShowcaseWithLogic(containerId, winnersData = [
             if (existingBadge) existingBadge.remove();
         });
 
-        // ၁။ Match History များကို စစ်ဆေးပြီး အကြိမ်ရေ ရေတွက်ခြင်း (ID 1 မှ 5 နှင့် 7 မှ 11 အတွက်)
+        // ၁။ Match History များကို စစ်ဆေးပြီး အကြိမ်ရေ ရေတွက်ခြင်း
         if (Array.isArray(winnersData) && winnersData.length > 0) {
             winnersData.forEach(match => {
                 const matchWinnerId = match.winnerId || match.winner_id;
@@ -101,7 +102,6 @@ export async function renderTrophyShowcaseWithLogic(containerId, winnersData = [
                 const configData = result.data;
                 let tournamentWinnerIds = [];
                 
-                // ပေးထားသော register.js ကဲ့သို့ winner-userid, winner_userid များကို ရယူခြင်း
                 const rawWinner = configData['winner-userid'] || configData['winner_userid'] || configData['winnerUserId'];
                 
                 if (rawWinner) {
@@ -112,13 +112,11 @@ export async function renderTrophyShowcaseWithLogic(containerId, winnersData = [
                     }
                 }
 
-                // champion object ထဲတွင်ပါသော userId ကိုပါ ထပ်မံစစ်ဆေးရန်
                 if (configData.champion) {
                     if (configData.champion.userId) tournamentWinnerIds.push(configData.champion.userId);
                     if (configData.champion.user_id) tournamentWinnerIds.push(configData.champion.user_id);
                 }
 
-                // လက်ရှိဝင်ထားသော user ID ပါဝင်သည့် အရေအတွက်ကို ရေတွက်ခြင်း (ID 6 အတွက်)
                 const championMatchCount = tournamentWinnerIds.filter(id => id === currentUserId).length;
                 if (championMatchCount > 0) {
                     trophyWinCounts[6] = (trophyWinCounts[6] || 0) + championMatchCount;
@@ -156,7 +154,7 @@ export async function renderTrophyShowcaseWithLogic(containerId, winnersData = [
             11: "5v5 50k Trophy"
         };
 
-        // ၅။ Trophy ကို နှိပ်လိုက်သည့်အခါ Modal ထဲရှိ ခလုတ်တွင် စာသားအဖြူရောင်စစ်စစ်ဖြင့် အပြည့်အစုံပေါ်စေရန်
+        // ၅။ Trophy ကို နှိပ်လိုက်သည့်အခါ Modal ထဲရှိ ခလုတ်ကို အောက်သို့ဆင်းပြီး စာသားအဖြူရောင်ဖြင့် အပြည့်အစုံပေါ်စေရန်
         trophyItems.forEach((item, index) => {
             const currentTrophyObj = trophyDataList ? trophyDataList[index] : null;
             const currentId = currentTrophyObj ? Number(currentTrophyObj.id) : (index + 1);
