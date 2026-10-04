@@ -20,7 +20,7 @@ function injectTrophyControllerStyles() {
         }
 
         /* Modal အောက်ခံဘောင်ကြီးကို အောက်ဘက်သို့ ပိုရှည်လာစေရန် */
-        .trophy-modal, 
+        .trophy-modal,   
         .modal-content, 
         div[id*="modal"] {
             padding-bottom: 50px !important;
