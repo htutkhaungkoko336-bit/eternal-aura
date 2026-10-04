@@ -19,13 +19,12 @@ function injectTrophyControllerStyles() {
             pointer-events: auto !important;
         }
 
-        /* အောက်ခံ Modal Card ကို အလွန်အမင်း မကြီးစေဘဲ သင့်တောရုံ အလျား/အနံနှင့် padding မျှတစေရန် */
+        /* အောက်ခံ အပြားလေး (Modal box) ကို အောက်ဘက်သို့ ပိုရှည်လာစေရန်နှင့် ခလုတ်ကို လှပစွာ ဆံ့စေရန် */
         .trophy-modal, 
         .modal-content, 
         div[id*="modal"] {
-            padding-bottom: 24px !important;
-            min-height: unset !important;
-            height: auto !important;
+            padding-bottom: 30px !important;
+            min-height: 380px !important;
         }
 
         /* ခလုတ်ကို အောက်ခံဘောင်အတွင်း လှပသပ်ရပ်စွာ နေရာချခြင်း */
@@ -34,11 +33,10 @@ function injectTrophyControllerStyles() {
         div[id*="modal"] button,
         .trophy-modal .ok-btn,
         .modal-content .ok-btn {
-            font-size: 12px !important;
-            padding: 6px 14px !important;
-            margin-top: 12px !important;
-            position: relative !important;
-            z-index: 5 !important;
+            font-size: 13px !important;
+            padding: 8px 16px !important;
+            margin-top: 20px !important;
+            transform: none !important;
             white-space: nowrap !important;
             display: inline-block !important;
         }
@@ -163,7 +161,7 @@ export async function renderTrophyShowcaseWithLogic(containerId, winnersData = [
             11: "5v5 50k Trophy"
         };
 
-        // ၅။ Trophy ကို နှိပ်လိုက်သည့်အခါ Modal ကတ်ပြားအတွင်း ခလုတ်နှင့် စာသားအဖြူရောင် လှပစွာ ပေါ်စေရန်
+        // ၅။ Trophy ကို နှိပ်လိုက်သည့်အခါ Modal အောက်ခံဘောင် ရှည်လာပြီး ခလုတ်ပေါ်တွင် စာသားအဖြူရောင်ဖြင့် လှပစွာပေါ်စေရန်
         trophyItems.forEach((item, index) => {
             const currentTrophyObj = trophyDataList ? trophyDataList[index] : null;
             const currentId = currentTrophyObj ? Number(currentTrophyObj.id) : (index + 1);
@@ -179,9 +177,9 @@ export async function renderTrophyShowcaseWithLogic(containerId, winnersData = [
                             let trophyName = customTrophyNames[currentId] || (currentTrophyObj ? (currentTrophyObj.name || currentTrophyObj.title) : `Trophy #${currentId}`);
 
                             if (winCount > 0) {
-                                okButton.innerHTML = `<span style="color: #ffffff; font-weight: bold; font-size: 12px; display: inline-block;">${trophyName} x${winCount}</span>`;
+                                okButton.innerHTML = `<span style="color: #ffffff; font-weight: bold; font-size: 13px; display: inline-block;">${trophyName} x${winCount}</span>`;
                             } else {
-                                okButton.innerHTML = `<span style="color: #ffffff; font-weight: bold; font-size: 12px; display: inline-block;">${trophyName}</span>`;
+                                okButton.innerHTML = `<span style="color: #ffffff; font-weight: bold; font-size: 13px; display: inline-block;">${trophyName}</span>`;
                             }
                         }
                     }
