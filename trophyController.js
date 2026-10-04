@@ -18,22 +18,30 @@ function injectTrophyControllerStyles() {
             opacity: 1 !important;
             pointer-events: auto !important;
         }
-        /* Professional ဆန်တဲ့ Counter Badge ပုံစံအသစ် */
-        .trophy-count-badge {
+
+        /* ၁။ ပုံမှန် အသေးစား Trophy လေးများအတွက် Badge ပုံစံ */
+        .pure-trophy-item .trophy-count-badge {
             position: absolute;
-            bottom: 4px; /* အောက်ဘက်သို့ ရွှေ့လိုက်သည် */
-            right: 4px;  /* ညာဘက်ထောင့်စွန်းသို့ ကပ်လိုက်သည် */
-            background: rgba(15, 23, 42, 0.85); /* Dark Glass Background */
-            color: #38bdf8; /* Modern Blue/Cyan Accent */
-            font-size: 10px;
+            bottom: -2px;
+            right: 0px;
+            background: rgba(15, 23, 42, 0.9);
+            color: #38bdf8;
+            font-size: 9px;
             font-weight: 700;
-            padding: 1px 5px;
-            border-radius: 6px;
-            border: 1px solid rgba(56, 189, 248, 0.3);
-            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.4);
-            backdrop-filter: blur(4px);
+            padding: 0px 4px;
+            border-radius: 4px;
+            border: 1px solid rgba(56, 189, 248, 0.4);
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);
             z-index: 10;
-            letter-spacing: 0.5px;
+        }
+
+        /* ၂။ အလယ်က ကြီးတဲ့ M7 Champion / Main Trophy ကြီးအတွက် သီးသန့် Badge ပုံစံ */
+        .pure-trophy-item.is-main-trophy .trophy-count-badge {
+            bottom: 6px;
+            right: 12px;
+            font-size: 11px;
+            padding: 1px 6px;
+            border-radius: 6px;
         }
     `;
     document.head.appendChild(style);
@@ -129,17 +137,22 @@ export async function renderTrophyShowcaseWithLogic(containerId, winnersData = [
             console.error("Error fetching tournament winners from API:", err);
         }
 
-        // ၃။ တွက်ချက်ထားသော Count များအပေါ် မူတည်၍ UI တွင် Trophy များကို ပုံဖော်ခြင်း
+// ၃။ တွက်ချက်ထားသော Count များအပေါ် မူတည်၍ UI တွင် Trophy များကို ပုံဖော်ခြင်း
         trophyItems.forEach((item, index) => {
             const trophyObj = trophyDataList ? trophyDataList[index] : null;
             const currentId = trophyObj ? Number(trophyObj.id) : (index + 1);
 
             const winCount = trophyWinCounts[currentId] || 0;
 
+            // ကြီးတဲ့ Trophy ကြီး (သို့မဟုတ် index က အလယ်ကောင်ဖြစ်ရင်) ဟုတ်မဟုတ် စစ်ဆေးရန်
+            const isLargeTrophy = (currentId === 6 || (trophyObj && (trophyObj.name || '').toUpperCase().includes('CHAMPION')));
+            if (isLargeTrophy) {
+                item.classList.add('is-main-trophy');
+            }
+
             if (winCount > 0) {
                 item.classList.add('trophy-unlocked');
                 
-                // အကယ်၍ ၂ ခါ သို့မဟုတ် ထို့ထက်ပို၍ နိုင်ထားပါက Badge လေး ထည့်ပေးမည်
                 if (winCount > 1) {
                     const badge = document.createElement('span');
                     badge.className = 'trophy-count-badge';
