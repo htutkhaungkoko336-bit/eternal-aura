@@ -19,26 +19,19 @@ function injectTrophyControllerStyles() {
             pointer-events: auto !important;
         }
 
-        /* အောက်ခံ အပြားလေး (Modal box) ကို အောက်ဘက်သို့ ပိုရှည်လာစေရန်နှင့် ခလုတ်ကို လှပစွာ ဆံ့စေရန် */
-        .trophy-modal, 
-        .modal-content, 
-        div[id*="modal"] {
-            padding-bottom: 30px !important;
-            min-height: 380px !important;
-        }
-
-        /* ခလုတ်ကို အောက်ခံဘောင်အတွင်း လှပသပ်ရပ်စွာ နေရာချခြင်း */
+        /* Modal ထဲရှိ ခလုတ်ကို အောက်ဘက်သို့ ပိုဆင်းပေးပြီး စာသားအပြည့်အစုံ ပေါ်စေရန် */
         .trophy-modal button, 
         .modal-content button, 
         div[id*="modal"] button,
         .trophy-modal .ok-btn,
         .modal-content .ok-btn {
-            font-size: 13px !important;
-            padding: 8px 16px !important;
-            margin-top: 20px !important;
-            transform: none !important;
+            font-size: 12px !important;
+            padding: 8px 14px !important;
+            margin-top: 15px !important;
+            transform: translateY(10px) !important;
             white-space: nowrap !important;
-            display: inline-block !important;
+            max-width: 100% !important;
+            overflow: visible !important;
         }
     `;
     document.head.appendChild(style);
@@ -100,7 +93,7 @@ export async function renderTrophyShowcaseWithLogic(containerId, winnersData = [
             });
         }
 
-        // ၂။ Firebase Backend API မှ tournaments/mainConfig ရှိ winner-userid များကို ဆွဲထုတ်စစ်ဆေးရန်
+        // ၂။ Firebase Backend API (`/api/register`) မှ tournaments/mainConfig ရှိ winner-userid များကို ဆွဲထုတ်စစ်ဆေးရန်
         try {
             const response = await fetch('/api/register'); 
             const result = await response.json();
@@ -161,7 +154,7 @@ export async function renderTrophyShowcaseWithLogic(containerId, winnersData = [
             11: "5v5 50k Trophy"
         };
 
-        // ၅။ Trophy ကို နှိပ်လိုက်သည့်အခါ Modal အောက်ခံဘောင် ရှည်လာပြီး ခလုတ်ပေါ်တွင် စာသားအဖြူရောင်ဖြင့် လှပစွာပေါ်စေရန်
+        // ၅။ Trophy ကို နှိပ်လိုက်သည့်အခါ Modal ထဲရှိ ခလုတ်ကို အောက်သို့ဆင်းပြီး စာသားအဖြူရောင်ဖြင့် အပြည့်အစုံပေါ်စေရန်
         trophyItems.forEach((item, index) => {
             const currentTrophyObj = trophyDataList ? trophyDataList[index] : null;
             const currentId = currentTrophyObj ? Number(currentTrophyObj.id) : (index + 1);
@@ -177,9 +170,9 @@ export async function renderTrophyShowcaseWithLogic(containerId, winnersData = [
                             let trophyName = customTrophyNames[currentId] || (currentTrophyObj ? (currentTrophyObj.name || currentTrophyObj.title) : `Trophy #${currentId}`);
 
                             if (winCount > 0) {
-                                okButton.innerHTML = `<span style="color: #ffffff; font-weight: bold; font-size: 13px; display: inline-block;">${trophyName} x${winCount}</span>`;
+                                okButton.innerHTML = `<span style="color: #ffffff; font-weight: bold; font-size: 12px; display: inline-block;">${trophyName} x${winCount}</span>`;
                             } else {
-                                okButton.innerHTML = `<span style="color: #ffffff; font-weight: bold; font-size: 13px; display: inline-block;">${trophyName}</span>`;
+                                okButton.innerHTML = `<span style="color: #ffffff; font-weight: bold; font-size: 12px; display: inline-block;">${trophyName}</span>`;
                             }
                         }
                     }
