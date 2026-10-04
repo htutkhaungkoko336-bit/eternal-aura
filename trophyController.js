@@ -19,24 +19,29 @@ function injectTrophyControllerStyles() {
             pointer-events: auto !important;
         }
 
-        /* အောက်ခံ အပြားလေး (Modal box) ကို အောက်ဘက်သို့ ပိုရှည်လာစေရန်နှင့် ခလုတ်ကို လှပစွာ ဆံ့စေရန် */
+        /* Modal အောက်ခံဘောင်ကြီးကို အောက်ဘက်သို့ ပိုရှည်လာစေရန် */
         .trophy-modal, 
         .modal-content, 
         div[id*="modal"] {
-            padding-bottom: 30px !important;
-            min-height: 380px !important;
+            padding-bottom: 50px !important;
+            min-height: 440px !important;
+            display: flex !important;
+            flex-direction: column !important;
+            justify-content: space-between !important;
+            align-items: center !important;
         }
 
-        /* ခလုတ်ကို အောက်ခံဘောင်အတွင်း လှပသပ်ရပ်စွာ နေရာချခြင်း */
+        /* ခလုတ်ကို အပေါ်ကပုံစံများက မဖုံးနိုင်ရန် အလွှာအပေါ်ဆုံးသို့ တင်ပေးခြင်းနှင့် အောက်ဘက်သို့ ပိုဆင်းပေးခြင်း */
         .trophy-modal button, 
         .modal-content button, 
         div[id*="modal"] button,
         .trophy-modal .ok-btn,
         .modal-content .ok-btn {
             font-size: 13px !important;
-            padding: 8px 16px !important;
-            margin-top: 20px !important;
-            transform: none !important;
+            padding: 10px 18px !important;
+            margin-top: 30px !important;
+            position: relative !important;
+            z-index: 9999 !important;
             white-space: nowrap !important;
             display: inline-block !important;
         }
@@ -161,7 +166,7 @@ export async function renderTrophyShowcaseWithLogic(containerId, winnersData = [
             11: "5v5 50k Trophy"
         };
 
-        // ၅။ Trophy ကို နှိပ်လိုက်သည့်အခါ Modal အောက်ခံဘောင် ရှည်လာပြီး ခလုတ်ပေါ်တွင် စာသားအဖြူရောင်ဖြင့် လှပစွာပေါ်စေရန်
+        // ၅။ Trophy ကို နှိပ်လိုက်သည့်အခါ Modal ဘောင်ပိုရှည်လာပြီး ခလုတ်စာသား အပြည့်အစုံ လွတ်လွတ်လပ်လပ်ပေါ်စေရန်
         trophyItems.forEach((item, index) => {
             const currentTrophyObj = trophyDataList ? trophyDataList[index] : null;
             const currentId = currentTrophyObj ? Number(currentTrophyObj.id) : (index + 1);
