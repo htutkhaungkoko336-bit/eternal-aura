@@ -11,31 +11,33 @@ function injectTrophyControllerStyles() {
             opacity: 0.4 !important;
             transition: filter 0.4s ease, opacity 0.4s ease, transform 0.25s ease;
             pointer-events: none !important;
-            position: relative; /* Badge လေးတွေ တပ်လို့ရအောင် */
+            position: relative; 
         }
         .pure-trophy-item.trophy-unlocked {
             filter: grayscale(0%) brightness(1) !important;
             opacity: 1 !important;
             pointer-events: auto !important;
         }
-        /* အကြိမ်ရေပြမယ့် Counter Badge ပုံစံ */
+        /* Professional ဆန်တဲ့ Counter Badge ပုံစံအသစ် */
         .trophy-count-badge {
             position: absolute;
-            top: -5px;
-            right: -5px;
-            background: #e11d48;
-            color: white;
-            font-size: 11px;
-            font-weight: bold;
-            padding: 2px 6px;
-            border-radius: 9999px;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.3);
+            bottom: 4px; /* အောက်ဘက်သို့ ရွှေ့လိုက်သည် */
+            right: 4px;  /* ညာဘက်ထောင့်စွန်းသို့ ကပ်လိုက်သည် */
+            background: rgba(15, 23, 42, 0.85); /* Dark Glass Background */
+            color: #38bdf8; /* Modern Blue/Cyan Accent */
+            font-size: 10px;
+            font-weight: 700;
+            padding: 1px 5px;
+            border-radius: 6px;
+            border: 1px solid rgba(56, 189, 248, 0.3);
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.4);
+            backdrop-filter: blur(4px);
             z-index: 10;
+            letter-spacing: 0.5px;
         }
     `;
     document.head.appendChild(style);
 }
-
 export async function renderTrophyShowcaseWithLogic(containerId, winnersData = [], currentUserId = '', onTrophyClick) {
     injectTrophyControllerStyles();
 
