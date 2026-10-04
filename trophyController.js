@@ -17,17 +17,15 @@ function injectTrophyControllerStyles() {
             opacity: 1 !important;
             pointer-events: auto !important;
         }
-
-        /* Modal / Zoom ထဲရောက်ရင် နာမည်ပုံစံ မူလအတိုင်း ပြန်ဖြစ်စေရန် */
-        .trophy-modal .trophy-count-text,
-        .modal-content .trophy-count-text {
-            display: none !important;
-        }
     `;
     document.head.appendChild(style);
 }
+
 export async function renderTrophyShowcaseWithLogic(containerId, winnersData = [], currentUserId = '', onTrophyClick) {
     injectTrophyControllerStyles();
+
+    // Trophy Win Counts တွေကို သိမ်းဆည်းရန် Scope တစ်ခုတည်းတွင် ထားရှိခြင်း
+    const trophyWinCounts = {};
 
     renderOriginalShowcase(containerId, (trophy, htmlContent) => {
         if (typeof onTrophyClick === 'function') {
@@ -47,9 +45,6 @@ export async function renderTrophyShowcaseWithLogic(containerId, winnersData = [
             const existingBadge = item.querySelector('.trophy-count-badge');
             if (existingBadge) existingBadge.remove();
         });
-
-        // Trophy တစ်ခုချင်းစီအတွက် နိုင်တဲ့အကြိမ်ရေ (Count) တွေကို သိမ်းဆည်းရန် Map သို့မဟုတ် Object သုံးမည်
-        const trophyWinCounts = {};
 
         // ၁။ ပုံမှန် Match History များကို စစ်ဆေးပြီး အကြိမ်ရေ ရေတွက်ခြင်း
         if (Array.isArray(winnersData) && winnersData.length > 0) {
@@ -78,7 +73,6 @@ export async function renderTrophyShowcaseWithLogic(containerId, winnersData = [
                     }
 
                     if (targetTrophyId !== null) {
-                        // နိုင်တဲ့အကြိမ်ရေကို 1 ပေါင်းထည့်သွားမည်
                         trophyWinCounts[targetTrophyId] = (trophyWinCounts[targetTrophyId] || 0) + 1;
                     }
                 }
@@ -107,7 +101,6 @@ export async function renderTrophyShowcaseWithLogic(containerId, winnersData = [
                     allWinnerIds.push(configData.champion.userId);
                 }
 
-                // API ထဲမှာပါတဲ့ Winner ထဲမှာ ဒီ User ပါရင် ဥပမာ ID 6 ကို 1 ခلာ တိုးပေးနိုင်သည်
                 const matchCount = allWinnerIds.filter(id => id === currentUserId).length;
                 if (matchCount > 0) {
                     trophyWinCounts[6] = (trophyWinCounts[6] || 0) + matchCount;
@@ -117,7 +110,7 @@ export async function renderTrophyShowcaseWithLogic(containerId, winnersData = [
             console.error("Error fetching tournament winners from API:", err);
         }
 
-// ၃။ တွက်ချက်ထားသော Count များအပေါ် မူတည်၍ Trophy များကို ပုံဖော်ခြင်း
+        // ၃။ တွက်ချက်ထားသော Count များအပေါ် မူတည်၍ Trophy များကို ပုံဖော်ခြင်း (Main Page တွင် နာမည်ဘေး၌ ထပ်မထည့်တော့ပါ)
         trophyItems.forEach((item, index) => {
             const trophyObj = trophyDataList ? trophyDataList[index] : null;
             const currentId = trophyObj ? Number(trophyObj.id) : (index + 1);
@@ -126,23 +119,35 @@ export async function renderTrophyShowcaseWithLogic(containerId, winnersData = [
 
             if (winCount > 0) {
                 item.classList.add('trophy-unlocked');
-                
-                // အကယ်၍ ၂ ခါ သို့မဟုတ် ထို့ထက်ပို၍ နိုင်ထားပါက နာမည်ဘေးတွင် Count တန်းပြမည်
-                if (winCount > 1) {
-                    // Trophy ထဲက နာမည်ပြား သို့မဟုတ် စာသားပါတဲ့ Element ကို ရှာမည် (ဥပမာ - label သို့မဟုတ် text element)
-                    const labelElement = item.querySelector('.trophy-name, .trophy-label, span, p') || item;
-                    
-                    // နောက်ထပ် x ထပ်မပေါ်အောင် စစ်ပြီးမှ ထည့်မည်
-                    if (!labelElement.querySelector('.trophy-count-text')) {
-                        const countSpan = document.createElement('span');
-                        countSpan.className = 'trophy-count-text';
-                        countSpan.style.color = '#38bdf8'; // Theme နဲ့လိုက်မယ့် အရောင်
-                        countSpan.style.fontWeight = 'bold';
-                        countSpan.innerText = ` (x${winCount})`;
-                        labelElement.appendChild(countSpan);
-                    }
-                }
             }
         });
+
+        // ၄။ Trophy တစ်ခုချင်းစီကို နှိပ်လိုက်တဲ့အခါ Modal ပွင့်လာပြီး OK ခလုတ်တွင် Count ပြမည့် Click Event ထည့်သွင်းခြင်း
+        trophyItems.forEach((item, index) => {
+            item.addEventListener('click', () => {
+                const trophyObj = trophyDataList ? trophyDataList[index] : null;
+                const currentId = trophyObj ? Number(trophyObj.id) : (index + 1);
+                const winCount = trophyWinCounts[currentId] || 0;
+
+                // Modal ပွင့်လာတာကို စောင့်ပြီးမှ OK ခလုတ်နေရာတွင် Count ထည့်ရန် 
+                setTimeout(() => {
+                    const modalElement = document.querySelector('.trophy-modal, .modal-content, div[id*="modal"]');
+                    if (modalElement) {
+                        // Modal ထဲမှာရှိတဲ့ OK ခလုတ်ကို ရှာမည်
+                        const okButton = modalElement.querySelector('button, .ok-btn, [class*="btn"]');
+                        
+                        if (okButton) {
+                            // အကယ်၍ ခလုတ်ထဲမှာ count မပါသေးရင် နှင့် winCount ရှိရင် ပေါင်းထည့်မည်
+                            if (!okButton.querySelector('.modal-count-badge') && winCount > 0) {
+                                if (winCount > 1) {
+                                    okButton.innerHTML = `OK <span class="modal-count-badge" style="color: #38bdf8; margin-left: 4px;">(x${winCount})</span>`;
+                                }
+                            }
+                        }
+                    }
+                }, 50); // Modal DOM Render ဖြစ်ရန် ခဏစောင့်ရန်
+            });
+        });
+
     }, 100);
 }
