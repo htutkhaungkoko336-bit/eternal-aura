@@ -57,14 +57,13 @@ export async function renderTrophyShowcaseWithLogic(containerId, winnersData = [
 
         const trophyItems = container.querySelectorAll('.pure-trophy-item');
         
-        // အားလုံးကို အရင်မှိန်ထားမည် ပြီးရင် Badge ဟောင်းများကို ရှင်းထုတ်မည်
-        trophyItems.forEach((item, index) => {
+        trophyItems.forEach((item) => {
             item.classList.remove('trophy-unlocked', 'is-main-trophy');
             const existingBadge = item.querySelector('.trophy-count-badge');
             if (existingBadge) existingBadge.remove();
         });
 
-        // ၁။ ပုံမှန် Match History များကို စစ်ဆေးပြီး အကြိမ်ရေ ရေတွက်ခြင်း
+        // ၁။ Match History များကို စစ်ဆေးပြီး အကြိမ်ရေ ရေတွက်ခြင်း
         if (Array.isArray(winnersData) && winnersData.length > 0) {
             winnersData.forEach(match => {
                 const matchWinnerId = match.winnerId || match.winner_id;
@@ -128,20 +127,17 @@ export async function renderTrophyShowcaseWithLogic(containerId, winnersData = [
             console.error("Error fetching tournament winners from API:", err);
         }
 
-        // ၃။ Trophy များကို ပုံဖော်ခြင်း (ID 6 အတွက်သာ အပြင်ဘက်တွင် Badge ထည့်မည်)
+        // ၃။ Trophy များကို ပုံဖော်ခြင်း
         trophyItems.forEach((item, index) => {
             const trophyObj = trophyDataList ? trophyDataList[index] : null;
             const currentId = trophyObj ? Number(trophyObj.id) : (index + 1);
 
-            // Data attribute ထည့်ပေးခြင်းဖြင့် CSS ထိန်းချုပ်ရန် လွယ်ကူစေရန်
             item.setAttribute('data-trophy-id', currentId);
-
             const winCount = trophyWinCounts[currentId] || 0;
 
             if (winCount > 0) {
                 item.classList.add('trophy-unlocked');
 
-                // ID 6 (M7 Champion) ဖြစ်ပြီး နိုင်ပွဲရှိပါက အပြင်ဘက်တွင် Badge ထည့်မည်
                 if (currentId === 6) {
                     item.classList.add('is-main-trophy');
                     if (!item.querySelector('.trophy-count-badge')) {
@@ -154,34 +150,51 @@ export async function renderTrophyShowcaseWithLogic(containerId, winnersData = [
             }
         });
 
-        // ၄။ Trophy ကို နှိပ်လိုက်သည့်အခါ Modal ထဲရှိ OK ခလုတ်နေရာတွင် သက်ဆိုင်ရာ Trophy နာမည်နှင့် Count ပြရန်
+        // ၄။ Trophy ID အလိုက် သီးသန့် အမည်များကို သတ်မှတ်ပေးခြင်း (ဥပမာ - 1 က 1v1 5k, 2 က 1v1 10k စသည်ဖြင့်)
+        const customTrophyNames = {
+            1: "1v1 5k Trophy",
+            2: "1v1 10k Trophy",
+            3: "1v1 15k Trophy",
+            4: "1v1 25k Trophy",
+            5: "1v1 50k Trophy",
+            7: "5v5 5k Trophy",
+            8: "5v5 10k Trophy",
+            9: "5v5 15k Trophy",
+            10: "5v5 25k Trophy",
+            11: "5v5 50k Trophy"
+        };
+
+        // ၅။ Trophy ကို နှိပ်လိုက်သည့်အခါ Modal ထဲရှိ ခလုတ်တွင် သက်ဆိုင်ရာ နာမည်နှင့် Count ပြရန်
         trophyItems.forEach((item, index) => {
+            const currentTrophyObj = trophyDataList ? trophyDataList[index] : null;
+            const currentId = currentTrophyObj ? Number(currentTrophyObj.id) : (index + 1);
+            const winCount = trophyWinCounts[currentId] || 0;
+
             item.addEventListener('click', () => {
-                const trophyObj = trophyDataList ? trophyDataList[index] : null;
-                const currentId = trophyObj ? Number(trophyObj.id) : (index + 1);
-                const winCount = trophyWinCounts[currentId] || 0;
+                setTimeout(() => {
+                    const modalElement = document.querySelector('.trophy-modal, .modal-content, div[id*="modal"]');
+                    if (modalElement) {
+                        const okButton = modalElement.querySelector('button, .ok-btn, [class*="btn"]');
+                        
+                        if (okButton) {
+                            // ID 6 (M7 Champion) ဖြစ်ပါက ခလုတ်ကို မူလအတိုင်း (OK) သို့မဟုတ် သန့်ရှင်းစွာ ထားရှိမည်
+                            if (currentId === 6) {
+                                okButton.innerText = "OK";
+                                return;
+                            }
 
-                // ID 6 မဟုတ်သော အခြား Trophy များအတွက်သာ Modal ထဲတွင် နာမည်ပြောင်းမည်
-                if (currentId !== 6) {
-                    setTimeout(() => {
-                        const modalElement = document.querySelector('.trophy-modal, .modal-content, div[id*="modal"]');
-                        if (modalElement) {
-                            const okButton = modalElement.querySelector('button, .ok-btn, [class*="btn"]');
-                            
-                            if (okButton) {
-                                // Trophy ၏ နာမည်ကို ရှာယူခြင်း (သို့မဟုတ် trophyObj ထဲမှ နာမည်ကို ယူသုံးခြင်း)
-                                const trophyName = trophyObj && (trophyObj.name || trophyObj.title) 
-                                    ? (trophyObj.name || trophyObj.title) 
-                                    : (item.querySelector('.trophy-name, .trophy-label')?.innerText || `Trophy #${currentId}`);
+                            // သတ်မှတ်ထားသော customTrophyNames ထဲမှ ယူမည် (မရှိပါက trophyObj ထဲက နာမည်ကို ယူမည်)
+                            let trophyName = customTrophyNames[currentId] || (currentTrophyObj ? (currentTrophyObj.name || currentTrophyObj.title) : `Trophy #${currentId}`);
 
-                                const countText = winCount > 1 ? ` (x${winCount})` : '';
-                                
-                                // OK စာသားအစား Trophy နာမည်နှင့် count ကို အစားထိုးခြင်း
-                                okButton.innerHTML = `${trophyName}<span style="color: #38bdf8; margin-left: 4px; font-weight: bold;">${countText}</span>`;
+                            // အကြိမ်ရေ count ပါရှိပါက တွဲပြမည် (ဥပမာ - 1v1 5k Trophy x2)
+                            if (winCount > 0) {
+                                okButton.innerHTML = `${trophyName} <span style="color: #38bdf8; font-weight: bold;">x${winCount}</span>`;
+                            } else {
+                                okButton.innerHTML = `${trophyName}`;
                             }
                         }
-                    }, 50);
-                }
+                    }
+                }, 50);
             });
         });
 
