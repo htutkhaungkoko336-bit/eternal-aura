@@ -11,11 +11,26 @@ function injectTrophyControllerStyles() {
             opacity: 0.4 !important;
             transition: filter 0.4s ease, opacity 0.4s ease, transform 0.25s ease;
             pointer-events: none !important;
+            position: relative; /* Badge လေးတွေ တပ်လို့ရအောင် */
         }
         .pure-trophy-item.trophy-unlocked {
             filter: grayscale(0%) brightness(1) !important;
             opacity: 1 !important;
             pointer-events: auto !important;
+        }
+        /* အကြိမ်ရေပြမယ့် Counter Badge ပုံစံ */
+        .trophy-count-badge {
+            position: absolute;
+            top: -5px;
+            right: -5px;
+            background: #e11d48;
+            color: white;
+            font-size: 11px;
+            font-weight: bold;
+            padding: 2px 6px;
+            border-radius: 9999px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.3);
+            z-index: 10;
         }
     `;
     document.head.appendChild(style);
@@ -36,12 +51,17 @@ export async function renderTrophyShowcaseWithLogic(containerId, winnersData = [
 
         const trophyItems = container.querySelectorAll('.pure-trophy-item');
         
-        // အားလုံးကို အရင်မှိန်ထားမည်
+        // အားလုံးကို အရင်မှိန်ထားမည် ပြီးရင် Counter တွေ ရှင်းထုတ်မည်
         trophyItems.forEach((item) => {
             item.classList.remove('trophy-unlocked');
+            const existingBadge = item.querySelector('.trophy-count-badge');
+            if (existingBadge) existingBadge.remove();
         });
 
-        // ၁။ ပုံမှန် Match History များကို စစ်ဆေးခြင်း
+        // Trophy တစ်ခုချင်းစီအတွက် နိုင်တဲ့အကြိမ်ရေ (Count) တွေကို သိမ်းဆည်းရန် Map သို့မဟုတ် Object သုံးမည်
+        const trophyWinCounts = {};
+
+        // ၁။ ပုံမှန် Match History များကို စစ်ဆေးပြီး အကြိမ်ရေ ရေတွက်ခြင်း
         if (Array.isArray(winnersData) && winnersData.length > 0) {
             winnersData.forEach(match => {
                 const matchWinnerId = match.winnerId || match.winner_id;
@@ -68,30 +88,22 @@ export async function renderTrophyShowcaseWithLogic(containerId, winnersData = [
                     }
 
                     if (targetTrophyId !== null) {
-                        trophyItems.forEach((item, index) => {
-                            const trophyObj = trophyDataList ? trophyDataList[index] : null;
-                            const currentId = trophyObj ? Number(trophyObj.id) : (index + 1);
-
-                            if (currentId === targetTrophyId) {
-                                item.classList.add('trophy-unlocked');
-                            }
-                        });
+                        // နိုင်တဲ့အကြိမ်ရေကို 1 ပေါင်းထည့်သွားမည်
+                        trophyWinCounts[targetTrophyId] = (trophyWinCounts[targetTrophyId] || 0) + 1;
                     }
                 }
             });
         }
 
-// ၂။ Backend API မှတစ်ဆင့် tournaments/mainConfig ဒေတာကို ဆွဲထုတ်ခြင်း
+        // ၂။ Backend API မှ Data များကိုလည်း စစ်ဆေးရန် (လိုအပ်ပါက)
         try {
             const response = await fetch('/api/register'); 
             const result = await response.json();
             
             if (result.success && result.data) {
                 const configData = result.data;
-                
                 let allWinnerIds = [];
                 
-                // Field ပုံစံအမျိုးမျိုးကို လိုက်လံစစ်ဆေးပြီး စုစည်းခြင်း
                 const possibleKeys = ['winner_userid', 'winner-userid', 'winnerUserId', 'winner_id', 'winnerId'];
                 possibleKeys.forEach(key => {
                     const val = configData[key];
@@ -101,32 +113,38 @@ export async function renderTrophyShowcaseWithLogic(containerId, winnersData = [
                     }
                 });
 
-                // အကယ်၍ champion object ထဲမှာ userId ပါနေရင် အဲ့ဒါကိုပါ ထည့်စစ်ပေးပါမည်
                 if (configData.champion && configData.champion.userId) {
                     allWinnerIds.push(configData.champion.userId);
                 }
 
-                // ထပ်နေသော ID များကို ဖယ်ထုတ်ခြင်း
-                allWinnerIds = [...new Set(allWinnerIds)];
-
-                // လက်ရှိ ဝင်ထားသော user ID ပါဝင်ခြင်း ရှိမစစ်ဆေးပါ
-                const isTournamentWinner = allWinnerIds.includes(currentUserId);
-
-                if (isTournamentWinner) {
-                    trophyItems.forEach((item, index) => {
-                        const trophyObj = trophyDataList ? trophyDataList[index] : null;
-                        const trophyName = trophyObj ? (trophyObj.name || '').toUpperCase() : '';
-                        
-                        // Champion ဖလား သို့မဟုတ် M7 ဖလားကို လင်းစေရန်
-                        if (trophyName.includes('CHAMPION') || trophyName.includes('M7') || index === 4 || index === 5 || trophyObj?.id === 6 || trophyObj?.id === '6') {
-                            item.classList.add('trophy-unlocked');
-                        }
-                    });
+                // API ထဲမှာပါတဲ့ Winner ထဲမှာ ဒီ User ပါရင် ဥပမာ ID 6 ကို 1 ခلာ တိုးပေးနိုင်သည်
+                const matchCount = allWinnerIds.filter(id => id === currentUserId).length;
+                if (matchCount > 0) {
+                    trophyWinCounts[6] = (trophyWinCounts[6] || 0) + matchCount;
                 }
             }
-
         } catch (err) {
             console.error("Error fetching tournament winners from API:", err);
         }
+
+        // ၃။ တွက်ချက်ထားသော Count များအပေါ် မူတည်၍ UI တွင် Trophy များကို ပုံဖော်ခြင်း
+        trophyItems.forEach((item, index) => {
+            const trophyObj = trophyDataList ? trophyDataList[index] : null;
+            const currentId = trophyObj ? Number(trophyObj.id) : (index + 1);
+
+            const winCount = trophyWinCounts[currentId] || 0;
+
+            if (winCount > 0) {
+                item.classList.add('trophy-unlocked');
+                
+                // အကယ်၍ ၂ ခါ သို့မဟုတ် ထို့ထက်ပို၍ နိုင်ထားပါက Badge လေး ထည့်ပေးမည်
+                if (winCount > 1) {
+                    const badge = document.createElement('span');
+                    badge.className = 'trophy-count-badge';
+                    badge.innerText = `x${winCount}`;
+                    item.appendChild(badge);
+                }
+            }
+        });
     }, 100);
 }
