@@ -19,29 +19,26 @@ function injectTrophyControllerStyles() {
             pointer-events: auto !important;
         }
 
-        /* Modal အောက်ခံဘောင်ကြီးကို အောက်ဘက်သို့ ပိုရှည်လာစေရန် */
-        .trophy-modal,   
+        /* အောက်ခံ Modal Card ကို အလွန်အမင်း မကြီးစေဘဲ သင့်တောရုံ အလျား/အနံနှင့် padding မျှတစေရန် */
+        .trophy-modal, 
         .modal-content, 
         div[id*="modal"] {
-            padding-bottom: 50px !important;
-            min-height: 440px !important;
-            display: flex !important;
-            flex-direction: column !important;
-            justify-content: space-between !important;
-            align-items: center !important;
+            padding-bottom: 24px !important;
+            min-height: unset !important;
+            height: auto !important;
         }
 
-        /* ခလုတ်ကို အပေါ်ကပုံစံများက မဖုံးနိုင်ရန် အလွှာအပေါ်ဆုံးသို့ တင်ပေးခြင်းနှင့် အောက်ဘက်သို့ ပိုဆင်းပေးခြင်း */
+        /* ခလုတ်ကို အောက်ခံဘောင်အတွင်း လှပသပ်ရပ်စွာ နေရာချခြင်း */
         .trophy-modal button, 
         .modal-content button, 
         div[id*="modal"] button,
         .trophy-modal .ok-btn,
         .modal-content .ok-btn {
-            font-size: 13px !important;
-            padding: 10px 18px !important;
-            margin-top: 30px !important;
+            font-size: 12px !important;
+            padding: 6px 14px !important;
+            margin-top: 12px !important;
             position: relative !important;
-            z-index: 9999 !important;
+            z-index: 5 !important;
             white-space: nowrap !important;
             display: inline-block !important;
         }
@@ -166,7 +163,7 @@ export async function renderTrophyShowcaseWithLogic(containerId, winnersData = [
             11: "5v5 50k Trophy"
         };
 
-        // ၅။ Trophy ကို နှိပ်လိုက်သည့်အခါ Modal ဘောင်ပိုရှည်လာပြီး ခလုတ်စာသား အပြည့်အစုံ လွတ်လွတ်လပ်လပ်ပေါ်စေရန်
+        // ၅။ Trophy ကို နှိပ်လိုက်သည့်အခါ Modal ကတ်ပြားအတွင်း ခလုတ်နှင့် စာသားအဖြူရောင် လှပစွာ ပေါ်စေရန်
         trophyItems.forEach((item, index) => {
             const currentTrophyObj = trophyDataList ? trophyDataList[index] : null;
             const currentId = currentTrophyObj ? Number(currentTrophyObj.id) : (index + 1);
@@ -182,9 +179,9 @@ export async function renderTrophyShowcaseWithLogic(containerId, winnersData = [
                             let trophyName = customTrophyNames[currentId] || (currentTrophyObj ? (currentTrophyObj.name || currentTrophyObj.title) : `Trophy #${currentId}`);
 
                             if (winCount > 0) {
-                                okButton.innerHTML = `<span style="color: #ffffff; font-weight: bold; font-size: 13px; display: inline-block;">${trophyName} x${winCount}</span>`;
+                                okButton.innerHTML = `<span style="color: #ffffff; font-weight: bold; font-size: 12px; display: inline-block;">${trophyName} x${winCount}</span>`;
                             } else {
-                                okButton.innerHTML = `<span style="color: #ffffff; font-weight: bold; font-size: 13px; display: inline-block;">${trophyName}</span>`;
+                                okButton.innerHTML = `<span style="color: #ffffff; font-weight: bold; font-size: 12px; display: inline-block;">${trophyName}</span>`;
                             }
                         }
                     }
