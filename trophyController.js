@@ -19,29 +19,40 @@ function injectTrophyControllerStyles() {
             pointer-events: auto !important;
         }
 
-        /* ၁။ ပုံမှန် အသေးစား Trophy လေးများအတွက် Badge ပုံစံ */
+        /* ၁။ ပုံမှန် အသေးစား Trophy များအတွက် - ဖလားရဲ့ အောက်တည့်တည့်တွင် ပေါ်စေရန် */
         .pure-trophy-item .trophy-count-badge {
             position: absolute;
-            bottom: -2px;
-            right: 0px;
-            background: rgba(15, 23, 42, 0.9);
+            bottom: -18px; /* ဖလားအောက်ဘက်သို့ ထွက်စေရန် */
+            left: 50%;
+            transform: translateX(-50%); /* အလယ်တည့်တည့်ကျစေရန် */
+            background: rgba(15, 23, 42, 0.95);
             color: #38bdf8;
             font-size: 9px;
             font-weight: 700;
-            padding: 0px 4px;
+            padding: 1px 5px;
             border-radius: 4px;
             border: 1px solid rgba(56, 189, 248, 0.4);
             box-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);
             z-index: 10;
+            white-space: nowrap;
         }
 
-        /* ၂။ အလယ်က ကြီးတဲ့ M7 Champion / Main Trophy ကြီးအတွက် သီးသန့် Badge ပုံစံ */
+        /* ၂။ အလယ်က ကြီးတဲ့ M7 Champion (ID 6) အတွက် မူလနေရာအတိုင်း ထားရှိရန် */
         .pure-trophy-item.is-main-trophy .trophy-count-badge {
             bottom: 6px;
             right: 12px;
+            left: auto;
+            transform: none;
             font-size: 11px;
             padding: 1px 6px;
             border-radius: 6px;
+        }
+
+        /* ၃။ Modal / Pop-up ထဲသို့ ရောက်သွားသည့်အခါ Badge လုံးဝ မပေါ်စေရန် */
+        .trophy-modal .trophy-count-badge,
+        .modal-content .trophy-count-badge,
+        div[id*="modal"] .trophy-count-badge {
+            display: none !important;
         }
     `;
     document.head.appendChild(style);
