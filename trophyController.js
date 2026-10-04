@@ -11,11 +11,30 @@ function injectTrophyControllerStyles() {
             opacity: 0.4 !important;
             transition: filter 0.4s ease, opacity 0.4s ease, transform 0.25s ease;
             pointer-events: none !important;
+            position: relative;
         }
         .pure-trophy-item.trophy-unlocked {
             filter: grayscale(0%) brightness(1) !important;
             opacity: 1 !important;
             pointer-events: auto !important;
+        }
+
+        /* ID 6 (အလယ်က အကြီးဆုံးဖလား) အတွက် မူလ badge ပုံစံအတိုင်း ထားရှိရန် */
+        .pure-trophy-item.is-main-trophy .trophy-count-badge,
+        .pure-trophy-item[data-trophy-id="6"] .trophy-count-badge {
+            position: absolute;
+            bottom: -15px;
+            right: 50%;
+            transform: translateX(50%);
+            background: rgba(15, 23, 42, 0.95);
+            color: #38bdf8;
+            font-size: 11px;
+            font-weight: 700;
+            padding: 2px 8px;
+            border-radius: 6px;
+            border: 1px solid rgba(56, 189, 248, 0.4);
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);
+            z-index: 10;
         }
     `;
     document.head.appendChild(style);
@@ -24,7 +43,6 @@ function injectTrophyControllerStyles() {
 export async function renderTrophyShowcaseWithLogic(containerId, winnersData = [], currentUserId = '', onTrophyClick) {
     injectTrophyControllerStyles();
 
-    // Trophy Win Counts တွေကို သိမ်းဆည်းရန် Scope တစ်ခုတည်းတွင် ထားရှိခြင်း
     const trophyWinCounts = {};
 
     renderOriginalShowcase(containerId, (trophy, htmlContent) => {
@@ -39,9 +57,9 @@ export async function renderTrophyShowcaseWithLogic(containerId, winnersData = [
 
         const trophyItems = container.querySelectorAll('.pure-trophy-item');
         
-        // အားလုံးကို အရင်မှိန်ထားမည် ပြီးရင် Counter တွေ ရှင်းထုတ်မည်
-        trophyItems.forEach((item) => {
-            item.classList.remove('trophy-unlocked');
+        // အားလုံးကို အရင်မှိန်ထားမည် ပြီးရင် Badge ဟောင်းများကို ရှင်းထုတ်မည်
+        trophyItems.forEach((item, index) => {
+            item.classList.remove('trophy-unlocked', 'is-main-trophy');
             const existingBadge = item.querySelector('.trophy-count-badge');
             if (existingBadge) existingBadge.remove();
         });
@@ -79,7 +97,7 @@ export async function renderTrophyShowcaseWithLogic(containerId, winnersData = [
             });
         }
 
-        // ၂။ Backend API မှ Data များကိုလည်း စစ်ဆေးရန် (လိုအပ်ပါက)
+        // ၂။ Backend API မှ Data များကို စစ်ဆေးရန်
         try {
             const response = await fetch('/api/register'); 
             const result = await response.json();
@@ -110,42 +128,60 @@ export async function renderTrophyShowcaseWithLogic(containerId, winnersData = [
             console.error("Error fetching tournament winners from API:", err);
         }
 
-        // ၃။ တွက်ချက်ထားသော Count များအပေါ် မူတည်၍ Trophy များကို ပုံဖော်ခြင်း (Main Page တွင် နာမည်ဘေး၌ ထပ်မထည့်တော့ပါ)
+        // ၃။ Trophy များကို ပုံဖော်ခြင်း (ID 6 အတွက်သာ အပြင်ဘက်တွင် Badge ထည့်မည်)
         trophyItems.forEach((item, index) => {
             const trophyObj = trophyDataList ? trophyDataList[index] : null;
             const currentId = trophyObj ? Number(trophyObj.id) : (index + 1);
+
+            // Data attribute ထည့်ပေးခြင်းဖြင့် CSS ထိန်းချုပ်ရန် လွယ်ကူစေရန်
+            item.setAttribute('data-trophy-id', currentId);
 
             const winCount = trophyWinCounts[currentId] || 0;
 
             if (winCount > 0) {
                 item.classList.add('trophy-unlocked');
+
+                // ID 6 (M7 Champion) ဖြစ်ပြီး နိုင်ပွဲရှိပါက အပြင်ဘက်တွင် Badge ထည့်မည်
+                if (currentId === 6) {
+                    item.classList.add('is-main-trophy');
+                    if (!item.querySelector('.trophy-count-badge')) {
+                        const badge = document.createElement('div');
+                        badge.className = 'trophy-count-badge';
+                        badge.innerText = `x${winCount}`;
+                        item.appendChild(badge);
+                    }
+                }
             }
         });
 
-        // ၄။ Trophy တစ်ခုချင်းစီကို နှိပ်လိုက်တဲ့အခါ Modal ပွင့်လာပြီး OK ခလုတ်တွင် Count ပြမည့် Click Event ထည့်သွင်းခြင်း
+        // ၄။ Trophy ကို နှိပ်လိုက်သည့်အခါ Modal ထဲရှိ OK ခလုတ်နေရာတွင် သက်ဆိုင်ရာ Trophy နာမည်နှင့် Count ပြရန်
         trophyItems.forEach((item, index) => {
             item.addEventListener('click', () => {
                 const trophyObj = trophyDataList ? trophyDataList[index] : null;
                 const currentId = trophyObj ? Number(trophyObj.id) : (index + 1);
                 const winCount = trophyWinCounts[currentId] || 0;
 
-                // Modal ပွင့်လာတာကို စောင့်ပြီးမှ OK ခလုတ်နေရာတွင် Count ထည့်ရန် 
-                setTimeout(() => {
-                    const modalElement = document.querySelector('.trophy-modal, .modal-content, div[id*="modal"]');
-                    if (modalElement) {
-                        // Modal ထဲမှာရှိတဲ့ OK ခလုတ်ကို ရှာမည်
-                        const okButton = modalElement.querySelector('button, .ok-btn, [class*="btn"]');
-                        
-                        if (okButton) {
-                            // အကယ်၍ ခလုတ်ထဲမှာ count မပါသေးရင် နှင့် winCount ရှိရင် ပေါင်းထည့်မည်
-                            if (!okButton.querySelector('.modal-count-badge') && winCount > 0) {
-                                if (winCount > 1) {
-                                    okButton.innerHTML = `OK <span class="modal-count-badge" style="color: #38bdf8; margin-left: 4px;">(x${winCount})</span>`;
-                                }
+                // ID 6 မဟုတ်သော အခြား Trophy များအတွက်သာ Modal ထဲတွင် နာမည်ပြောင်းမည်
+                if (currentId !== 6) {
+                    setTimeout(() => {
+                        const modalElement = document.querySelector('.trophy-modal, .modal-content, div[id*="modal"]');
+                        if (modalElement) {
+                            const okButton = modalElement.querySelector('button, .ok-btn, [class*="btn"]');
+                            
+                            if (okButton) {
+                                // Trophy ၏ နာမည်ကို ရှာယူခြင်း (သို့မဟုတ် trophyObj ထဲမှ နာမည်ကို ယူသုံးခြင်း)
+                                const trophyName = trophyObj && (trophyObj.name || trophyObj.title) 
+                                    ? (trophyObj.name || trophyObj.title) 
+                                    : (item.querySelector('.trophy-name, .trophy-label')?.innerText || `Trophy #${currentId}`);
+
+                                const countText = winCount > 1 ? ` (x${winCount})` : '';
+                                
+                                // OK စာသားအစား Trophy နာမည်နှင့် count ကို အစားထိုးခြင်း
+                                okButton.innerHTML = `${trophyName}<span style="color: #38bdf8; margin-left: 4px; font-weight: bold;">${countText}</span>`;
                             }
                         }
-                    }
-                }, 50); // Modal DOM Render ဖြစ်ရန် ခဏစောင့်ရန်
+                    }, 50);
+                }
             });
         });
 
