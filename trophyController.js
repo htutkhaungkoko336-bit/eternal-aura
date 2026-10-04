@@ -11,7 +11,7 @@ function injectTrophyControllerStyles() {
             opacity: 0.4 !important;
             transition: filter 0.4s ease, opacity 0.4s ease, transform 0.25s ease;
             pointer-events: none !important;
-            position: relative; 
+            position: relative; /* Badge နေရာမှန်ကန်စေရန် */
         }
         .pure-trophy-item.trophy-unlocked {
             filter: grayscale(0%) brightness(1) !important;
@@ -19,36 +19,33 @@ function injectTrophyControllerStyles() {
             pointer-events: auto !important;
         }
 
-        /* ၁။ ပုံမှန် အသေးစား Trophy များအတွက် - ဖလားရဲ့ အောက်တည့်တည့်တွင် ပေါ်စေရန် */
+        /* ဖလားအားလုံးအတွက် (အကြီးရော၊ အသေးပါ) ညာဘက်အောက်ထောင့် သို့မဟုတ် အပေါ်ထောင့်တွင် အမြဲသပ်ရပ်စွာ ပေါ်စေရန် */
         .pure-trophy-item .trophy-count-badge {
             position: absolute;
-            bottom: -18px; /* ဖလားအောက်ဘက်သို့ ထွက်စေရန် */
-            left: 50%;
-            transform: translateX(-50%); /* အလယ်တည့်တည့်ကျစေရန် */
-            background: rgba(15, 23, 42, 0.95);
+            bottom: 2px;  /* ပုံရဲ့အတွင်းဘက် အောက်ခြေနား */
+            right: 2px;   /* ပုံရဲ့အတွင်းဘက် ညာဘက်နား */
+            background: rgba(15, 23, 42, 0.9);
             color: #38bdf8;
             font-size: 9px;
             font-weight: 700;
-            padding: 1px 5px;
+            padding: 1px 4px;
             border-radius: 4px;
             border: 1px solid rgba(56, 189, 248, 0.4);
             box-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);
             z-index: 10;
-            white-space: nowrap;
+            backdrop-filter: blur(4px);
         }
 
-        /* ၂။ အလယ်က ကြီးတဲ့ M7 Champion (ID 6) အတွက် မူလနေရာအတိုင်း ထားရှိရန် */
+        /* ကြီးတဲ့ Trophy (ID 6) အတွက်ဆိုရင် ပုံစံလေး နည်းနည်း ပိုကြီးပေးမည် */
         .pure-trophy-item.is-main-trophy .trophy-count-badge {
             bottom: 6px;
-            right: 12px;
-            left: auto;
-            transform: none;
+            right: 6px;
             font-size: 11px;
-            padding: 1px 6px;
+            padding: 2px 6px;
             border-radius: 6px;
         }
 
-        /* ၃။ Modal / Pop-up ထဲသို့ ရောက်သွားသည့်အခါ Badge လုံးဝ မပေါ်စေရန် */
+        /* Modal ထဲတွင် မပေါ်စေရန် တားဆီးခြင်း */
         .trophy-modal .trophy-count-badge,
         .modal-content .trophy-count-badge,
         div[id*="modal"] .trophy-count-badge {
