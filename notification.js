@@ -131,7 +131,7 @@ function renderNotificationCards(container, notifications, userId) {
                         <span style="display: inline-block; width: 8px; height: 8px; background-color: #38bdf8; border-radius: 50%;"></span>
                         <h3 style="color: #f8fafc; font-size: 15px; font-weight: 700; margin: 0;">${noti.title}</h3>
                     </div>
-                    <p style="color: #94a3b8; font-size: 11px; margin: 6px 0 0 16px; font-family: monospace;">${noti.dateStr} &bull; ${noti.timeStr}</p>
+                    <p style="color: #94a3b8; font-size: 11px; margin: 6px 0 0 16px; font-family: monospace;">${noti.dateStr || ''} &bull; ${noti.timeStr || ''}</p>
                 </div>
                 <div style="display: flex; align-items: center; gap: 10px;">
                     <button class="delete-btn" style="background: rgba(56, 189, 248, 0.1); border: 1px solid #38bdf8; color: #38bdf8; cursor: pointer; padding: 4px 10px; border-radius: 4px;">CLEAR</button>

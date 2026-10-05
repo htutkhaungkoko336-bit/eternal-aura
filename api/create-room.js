@@ -360,7 +360,7 @@ if (method === 'GET') {
         }
     }
 
-    if (method === 'PATCH') {
+if (method === 'PATCH') {
         try {
             const { userId, roomId, hostReady, joinerReady, firstPick, status } = req.body;
             if (!roomId) {
@@ -564,6 +564,52 @@ if (method === 'GET') {
                     await batch.commit();
                     updateData.keysDeducted = true;
                 }
+
+            // 🔥 Fully Matched ဖြစ်သွားသည့်အခါ နှစ်ဖက်စလုံးသို့ Notification အလိုအလျောက် ပို့ပေးရန်
+                const notifPromises = [];
+                const roomTitleName = currentData.roomTitle || 'Match';
+                const finalMatchCode = updateData.matchCode || currentData.matchCode || '';
+
+                // နေ့စွဲနှင့် အချိန်ဖန်တီးခြင်း
+                const now = new Date();
+                const year = now.getFullYear();
+                const month = String(now.getMonth() + 1).padStart(2, '0');
+                const day = String(now.getDate()).padStart(2, '0');
+                const dateStr = `${year}-${month}-${day}`;
+                
+                let hours = now.getHours();
+                const minutes = now.getMinutes().toString().padStart(2, '0');
+                const ampm = hours >= 12 ? 'PM' : 'AM';
+                hours = hours % 12;
+                hours = hours ? hours : 12;
+                const timeStr = `${hours}:${minutes} ${ampm}`;
+
+                if (currentData.hostId) {
+                    notifPromises.push(db.collection('notifications').add({
+                        userId: currentData.hostId,
+                        title: "Match Fully Matched! 🎮",
+                        message: `သင့်၏ "${roomTitleName}" အခန်းအတွက် ပြိုင်ဘက်နှင့် အပြည့်အစုံ ကိုက်ညီသွားပါပြီ။ Match Code: ${finalMatchCode}`,
+                        dateStr: dateStr,
+                        timeStr: timeStr,
+                        isRead: false,
+                        createdAt: Date.now()
+                    }));
+                }
+
+                if (currentData.joinedUserId) {
+                    notifPromises.push(db.collection('notifications').add({
+                        userId: currentData.joinedUserId,
+                        title: "Match Fully Matched! 🎮",
+                        message: `သင့်၏ "${roomTitleName}" အခန်းအတွက် ပြိုင်ဘက်နှင့် အပြည့်အစုံ ကိုက်ညီသွားပါပြီ။ Match Code: ${finalMatchCode}`,
+                        dateStr: dateStr,
+                        timeStr: timeStr,
+                        isRead: false,
+                        createdAt: Date.now()
+                    }));
+                }
+
+                await Promise.all(notifPromises);
+
             } else {
                 updateData.status = 'matched';
             }
@@ -576,7 +622,6 @@ if (method === 'GET') {
             return res.status(500).json({ success: false, message: "Server Error", error: error.message });
         }
     }
-
     if (method === 'DELETE') {
         try {
             const userId = req.body?.userId || req.query?.userId;
