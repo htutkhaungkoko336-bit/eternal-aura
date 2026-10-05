@@ -361,33 +361,158 @@ if (method === 'GET') {
     }
 
 if (method === 'PATCH') {
-        try {
-            const { userId, roomId, hostReady, joinerReady, firstPick, status } = req.body;
-            if (!roomId) {
-                return res.status(400).json({ success: false, message: "Missing roomId" });
+    try {
+        const { userId, roomId, hostReady, joinerReady, firstPick, status } = req.body;
+        if (!roomId) {
+            return res.status(400).json({ success: false, message: "Missing roomId" });
+        }
+
+        const roomRef = db.collection('active_rooms').doc(roomId);
+        const roomDoc = await roomRef.get();
+
+        if (!roomDoc.exists) {
+            return res.status(404).json({ success: false, message: "Room not found" });
+        }
+
+        const currentData = roomDoc.data();
+
+        if (status === 'completed' || status === 'complete') {
+            const historyRoomData = {
+                ...currentData,
+                status: 'completed',
+                completedAt: getYangonTimeStr()
+            };
+
+            const uniqueHistoryId = `${roomId}_${Date.now()}`;
+            await db.collection('history').doc(uniqueHistoryId).set(historyRoomData);
+
+            let regCollectionName = '';
+            const lowerMode = (currentData.mode || '').toLowerCase();
+            if (lowerMode.includes('1v1') || lowerMode.includes('1vs1')) {
+                regCollectionName = '1vs1_registrations';
+            } else if (lowerMode.includes('5v5') || lowerMode.includes('5vs5')) {
+                regCollectionName = '5vs5_registrations';
+            } else if (lowerMode.includes('tournament')) {
+                regCollectionName = 'tournament_registrations';
             }
 
-            const roomRef = db.collection('active_rooms').doc(roomId);
-            const roomDoc = await roomRef.get();
+            if (regCollectionName) {
+                const batch = db.batch();
+                const roomKeyType = (currentData.keyType || '').toUpperCase();
+                
+                if (currentData.hostId) {
+                    const hostRegSnapshot = await db.collection(regCollectionName)
+                        .where('userId', '==', currentData.hostId)
+                        .where('used', '==', false)
+                        .get();
 
-            if (!roomDoc.exists) {
-                return res.status(404).json({ success: false, message: "Room not found" });
+                    let hostMatchedRegs = [];
+                    hostRegSnapshot.forEach(doc => {
+                        const regData = doc.data();
+                        const regFee = regData.fee || (lowerMode.includes('tournament') ? '50K' : '');
+                        if (regFee && regFee.toString().toUpperCase() === roomKeyType) {
+                            hostMatchedRegs.push({ id: doc.id, ref: doc.ref, ...regData });
+                        }
+                    });
+
+                    if (hostMatchedRegs.length > 0) {
+                        sortRegistrationsByOldest(hostMatchedRegs);
+                        batch.update(hostMatchedRegs[0].ref, { used: true });
+                    }
+                }
+
+                if (currentData.joinedUserId) {
+                    const joinerRegSnapshot = await db.collection(regCollectionName)
+                        .where('userId', '==', currentData.joinedUserId)
+                        .where('used', '==', false)
+                        .get();
+
+                    let joinerMatchedRegs = [];
+                    joinerRegSnapshot.forEach(doc => {
+                        const regData = doc.data();
+                        const regFee = regData.fee || (lowerMode.includes('tournament') ? '50K' : '');
+                        if (regFee && regFee.toString().toUpperCase() === roomKeyType) {
+                            joinerMatchedRegs.push({ id: doc.id, ref: doc.ref, ...regData });
+                        }
+                    });
+
+                    if (joinerMatchedRegs.length > 0) {
+                        sortRegistrationsByOldest(joinerMatchedRegs);
+                        batch.update(joinerMatchedRegs[0].ref, { used: true });
+                    }
+                }
+
+                await batch.commit();
             }
 
-            const currentData = roomDoc.data();
+            await roomRef.delete();
 
-            if (status === 'completed' || status === 'complete') {
-                const historyRoomData = {
-                    ...currentData,
-                    status: 'completed',
-                    completedAt: getYangonTimeStr()
-                };
+            return res.status(200).json({ 
+                success: true, 
+                message: "Match completed, room moved to history, registrations marked as used (true), and room deleted." 
+            });
+        }
 
-                const uniqueHistoryId = `${roomId}_${Date.now()}`;
-                await db.collection('history').doc(uniqueHistoryId).set(historyRoomData);
+        let updateData = {};
+        if (hostReady !== undefined) updateData.hostReady = hostReady;
+        if (joinerReady !== undefined) updateData.joinerReady = joinerReady;
+        if (firstPick !== undefined) updateData.firstPick = firstPick;
+
+        const finalHostReady = hostReady !== undefined ? hostReady : currentData.hostId ? currentData.hostReady : true;
+        const finalJoinerReady = joinerReady !== undefined ? joinerReady : currentData.joinedUserId ? currentData.joinerReady : true;
+
+        // 🔥 အကယ်၍ room က အရင်ကတည်းက fully_matched ဖြစ်ပြီးသား (သို့) keysDeducted ပြီးသားဆိုရင် Notification ထပ်မပို့တော့ဘဲ ကျော်ရန်
+        if (currentData.status === 'fully_matched' || currentData.keysDeducted) {
+            await roomRef.update(updateData);
+            return res.status(200).json({ success: true, message: "Room already fully matched." });
+        }
+
+        if (finalHostReady && finalJoinerReady) {
+            updateData.status = 'fully_matched';
+            if (!currentData.matchCode) {
+                const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
+                let randomStr = '';
+                for (let i = 0; i < 6; i++) {
+                    randomStr += chars.charAt(Math.floor(Math.random() * chars.length));
+                }
+                updateData.matchCode = `REV-${randomStr}`;
+            }
+
+            if (!currentData.keysDeducted) {
+                let modePrefix = '';
+                const lowerMode = (currentData.mode || '').toLowerCase();
+                if (lowerMode.includes('1v1') || lowerMode.includes('1vs1')) {
+                    modePrefix = '1vs1';
+                } else if (lowerMode.includes('5v5') || lowerMode.includes('5vs5')) {
+                    modePrefix = '5vs5';
+                }
+
+                let targetFee = currentData.keyType || currentData.fee || '';
+                if (!targetFee && currentData.roomTitle) {
+                    const matchFee = currentData.roomTitle.match(/(\d+K)/i);
+                    if (matchFee) targetFee = matchFee[1];
+                }
+
+                const keyFieldName = modePrefix && targetFee ? `${modePrefix}-${targetFee.toLowerCase()}` : null;
+
+                const batch = db.batch();
+                
+                if (keyFieldName) {
+                    if (currentData.hostId) {
+                        const hostUserRef = db.collection('users').doc(currentData.hostId);
+                        batch.update(hostUserRef, {
+                            [`keys.${keyFieldName}`]: FieldValue.increment(-1)
+                        });
+                    }
+                    if (currentData.joinedUserId) {
+                        const joinerUserRef = db.collection('users').doc(currentData.joinedUserId);
+                        batch.update(joinerUserRef, {
+                            [`keys.${keyFieldName}`]: FieldValue.increment(-1)
+                        });
+                    }
+                }
 
                 let regCollectionName = '';
-                const lowerMode = (currentData.mode || '').toLowerCase();
                 if (lowerMode.includes('1v1') || lowerMode.includes('1vs1')) {
                     regCollectionName = '1vs1_registrations';
                 } else if (lowerMode.includes('5v5') || lowerMode.includes('5vs5')) {
@@ -397,9 +522,8 @@ if (method === 'PATCH') {
                 }
 
                 if (regCollectionName) {
-                    const batch = db.batch();
-                    const roomKeyType = (currentData.keyType || '').toUpperCase();
-                    
+                    const roomKeyType = targetFee.toString().toUpperCase();
+
                     if (currentData.hostId) {
                         const hostRegSnapshot = await db.collection(regCollectionName)
                             .where('userId', '==', currentData.hostId)
@@ -410,7 +534,7 @@ if (method === 'PATCH') {
                         hostRegSnapshot.forEach(doc => {
                             const regData = doc.data();
                             const regFee = regData.fee || (lowerMode.includes('tournament') ? '50K' : '');
-                            if (regFee && regFee.toString().toUpperCase() === roomKeyType) {
+                            if (!roomKeyType || regFee.toString().toUpperCase() === roomKeyType) {
                                 hostMatchedRegs.push({ id: doc.id, ref: doc.ref, ...regData });
                             }
                         });
@@ -431,7 +555,7 @@ if (method === 'PATCH') {
                         joinerRegSnapshot.forEach(doc => {
                             const regData = doc.data();
                             const regFee = regData.fee || (lowerMode.includes('tournament') ? '50K' : '');
-                            if (regFee && regFee.toString().toUpperCase() === roomKeyType) {
+                            if (!roomKeyType || regFee.toString().toUpperCase() === roomKeyType) {
                                 joinerMatchedRegs.push({ id: doc.id, ref: doc.ref, ...regData });
                             }
                         });
@@ -441,187 +565,69 @@ if (method === 'PATCH') {
                             batch.update(joinerMatchedRegs[0].ref, { used: true });
                         }
                     }
-
-                    await batch.commit();
                 }
 
-                await roomRef.delete();
-
-                return res.status(200).json({ 
-                    success: true, 
-                    message: "Match completed, room moved to history, registrations marked as used (true), and room deleted." 
-                });
+                await batch.commit();
+                updateData.keysDeducted = true;
             }
-
-            let updateData = {};
-            if (hostReady !== undefined) updateData.hostReady = hostReady;
-            if (joinerReady !== undefined) updateData.joinerReady = joinerReady;
-            if (firstPick !== undefined) updateData.firstPick = firstPick;
-
-            const finalHostReady = hostReady !== undefined ? hostReady : currentData.hostReady;
-            const finalJoinerReady = joinerReady !== undefined ? joinerReady : currentData.joinerReady;
-
-            if (finalHostReady && finalJoinerReady) {
-                updateData.status = 'fully_matched';
-                if (!currentData.matchCode) {
-                    const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
-                    let randomStr = '';
-                    for (let i = 0; i < 6; i++) {
-                        randomStr += chars.charAt(Math.floor(Math.random() * chars.length));
-                    }
-                    updateData.matchCode = `REV-${randomStr}`;
-                }
-
-                if (!currentData.keysDeducted) {
-                    let modePrefix = '';
-                    const lowerMode = (currentData.mode || '').toLowerCase();
-                    if (lowerMode.includes('1v1') || lowerMode.includes('1vs1')) {
-                        modePrefix = '1vs1';
-                    } else if (lowerMode.includes('5v5') || lowerMode.includes('5vs5')) {
-                        modePrefix = '5vs5';
-                    }
-
-                    let targetFee = currentData.keyType || currentData.fee || '';
-                    if (!targetFee && currentData.roomTitle) {
-                        const matchFee = currentData.roomTitle.match(/(\d+K)/i);
-                        if (matchFee) targetFee = matchFee[1];
-                    }
-
-                    const keyFieldName = modePrefix && targetFee ? `${modePrefix}-${targetFee.toLowerCase()}` : null;
-
-                    const batch = db.batch();
-                    
-                    if (keyFieldName) {
-                        if (currentData.hostId) {
-                            const hostUserRef = db.collection('users').doc(currentData.hostId);
-                            batch.update(hostUserRef, {
-                                [`keys.${keyFieldName}`]: FieldValue.increment(-1)
-                            });
-                        }
-                        if (currentData.joinedUserId) {
-                            const joinerUserRef = db.collection('users').doc(currentData.joinedUserId);
-                            batch.update(joinerUserRef, {
-                                [`keys.${keyFieldName}`]: FieldValue.increment(-1)
-                            });
-                        }
-                    }
-
-                    let regCollectionName = '';
-                    if (lowerMode.includes('1v1') || lowerMode.includes('1vs1')) {
-                        regCollectionName = '1vs1_registrations';
-                    } else if (lowerMode.includes('5v5') || lowerMode.includes('5vs5')) {
-                        regCollectionName = '5vs5_registrations';
-                    } else if (lowerMode.includes('tournament')) {
-                        regCollectionName = 'tournament_registrations';
-                    }
-
-                    if (regCollectionName) {
-                        const roomKeyType = targetFee.toString().toUpperCase();
-
-                        if (currentData.hostId) {
-                            const hostRegSnapshot = await db.collection(regCollectionName)
-                                .where('userId', '==', currentData.hostId)
-                                .where('used', '==', false)
-                                .get();
-
-                            let hostMatchedRegs = [];
-                            hostRegSnapshot.forEach(doc => {
-                                const regData = doc.data();
-                                const regFee = regData.fee || (lowerMode.includes('tournament') ? '50K' : '');
-                                if (!roomKeyType || regFee.toString().toUpperCase() === roomKeyType) {
-                                    hostMatchedRegs.push({ id: doc.id, ref: doc.ref, ...regData });
-                                }
-                            });
-
-                            if (hostMatchedRegs.length > 0) {
-                                sortRegistrationsByOldest(hostMatchedRegs);
-                                batch.update(hostMatchedRegs[0].ref, { used: true });
-                            }
-                        }
-
-                        if (currentData.joinedUserId) {
-                            const joinerRegSnapshot = await db.collection(regCollectionName)
-                                .where('userId', '==', currentData.joinedUserId)
-                                .where('used', '==', false)
-                                .get();
-
-                            let joinerMatchedRegs = [];
-                            joinerRegSnapshot.forEach(doc => {
-                                const regData = doc.data();
-                                const regFee = regData.fee || (lowerMode.includes('tournament') ? '50K' : '');
-                                if (!roomKeyType || regFee.toString().toUpperCase() === roomKeyType) {
-                                    joinerMatchedRegs.push({ id: doc.id, ref: doc.ref, ...regData });
-                                }
-                            });
-
-                            if (joinerMatchedRegs.length > 0) {
-                                sortRegistrationsByOldest(joinerMatchedRegs);
-                                batch.update(joinerMatchedRegs[0].ref, { used: true });
-                            }
-                        }
-                    }
-
-                    await batch.commit();
-                    updateData.keysDeducted = true;
-                }
 
             // 🔥 Fully Matched ဖြစ်သွားသည့်အခါ နှစ်ဖက်စလုံးသို့ Notification အလိုအလျောက် ပို့ပေးရန်
-                const notifPromises = [];
-                const roomTitleName = currentData.roomTitle || 'Match';
-                const finalMatchCode = updateData.matchCode || currentData.matchCode || '';
+            const notifPromises = [];
+            const roomTitleName = currentData.roomTitle || 'Match';
+            const finalMatchCode = updateData.matchCode || currentData.matchCode || '';
 
-                // နေ့စွဲနှင့် အချိန်ဖန်တီးခြင်း
-                const now = new Date();
-                const year = now.getFullYear();
-                const month = String(now.getMonth() + 1).padStart(2, '0');
-                const day = String(now.getDate()).padStart(2, '0');
-                const dateStr = `${year}-${month}-${day}`;
-                
-                let hours = now.getHours();
-                const minutes = now.getMinutes().toString().padStart(2, '0');
-                const ampm = hours >= 12 ? 'PM' : 'AM';
-                hours = hours % 12;
-                hours = hours ? hours : 12;
-                const timeStr = `${hours}:${minutes} ${ampm}`;
+            // နေ့စွဲနှင့် အချိန်ဖန်တီးခြင်း
+            const now = new Date();
+            const year = now.getFullYear();
+            const month = String(now.getMonth() + 1).padStart(2, '0');
+            const day = String(now.getDate()).padStart(2, '0');
+            const dateStr = `${year}-${month}-${day}`;
+            
+            let hours = now.getHours();
+            const minutes = now.getMinutes().toString().padStart(2, '0');
+            const ampm = hours >= 12 ? 'PM' : 'AM';
+            hours = hours % 12;
+            hours = hours ? hours : 12;
+            const timeStr = `${hours}:${minutes} ${ampm}`;
 
-                if (currentData.hostId) {
-                    notifPromises.push(db.collection('notifications').add({
-                        userId: currentData.hostId,
-                        title: "Match Fully Matched! 🎮",
-                        message: `သင့်၏ "${roomTitleName}" အခန်းအတွက် ပြိုင်ဘက်နှင့် အပြည့်အစုံ ကိုက်ညီသွားပါပြီ။ Match Code: ${finalMatchCode}`,
-                        dateStr: dateStr,
-                        timeStr: timeStr,
-                        isRead: false,
-                        createdAt: Date.now()
-                    }));
-                }
-
-                if (currentData.joinedUserId) {
-                    notifPromises.push(db.collection('notifications').add({
-                        userId: currentData.joinedUserId,
-                        title: "Match Fully Matched! 🎮",
-                        message: `သင့်၏ "${roomTitleName}" အခန်းအတွက် ပြိုင်ဘက်နှင့် အပြည့်အစုံ ကိုက်ညီသွားပါပြီ။ Match Code: ${finalMatchCode}`,
-                        dateStr: dateStr,
-                        timeStr: timeStr,
-                        isRead: false,
-                        createdAt: Date.now()
-                    }));
-                }
-
-                await Promise.all(notifPromises);
-
-            } else {
-                updateData.status = 'matched';
+            if (currentData.hostId) {
+                notifPromises.push(db.collection('notifications').add({
+                    userId: currentData.hostId,
+                    title: "Match Fully Matched! 🎮",
+                    message: `သင့်၏ "${roomTitleName}" အခန်းအတွက် ပြိုင်ဘက်နှင့် အပြည့်အစုံ ကိုက်ညီသွားပါပြီ။ Match Code: ${finalMatchCode}`,
+                    dateStr: dateStr,
+                    timeStr: timeStr,
+                    isRead: false,
+                    createdAt: Date.now()
+                }));
             }
 
-            await roomRef.update(updateData);
+            if (currentData.joinedUserId) {
+                notifPromises.push(db.collection('notifications').add({
+                    userId: currentData.joinedUserId,
+                    title: "Match Fully Matched! 🎮",
+                    message: `သင့်၏ "${roomTitleName}" အခန်းအတွက် ပြိုင်ဘက်နှင့် အပြည့်အစုံ ကိုက်ညီသွားပါပြီ။ Match Code: ${finalMatchCode}`,
+                    dateStr: dateStr,
+                    timeStr: timeStr,
+                    isRead: false,
+                    createdAt: Date.now()
+                }));
+            }
 
-            return res.status(200).json({ success: true, message: "Status updated successfully" });
-        } catch (error) {
-            console.error("Update Ready Error:", error);
-            return res.status(500).json({ success: false, message: "Server Error", error: error.message });
+            await Promise.all(notifPromises);
+
+        } else {
+            updateData.status = 'matched';
         }
+
+        await roomRef.update(updateData);
+
+        return res.status(200).json({ success: true, message: "Status updated successfully" });
+    } catch (error) {
+        console.error("Update Ready Error:", error);
+        return res.status(500).json({ success: false, message: "Server Error", error: error.message });
     }
+}
     if (method === 'DELETE') {
         try {
             const userId = req.body?.userId || req.query?.userId;
