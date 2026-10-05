@@ -571,7 +571,7 @@ if (method === 'PATCH') {
                 updateData.keysDeducted = true;
             }
 
-            // 🔥 Fully Matched ဖြစ်သွားသည့်အခါ နှစ်ဖက်စလုံးသို့ Notification အလိုအလျောက် ပို့ပေးရန်
+// 🔥 Fully Matched ဖြစ်သွားသည့်အခါ နှစ်ဖက်စလုံးသို့ Notification အလိုအလျောက် ပို့ပေးရန်
             const notifPromises = [];
             const roomTitleName = currentData.roomTitle || 'Match';
             const finalMatchCode = updateData.matchCode || currentData.matchCode || '';
@@ -590,11 +590,14 @@ if (method === 'PATCH') {
             hours = hours ? hours : 12;
             const timeStr = `${hours}:${minutes} ${ampm}`;
 
+            // 💬 ပြင်ဆင်ထားသော စာသားပုံစံ
+            const notifMessage = `သင့်၏ "${roomTitleName}" အခန်းအတွက် ပြိုင်ဘက်နှင့် အပြည့်အစုံ ကိုက်ညီသွားပါပြီ။ အနိုင်ရရှိပါက Match Code: ${finalMatchCode} ဖြင့် Admin ထံတွင် ဆိုကြေးထုတ်ယူပါ။`;
+
             if (currentData.hostId) {
                 notifPromises.push(db.collection('notifications').add({
                     userId: currentData.hostId,
                     title: "Match Fully Matched! 🎮",
-                    message: `သင့်၏ "${roomTitleName}" အခန်းအတွက် ပြိုင်ဘက်နှင့် အပြည့်အစုံ ကိုက်ညီသွားပါပြီ။ Match Code: ${finalMatchCode}`,
+                    message: notifMessage,
                     dateStr: dateStr,
                     timeStr: timeStr,
                     isRead: false,
@@ -606,7 +609,7 @@ if (method === 'PATCH') {
                 notifPromises.push(db.collection('notifications').add({
                     userId: currentData.joinedUserId,
                     title: "Match Fully Matched! 🎮",
-                    message: `သင့်၏ "${roomTitleName}" အခန်းအတွက် ပြိုင်ဘက်နှင့် အပြည့်အစုံ ကိုက်ညီသွားပါပြီ။ Match Code: ${finalMatchCode}`,
+                    message: notifMessage,
                     dateStr: dateStr,
                     timeStr: timeStr,
                     isRead: false,
@@ -615,7 +618,6 @@ if (method === 'PATCH') {
             }
 
             await Promise.all(notifPromises);
-
         } else {
             updateData.status = 'matched';
         }
