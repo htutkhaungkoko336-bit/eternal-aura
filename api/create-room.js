@@ -359,7 +359,6 @@ if (method === 'GET') {
             return res.status(500).json({ success: false, message: "Server Error", error: error.message });
         }
     }
-
 if (method === 'PATCH') {
     try {
         const { userId, roomId, hostReady, joinerReady, firstPick, status } = req.body;
@@ -571,27 +570,30 @@ if (method === 'PATCH') {
                 updateData.keysDeducted = true;
             }
 
-// 🔥 Fully Matched ဖြစ်သွားသည့်အခါ နှစ်ဖက်စလုံးသို့ Notification အလိုအလျောက် ပို့ပေးရန်
+            // 🔥 Fully Matched ဖြစ်သွားသည့်အခါ နှစ်ဖက်စလုံးသို့ Notification အလိုအလျောက် ပို့ပေးရန်
             const notifPromises = [];
             const roomTitleName = currentData.roomTitle || 'Match';
             const finalMatchCode = updateData.matchCode || currentData.matchCode || '';
 
-            // နေ့စွဲနှင့် အချိန်ဖန်တီးခြင်း
+            // 🔥 မြန်မာစံတော်ချိန် (Yangon Time) အမှန်ကို ရယူရန်
             const now = new Date();
-            const year = now.getFullYear();
-            const month = String(now.getMonth() + 1).padStart(2, '0');
-            const day = String(now.getDate()).padStart(2, '0');
+            const utc = now.getTime() + (now.getTimezoneOffset() * 60000);
+            const yangonTime = new Date(utc + (3600000 * 6.5));
+
+            const year = yangonTime.getFullYear();
+            const month = String(yangonTime.getMonth() + 1).padStart(2, '0');
+            const day = String(yangonTime.getDate()).padStart(2, '0');
             const dateStr = `${year}-${month}-${day}`;
             
-            let hours = now.getHours();
-            const minutes = now.getMinutes().toString().padStart(2, '0');
+            let hours = yangonTime.getHours();
+            const minutes = yangonTime.getMinutes().toString().padStart(2, '0');
             const ampm = hours >= 12 ? 'PM' : 'AM';
             hours = hours % 12;
             hours = hours ? hours : 12;
             const timeStr = `${hours}:${minutes} ${ampm}`;
 
             // 💬 ပြင်ဆင်ထားသော စာသားပုံစံ
-            const notifMessage = `သင့်၏ "${roomTitleName}" အခန်းအတွက် ပြိုင်ဘက်နှင့် အပြည့်အစုံ ကိုက်ညီသွားပါပြီ။ အနိုင်ရရှိပါက Match Code: ${finalMatchCode} ဖြင့် Admin ထံတွင် ဆိုကြေးထုတ်ယူပါ။`;
+            const notifMessage = `သင့်၏ "${roomTitleName}" အခန်းအတွက် ပြိုင်ဘက်နှင့် အပြည့်အစုံ ကိုက်ညီသွားပါပြီ။ အနိုင်ရရှိပါက Match Code: ${finalMatchCode} ဖြင့် Admin ထံတွင် ဆုကြေးထုတ်ယူပါ။`;
 
             if (currentData.hostId) {
                 notifPromises.push(db.collection('notifications').add({
@@ -618,16 +620,14 @@ if (method === 'PATCH') {
             }
 
             await Promise.all(notifPromises);
-        } else {
-            updateData.status = 'matched';
         }
 
         await roomRef.update(updateData);
+        return res.status(200).json({ success: true, message: "Room updated successfully." });
 
-        return res.status(200).json({ success: true, message: "Status updated successfully" });
     } catch (error) {
-        console.error("Update Ready Error:", error);
-        return res.status(500).json({ success: false, message: "Server Error", error: error.message });
+        console.error("Error updating room:", error);
+        return res.status(500).json({ success: false, message: error.message });
     }
 }
     if (method === 'DELETE') {
