@@ -339,7 +339,7 @@ const backBtn = document.getElementById('pay-back-btn') || document.getElementBy
 
             if (result.success) {
                 const notiTitle = `${displayModeText} Registration Submitted`;
-                const notiMessage = `${displayModeText} fee ${totalStr} အတွက် register တင်ထားပါသည်။ Admin မှ စစ်ဆေးပြီးလျှင် noti ပြန်တက်မည်။`;
+                const notiMessage = `${displayModeText} fee ${totalStr} အတွက် Key အား register တင်ထားပါသည်။ Admin မှ စစ်ဆေးပြီးလျှင် noti ပြန်တက်မည်ရှင့်။`;
                 
                 addNotification(currentUserId, notiTitle, notiMessage);
                 alert("စာရင်းပေးသွင်းခြင်း အောင်မြင်ပါသည်ရှင့်!");
@@ -360,7 +360,7 @@ const backBtn = document.getElementById('pay-back-btn') || document.getElementBy
                             if (checkData.status === 'CONFIRMED') {
                                 console.log("✅ Admin အတည်ပြုပြီးပါပြီ!");
                                 const confTitle = `${displayModeText} Confirmed! 🎉`;
-                                const confMessage = `${displayModeText} fee ${totalStr} အတွက် register တင်ပြမှုကို Admin မှ အတည်ပြုပေးလိုက်ပါပြီရှင့်။`;
+                                const confMessage = `${displayModeText} fee ${totalStr} အတွက် key register တင်ပြမှုကို Admin မှ အတည်ပြုပေးလိုက်ပါပြီ။ Key ကို Profile ထဲရှိ key box တွင် စစ်ဆေးနိုင်ပါသည်။ `;
                                 
                                 addNotification(currentUserId, confTitle, confMessage);
                                 clearInterval(pollingInterval);
