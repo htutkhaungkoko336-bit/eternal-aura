@@ -408,7 +408,7 @@ export async function initKeyManagement() {
                     // Store ထဲက Key ကိုပါ နှုတ်ပေးဖို့ deductKey သုံးနိုင်သလို လက်ရှိ object ကိုလည်း နှုတ်လို့ရပါတယ်
                     keyData.modes[mode][type] -= qty;
                     updateUI(keyData);
-                    alert(`Refund request submitted successfully! Telegram သို့ ပို့လိုက်ပါပြီ။`);
+                    alert(`Refund request submitted successfully! Admin သို့ request ပို့လိုက်ပါပြီ။`);
                 } else {
                     alert(`Error: ${result.message || 'Refund တောင်းဆိုမှု မအောင်မြင်ပါ။'}`);
                 }
