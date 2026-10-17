@@ -109,7 +109,6 @@ export async function initKeyManagement() {
                 <div id="refund-card-container" style="background: rgba(30, 41, 59, 0.6); border: 1px solid rgba(56, 189, 248, 0.25); border-radius: 16px; padding: 12px; margin-bottom: 12px;">
                     <div style="font-size: 11px; font-weight: bold; color: #38bdf8; margin-bottom: 8px;">Key Refund System</div>
                     
-                    <!-- Row Layout ပြင်ဆင်ထားသော နေရာ -->
                     <div style="display: flex; gap: 6px; align-items: center; justify-content: space-between; margin-bottom: 8px; width: 100%;">
                         
                         <div id="dropdowns-group" style="display: flex; gap: 6px; flex: 1; width: 0;">
@@ -167,6 +166,7 @@ export async function initKeyManagement() {
                             background: linear-gradient(135deg, #ef4444, #dc2626); border: none;
                             border-radius: 8px; color: white; padding: 0 12px; font-size: 11px;
                             font-weight: bold; cursor: pointer; white-space: nowrap; height: 32px; flex-shrink: 0;
+                            box-sizing: border-box;
                             box-shadow: 0 0 10px rgba(239, 68, 68, 0.4); margin: 0;">
                             Refund
                         </button>
