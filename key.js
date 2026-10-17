@@ -110,14 +110,14 @@ export async function initKeyManagement() {
                     <div style="font-size: 11px; font-weight: bold; color: #38bdf8; margin-bottom: 8px;">Key Refund System</div>
                     
                     <div style="display: flex; gap: 6px; align-items: center; margin-bottom: 8px;">
-                        <div id="dropdowns-group" style="display: flex; gap: 6px; flex: 1;">
-                            <div style="flex: 1.3; position: relative;">
+                        <div id="dropdowns-group" style="display: flex; gap: 6px; flex: 1; min-width: 0;">
+                            <div style="flex: 1.3; position: relative; min-width: 0;">
                                 <div id="refund-key-btn" style="
                                     display: flex; align-items: center; justify-content: space-between;
                                     background: rgba(15, 23, 42, 0.95); border: 1px solid #334155;
                                     border-radius: 8px; color: #f8fafc; padding: 7px 8px; font-size: 10px; cursor: pointer; box-sizing: border-box; height: 32px;">
-                                    <span id="refund-key-text" style="color: #64748b;">Select key...</span>
-                                    <span style="font-size: 8px; color: #94a3b8;">▼</span>
+                                    <span id="refund-key-text" style="color: #64748b; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">Select key...</span>
+                                    <span style="font-size: 8px; color: #94a3b8; margin-left: 4px;">▼</span>
                                 </div>
                                 <div id="refund-key-modal" style="
                                     display: none; position: absolute; bottom: 38px; left: 0; width: 100%;
@@ -131,13 +131,13 @@ export async function initKeyManagement() {
                                 <input type="hidden" id="refund-key-value">
                             </div>
 
-                            <div style="flex: 0.7; position: relative;">
+                            <div style="flex: 0.8; position: relative; min-width: 0;">
                                 <div id="refund-qty-btn" style="
                                     display: flex; align-items: center; justify-content: space-between;
                                     background: rgba(15, 23, 42, 0.95); border: 1px solid #334155;
                                     border-radius: 8px; color: #f8fafc; padding: 7px 8px; font-size: 10px; cursor: pointer; box-sizing: border-box; height: 32px;">
-                                    <span id="refund-qty-text" style="color: #64748b;">Qty...</span>
-                                    <span style="font-size: 8px; color: #94a3b8;">▼</span>
+                                    <span id="refund-qty-text" style="color: #64748b; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">Qty...</span>
+                                    <span style="font-size: 8px; color: #94a3b8; margin-left: 4px;">▼</span>
                                 </div>
                                 <div id="refund-qty-modal" style="
                                     display: none; position: absolute; bottom: 38px; left: 0; width: 100%;
@@ -152,19 +152,19 @@ export async function initKeyManagement() {
                             </div>
                         </div>
 
-                        <div id="kpay-inputs-group" style="display: none; gap: 5px; flex: 1;">
+                        <div id="kpay-inputs-group" style="display: none; gap: 5px; flex: 1; min-width: 0;">
                             <input type="text" id="kpay-name" lang="en" placeholder="KPay Name (Eng)" style="
-                                flex: 1; background: rgba(15, 23, 42, 0.95); border: 1px solid rgba(56, 189, 248, 0.6);
+                                flex: 1; min-width: 0; background: rgba(15, 23, 42, 0.95); border: 1px solid rgba(56, 189, 248, 0.6);
                                 border-radius: 8px; color: #f8fafc; padding: 7px 8px; font-size: 10px; outline: none; box-sizing: border-box; height: 32px;">
-                            <input type="tel" id="kpay-phone" pattern="[0-9]*" inputmode="numeric" placeholder="KPay Phone (Digits)" style="
-                                flex: 1; background: rgba(15, 23, 42, 0.95); border: 1px solid rgba(56, 189, 248, 0.6);
+                            <input type="tel" id="kpay-phone" pattern="[0-9]*" inputmode="numeric" placeholder="KPay Phone" style="
+                                flex: 1; min-width: 0; background: rgba(15, 23, 42, 0.95); border: 1px solid rgba(56, 189, 248, 0.6);
                                 border-radius: 8px; color: #f8fafc; padding: 7px 8px; font-size: 10px; outline: none; box-sizing: border-box; height: 32px;">
                         </div>
 
                         <button id="execute-refund-btn" style="
                             background: linear-gradient(135deg, #ef4444, #dc2626); border: none;
-                            border-radius: 8px; color: white; padding: 7px 14px; font-size: 11px;
-                            font-weight: bold; cursor: pointer; white-space: nowrap; height: 32px;
+                            border-radius: 8px; color: white; padding: 0 12px; font-size: 11px;
+                            font-weight: bold; cursor: pointer; white-space: nowrap; height: 32px; flex-shrink: 0;
                             box-shadow: 0 0 10px rgba(239, 68, 68, 0.4);">
                             Refund
                         </button>
@@ -210,7 +210,7 @@ export async function initKeyManagement() {
     const kpayPhoneInput = document.getElementById('kpay-phone');
 
     keyCardBtn.addEventListener('click', async () => {
-        keyData = getKeyData(); // Modal ဖွင့်တိုင်း Store ထဲက Updated Data ကို ဆွဲသုံးမည်
+        keyData = getKeyData(); 
         updateUI(keyData);
         modalOverlay.style.opacity = '1';
         modalOverlay.style.visibility = 'visible';
@@ -255,7 +255,7 @@ export async function initKeyManagement() {
                 for (let type in data.modes[mode]) {
                     let count = data.modes[mode][type] || 0;
                     if (count > 0) {
-                        options += `<div class="custom-dropdown-option" data-value="${mode}_${type}" style="padding: 7px 10px; font-size: 10px; color: white; cursor: pointer;">${mode.toUpperCase()} - ${type.toUpperCase()} (${count} pcs)</div>`;
+                        options += `<div class="custom-dropdown-option" data-value="${mode}_${type}" style="padding: 7px 10px; font-size: 10px; color: white; cursor: pointer;">${mode.toUpperCase()} ${type.toUpperCase()} (${count} pcs)</div>`;
                     }
                 }
             }
@@ -405,7 +405,6 @@ export async function initKeyManagement() {
                 const result = await response.json();
 
                 if (result.success) {
-                    // Store ထဲက Key ကိုပါ နှုတ်ပေးဖို့ deductKey သုံးနိုင်သလို လက်ရှိ object ကိုလည်း နှုတ်လို့ရပါတယ်
                     keyData.modes[mode][type] -= qty;
                     updateUI(keyData);
                     alert(`Refund request submitted successfully! Admin သို့ request ပို့လိုက်ပါပြီ။`);
