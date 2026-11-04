@@ -159,14 +159,15 @@ export async function initKeyManagement() {
                                 border-radius: 8px; color: #f8fafc; padding: 0 6px; font-size: 9px; outline: none; box-sizing: border-box; height: 30px;">
                         </div>
 
-                        <button id="execute-refund-btn" style="
-                            background: linear-gradient(135deg, #ef4444, #dc2626); border: none;
-                            border-radius: 8px; color: white; padding: 0 10px; font-size: 9.5px;
-                            font-weight: bold; cursor: pointer; white-space: nowrap; height: 30px; flex-shrink: 0;
-                            box-shadow: 0 0 10px rgba(239, 68, 68, 0.4); display: flex; align-items: center; justify-content: center;">
-                            Refund
-                        </button>
-                    </div>
+                    <button id="execute-refund-btn" style="
+                        background: linear-gradient(135deg, #ef4444, #dc2626); border: none;
+                        border-radius: 8px; color: white; padding: 0 10px; font-size: 9.5px;
+                        font-weight: bold; cursor: pointer; white-space: nowrap; height: 30px; flex-shrink: 0;
+                        box-shadow: 0 0 10px rgba(239, 68, 68, 0.4); display: flex; align-items: center; justify-content: center;
+                        margin-bottom: 4px;"> 
+                        Refund
+                    </button>      
+              </div>
 
                     <div id="refund-info-text" style="font-size: 9.5px; color: #94a3b8; line-height: 1.3;">
                         Please select a key and quantity to view refund details.
