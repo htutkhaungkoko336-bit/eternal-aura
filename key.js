@@ -6,7 +6,6 @@ export async function initKeyManagement() {
 
     const userId = localStorage.getItem('user_id') || 'current_user_id'; 
 
-    // Backend API ကနေ Key ဒေတာများကို လှမ်းဆွဲခြင်း
     try {
         const response = await fetch(`/api/get-keys?userId=${userId}`);
         const result = await response.json();
@@ -108,18 +107,18 @@ export async function initKeyManagement() {
                     <div style="font-size: 11px; font-weight: bold; color: #38bdf8; margin-bottom: 6px;">Key Refund System</div>
                     
                     <!-- Input & Button Row -->
-                    <div style="display: flex; gap: 3px; align-items: center; margin-bottom: 6px; width: 100%;">
-                        <div id="dropdowns-group" style="display: flex; gap: 3px; flex: 1; min-width: 0;">
-                            <div style="flex: 1.2; position: relative; min-width: 0;">
+                    <div style="display: flex; gap: 4px; align-items: center; margin-bottom: 6px; width: 100%;">
+                        <div id="dropdowns-group" style="display: flex; gap: 4px; flex: 1; min-width: 0;">
+                            <div style="flex: 1.25; position: relative; min-width: 0;">
                                 <div id="refund-key-btn" style="
                                     display: flex; align-items: center; justify-content: space-between;
                                     background: rgba(15, 23, 42, 0.95); border: 1px solid #334155;
-                                    border-radius: 8px; color: #f8fafc; padding: 5px 5px; font-size: 9px; cursor: pointer; box-sizing: border-box; height: 32px;">
+                                    border-radius: 8px; color: #f8fafc; padding: 0 6px; font-size: 9px; cursor: pointer; box-sizing: border-box; height: 30px; line-height: 30px;">
                                     <span id="refund-key-text" style="color: #64748b; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">Select key...</span>
-                                    <span style="font-size: 7px; color: #94a3b8; margin-left: 1px;">▼</span>
+                                    <span style="font-size: 7px; color: #94a3b8; margin-left: 2px;">▼</span>
                                 </div>
                                 <div id="refund-key-modal" style="
-                                    display: none; position: absolute; bottom: 38px; left: 0; width: 150%;
+                                    display: none; position: absolute; bottom: 34px; left: 0; width: 150%;
                                     background: #0f172a; border: 1px solid #334155; border-radius: 8px;
                                     box-shadow: 0 10px 25px rgba(0,0,0,0.5); z-index: 100; max-height: 150px; overflow-y: auto;">
                                     <div style="padding: 6px 8px; font-size: 9.5px; font-weight: 600; color: #94a3b8; border-bottom: 1px solid #1e293b;">Select key</div>
@@ -130,16 +129,16 @@ export async function initKeyManagement() {
                                 <input type="hidden" id="refund-key-value">
                             </div>
 
-                            <div style="flex: 0.8; position: relative; min-width: 0;">
+                            <div style="flex: 0.75; position: relative; min-width: 0;">
                                 <div id="refund-qty-btn" style="
                                     display: flex; align-items: center; justify-content: space-between;
                                     background: rgba(15, 23, 42, 0.95); border: 1px solid #334155;
-                                    border-radius: 8px; color: #f8fafc; padding: 5px 5px; font-size: 9px; cursor: pointer; box-sizing: border-box; height: 32px;">
+                                    border-radius: 8px; color: #f8fafc; padding: 0 6px; font-size: 9px; cursor: pointer; box-sizing: border-box; height: 30px; line-height: 30px;">
                                     <span id="refund-qty-text" style="color: #64748b;">Qty...</span>
-                                    <span style="font-size: 7px; color: #94a3b8; margin-left: 1px;">▼</span>
+                                    <span style="font-size: 7px; color: #94a3b8; margin-left: 2px;">▼</span>
                                 </div>
                                 <div id="refund-qty-modal" style="
-                                    display: none; position: absolute; bottom: 38px; left: 0; width: 100%;
+                                    display: none; position: absolute; bottom: 34px; left: 0; width: 100%;
                                     background: #0f172a; border: 1px solid #334155; border-radius: 8px;
                                     box-shadow: 0 10px 25px rgba(0,0,0,0.5); z-index: 100; max-height: 130px; overflow-y: auto;">
                                     <div style="padding: 6px 8px; font-size: 9.5px; font-weight: 600; color: #94a3b8; border-bottom: 1px solid #1e293b;">Qty</div>
@@ -151,20 +150,20 @@ export async function initKeyManagement() {
                             </div>
                         </div>
 
-                        <div id="kpay-inputs-group" style="display: none; gap: 3px; flex: 1; min-width: 0;">
+                        <div id="kpay-inputs-group" style="display: none; gap: 4px; flex: 1; min-width: 0;">
                             <input type="text" id="kpay-name" lang="en" placeholder="KPay Name" style="
                                 flex: 1; min-width: 0; background: rgba(15, 23, 42, 0.95); border: 1px solid rgba(56, 189, 248, 0.6);
-                                border-radius: 8px; color: #f8fafc; padding: 5px 5px; font-size: 9px; outline: none; box-sizing: border-box; height: 32px;">
+                                border-radius: 8px; color: #f8fafc; padding: 0 6px; font-size: 9px; outline: none; box-sizing: border-box; height: 30px;">
                             <input type="tel" id="kpay-phone" pattern="[0-9]*" inputmode="numeric" placeholder="Phone" style="
                                 flex: 1; min-width: 0; background: rgba(15, 23, 42, 0.95); border: 1px solid rgba(56, 189, 248, 0.6);
-                                border-radius: 8px; color: #f8fafc; padding: 5px 5px; font-size: 9px; outline: none; box-sizing: border-box; height: 32px;">
+                                border-radius: 8px; color: #f8fafc; padding: 0 6px; font-size: 9px; outline: none; box-sizing: border-box; height: 30px;">
                         </div>
 
                         <button id="execute-refund-btn" style="
                             background: linear-gradient(135deg, #ef4444, #dc2626); border: none;
-                            border-radius: 8px; color: white; padding: 0 8px; font-size: 9.5px;
-                            font-weight: bold; cursor: pointer; white-space: nowrap; height: 32px; flex-shrink: 0;
-                            box-shadow: 0 0 10px rgba(239, 68, 68, 0.4);">
+                            border-radius: 8px; color: white; padding: 0 10px; font-size: 9.5px;
+                            font-weight: bold; cursor: pointer; white-space: nowrap; height: 30px; flex-shrink: 0;
+                            box-shadow: 0 0 10px rgba(239, 68, 68, 0.4); display: flex; align-items: center; justify-content: center;">
                             Refund
                         </button>
                     </div>
