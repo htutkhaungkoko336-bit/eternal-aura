@@ -1,6 +1,5 @@
 const { Telegraf, Markup } = require('telegraf');
 
-// Telegram Bot Token နှင့် Group ID ကို Environment Variables မှ ယူမည်
 const bot = new Telegraf(process.env.TELEGRAM_BOT_TOKEN);
 const GROUP_ID = process.env.ETERNAL_AURA_CLIENT_GP_ID;
 
@@ -10,7 +9,7 @@ const userSessions = {};
 // /recrut သို့မဟုတ် လူခေါ်ရန် စတင်ချိန်
 bot.command('recrut', (ctx) => {
   const userId = ctx.from.id;
-  userSessions[userId] = { roles: [] }; // စတင် initialize လုပ်မည်
+  userSessions[userId] = { roles: [] };
 
   ctx.reply('💰 ကျေးဇူးပြု၍ ကြေးပွဲပမာဏ (Fee) ကို ရွေးချယ်ပါ:', Markup.inlineKeyboard([
     [Markup.button.callback('5k MMK', 'fee_5k'), Markup.button.callback('10k MMK', 'fee_10k')],
@@ -29,7 +28,6 @@ bot.action(/^fee_(.+)$/, async (ctx) => {
 
   await ctx.answerCbQuery();
   
-  // Fee ပြီးရင် Role ရွေးခိုင်းမည် (Multi-select ပုံစံပြရန်)
   await ctx.editMessageText(`💰 ရွေးချယ်ထားသော Fee: ${userSessions[userId].fee}\n\n🎯 လိုအပ်သော Role များကို ရွေးချယ်ပါ (ပြီးလျှင် "Done" နှိပ်ပါ):`, Markup.inlineKeyboard([
     [Markup.button.callback('⚔️ Gold Lane', 'role_gold'), Markup.button.callback('🛡️ Roam', 'role_roam')],
     [Markup.button.callback('🌴 Jungler', 'role_jg'), Markup.button.callback('🧙‍♂️ Mid Lane', 'role_mid')],
@@ -61,10 +59,9 @@ bot.action(/^role_(.+)$/, async (ctx) => {
 // Group ထဲသို့ လူခေါ်သည့် Card ပို့ပေးမည့် Function
 async function sendRecruitmentCard(ctx, userId) {
   const session = userSessions[userId];
-  const hostName = ctx.from.first_name;
+  const hostName = ctx.from.first_name || 'Host';
   const rolesList = session.roles.length > 0 ? session.roles.join(', ') : 'Any Role';
 
-  // Group ထဲသို့ Message ပို့ခြင်း (Environment Variable မှ Group ID ကို သုံးသည်)
   await bot.telegram.sendMessage(GROUP_ID, 
     `========================================\n` +
     `🛡️ 5vs5 PLAYER RECRUITMENT\n` +
@@ -87,5 +84,17 @@ bot.action('join_match', async (ctx) => {
   await ctx.answerCbQuery('ဒီပွဲအတွက် ချိတ်ဆက်ရန် Website သို့မဟုတ် Host ထံ ဆက်သွယ်ပါ!');
 });
 
-bot.launch();
-console.log('Eternal Aura Telegram Bot is running...');
+// Vercel Serverless Function အတွက် Webhook Export လုပ်ခြင်း
+module.exports = async (req, res) => {
+  try {
+    if (req.method === 'POST') {
+      await bot.handleUpdate(req.body);
+      res.status(200).json({ status: 'ok' });
+    } else {
+      res.status(200).json({ message: 'Eternal Aura Telegram Bot is active via Webhook!' });
+    }
+  } catch (error) {
+    console.error('Webhook Error:', error);
+    res.status(500).json({ error: 'Internal Server Error' });
+  }
+};
