@@ -5,33 +5,55 @@ const GROUP_ID = process.env.ETERNAL_AURA_CLIENT_GP_ID;
 
 const userSessions = {};
 
-// Group ထဲမှာရော PM မှာပါ /start ရိုက်ရင် Bot PM ဆီ လမ်းကြောင်းပေးရန်
+// Bot စတင်ချိန်နှင့် အလုပ်လုပ်ချိန်များတွင် Menu များနှင့် Keyboard များကို ချိတ်ပေးရန်
+async function setupBotMenus(ctx) {
+  try {
+    // 1. Telegram Chat Menu Button (Website / App ဝင်ရန်)
+    await bot.telegram.setChatMenuButton({
+      menuButton: {
+        type: 'web_app',
+        text: '🌐 Eternal Aura App',
+        url: 'https://www.eternal-aura-hub.com'
+      }
+    });
+  } catch (error) {
+    console.error('Menu Setup Error:', error);
+  }
+}
+
+// /start သို့မဟုတ် Start နှိပ်သည့်အခါ
 bot.command('start', async (ctx) => {
-  const botInfo = await bot.telegram.getMe();
-  const botUsername = botInfo.username;
+  await setupBotMenus(ctx);
   
   if (ctx.chat.type !== 'private') {
-    // Group ထဲမှာဆိုရင် PM ထဲသွားဖို့ ခလုတ်ပြမယ် (Group ထဲမှာ စာမရှုပ်အောင်)
-    return ctx.reply('🤖 လူခေါ်ဆိုမှု Card ပြုလုပ်ရန် Bot ထံသို့ သွားရောက်ပါ:', Markup.inlineKeyboard([
-      [Markup.button.url('✨ Bot ထံသို့ သွားရန် (Start)', `https://t.me/${botUsername}?start=recrut`)]
+    return ctx.reply('🤖 Eternal Aura Matchmaking Bot သို့ ကြိုဆိုပါတယ်:', Markup.inlineKeyboard([
+      [Markup.button.url('✨ Bot ထံသို့ သွားရန်', `https://t.me/${ctx.botInfo.username}?start=recrut`)],
+      [Markup.button.url('🌐 Eternal Aura App သို့ ဝင်ရန်', 'https://www.eternal-aura-hub.com')]
     ]));
   }
 
-  // Bot PM ထဲရောက်ပြီဆိုရင် Fee ရွေးခိုင်းမယ်
   const userId = ctx.from.id;
   userSessions[userId] = { fee: '', roles: [] };
 
-  await ctx.reply('💰 ကျေးဇူးပြု၍ ကြေးပွဲပမာဏ (Fee) ကို ရွေးချယ်ပါ:', Markup.inlineKeyboard([
+  // Bot PM ထဲရောက်လာလျှင် အောက်ပါ Reply Keyboard (သို့) Inline ဖြင့် ခလုတ် ၂ ခုပြမည်
+  await ctx.reply('🎮 ကျေးဇူးပြု၍ လိုအပ်သည်ကို ရွေးချယ်ပါ:', Markup.inlineKeyboard([
+    [Markup.button.callback('🛡️ 5v5 လူရှာရန် (Recruit)', 'start_recruitment')],
+    [Markup.button.url('🌐 Eternal Aura App သို့ ဝင်ရန်', 'https://www.eternal-aura-hub.com')]
+  ]));
+});
+
+// လူရှာရန် နှိပ်မှ Fee ရွေးခိုင်းခြင်း
+bot.action('start_recruitment', async (ctx) => {
+  const userId = ctx.from.id;
+  userSessions[userId] = { fee: '', roles: [] };
+
+  await ctx.answerCbQuery();
+  await ctx.editMessageText('💰 ကျေးဇူးပြု၍ ကြေးပွဲပမာဏ (Fee) ကို ရွေးချယ်ပါ:', Markup.inlineKeyboard([
     [Markup.button.callback('5k MMK', 'fee_5K'), Markup.button.callback('10k MMK', 'fee_10K')],
     [Markup.button.callback('15k MMK', 'fee_15K'), Markup.button.callback('25k MMK', 'fee_25K')],
     [Markup.button.callback('50k MMK', 'fee_50K')]
   ]));
 });
-
-// Telegram Bot Menu (`/start` Command) သတ်မှတ်ပေးရန်
-bot.telegram.setMyCommands([
-  { command: 'start', description: 'Eternal Aura Matchmaking စတင်ရန်' }
-]);
 
 // Fee ရွေးပြီးရင် Role ဆက်ရွေးခိုင်းခြင်း
 bot.action(/^fee_(.+)$/, async (ctx) => {
@@ -87,7 +109,6 @@ bot.action('done_recruitment', async (ctx) => {
     return ctx.answerCbQuery('ကျေးဇူးပြု၍ Fee နှင့် Role တစ်ခုခုကို အရင်ရွေးချယ်ပါ။', { show_alert: true });
   }
 
-  // Username ရှိရင် @username ပြမည်၊ မရှိရင် First Name (သို့) Host ပြမည်
   const hostName = ctx.from.username 
     ? `@${ctx.from.username}` 
     : (ctx.from.first_name || 'Host');
@@ -96,7 +117,6 @@ bot.action('done_recruitment', async (ctx) => {
   const rolesList = data.roles.join(', ');
 
   try {
-    // Group ထဲသို့ Card တင်မည်
     await bot.telegram.sendMessage(GROUP_ID,
       `========================================\n` +
       `🛡️ 5vs5 PLAYER RECRUITMENT\n` +
@@ -129,7 +149,8 @@ module.exports = async (req, res) => {
       await bot.handleUpdate(req.body);
       res.status(200).json({ status: 'ok' });
     } else {
-      res.status(200).json({ message: 'Bot active' });
+      await setupBotMenus();
+      res.status(200).json({ message: 'Bot active & Dual menus ready' });
     }
   } catch (error) {
     res.status(500).json({ error: error.message });
