@@ -3,98 +3,106 @@ const { Telegraf, Markup } = require('telegraf');
 const bot = new Telegraf(process.env.TELEGRAM_BOT_TOKEN);
 const GROUP_ID = process.env.ETERNAL_AURA_CLIENT_GP_ID;
 
-// Temporary session သိမ်းရန် (Production မှာ Database သုံးသင့်ပါတယ်)
-const userSessions = {};
+// ၁။ အမြန်သုံး နည်းလမ်း: /recrut 10k gold,roam
+bot.command('recrut', async (ctx) => {
+  const text = ctx.message.text.split(' ');
+  
+  // Parameter ပါလာရင် (ဥပမာ: /recrut 10k gold,roam)
+  if (text.length >= 3) {
+    const fee = text[1].toUpperCase();
+    const roles = text[2].toUpperCase().split(',').join(', ');
+    const hostName = ctx.from.first_name || 'Host';
 
-// /recrut သို့မဟုတ် လူခေါ်ရန် စတင်ချိန်
-bot.command('recrut', (ctx) => {
-  const userId = ctx.from.id;
-  userSessions[userId] = { roles: [] };
+    await bot.telegram.sendMessage(GROUP_ID,
+      `========================================\n` +
+      `🛡️ 5vs5 PLAYER RECRUITMENT\n` +
+      `========================================\n` +
+      `💰 Fee: ${fee}\n` +
+      `🎯 လိုအပ်သော Roles: ${roles}\n` +
+      `👤 Host: ${hostName}\n` +
+      `status: 🟢 OPEN FOR PLAYERS\n` +
+      `========================================`,
+      Markup.inlineKeyboard([
+        [Markup.button.callback('⚔️ ဝင်ရောက်ရန် (Join Match)', 'join_match')]
+      ])
+    );
 
-  ctx.reply('💰 ကျေးဇူးပြု၍ ကြေးပွဲပမာဏ (Fee) ကို ရွေးချယ်ပါ:', Markup.inlineKeyboard([
-    [Markup.button.callback('5k MMK', 'fee_5k'), Markup.button.callback('10k MMK', 'fee_10k')],
-    [Markup.button.callback('15k MMK', 'fee_15k'), Markup.button.callback('25k MMK', 'fee_25k')],
-    [Markup.button.callback('50k MMK', 'fee_50k')]
-  ]));
+    return ctx.reply('✅ သင်၏ လူခေါ်ဆိုမှု Card ကို Group ထဲသို့ အောင်မြင်စွာ တင်လိုက်ပါပြီ!');
+  }
+
+  // Parameter မပါရင် PM ထဲမှာ ရွေးချယ်ခိုင်းရန် Link ပြပေးမည်
+  const botUsername = ctx.botInfo.username;
+  ctx.reply('👇 Message ရိုက်ရာတွင် အမြန်ရိုက်ရန် သို့မဟုတ် Bot PM ထဲတွင် ရွေးချယ်ပါ:', 
+    Markup.inlineKeyboard([
+      [Markup.button.url('🤖 Bot PM ထဲတွင် Fee/Role ရွေးမည်', `https://t.me/${botUsername}?start=recrut`)]
+    ])
+  );
 });
 
-// Fee ရွေးချယ်မှုကို ဖမ်းယူခြင်း
-bot.action(/^fee_(.+)$/, async (ctx) => {
-  const userId = ctx.from.id;
-  const fee = ctx.match[1];
-  
-  if (!userSessions[userId]) userSessions[userId] = {};
-  userSessions[userId].fee = fee.toUpperCase();
+// Bot PM ထဲတွင် /start recrut နှိပ်သည့်အခါ
+bot.start(async (ctx) => {
+  if (ctx.startPayload === 'recrut') {
+    return ctx.reply('💰 ကြေးပမာဏ ရွေးပါ:', Markup.inlineKeyboard([
+      [Markup.button.callback('5k MMK', 'pmfee_5K'), Markup.button.callback('10k MMK', 'pmfee_10K')],
+      [Markup.button.callback('15k MMK', 'pmfee_15K'), Markup.button.callback('25k MMK', 'pmfee_25K')],
+      [Markup.button.callback('50k MMK', 'pmfee_50K')]
+    ]));
+  }
+  ctx.reply('Eternal Aura Matchmaking Bot မှ ကြိုဆိုပါတယ်!');
+});
 
+// PM ထဲမှာ Fee ရွေးပြီးရင် Role တန်းရွေးခိုင်းခြင်း (URL Callback State ပုံစံဖြင့် မြန်ဆန်စေရန်)
+bot.action(/^pmfee_(.+)$/, async (ctx) => {
+  const fee = ctx.match[1];
   await ctx.answerCbQuery();
   
-  await ctx.editMessageText(`💰 ရွေးချယ်ထားသော Fee: ${userSessions[userId].fee}\n\n🎯 လိုအပ်သော Role များကို ရွေးချယ်ပါ (ပြီးလျှင် "Done" နှိပ်ပါ):`, Markup.inlineKeyboard([
-    [Markup.button.callback('⚔️ Gold Lane', 'role_gold'), Markup.button.callback('🛡️ Roam', 'role_roam')],
-    [Markup.button.callback('🌴 Jungler', 'role_jg'), Markup.button.callback('🧙‍♂️ Mid Lane', 'role_mid')],
-    [Markup.button.callback('🗡️ EXP Lane', 'role_exp')],
-    [Markup.button.callback('✅ ရွေးချယ်ပြီးပါပြီ (Done)', 'role_done')]
+  await ctx.editMessageText(`💰 Fee: ${fee}\n\n🎯 လိုအပ်သော Role ကို ရွေးချယ်ပါ:`, Markup.inlineKeyboard([
+    [Markup.button.callback('⚔️ Gold Lane', `sendcard_${fee}_GOLD`)],
+    [Markup.button.callback('🛡️ Roam', `sendcard_${fee}_ROAM`)],
+    [Markup.button.callback('🌴 Jungler', `sendcard_${fee}_JG`)],
+    [Markup.button.callback('🧙‍♂️ Mid Lane', `sendcard_${fee}_MID`)],
+    [Markup.button.callback('🗡️ EXP Lane', `sendcard_${fee}_EXP`)],
+    [Markup.button.callback('🔥 Any Role', `sendcard_${fee}_ANY`)]
   ]));
 });
 
-// Role များကို နှိပ်၍ သိမ်းဆည်းခြင်း
-bot.action(/^role_(.+)$/, async (ctx) => {
-  const userId = ctx.from.id;
-  const action = ctx.match[1];
-  
-  if (!userSessions[userId]) userSessions[userId] = { roles: [] };
-
-  if (action === 'done') {
-    await ctx.answerCbQuery();
-    return sendRecruitmentCard(ctx, userId);
-  }
-
-  const roleName = action.toUpperCase();
-  if (!userSessions[userId].roles.includes(roleName)) {
-    userSessions[userId].roles.push(roleName);
-  }
-
-  await ctx.answerCbQuery(`Added ${roleName}! Current roles: ${userSessions[userId].roles.join(', ')}`);
-});
-
-// Group ထဲသို့ လူခေါ်သည့် Card ပို့ပေးမည့် Function
-async function sendRecruitmentCard(ctx, userId) {
-  const session = userSessions[userId];
+// Group ထဲသို့ Card တိုက်ရိုက်ပို့ပေးခြင်း
+bot.action(/^sendcard_(.+)_(.+)$/, async (ctx) => {
+  const fee = ctx.match[1];
+  const role = ctx.match[2];
   const hostName = ctx.from.first_name || 'Host';
-  const rolesList = session.roles.length > 0 ? session.roles.join(', ') : 'Any Role';
 
-  await bot.telegram.sendMessage(GROUP_ID, 
+  await bot.telegram.sendMessage(GROUP_ID,
     `========================================\n` +
     `🛡️ 5vs5 PLAYER RECRUITMENT\n` +
     `========================================\n` +
-    `💰 Fee: ${session.fee}\n` +
-    `🎯 လိုအပ်သော Roles: ${rolesList}\n` +
+    `💰 Fee: ${fee}\n` +
+    `🎯 လိုအပ်သော Roles: ${role}\n` +
     `👤 Host: ${hostName}\n` +
     `status: 🟢 OPEN FOR PLAYERS\n` +
-    `========================================`, 
+    `========================================`,
     Markup.inlineKeyboard([
       [Markup.button.callback('⚔️ ဝင်ရောက်ရန် (Join Match)', 'join_match')]
     ])
   );
 
-  await ctx.editMessageText('✅ သင်၏ လူခေါ်ဆိုမှု Card ကို Telegram Group ထဲသို့ အောင်မြင်စွာ တင်လိုက်ပါပြီ!');
-}
-
-// Group ထဲက Join Button နှိပ်ခြင်းကို ဖမ်းရန်
-bot.action('join_match', async (ctx) => {
-  await ctx.answerCbQuery('ဒီပွဲအတွက် ချိတ်ဆက်ရန် Website သို့မဟုတ် Host ထံ ဆက်သွယ်ပါ!');
+  await ctx.answerCbQuery();
+  await ctx.editMessageText('✅ Card ကို Group ထဲသို့ အောင်မြင်စွာ တင်လိုက်ပါပြီ!');
 });
 
-// Vercel Serverless Function အတွက် Webhook Export လုပ်ခြင်း
+bot.action('join_match', async (ctx) => {
+  await ctx.answerCbQuery('ဒီပွဲအတွက် ချိတ်ဆက်ရန် Host ထံ သို့မဟုတ် Website သို့ ဆက်သွယ်ပါ!');
+});
+
 module.exports = async (req, res) => {
   try {
     if (req.method === 'POST') {
       await bot.handleUpdate(req.body);
       res.status(200).json({ status: 'ok' });
     } else {
-      res.status(200).json({ message: 'Eternal Aura Telegram Bot is active via Webhook!' });
+      res.status(200).json({ message: 'Active' });
     }
   } catch (error) {
-    console.error('Webhook Error:', error);
-    res.status(500).json({ error: 'Internal Server Error' });
+    res.status(500).json({ error: error.message });
   }
 };
