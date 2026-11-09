@@ -1,6 +1,7 @@
 const fetch = require('node-fetch');
 const FormData = require('form-data');
 
+// 1. မူလ ရှိပြီးသား Registration နှင့် Refund များကို Group သို့ ပို့သော Function
 async function sendRegistrationToTelegram(userData, paymentSlipBase64, collectionName, docId) {
     const BOT_TOKEN = process.env.TELEGRAM_BOT_TOKEN;
     const GROUP_ID = process.env.REGISTRATION_GROUP_ID;
@@ -13,7 +14,6 @@ async function sendRegistrationToTelegram(userData, paymentSlipBase64, collectio
     const mode = userData.mode || 'N/A';
     let detailsCaption = '';
 
-    // 🟢 1VS1 Mode
     if (mode === '1vs1') {
         detailsCaption = `
 🎮 **Mode:** 1VS1
@@ -31,9 +31,7 @@ async function sendRegistrationToTelegram(userData, paymentSlipBase64, collectio
 🕒 **Time:** ${userData.time || 'N/A'}
 🖼️ **Logo URL:** ${userData.logo || 'N/A'}
         `.trim();
-    } 
-    // 🟢 5VS5 Mode
-    else if (mode === '5vs5') {
+    } else if (mode === '5vs5') {
         detailsCaption = `
 🎮 **Mode:** 5VS5 Squad
 ━━━━━━━━━━━━━━━━━━━
@@ -54,21 +52,13 @@ async function sendRegistrationToTelegram(userData, paymentSlipBase64, collectio
 🕒 **Time:** ${userData.time || 'N/A'}
 🖼️ **Logo URL:** ${userData.logo || 'N/A'}
         `.trim();
-    } 
-    // 🟢 Tournament Mode
-    else if (mode === 'tournament') {
+    } else if (mode === 'tournament') {
         detailsCaption = `
 🎮 **Mode:** Tournament
 ━━━━━━━━━━━━━━━━━━━
 👤 **User ID:** ${userData.userId || 'N/A'}
 🏆 **Team Name:** ${userData.teamName || 'N/A'}
 📌 **Slot:** ${userData.slot || 'N/A'} | 🎯 **Selected:** ${userData.selectedSlot || 'N/A'}
-
-🛡️ **Roamer:** ${userData.playerRoamer?.name || 'N/A'} (${userData.playerRoamer?.gameId || 'N/A'})
-⚔️ **EXP:** ${userData.playerExp?.name || 'N/A'} (${userData.playerExp?.gameId || 'N/A'})
-💰 **Gold:** ${userData.playerGold?.name || 'N/A'} (${userData.playerGold?.gameId || 'N/A'})
-🔮 **Mid:** ${userData.playerMid?.name || 'N/A'} (${userData.playerMid?.gameId || 'N/A'})
-🌿 **Jungle:** ${userData.playerJungle?.name || 'N/A'} (${userData.playerJungle?.gameId || 'N/A'})
 
 💳 **KPay Name:** ${userData.kpayAccountName || 'N/A'}
 📱 **KPay Ph No:** ${userData.kpayPhoneNumber || 'N/A'}
@@ -78,9 +68,7 @@ async function sendRegistrationToTelegram(userData, paymentSlipBase64, collectio
 🕒 **Time:** ${userData.time || 'N/A'}
 🖼️ **Team Logo URL:** ${userData.teamLogo || 'N/A'}
         `.trim();
-    } 
-    // 🟢 Refund Request Mode (သို့မဟုတ် အခြား Custom Mode များအတွက်)
-    else if (collectionName === 'refund_requests') {
+    } else if (collectionName === 'refund_requests') {
         detailsCaption = `
 💸 **REFUND REQUEST** 💸
 ━━━━━━━━━━━━━━━━━━━
@@ -93,8 +81,7 @@ async function sendRegistrationToTelegram(userData, paymentSlipBase64, collectio
 💰 **Amount:** ${userData.amount || 'N/A'}
 🕒 **Time:** ${userData.time || 'N/A'}
         `.trim();
-    } 
-    else {
+    } else {
         detailsCaption = `🎮 **Mode:** ${mode}`;
     }
 
@@ -102,14 +89,8 @@ async function sendRegistrationToTelegram(userData, paymentSlipBase64, collectio
         ? "🔄 **NEW REFUND REQUEST** 🔄" 
         : "🚀 **NEW REGISTRATION** 🚀";
 
-    const caption = `
-${titleHeader}
-━━━━━━━━━━━━━━━━━━━
-${detailsCaption}
-    `.trim();
+    const caption = `${titleHeader}\n━━━━━━━━━━━━━━━━━━━\n${detailsCaption}`.trim();
 
-    // 🔴 callback_data ထဲတွင် collectionName နှင့် docId ကို အလိုအလျောက် ခွဲခြားထည့်သွင်းခြင်း
-    // ဥပမာ: refund_requests ဖြစ်ပါက confirm_refund_requests_DOCID ဟု ထွက်လာမည်။
     const inlineKeyboard = {
         inline_keyboard: [
             [
@@ -126,7 +107,6 @@ ${detailsCaption}
         }
 
         const imageBuffer = Buffer.from(base64Data, 'base64');
-
         const form = new FormData();
         form.append('chat_id', GROUP_ID);
         form.append('photo', imageBuffer, { filename: 'payment_slip.jpg', contentType: 'image/jpeg' });
@@ -134,8 +114,7 @@ ${detailsCaption}
         form.append('parse_mode', 'Markdown');
         form.append('reply_markup', JSON.stringify(inlineKeyboard));
 
-        const url = `https://api.telegram.org/bot${BOT_TOKEN}/sendPhoto`;
-        const res = await fetch(url, {
+        const res = await fetch(`https://api.telegram.org/bot${BOT_TOKEN}/sendPhoto`, {
             method: 'POST',
             body: form,
             headers: form.getHeaders()
@@ -149,4 +128,55 @@ ${detailsCaption}
     }
 }
 
-module.exports = { sendRegistrationToTelegram };
+// 2. 🆕 လူခေါ် Post / Recruitment Card များကို Telegram Channel သို့ ပို့ပေးသော Function (ထပ်ထည့်လိုက်သည်)
+async function sendRecruitmentToTelegram(recruitmentData) {
+    const BOT_TOKEN = process.env.TELEGRAM_BOT_TOKEN;
+    const CHANNEL_ID = process.env.RECRUITMENT_CHANNEL_ID;
+
+    if (!BOT_TOKEN || !CHANNEL_ID) {
+        console.error("Telegram Token or Recruitment Channel ID is missing.");
+        return { success: false, message: "Telegram config missing" };
+    }
+
+    const { fee, role, username, userProfileLink } = recruitmentData;
+
+    const channelMessage = `🔥 <b>PLAYER RECRUITMENT</b> 🔥\n` +
+                           `━━━━━━━━━━━━━━━━━━━\n` +
+                           `💰 <b>Fee:</b> ${fee}\n` +
+                           `🎯 <b>Looking For:</b> ${role}\n` +
+                           `👤 <b>Contact:</b> <a href="${userProfileLink}">${username}</a>\n\n` +
+                           `⚡️ စိန်ခေါ်ရန် သို့မဟုတ် ဆက်သွယ်ရန် အောက်ပါ ခလုတ်ကို နှိပ်ပါ။`;
+
+    const channelKeyboard = {
+        inline_keyboard: [
+            [
+                { text: `💬 Contact ${username}`, url: userProfileLink }
+            ]
+        ]
+    };
+
+    try {
+        const res = await fetch(`https://api.telegram.org/bot${BOT_TOKEN}/sendMessage`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                chat_id: CHANNEL_ID,
+                text: channelMessage,
+                parse_mode: 'HTML',
+                reply_markup: channelKeyboard
+            })
+        });
+
+        const result = await res.json();
+        return result.ok ? { success: true } : { success: false, error: result };
+    } catch (error) {
+        console.error("Telegram Recruitment Send Error:", error);
+        return { success: false, message: error.message };
+    }
+}
+
+// Function နှစ်ခုစလုံးကို Export လုပ်ပေးခြင်း
+module.exports = { 
+    sendRegistrationToTelegram, 
+    sendRecruitmentToTelegram 
+};

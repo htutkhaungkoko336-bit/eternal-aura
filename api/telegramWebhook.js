@@ -28,6 +28,78 @@ function getYangonTimeStr() {
     return `${dateStr}    ${hours}:${minutes} ${ampm}`;
 }
 
+function generateMatchPanelText(d, docId) {
+    const hostTeamName = d.teamName || 'Host';
+    const joinerTeamName = d.joinerTeamName || 'Joiner';
+
+    let text = `🎮 <b>MATCH CONTROL PANEL</b>\n`;
+    text += `━━━━━━━━━━━━━━━━━━━\n`;
+    text += `📌 <b>Room ID:</b> <code>${docId}</code>\n`;
+    text += `🔑 <b>Match Code:</b> <code>${d.matchCode || '-'}</code>\n`;
+    text += `🏷 <b>Room Title:</b> ${d.roomTitle || '-'}\n`;
+    text += `⚡️ <b>Mode:</b> ${d.mode || '-'} | <b>BO:</b> ${d.boType || '-'}\n`;
+    text += `💰 <b>Fee Type:</b> ${d.keyType || '-'}\n`;
+    text += `📊 <b>Status:</b> <code>${d.status || '-'}</code>\n`;
+    text += `🕒 <b>Created At:</b> ${d.createdAt || '-'}\n\n`;
+
+    text += `<blockquote expandable>`;
+    text += `👑 <b>HOST TEAM:</b> ${hostTeamName}\n`;
+    text += `• User ID: <code>${d.hostId || '-'}</code>\n`;
+    text += `• Contact Ph: ${d.contactPhNo || '-'}\n`;
+    text += `• In-Game Name: ${d.inGameName || '-'}\n`;
+    text += `• Game ID: <code>${d.gameId || '-'}</code>\n`;
+    text += `• Squad Name: ${d.sqName || '-'}\n`;
+    if (d.mode === '1v1') {
+        text += `• Hero Name: <b>${d.heroName || '-'}</b>\n`;
+        text += `• First Pick: ${d.firstPick || '-'}\n`;
+    }
+    text += `• Kpay Name: ${d.kpayName || '-'}\n`;
+    text += `• Kpay Ph: ${d.kpayPhNo || '-'}\n`;
+    text += `• Host Ready: ${d.hostReady ? '✅ Yes' : '❌ No'}\n`;
+
+    if (d.mode === '5v5') {
+        text += `  -- <b>5v5 Lineup (Host)</b> --\n`;
+        text += `  ⚔️ Mid: ${d.mid?.name || '-'} (ID: ${d.mid?.id || '-'})\n`;
+        text += `  🛡 Roamer: ${d.roamer?.name || '-'} (ID: ${d.roamer?.id || '-'})\n`;
+        text += `  🗡 Exp: ${d.exp?.name || '-'} (ID: ${d.exp?.id || '-'})\n`;
+        text += `  🪙 Gold: ${d.gold?.name || '-'} (ID: ${d.gold?.id || '-'})\n`;
+        text += `  🌿 Jungle: ${d.jungle?.name || '-'} (ID: ${d.jungle?.id || '-'})\n`;
+    }
+    text += `\n`;
+
+    text += `⚔️ <b>JOINER TEAM:</b> ${joinerTeamName}\n`;
+    text += `• User ID: <code>${d.joinedUserId || '-'}</code>\n`;
+    text += `• Contact Ph: ${d.joinerContactPhNo || '-'}\n`;
+    text += `• In-Game Name: ${d.joinerInGameName || '-'}\n`;
+    text += `• Game ID: <code>${d.joinerGameId || '-'}</code>\n`;
+    text += `• Squad Name: ${d.joinerSqName || '-'}\n`;
+    if (d.mode === '1v1') {
+        text += `• Hero Name: <b>${d.joinerHeroName || '-'}</b>\n`;
+    }
+    text += `• Kpay Name: ${d.joinerKpayName || '-'}\n`;
+    text += `• Kpay Ph: ${d.joinerKpayPhNo || '-'}\n`;
+    text += `• Joiner Ready: ${d.joinerReady ? '✅ Yes' : '❌ No'}\n`;
+
+    if (d.mode === '5v5') {
+        text += `  -- <b>5v5 Lineup (Joiner)</b> --\n`;
+        text += `  ⚔️ Mid: ${d.joinerMid?.name || '-'} (ID: ${d.joinerMid?.id || '-'})\n`;
+        text += `  🛡 Roamer: ${d.joinerRoamer?.name || '-'} (ID: ${d.joinerRoamer?.id || '-'})\n`;
+        text += `  🗡 Exp: ${d.joinerExp?.name || '-'} (ID: ${d.joinerExp?.id || '-'})\n`;
+        text += `  🪙 Gold: ${d.joinerGold?.name || '-'} (ID: ${d.joinerGold?.id || '-'})\n`;
+        text += `  🌿 Jungle: ${d.joinerJungle?.name || '-'} (ID: ${d.joinerJungle?.id || '-'})\n`;
+    }
+    text += `</blockquote>`;
+
+    if (d.winnerTeam) {
+        text += `\n━━━━━━━━━━━━━━━━━━━\n`;
+        text += `🏆 <b>Winner Team:</b> ${d.winnerTeam} အနိုင်ရသွားပါပြီ။ ✅`;
+    } else {
+        text += `\n━━━━━━━━━━━━━━━━━━━`;
+    }
+
+    return text;
+}
+
 module.exports = async function handler(req, res) {
     if (req.method !== 'POST') {
         return res.status(200).send('Webhook is active');
@@ -35,12 +107,13 @@ module.exports = async function handler(req, res) {
 
     try {
         const update = req.body || {};
+        const BOT_TOKEN = process.env.TELEGRAM_BOT_TOKEN;
+        const CHANNEL_ID = process.env.RECRUITMENT_CHANNEL_ID;
 
-        // Telegram က ဘာပဲ ပို့ပို့ Server ဘက်က 400 မတက်စေရန် Telegram Request ဟုတ်မဟုတ် စစ်ဆေးခြင်း
         const isTelegramUpdate = update.callback_query || update.message || update.inline_query;
 
         // -------------------------------------------------------------
-        // 🔥 0. Match Code ဖြင့် Active Room ကို ရှာပြီး Data ပြန်ထုတ်ပေးသော Logic (API / Frontend မှ လှမ်းခေါ်စဉ်)
+        // 🔥 0. Match Code ဖြင့် Active Room ကို ရှာခြင်း (API / Frontend)
         // -------------------------------------------------------------
         if (update.action === 'search_by_matchcode') {
             const { matchCode } = update;
@@ -75,278 +148,314 @@ module.exports = async function handler(req, res) {
             });
         }
 
-// -------------------------------------------------------------
-// 💡 Helper Function: 1v1 နဲ့ 5v5 နှစ်မျိုးစလုံးအတွက် HTML Format ဖြင့် Message ဖန်တီးခြင်း
-// -------------------------------------------------------------
-function generateMatchPanelText(d, docId) {
-    const hostTeamName = d.teamName || 'Host';
-    const joinerTeamName = d.joinerTeamName || 'Joiner';
+        // -------------------------------------------------------------
+        // 🔥 1. Telegram Bot Messages (Match Search & /recruit Command)
+        // -------------------------------------------------------------
+        if (update.message && update.message.text) {
+            const messageText = update.message.text.trim();
+            const chatId = update.message.chat.id;
 
-    let text = `🎮 <b>MATCH CONTROL PANEL</b>\n`;
-    text += `━━━━━━━━━━━━━━━━━━━\n`;
-    text += `📌 <b>Room ID:</b> <code>${docId}</code>\n`;
-    text += `🔑 <b>Match Code:</b> <code>${d.matchCode || '-'}</code>\n`;
-    text += `🏷 <b>Room Title:</b> ${d.roomTitle || '-'}\n`;
-    text += `⚡️ <b>Mode:</b> ${d.mode || '-'} | <b>BO:</b> ${d.boType || '-'}\n`;
-    text += `💰 <b>Fee Type:</b> ${d.keyType || '-'}\n`;
-    text += `📊 <b>Status:</b> <code>${d.status || '-'}</code>\n`;
-    text += `🕒 <b>Created At:</b> ${d.createdAt || '-'}\n\n`;
-
-    // 🔽 အောက်ပါ အပိုင်းသည် Telegram တွင် ခေါက်ထား/ဖြန့်ကြည့်လို့ရမည် (Expandable Blockquote)
-    text += `<blockquote expandable>`;
-    
-    // 👑 HOST TEAM
-    text += `👑 <b>HOST TEAM:</b> ${hostTeamName}\n`;
-    text += `• User ID: <code>${d.hostId || '-'}</code>\n`;
-    text += `• Contact Ph: ${d.contactPhNo || '-'}\n`;
-    text += `• In-Game Name: ${d.inGameName || '-'}\n`;
-    text += `• Game ID: <code>${d.gameId || '-'}</code>\n`;
-    text += `• Squad Name: ${d.sqName || '-'}\n`;
-    if (d.mode === '1v1') {
-        text += `• Hero Name: <b>${d.heroName || '-'}</b>\n`;
-        text += `• First Pick: ${d.firstPick || '-'}\n`;
-    }
-    text += `• Kpay Name: ${d.kpayName || '-'}\n`;
-    text += `• Kpay Ph: ${d.kpayPhNo || '-'}\n`;
-    text += `• Host Ready: ${d.hostReady ? '✅ Yes' : '❌ No'}\n`;
-
-    if (d.mode === '5v5') {
-        text += `  -- <b>5v5 Lineup (Host)</b> --\n`;
-        text += `  ⚔️ Mid: ${d.mid?.name || '-'} (ID: ${d.mid?.id || '-'})\n`;
-        text += `  🛡 Roamer: ${d.roamer?.name || '-'} (ID: ${d.roamer?.id || '-'})\n`;
-        text += `  🗡 Exp: ${d.exp?.name || '-'} (ID: ${d.exp?.id || '-'})\n`;
-        text += `  🪙 Gold: ${d.gold?.name || '-'} (ID: ${d.gold?.id || '-'})\n`;
-        text += `  🌿 Jungle: ${d.jungle?.name || '-'} (ID: ${d.jungle?.id || '-'})\n`;
-    }
-    text += `\n`;
-
-    // ⚔️ JOINER TEAM
-    text += `⚔️ <b>JOINER TEAM:</b> ${joinerTeamName}\n`;
-    text += `• User ID: <code>${d.joinedUserId || '-'}</code>\n`;
-    text += `• Contact Ph: ${d.joinerContactPhNo || '-'}\n`;
-    text += `• In-Game Name: ${d.joinerInGameName || '-'}\n`;
-    text += `• Game ID: <code>${d.joinerGameId || '-'}</code>\n`;
-    text += `• Squad Name: ${d.joinerSqName || '-'}\n`;
-    if (d.mode === '1v1') {
-        text += `• Hero Name: <b>${d.joinerHeroName || '-'}</b>\n`;
-    }
-    text += `• Kpay Name: ${d.joinerKpayName || '-'}\n`;
-    text += `• Kpay Ph: ${d.joinerKpayPhNo || '-'}\n`;
-    text += `• Joiner Ready: ${d.joinerReady ? '✅ Yes' : '❌ No'}\n`;
-
-    if (d.mode === '5v5') {
-        text += `  -- <b>5v5 Lineup (Joiner)</b> --\n`;
-        text += `  ⚔️ Mid: ${d.joinerMid?.name || '-'} (ID: ${d.joinerMid?.id || '-'})\n`;
-        text += `  🛡 Roamer: ${d.joinerRoamer?.name || '-'} (ID: ${d.joinerRoamer?.id || '-'})\n`;
-        text += `  🗡 Exp: ${d.joinerExp?.name || '-'} (ID: ${d.joinerExp?.id || '-'})\n`;
-        text += `  🪙 Gold: ${d.joinerGold?.name || '-'} (ID: ${d.joinerGold?.id || '-'})\n`;
-        text += `  🌿 Jungle: ${d.joinerJungle?.name || '-'} (ID: ${d.joinerJungle?.id || '-'})\n`;
-    }
-    text += `</blockquote>`;
-
-    // Winner ရှိပါက အောက်ဆုံးတွင် စာသားဖြင့် ဖော်ပြမည်
-    if (d.winnerTeam) {
-        text += `\n━━━━━━━━━━━━━━━━━━━\n`;
-        text += `🏆 <b>Winner Team:</b> ${d.winnerTeam} အနိုင်ရသွားပါပြီ။ ✅`;
-    } else {
-        text += `\n━━━━━━━━━━━━━━━━━━━`;
-    }
-
-    return text;
-}
-
-// -------------------------------------------------------------
-// 🔥 1. Telegram Bot Match Search & Control Panel
-// -------------------------------------------------------------
-if (update.message && update.message.text) {
-    const messageText = update.message.text.trim();
-    const chatId = update.message.chat.id;
-    const BOT_TOKEN = process.env.TELEGRAM_BOT_TOKEN;
-
-    if (messageText.startsWith('REV-') || messageText.startsWith('/search') || messageText.length === 10) {
-        const matchCode = messageText.startsWith('/search') 
-            ? messageText.split(' ')[1] 
-            : messageText;
-
-        if (matchCode) {
-            const cleanMatchCode = matchCode.trim().toUpperCase();
-
-            const roomSnapshot = await db.collection('active_rooms')
-                .where('matchCode', '==', cleanMatchCode)
-                .get();
-
-            let replyMessage = "";
-            let docId = "";
-            let isCompleted = false;
-
-            if (roomSnapshot.empty) {
-                replyMessage = `❌ <b>Match ရှာမတွေ့ပါ။</b>\nပေးထားသော Code (${cleanMatchCode}) နှင့် ကိုက်ညီသော Active Room မရှိပါ။`;
-            } else {
-                roomSnapshot.forEach(doc => {
-                    const d = doc.data();
-                    docId = doc.id; 
-                    if (d.winnerTeam) isCompleted = true;
-
-                    replyMessage = generateMatchPanelText(d, docId);
-                });
-            }
-
-            const requestBody = {
-                chat_id: chatId,
-                text: replyMessage,
-                parse_mode: 'HTML'
-            };
-
-            if (!roomSnapshot.empty && !isCompleted) {
-                requestBody.reply_markup = {
+            // 🎯 /recruit command ဖြင့် စတင်ခြင်း (Fee ရွေးခိုင်းရန်)
+            if (messageText === '/recruit') {
+                const inlineKeyboard = {
                     inline_keyboard: [
                         [
-                            { text: `👥 Choose Team`, callback_data: `choose_team_${docId}` }
+                            { text: "5k", callback_data: `fee_5k` },
+                            { text: "10k", callback_data: `fee_10k` },
+                            { text: "15k", callback_data: `fee_15k` }
+                        ],
+                        [
+                            { text: "25k", callback_data: `fee_25k` },
+                            { text: "50k", callback_data: `fee_50k` }
                         ]
                     ]
                 };
-            }
 
-            await fetch(`https://api.telegram.org/bot${BOT_TOKEN}/sendMessage`, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(requestBody)
-            });
-
-            return res.status(200).json({ status: 'success' });
-        }
-    }
-}
-
-// -------------------------------------------------------------
-// 🔥 2. Callback Query Handler (Interactive Actions)
-// -------------------------------------------------------------
-if (update.callback_query) {
-    const callbackQuery = update.callback_query;
-    const callbackData = callbackQuery.data;
-    const queryId = callbackQuery.id;
-    const chatId = callbackQuery.message.chat.id;
-    const messageId = callbackQuery.message.message_id;
-    const BOT_TOKEN = process.env.TELEGRAM_BOT_TOKEN;
-
-    if (callbackData && callbackData.startsWith('choose_team_')) {
-        const roomId = callbackData.split('_')[2];
-        try {
-            const roomRef = db.collection('active_rooms').doc(roomId);
-            const roomDoc = await roomRef.get();
-            if (!roomDoc.exists) {
-                await fetch(`https://api.telegram.org/bot${BOT_TOKEN}/answerCallbackQuery`, {
+                await fetch(`https://api.telegram.org/bot${BOT_TOKEN}/sendMessage`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ callback_query_id: queryId, text: "❌ ဤ Room အား ရှာမတွေ့တော့ပါ။", show_alert: true })
+                    body: JSON.stringify({
+                        chat_id: chatId,
+                        text: "💰 <b>Match Fee ဘယ်လောက်နဲ့ ကစားမှာလဲ?</b>\nကျေးဇူးပြု၍ အောက်ပါတို့မှ တစ်ခုကို ရွေးချယ်ပါ။",
+                        parse_mode: 'HTML',
+                        reply_markup: inlineKeyboard
+                    })
                 });
-                return res.status(200).json({ status: 'error' });
+                return res.status(200).json({ status: 'success' });
             }
 
-            const roomData = roomDoc.data();
-            const hostName = roomData.teamName || 'Host';
-            const joinerName = roomData.joinerTeamName || 'Joiner';
+            if (messageText.startsWith('REV-') || messageText.startsWith('/search') || messageText.length === 10) {
+                const matchCode = messageText.startsWith('/search') 
+                    ? messageText.split(' ')[1] 
+                    : messageText;
 
-            let keyboardLayout = [
-                [
-                    { text: `🏆 ${hostName} (Win)`, callback_data: `win_${roomId}_host` },
-                    { text: `🏆 ${joinerName} (Win)`, callback_data: `win_${roomId}_joiner` }
-                ]
-            ];
+                if (matchCode) {
+                    const cleanMatchCode = matchCode.trim().toUpperCase();
 
-            await fetch(`https://api.telegram.org/bot${BOT_TOKEN}/editMessageReplyMarkup`, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                    chat_id: chatId,
-                    message_id: messageId,
-                    reply_markup: { inline_keyboard: keyboardLayout }
-                })
-            });
+                    const roomSnapshot = await db.collection('active_rooms')
+                        .where('matchCode', '==', cleanMatchCode)
+                        .get();
 
-            await fetch(`https://api.telegram.org/bot${BOT_TOKEN}/answerCallbackQuery`, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ callback_query_id: queryId, text: "🏆 Winner Team တစ်ခုကို ရွေးချယ်ပါ။" })
-            });
-        } catch (e) { console.error("Choose Team Error:", e); }
-        return res.status(200).json({ status: 'success' });
-    }
+                    let replyMessage = "";
+                    let docId = "";
+                    let isCompleted = false;
 
-        if (callbackData && callbackData.startsWith('win_')) {
-        const parts = callbackData.split('_');
-        const winningSide = parts[2];
-        const roomId = parts[1];
+                    if (roomSnapshot.empty) {
+                        replyMessage = `❌ <b>Match ရှာမတွေ့ပါ။</b>\nပေးထားသော Code (${cleanMatchCode}) နှင့် ကိုက်ညီသော Active Room မရှိပါ။`;
+                    } else {
+                        roomSnapshot.forEach(doc => {
+                            const d = doc.data();
+                            docId = doc.id; 
+                            if (d.winnerTeam) isCompleted = true;
 
-        try {
-            const roomRef = db.collection('active_rooms').doc(roomId);
-            const roomDoc = await roomRef.get();
-            if (!roomDoc.exists) return res.status(200).json({ status: 'error' });
+                            replyMessage = generateMatchPanelText(d, docId);
+                        });
+                    }
 
-            const roomData = roomDoc.data();
-            const winnerTeamName = winningSide === 'host' ? (roomData.teamName || 'Host') : (roomData.joinerTeamName || 'Joiner');
-            const winnerUserId = winningSide === 'host' ? roomData.hostId : roomData.joinedUserId;
+                    const requestBody = {
+                        chat_id: chatId,
+                        text: replyMessage,
+                        parse_mode: 'HTML'
+                    };
 
-            // ၁။ အချက်အလက်များကို updated လုပ်မည်
-            const updatedRoomData = {
-                ...roomData,
-                winnerTeam: winnerTeamName,
-                winnerId: winnerUserId,
-                winningSide: winningSide,
-                status: 'completed',
-                completedAt: getYangonTimeStr()
-            };
+                    if (!roomSnapshot.empty && !isCompleted) {
+                        requestBody.reply_markup = {
+                            inline_keyboard: [
+                                [
+                                    { text: `👥 Choose Team`, callback_data: `choose_team_${docId}` }
+                                ]
+                            ]
+                        };
+                    }
 
-            // 🔥 ၂။ Unique ဖြစ်မည့် History ID ဖန်တီးမည် (ဥပမာ - roomId_အချိန်) ထို့ကြောင့် အဟောင်းပေါ် အသစ်ထပ်အုပ်မည် မဟုတ်ပါ
-            const uniqueHistoryId = `${roomId}_${Date.now()}`;
+                    await fetch(`https://api.telegram.org/bot${BOT_TOKEN}/sendMessage`, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(requestBody)
+                    });
 
-            // ၃။ history collection ထဲသို့ Unique ID ဖြင့် သွားသိမ်းမည်
-            await db.collection('history').doc(uniqueHistoryId).set(updatedRoomData);
+                    return res.status(200).json({ status: 'success' });
+                }
+            }
+        }
 
-            // ၄။ active_rooms ထဲမှ Room ကို ဖျက်ပစ်မည်
-            await roomRef.delete();
-
-            const updatedMessageText = generateMatchPanelText(updatedRoomData, roomId);
-
-            // ၅။ Telegram မက်ဆေ့ချ်ကို ပုံစံပြောင်းမည် (Keyboard များကို ဖြုတ်မည်)
-            await fetch(`https://api.telegram.org/bot${BOT_TOKEN}/editMessageText`, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                    chat_id: chatId,
-                    message_id: messageId,
-                    text: updatedMessageText,
-                    parse_mode: 'HTML',
-                    reply_markup: { inline_keyboard: [] }
-                })
-            });
-
-            await fetch(`https://api.telegram.org/bot${BOT_TOKEN}/answerCallbackQuery`, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                    callback_query_id: queryId,
-                    text: `🎉 Winner အဖြစ် ${winnerTeamName} ကို သတ်မှတ်ပြီး Room အား history သို့ အသစ်တစ်ခုအနေဖြင့် သိမ်းဆည်းပြီးပါပြီ။`,
-                    show_alert: true
-                })
-            });
-
-        } catch (e) { console.error("Win Error:", e); }
-        return res.status(200).json({ status: 'success' });
-    }
-}
-            // 1. Telegram Callback Query (Admin Action) လုပ်ဆောင်ချက်များ
+        // -------------------------------------------------------------
+        // 🔥 2. Callback Query Handler (Interactive Actions & Recruitment Flow)
         // -------------------------------------------------------------
         if (update.callback_query) {
             const callbackQuery = update.callback_query;
-            const data = callbackQuery.data; 
+            const callbackData = callbackQuery.data;
+            const queryId = callbackQuery.id;
             const chatId = callbackQuery.message.chat.id;
             const messageId = callbackQuery.message.message_id;
-            const BOT_TOKEN = process.env.TELEGRAM_BOT_TOKEN;
 
-            console.log("Received callback data:", data);
+            console.log("Received callback data:", callbackData);
 
-            const parts = data.split('_');
+            // 🎯 A. Recruitment: Fee ရွေးပြီးပါက Role ဆက်မေးခြင်း
+            if (callbackData && callbackData.startsWith('fee_')) {
+                const fee = callbackData.split('_')[1];
+                const inlineKeyboard = {
+                    inline_keyboard: [
+                        [
+                            { text: "⚔️ Exp Laner", callback_data: `role_${fee}_Exp` },
+                            { text: "🪙 Gold Laner", callback_data: `role_${fee}_Gold` }
+                        ],
+                        [
+                            { text: "🔮 Mid Laner", callback_data: `role_${fee}_Mid` },
+                            { text: "🌿 Jungler", callback_data: `role_${fee}_Jungle` }
+                        ],
+                        [
+                            { text: "🛡️ Roamer", callback_data: `role_${fee}_Roamer` }
+                        ]
+                    ]
+                };
+
+                await fetch(`https://api.telegram.org/bot${BOT_TOKEN}/editMessageText`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        chat_id: chatId,
+                        message_id: messageId,
+                        text: `✅ Fee: <b>${fee}</b> ရွေးချယ်ပြီးပါပြီ။\n\n🎯 <b>လိုချင်သော Role ကို ထပ်မံရွေးချယ်ပါ:</b>`,
+                        parse_mode: 'HTML',
+                        reply_markup: inlineKeyboard
+                    })
+                });
+
+                await fetch(`https://api.telegram.org/bot${BOT_TOKEN}/answerCallbackQuery`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ callback_query_id: queryId, text: `Fee: ${fee} ရွေးပြီးပါပြီ။` })
+                });
+
+                return res.status(200).json({ status: 'success' });
+            }
+
+            // 🎯 B. Recruitment: Role ပါ ရွေးပြီးပါက Channel ထဲသို့ Card ပို့ပေးခြင်း
+            if (callbackData && callbackData.startsWith('role_')) {
+                const parts = callbackData.split('_');
+                const fee = parts[1];
+                const role = parts[2];
+                const user = callbackQuery.from;
+
+                const username = user.username ? `@${user.username}` : (user.first_name || 'Player');
+                const userProfileLink = user.username ? `https://t.me/${user.username}` : `tg://user?id=${user.id}`;
+
+                if (!CHANNEL_ID) {
+                    console.error("RECRUITMENT_CHANNEL_ID is missing in environment variables.");
+                }
+
+                const channelMessage = `🔥 <b>PLAYER RECRUITMENT</b> 🔥\n` +
+                                       `━━━━━━━━━━━━━━━━━━━\n` +
+                                       `💰 <b>Fee:</b> ${fee}\n` +
+                                       `🎯 <b>Looking For:</b> ${role}\n` +
+                                       `👤 <b>Contact:</b> <a href="${userProfileLink}">${username}</a>\n\n` +
+                                       `⚡️ စိန်ခေါ်ရန် သို့မဟုတ် ဆက်သွယ်ရန် အောက်ပါ ခလုတ်ကို နှိပ်ပါ။`;
+
+                const channelKeyboard = {
+                    inline_keyboard: [
+                        [
+                            { text: `💬 Contact ${username}`, url: userProfileLink }
+                        ]
+                    ]
+                };
+
+                // Channel သို့ Post ပို့မည်
+                if (CHANNEL_ID) {
+                    await fetch(`https://api.telegram.org/bot${BOT_TOKEN}/sendMessage`, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({
+                            chat_id: CHANNEL_ID,
+                            text: channelMessage,
+                            parse_mode: 'HTML',
+                            reply_markup: channelKeyboard
+                        })
+                    });
+                }
+
+                // User ဘက်က Chat Box ကို အောင်မြင်ကြောင်း ပြန်ပြမည်
+                await fetch(`https://api.telegram.org/bot${BOT_TOKEN}/editMessageText`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        chat_id: chatId,
+                        message_id: messageId,
+                        text: `🎉 သင့်ရဲ့ လူခေါ်ဆိုမှု (Fee: ${fee} | Role: ${role}) ကို Telegram Channel ထဲသို့ အောင်မြင်စွာ တင်ပြီးပါပြီ။`,
+                        parse_mode: 'HTML'
+                    })
+                });
+
+                await fetch(`https://api.telegram.org/bot${BOT_TOKEN}/answerCallbackQuery`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ callback_query_id: queryId, text: "Successfully posted to channel!" })
+                });
+
+                return res.status(200).json({ status: 'success' });
+            }
+
+            if (callbackData && callbackData.startsWith('choose_team_')) {
+                const roomId = callbackData.split('_')[2];
+                try {
+                    const roomRef = db.collection('active_rooms').doc(roomId);
+                    const roomDoc = await roomRef.get();
+                    if (!roomDoc.exists) {
+                        await fetch(`https://api.telegram.org/bot${BOT_TOKEN}/answerCallbackQuery`, {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({ callback_query_id: queryId, text: "❌ ဤ Room အား ရှာမတွေ့တော့ပါ။", show_alert: true })
+                        });
+                        return res.status(200).json({ status: 'error' });
+                    }
+
+                    const roomData = roomDoc.data();
+                    const hostName = roomData.teamName || 'Host';
+                    const joinerName = roomData.joinerTeamName || 'Joiner';
+
+                    let keyboardLayout = [
+                        [
+                            { text: `🏆 ${hostName} (Win)`, callback_data: `win_${roomId}_host` },
+                            { text: `🏆 ${joinerName} (Win)`, callback_data: `win_${roomId}_joiner` }
+                        ]
+                    ];
+
+                    await fetch(`https://api.telegram.org/bot${BOT_TOKEN}/editMessageReplyMarkup`, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({
+                            chat_id: chatId,
+                            message_id: messageId,
+                            reply_markup: { inline_keyboard: keyboardLayout }
+                        })
+                    });
+
+                    await fetch(`https://api.telegram.org/bot${BOT_TOKEN}/answerCallbackQuery`, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ callback_query_id: queryId, text: "🏆 Winner Team တစ်ခုကို ရွေးချယ်ပါ။" })
+                    });
+                } catch (e) { console.error("Choose Team Error:", e); }
+                return res.status(200).json({ status: 'success' });
+            }
+
+            if (callbackData && callbackData.startsWith('win_')) {
+                const parts = callbackData.split('_');
+                const winningSide = parts[2];
+                const roomId = parts[1];
+
+                try {
+                    const roomRef = db.collection('active_rooms').doc(roomId);
+                    const roomDoc = await roomRef.get();
+                    if (!roomDoc.exists) return res.status(200).json({ status: 'error' });
+
+                    const roomData = roomDoc.data();
+                    const winnerTeamName = winningSide === 'host' ? (roomData.teamName || 'Host') : (roomData.joinerTeamName || 'Joiner');
+                    const winnerUserId = winningSide === 'host' ? roomData.hostId : roomData.joinedUserId;
+
+                    const updatedRoomData = {
+                        ...roomData,
+                        winnerTeam: winnerTeamName,
+                        winnerId: winnerUserId,
+                        winningSide: winningSide,
+                        status: 'completed',
+                        completedAt: getYangonTimeStr()
+                    };
+
+                    const uniqueHistoryId = `${roomId}_${Date.now()}`;
+                    await db.collection('history').doc(uniqueHistoryId).set(updatedRoomData);
+                    await roomRef.delete();
+
+                    const updatedMessageText = generateMatchPanelText(updatedRoomData, roomId);
+
+                    await fetch(`https://api.telegram.org/bot${BOT_TOKEN}/editMessageText`, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({
+                            chat_id: chatId,
+                            message_id: messageId,
+                            text: updatedMessageText,
+                            parse_mode: 'HTML',
+                            reply_markup: { inline_keyboard: [] }
+                        })
+                    });
+
+                    await fetch(`https://api.telegram.org/bot${BOT_TOKEN}/answerCallbackQuery`, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({
+                            callback_query_id: queryId,
+                            text: `🎉 Winner အဖြစ် ${winnerTeamName} ကို သတ်မှတ်ပြီး Room အား history သို့ အသစ်တစ်ခုအနေဖြင့် သိမ်းဆည်းပြီးပါပြီ။`,
+                            show_alert: true
+                        })
+                    });
+
+                } catch (e) { console.error("Win Error:", e); }
+                return res.status(200).json({ status: 'success' });
+            }
+
+            // Admin Actions (Confirm / Reject)
+            const parts = callbackData.split('_');
             const action = parts[0]; 
             
             let collectionName = "";
@@ -374,7 +483,6 @@ if (update.callback_query) {
             let responseText = "";
             let updateKeyboard = false;
             let newInlineKeyboard = [];
-
             const prefix = collectionName;
 
             if (action === 'confirm') {
@@ -449,7 +557,6 @@ if (update.callback_query) {
 
                             if (userId) {
                                 let keyFieldToDecrement = "";
-                                
                                 if (mode === 'tournament') {
                                     keyFieldToDecrement = "keys.tournament";
                                 } else if (mode.includes('5vs5') || mode.includes('5v5')) {
@@ -476,9 +583,7 @@ if (update.callback_query) {
                                         const currentQty = Number(keysObj[fieldKeyOnly]) || 0;
                                         const updatedQty = Math.max(0, currentQty - qty);
 
-                                        await userRef.update({
-                                            [keyFieldToDecrement]: updatedQty
-                                        });
+                                        await userRef.update({ [keyFieldToDecrement]: updatedQty });
                                     }
                                 }
                             }
@@ -518,14 +623,10 @@ if (update.callback_query) {
                                     const fieldKeyOnly = keyFieldToIncrement.split('.')[1];
 
                                     if (!userDoc.exists || !userDoc.data().keys || userDoc.data().keys[fieldKeyOnly] === undefined) {
-                                        await userRef.set({
-                                            keys: { [fieldKeyOnly]: 0 }
-                                        }, { merge: true });
+                                        await userRef.set({ keys: { [fieldKeyOnly]: 0 } }, { merge: true });
                                     }
 
-                                    await userRef.update({
-                                        [keyFieldToIncrement]: FieldValue.increment(1)
-                                    });
+                                    await userRef.update({ [keyFieldToIncrement]: FieldValue.increment(1) });
                                 }
                             }
                         }
@@ -558,7 +659,7 @@ if (update.callback_query) {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ 
-                    callback_query_id: callbackQuery.id, 
+                    callback_query_id: queryId, 
                     text: newStatus ? `Successfully ${newStatus.toLowerCase()}!` : "Please select a reason" 
                 })
             });
@@ -566,13 +667,12 @@ if (update.callback_query) {
             return res.status(200).json({ status: 'success' });
         }
 
-        // အကယ်၍ Telegram က ပို့လာတာဖြစ်ပြီး အထက်ပါ condition တွေနဲ့ မကိုက်ရင်တောင် 400 မပေးဘဲ 200 ပြန်ရန်
         if (isTelegramUpdate) {
             return res.status(200).json({ status: 'ok' });
         }
 
         // -------------------------------------------------------------
-        // 2. User Authentication & Registration (Device / Phone Login)
+        // 3. User Authentication & Registration (Device / Phone Login)
         // -------------------------------------------------------------
         const { phone, deviceId, name, pin } = req.body;
 
@@ -581,7 +681,6 @@ if (update.callback_query) {
         }
 
         const usersRef = db.collection('users');
-
         const deviceCheckSnapshot = await usersRef.where('deviceId', '==', deviceId).get();
         let hasOtherPhoneOnThisDevice = false;
         deviceCheckSnapshot.forEach(doc => {
@@ -593,10 +692,7 @@ if (update.callback_query) {
         if (hasOtherPhoneOnThisDevice && !name && !pin) {
             const phoneCheck = await usersRef.where('phone', '==', phone).get();
             if (phoneCheck.empty) {
-                return res.status(400).json({ 
-                    success: false, 
-                    message: "This device is already bound to another phone number." 
-                });
+                return res.status(400).json({ success: false, message: "This device is already bound to another phone number." });
             }
         }
 
@@ -604,10 +700,7 @@ if (update.callback_query) {
 
         if (snapshot.empty) {
             if (!name || !pin) {
-                return res.status(200).json({ 
-                    requiresRegistration: true, 
-                    message: "Phone not found. Please provide name and PIN." 
-                });
+                return res.status(200).json({ requiresRegistration: true, message: "Phone not found. Please provide name and PIN." });
             }
 
             const salt = bcrypt.genSaltSync(10);
@@ -617,84 +710,40 @@ if (update.callback_query) {
             const defaultRole = 'user';
 
             const defaultKeys = {
-                "1vs1-5k": 0,
-                "1vs1-10k": 0,
-                "1vs1-15k": 0,
-                "1vs1-25k": 0,
-                "1vs1-50k": 0,
-                "5vs5-5k": 0,
-                "5vs5-10k": 0,
-                "5vs5-15k": 0,
-                "5vs5-25k": 0,
-                "5vs5-50k": 0,
+                "1vs1-5k": 0, "1vs1-10k": 0, "1vs1-15k": 0, "1vs1-25k": 0, "1vs1-50k": 0,
+                "5vs5-5k": 0, "5vs5-10k": 0, "5vs5-15k": 0, "5vs5-25k": 0, "5vs5-50k": 0,
                 "tournament": 0
             };
 
-            const newUserData = {
-                userId: userId,
-                name: name,
-                phone: phone,
-                pin: hashedPin,
-                deviceId: deviceId,
-                role: defaultRole,
-                keys: defaultKeys,
-                createdAt: createdAtStr,
-                recentLogins: []
-            };
-
-            await usersRef.doc(userId).set(newUserData);
-
-            return res.status(200).json({ 
-                success: true, 
-                message: "User registered successfully", 
-                name: name,
-                userId: userId,
-                role: defaultRole
+            await usersRef.doc(userId).set({
+                userId, name, phone, pin: hashedPin, deviceId,
+                role: defaultRole, keys: defaultKeys, createdAt: createdAtStr, recentLogins: []
             });
+
+            return res.status(200).json({ success: true, message: "User registered successfully", name, userId, role: defaultRole });
         }
 
         const userDoc = snapshot.docs[0];
         const userData = userDoc.data();
 
         if (userData.deviceId === deviceId) {
-            return res.status(200).json({ 
-                success: true, 
-                message: "Original device matched. Login successful", 
-                name: userData.name,
-                userId: userData.userId,
-                role: userData.role || 'user'
-            });
+            return res.status(200).json({ success: true, message: "Original device matched. Login successful", name: userData.name, userId: userData.userId, role: userData.role || 'user' });
         }
 
         if (!pin) {
-            return res.status(200).json({ 
-                requiresPassword: true, 
-                message: "Different device detected. Please enter PIN." 
-            });
+            return res.status(200).json({ requiresPassword: true, message: "Different device detected. Please enter PIN." });
         }
 
         const isPasswordValid = bcrypt.compareSync(pin, userData.pin);
-
         if (!isPasswordValid) {
             return res.status(401).json({ success: false, message: "Incorrect PIN. Access denied." });
         }
 
-        const loginRecord = {
-            deviceId: deviceId,
-            loginTime: getYangonTimeStr()
-        };
-
         await usersRef.doc(userData.userId).update({
-            recentLogins: FieldValue.arrayUnion(loginRecord)
+            recentLogins: FieldValue.arrayUnion({ deviceId, loginTime: getYangonTimeStr() })
         });
 
-        return res.status(200).json({ 
-            success: true, 
-            message: "Login successful on another device with PIN", 
-            name: userData.name,
-            userId: userData.userId,
-            role: userData.role || 'user'
-        });
+        return res.status(200).json({ success: true, message: "Login successful", name: userData.name, userId: userData.userId, role: userData.role || 'user' });
 
     } catch (error) {
         console.error("Auth/Webhook Error:", error);
