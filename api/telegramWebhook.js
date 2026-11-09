@@ -149,14 +149,14 @@ module.exports = async function handler(req, res) {
         }
 
         // -------------------------------------------------------------
-        // 🔥 1. Telegram Bot Messages (Match Search & /recruit Command)
+        // 🔥 1. Telegram Bot Messages (/start Command & Match Search)
         // -------------------------------------------------------------
         if (update.message && update.message.text) {
             const messageText = update.message.text.trim();
             const chatId = update.message.chat.id;
 
-            // 🎯 /recruit command ဖြင့် စတင်ခြင်း (Fee ရွေးခိုင်းရန်)
-            if (messageText === '/recruit') {
+            // 🎯 /start ဖြင့် လူခေါ်ခြင်း Flow ကို စတင်ခြင်း
+            if (messageText.startsWith('/start')) {
                 const inlineKeyboard = {
                     inline_keyboard: [
                         [
@@ -176,7 +176,7 @@ module.exports = async function handler(req, res) {
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({
                         chat_id: chatId,
-                        text: "💰 <b>Match Fee ဘယ်လောက်နဲ့ ကစားမှာလဲ?</b>\nကျေးဇူးပြု၍ အောက်ပါတို့မှ တစ်ခုကို ရွေးချယ်ပါ။",
+                        text: "🔥 <b>Eternal Aura Matchmaking Bot</b> 🔥\n\n💰 <b>Match Fee ဘယ်လောက်နဲ့ ကစားမှာလဲ?</b>\nကျေးဇူးပြု၍ အောက်ပါတို့မှ တစ်ခုကို ရွေးချယ်ပါ။",
                         parse_mode: 'HTML',
                         reply_markup: inlineKeyboard
                     })
@@ -240,7 +240,7 @@ module.exports = async function handler(req, res) {
         }
 
         // -------------------------------------------------------------
-        // 🔥 2. Callback Query Handler (Interactive Actions & Recruitment Flow)
+        // 🔥 2. Callback Query Handler (Multi-role Selection & Actions)
         // -------------------------------------------------------------
         if (update.callback_query) {
             const callbackQuery = update.callback_query;
@@ -251,21 +251,24 @@ module.exports = async function handler(req, res) {
 
             console.log("Received callback data:", callbackData);
 
-            // 🎯 A. Recruitment: Fee ရွေးပြီးပါက Role ဆက်မေးခြင်း
+            // 🎯 A. Fee ရွေးပြီးပါက Multi-select Roles များ ပြပေးခြင်း
             if (callbackData && callbackData.startsWith('fee_')) {
                 const fee = callbackData.split('_')[1];
                 const inlineKeyboard = {
                     inline_keyboard: [
                         [
-                            { text: "⚔️ Exp Laner", callback_data: `role_${fee}_Exp` },
-                            { text: "🪙 Gold Laner", callback_data: `role_${fee}_Gold` }
+                            { text: "⚪️ Exp Laner", callback_data: `role_${fee}_Exp` },
+                            { text: "⚪️ Gold Laner", callback_data: `role_${fee}_Gold` }
                         ],
                         [
-                            { text: "🔮 Mid Laner", callback_data: `role_${fee}_Mid` },
-                            { text: "🌿 Jungler", callback_data: `role_${fee}_Jungle` }
+                            { text: "⚪️ Mid Laner", callback_data: `role_${fee}_Mid` },
+                            { text: "⚪️ Jungler", callback_data: `role_${fee}_Jungle` }
                         ],
                         [
-                            { text: "🛡️ Roamer", callback_data: `role_${fee}_Roamer` }
+                            { text: "⚪️ Roamer", callback_data: `role_${fee}_Roamer` }
+                        ],
+                        [
+                            { text: "✅ Done (ပြီးပါပြီ)", callback_data: `done_${fee}` }
                         ]
                     ]
                 };
@@ -276,7 +279,7 @@ module.exports = async function handler(req, res) {
                     body: JSON.stringify({
                         chat_id: chatId,
                         message_id: messageId,
-                        text: `✅ Fee: <b>${fee}</b> ရွေးချယ်ပြီးပါပြီ။\n\n🎯 <b>လိုချင်သော Role ကို ထပ်မံရွေးချယ်ပါ:</b>`,
+                        text: `✅ Fee: <b>${fee}</b> ရွေးချယ်ပြီးပါပြီ။\n\n🎯 <b>လိုချင်သော Role များကို လိုသလောက် ရွေးချယ်ပါ:</b>\nရွေးပြီးပါက အောက်ဆုံးရှိ "✅ Done" ကို နှိပ်ပါ။`,
                         parse_mode: 'HTML',
                         reply_markup: inlineKeyboard
                     })
@@ -291,36 +294,101 @@ module.exports = async function handler(req, res) {
                 return res.status(200).json({ status: 'success' });
             }
 
-            // 🎯 B. Recruitment: Role ပါ ရွေးပြီးပါက Channel ထဲသို့ Card ပို့ပေးခြင်း
+            // 🎯 B. Role များကို နှိပ်တိုင်း အမှန်ခြစ် Toggle လုပ်ပေးခြင်း (Multi-select)
             if (callbackData && callbackData.startsWith('role_')) {
                 const parts = callbackData.split('_');
-                const fee = parts[1];
-                const role = parts[2];
-                const user = callbackQuery.from;
+                const clickedRole = parts[2];
 
+                const replyMarkup = callbackQuery.message.reply_markup;
+                let rows = replyMarkup ? replyMarkup.inline_keyboard : [];
+                
+                rows = rows.map(row => {
+                    return row.map(btn => {
+                        if (btn.callback_data.startsWith('role_')) {
+                            const btnRole = btn.callback_data.split('_')[2];
+                            let isChecked = btn.text.startsWith('✅');
+
+                            if (btnRole === clickedRole) {
+                                isChecked = !isChecked;
+                            }
+
+                            if (isChecked) {
+                                return { text: `✅ ${btnRole}`, callback_data: btn.callback_data };
+                            } else {
+                                return { text: `⚪️ ${btnRole}`, callback_data: btn.callback_data };
+                            }
+                        }
+                        return btn;
+                    });
+                });
+
+                await fetch(`https://api.telegram.org/bot${BOT_TOKEN}/editMessageReplyMarkup`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        chat_id: chatId,
+                        message_id: messageId,
+                        reply_markup: { inline_keyboard: rows }
+                    })
+                });
+
+                await fetch(`https://api.telegram.org/bot${BOT_TOKEN}/answerCallbackQuery`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ callback_query_id: queryId, text: "Role Updated" })
+                });
+
+                return res.status(200).json({ status: 'success' });
+            }
+
+            // 🎯 C. Done နှိပ်ပါက ရွေးထားသမျှ Roles များနှင့်အတူ Bot လင့်ခ် Button ပါ Channel သို့ ပို့ပေးခြင်း
+            if (callbackData && callbackData.startsWith('done_')) {
+                const fee = callbackData.split('_')[1];
+                const replyMarkup = callbackQuery.message.reply_markup;
+                let rows = replyMarkup ? replyMarkup.inline_keyboard : [];
+
+                let selectedRoles = [];
+                rows.forEach(row => {
+                    row.forEach(btn => {
+                        if (btn.callback_data.startsWith('role_') && btn.text.startsWith('✅')) {
+                            selectedRoles.push(btn.callback_data.split('_')[2]);
+                        }
+                    });
+                });
+
+                if (selectedRoles.length === 0) {
+                    await fetch(`https://api.telegram.org/bot${BOT_TOKEN}/answerCallbackQuery`, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ callback_query_id: queryId, text: "⚠️ ကျေးဇူးပြု၍ အနည်းဆုံး Role တစ်ခု ရွေးချယ်ပါ။", show_alert: true })
+                    });
+                    return res.status(200).json({ status: 'success' });
+                }
+
+                const user = callbackQuery.from;
                 const username = user.username ? `@${user.username}` : (user.first_name || 'Player');
                 const userProfileLink = user.username ? `https://t.me/${user.username}` : `tg://user?id=${user.id}`;
-
-                if (!CHANNEL_ID) {
-                    console.error("RECRUITMENT_CHANNEL_ID is missing in environment variables.");
-                }
+                const rolesString = selectedRoles.join(', ');
 
                 const channelMessage = `🔥 <b>PLAYER RECRUITMENT</b> 🔥\n` +
                                        `━━━━━━━━━━━━━━━━━━━\n` +
                                        `💰 <b>Fee:</b> ${fee}\n` +
-                                       `🎯 <b>Looking For:</b> ${role}\n` +
+                                       `🎯 <b>Looking For:</b> ${rolesString}\n` +
                                        `👤 <b>Contact:</b> <a href="${userProfileLink}">${username}</a>\n\n` +
-                                       `⚡️ စိန်ခေါ်ရန် သို့မဟုတ် ဆက်သွယ်ရန် အောက်ပါ ခလုတ်ကို နှိပ်ပါ။`;
+                                       `⚡️ စိန်ခေါ်ရန် သို့မဟုတ် ကိုယ်တိုင်လူခေါ်ရန် အောက်ပါ ခလုတ်များကို နှိပ်ပါ။`;
 
+                // Channel ထဲ ပို့မည့် Keyboard (Contact Button အပြင် Bot သို့ တန်းသွားမည့် Button ပါဝင်သည်)
                 const channelKeyboard = {
                     inline_keyboard: [
                         [
                             { text: `💬 Contact ${username}`, url: userProfileLink }
+                        ],
+                        [
+                            { text: `🤖 ကိုယ်တိုင် လူခေါ်ရန် Bot သို့သွားမည်`, url: `https://t.me/eternal_aura_bot?start=recruit` } // 👈 ကျေးဇူးပြု၍ your_bot_username နေရာတွင် ကိုယ့် Bot နာမည်အမှန် ထည့်ပါ
                         ]
                     ]
                 };
 
-                // Channel သို့ Post ပို့မည်
                 if (CHANNEL_ID) {
                     await fetch(`https://api.telegram.org/bot${BOT_TOKEN}/sendMessage`, {
                         method: 'POST',
@@ -334,14 +402,13 @@ module.exports = async function handler(req, res) {
                     });
                 }
 
-                // User ဘက်က Chat Box ကို အောင်မြင်ကြောင်း ပြန်ပြမည်
                 await fetch(`https://api.telegram.org/bot${BOT_TOKEN}/editMessageText`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({
                         chat_id: chatId,
                         message_id: messageId,
-                        text: `🎉 သင့်ရဲ့ လူခေါ်ဆိုမှု (Fee: ${fee} | Role: ${role}) ကို Telegram Channel ထဲသို့ အောင်မြင်စွာ တင်ပြီးပါပြီ။`,
+                        text: `🎉 သင့်ရဲ့ လူခေါ်ဆိုမှု (Fee: ${fee} | Roles: ${rolesString}) ကို Telegram Channel ထဲသို့ အောင်မြင်စွာ တင်ပြီးပါပြီ။`,
                         parse_mode: 'HTML'
                     })
                 });
